@@ -1,0 +1,147 @@
+using System;
+using UnityEngine;
+
+namespace COM3D2.MeidoPhotoStudio.Plugin
+{
+    public class DragHead : BaseDrag
+    {
+        private Transform head;
+        private Vector3 rotate;
+        private Vector3 eyeRotL;
+        private Vector3 eyeRotR;
+        private Vector3 defEyeRotL;
+        private Vector3 defEyeRotR;
+        private Vector3 mousePosOther;
+        private bool shodaiFlg;
+        public event EventHandler Select;
+
+        public void Initialize(Transform head, Maid maid, Func<Vector3> posFunc, Func<Vector3> rotFunc)
+        {
+            base.Initialize(maid, posFunc, rotFunc);
+            this.head = head;
+
+            // default eye rotations
+            defEyeRotL = this.maid.body0.quaDefEyeL.eulerAngles;
+            defEyeRotR = this.maid.body0.quaDefEyeR.eulerAngles;
+
+            // Check for "Shodai" faces
+            try
+            {
+                shodaiFlg = false;
+                TMorph morph = maid.body0.Face.morph;
+                float throwAway = Utility.GetFieldValue<TMorph, float[]>(morph, "BlendValues")
+                    [(int)morph.hash["tangopen"]];
+            }
+            catch
+            {
+                shodaiFlg = true;
+            }
+
+            InitializeGizmo(this.head);
+        }
+
+        protected override void GetDragType()
+        {
+            bool shift = Utility.GetModKey(Utility.ModKey.Shift);
+            if (Utility.GetModKey(Utility.ModKey.Alt) && Utility.GetModKey(Utility.ModKey.Control))
+            {
+                // eyes
+                dragType = DragType.MoveXZ;
+            }
+            else if (Input.GetKey(KeyCode.LeftAlt))
+            {
+                // head
+                dragType = shift ? DragType.RotLocalY : DragType.RotLocalXZ;
+            }
+            else if (Input.GetKey(KeyCode.A))
+            {
+                dragType = DragType.Select;
+            }
+            else
+            {
+                dragType = DragType.None;
+            }
+        }
+        protected override void DoubleClick()
+        {
+            if (dragType == DragType.MoveXZ)
+            {
+                maid.body0.quaDefEyeL.eulerAngles = defEyeRotL;
+                maid.body0.quaDefEyeR.eulerAngles = defEyeRotR;
+            }
+        }
+
+        protected override void InitializeDrag()
+        {
+            if (dragType == DragType.Select)
+            {
+                EventHandler handler = Select;
+                if (handler != null) handler(this, EventArgs.Empty);
+                return;
+            }
+
+            base.InitializeDrag();
+
+            rotate = head.localEulerAngles;
+
+            eyeRotL = maid.body0.quaDefEyeL.eulerAngles;
+            eyeRotR = maid.body0.quaDefEyeR.eulerAngles;
+            mousePosOther = Input.mousePosition - mousePos;
+        }
+
+        protected override void Drag()
+        {
+            if (dragType == DragType.None || dragType == DragType.Select) return;
+
+            if (dragType != DragType.MoveXZ)
+            {
+                if (isPlaying)
+                {
+                    maid.GetAnimation().Stop();
+                }
+            }
+
+            Vector3 pos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z);
+            Vector3 vec31 = Input.mousePosition - mousePos;
+            Transform t = GameMain.Instance.MainCamera.gameObject.transform;
+            Vector3 vec32 = t.TransformDirection(Vector3.right);
+            Vector3 vec33 = t.TransformDirection(Vector3.forward);
+
+            if (dragType == DragType.RotLocalXZ)
+            {
+                head.localEulerAngles = rotate;
+                head.RotateAround(head.position, new Vector3(vec32.x, 0.0f, vec32.z), vec31.y / 3f);
+                head.RotateAround(head.position, new Vector3(vec33.x, 0.0f, vec33.z), (-vec31.x / 4.5f));
+            }
+
+            if (dragType == DragType.RotLocalY)
+            {
+                head.localEulerAngles = rotate;
+                head.localRotation = Quaternion.Euler(head.localEulerAngles) * Quaternion.AngleAxis(vec31.x / 3f, Vector3.right);
+            }
+
+            if (dragType == DragType.MoveXZ)
+            {
+                Vector3 vec34 = new Vector3(eyeRotR.x, eyeRotR.y + vec31.x / 10f, eyeRotR.z + vec31.y / 10f);
+
+                if (shodaiFlg)
+                {
+                    if (vec34.z < 345.7f && vec34.z > 335.6f)
+                        mousePosOther.y = vec31.y;
+                    if (vec34.y < 347.6f && vec34.y > 335.6f)
+                        mousePosOther.x = vec31.x;
+                }
+                else
+                {
+                    if (vec34.z < 354.8f && vec34.z > 344.8f)
+                        mousePosOther.y = vec31.y;
+                    if (vec34.y < 354.0f && vec34.y > 342.0f)
+                        mousePosOther.x = vec31.x;
+                }
+
+                maid.body0.quaDefEyeL.eulerAngles = new Vector3(eyeRotL.x, eyeRotL.y - mousePosOther.x / 10f, eyeRotL.z - mousePosOther.y / 10f);
+                maid.body0.quaDefEyeR.eulerAngles = new Vector3(eyeRotR.x, eyeRotR.y + mousePosOther.x / 10f, eyeRotR.z + mousePosOther.y / 10f);
+            }
+        }
+    }
+}
