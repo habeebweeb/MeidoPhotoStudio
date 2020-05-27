@@ -101,20 +101,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             Maid.Visible = false;
 
-            if (dragPointManager != null) dragPointManager.Deactivate();
+            dragPointManager?.Deactivate();
         }
 
         public void Deactivate()
         {
             Unload();
-            if (dragPointManager != null) dragPointManager.Destroy();
+            dragPointManager?.Destroy();
             Maid.SetPos(Vector3.zero);
             Maid.SetRot(Vector3.zero);
             Maid.SetPosOffset(Vector3.zero);
-            if (Maid.body0 != null)
-            {
-                Maid.body0.SetBoneHitHeightY(0f);
-            }
+            Maid.body0?.SetBoneHitHeightY(0f);
 
             Maid.Visible = false;
             Maid.ActiveSlotNo = -1;
@@ -198,14 +195,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void OnBodyLoad()
         {
-            EventHandler handler = BodyLoad;
-            if (handler != null) handler(this, EventArgs.Empty);
+            BodyLoad?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnMeidoSelect(MeidoChangeEventArgs args)
         {
-            EventHandler<MeidoChangeEventArgs> handler = SelectMeido;
-            if (handler != null) handler(this, args);
+            SelectMeido?.Invoke(this, args);
         }
     }
 }

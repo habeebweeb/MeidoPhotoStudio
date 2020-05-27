@@ -132,7 +132,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void OnDropdownEvent(EventHandler handler)
         {
-            if (handler != null) handler(this, EventArgs.Empty);
+            handler?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -233,18 +233,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (selection != selectedItemIndex || (clicked && !onScrollBar))
             {
-                EventHandler<DropdownSelectArgs> handler = SelectionChange;
-                if (handler != null)
-                    handler(null, new DropdownSelectArgs(currentDropdownID, selection));
+                SelectionChange?.Invoke(null, new DropdownSelectArgs(currentDropdownID, selection));
                 Visible = false;
             }
 
-            if (!Visible)
-            {
-                EventHandler<DropdownCloseArgs> handler = DropdownClose;
-                if (handler != null)
-                    handler(null, new DropdownCloseArgs(currentDropdownID, scrollPos, clickedYou));
-            }
+            if (!Visible) DropdownClose?.Invoke(null, new DropdownCloseArgs(currentDropdownID, scrollPos, clickedYou));
         }
 
         private static void InitializeStyle()

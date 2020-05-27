@@ -24,7 +24,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected bool reInitDrag = false;
         protected bool isPlaying;
         protected GizmoRender gizmo;
-        public bool gizmoVisible;
         public bool Visible
         {
             get => dragPointRenderer.enabled;
@@ -32,22 +31,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         public float DragPointScale
         {
+            get => transform.localScale.x;
             set => transform.localScale = new Vector3(value, value, value);
         }
         public float GizmoScale
         {
             set
             {
-                if (gizmo != null)
-                {
-                    gizmo.offsetScale = value;
-                }
+                if (gizmo != null) gizmo.offsetScale = value;
             }
         }
-        private static bool IsGizmoDrag
+        public bool GizmoVisible
         {
-            get => Utility.GetFieldValue<GizmoRender, bool>(null, "is_drag_");
+            get => gizmo?.Visible ?? false;
+            set
+            {
+                if (gizmo != null) gizmo.Visible = value;
+            }
         }
+        private static bool IsGizmoDrag => Utility.GetFieldValue<GizmoRender, bool>(null, "is_drag_");
 
         protected enum DragType
         {
@@ -119,9 +121,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (gizmo != null)
             {
-                gizmo.Visible = gizmoVisible;
-
-                if (gizmoVisible)
+                if (GizmoVisible)
                 {
                     if (isPlaying && IsGizmoDrag)
                     {

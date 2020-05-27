@@ -15,11 +15,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public virtual void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode) { }
         public virtual void OnControlEvent(EventArgs args)
         {
-            EventHandler handler = ControlEvent;
-            if (handler != null)
-            {
-                handler(this, args);
-            }
+            ControlEvent?.Invoke(this, args);
         }
     }
 }

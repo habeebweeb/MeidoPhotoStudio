@@ -566,8 +566,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void OnMeidoSelect(MeidoChangeEventArgs args)
         {
-            EventHandler<MeidoChangeEventArgs> handler = SelectMaid;
-            if (handler != null) handler(this, args);
+            SelectMaid?.Invoke(this, args);
         }
     }
 }

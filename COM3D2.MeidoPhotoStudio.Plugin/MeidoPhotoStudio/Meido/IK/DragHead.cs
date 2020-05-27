@@ -75,8 +75,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (dragType == DragType.Select)
             {
-                EventHandler handler = Select;
-                if (handler != null) handler(this, EventArgs.Empty);
+                Select?.Invoke(this, EventArgs.Empty);
                 return;
             }
 

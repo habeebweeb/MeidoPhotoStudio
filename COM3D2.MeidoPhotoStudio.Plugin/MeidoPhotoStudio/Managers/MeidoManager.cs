@@ -149,11 +149,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void ChangeMeido(object sender, MeidoChangeEventArgs args)
         {
             SelectedMeido = args.selected;
-            // if (args.fromMeido)
-            // {
-            EventHandler<MeidoChangeEventArgs> handler = SelectMeido;
-            if (handler != null) handler(this, args);
-            // }
+            SelectMeido?.Invoke(this, args);
         }
 
         private void EndCallMeidos(object sender, EventArgs args)
@@ -162,9 +158,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 IsFade = false;
                 GameMain.Instance.MainCamera.FadeIn(1f);
-                EventHandler handler = CalledMeidos;
-                if (handler != null)
-                    handler(this, EventArgs.Empty);
+                CalledMeidos?.Invoke(this, EventArgs.Empty);
             }
         }
     }

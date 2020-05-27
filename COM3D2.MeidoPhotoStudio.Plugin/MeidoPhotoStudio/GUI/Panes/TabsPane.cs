@@ -24,8 +24,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private static void OnChangeTab()
         {
             selectedTab = (Constants.Window)Tabs.SelectedItem;
-            EventHandler handler = TabChange;
-            if (handler != null) handler(null, EventArgs.Empty);
+            TabChange?.Invoke(null, EventArgs.Empty);
         }
 
         public static void Draw()

@@ -62,8 +62,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private static void OnMaidChange(MeidoChangeEventArgs args)
         {
-            EventHandler<MeidoChangeEventArgs> handler = MaidChange;
-            if (handler != null) handler(null, args);
+            MaidChange?.Invoke(null, args);
         }
     }
 }

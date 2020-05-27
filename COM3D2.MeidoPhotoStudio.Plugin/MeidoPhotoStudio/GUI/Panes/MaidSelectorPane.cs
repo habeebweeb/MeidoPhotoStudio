@@ -21,11 +21,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Controls.Add(clearMaidsButton);
 
             callMaidsButton = new Button("Call");
-            callMaidsButton.ControlEvent += (s, a) =>
-            {
-                EventHandler handler = MaidCall;
-                if (handler != null) handler(this, EventArgs.Empty);
-            };
+            callMaidsButton.ControlEvent += (s, a) => MaidCall?.Invoke(this, EventArgs.Empty);
             Controls.Add(callMaidsButton);
         }
 
