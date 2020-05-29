@@ -11,6 +11,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             Draw();
 
+            GUI.enabled = true;
+
             GUILayout.FlexibleSpace();
             GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
             labelStyle.fontSize = 10;
