@@ -12,7 +12,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 defEyeRotL;
         private Vector3 defEyeRotR;
         private Vector3 mousePosOther;
-        private bool shodaiFlg;
         public event EventHandler Select;
 
         public void Initialize(Transform head, Maid maid, Func<Vector3> posFunc, Func<Vector3> rotFunc)
@@ -24,19 +23,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             defEyeRotL = this.maid.body0.quaDefEyeL.eulerAngles;
             defEyeRotR = this.maid.body0.quaDefEyeR.eulerAngles;
 
-            // Check for "Shodai" faces
-            try
-            {
-                shodaiFlg = false;
-                TMorph morph = maid.body0.Face.morph;
-                float throwAway = Utility.GetFieldValue<TMorph, float[]>(morph, "BlendValues")
-                    [(int)morph.hash["tangopen"]];
-            }
-            catch
-            {
-                shodaiFlg = true;
-            }
-
             InitializeGizmo(this.head);
         }
 
@@ -46,7 +32,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (Utility.GetModKey(Utility.ModKey.Alt) && Utility.GetModKey(Utility.ModKey.Control))
             {
                 // eyes
-                dragType = DragType.MoveXZ;
+                dragType = Utility.GetModKey(Utility.ModKey.Shift) ? DragType.MoveY : DragType.MoveXZ;
             }
             else if (Input.GetKey(KeyCode.LeftAlt))
             {
@@ -64,7 +50,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         protected override void DoubleClick()
         {
-            if (dragType == DragType.MoveXZ)
+            if (dragType == DragType.MoveXZ || dragType == DragType.MoveY)
             {
                 maid.body0.quaDefEyeL.eulerAngles = defEyeRotL;
                 maid.body0.quaDefEyeR.eulerAngles = defEyeRotR;
@@ -92,7 +78,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (dragType == DragType.None || dragType == DragType.Select) return;
 
-            if (dragType != DragType.MoveXZ)
+            if (!(dragType == DragType.MoveXZ || dragType == DragType.MoveY))
             {
                 if (isPlaying)
                 {
@@ -120,27 +106,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 head.localRotation = Quaternion.Euler(head.localEulerAngles) * Quaternion.AngleAxis(vec31.x / 3f, Vector3.right);
             }
 
-            if (dragType == DragType.MoveXZ)
+            if (dragType == DragType.MoveXZ || dragType == DragType.MoveY)
             {
+                int inv = dragType == DragType.MoveY ? -1 : 1;
                 Vector3 vec34 = new Vector3(eyeRotR.x, eyeRotR.y + vec31.x / 10f, eyeRotR.z + vec31.y / 10f);
 
-                if (shodaiFlg)
-                {
-                    if (vec34.z < 345.7f && vec34.z > 335.6f)
-                        mousePosOther.y = vec31.y;
-                    if (vec34.y < 347.6f && vec34.y > 335.6f)
-                        mousePosOther.x = vec31.x;
-                }
-                else
-                {
-                    if (vec34.z < 354.8f && vec34.z > 344.8f)
-                        mousePosOther.y = vec31.y;
-                    if (vec34.y < 354.0f && vec34.y > 342.0f)
-                        mousePosOther.x = vec31.x;
-                }
+                mousePosOther.y = vec31.y;
+                mousePosOther.x = vec31.x;
 
                 maid.body0.quaDefEyeL.eulerAngles = new Vector3(eyeRotL.x, eyeRotL.y - mousePosOther.x / 10f, eyeRotL.z - mousePosOther.y / 10f);
-                maid.body0.quaDefEyeR.eulerAngles = new Vector3(eyeRotR.x, eyeRotR.y + mousePosOther.x / 10f, eyeRotR.z + mousePosOther.y / 10f);
+                maid.body0.quaDefEyeR.eulerAngles = new Vector3(eyeRotR.x, eyeRotR.y + inv * mousePosOther.x / 10f, eyeRotR.z + mousePosOther.y / 10f);
             }
         }
     }
