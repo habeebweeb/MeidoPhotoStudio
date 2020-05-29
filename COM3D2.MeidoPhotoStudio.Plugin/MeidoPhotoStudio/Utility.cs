@@ -9,15 +9,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             Control, Shift, Alt
         }
+
         internal static int Wrap(int value, int min, int max)
         {
             max -= 1;
             return value < min ? max : value > max ? min : value;
         }
+
         internal static int GetPix(int num)
         {
             return (int)((1f + (Screen.width / 1280f - 1f) * 0.6f) * num);
         }
+
+        internal static float Bound(float value, float left, float right)
+        {
+            if ((double)left > (double)right) return Mathf.Clamp(value, right, left);
+            else return Mathf.Clamp(value, left, right);
+        }
+
         internal static Texture2D MakeTex(int width, int height, Color color)
         {
             Color[] colors = new Color[width * height];
@@ -30,17 +39,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             texture2D.Apply();
             return texture2D;
         }
+
         internal static FieldInfo GetFieldInfo<T>(string field)
         {
             BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
             return typeof(T).GetField(field, bindingFlags);
         }
+
         internal static TValue GetFieldValue<TType, TValue>(TType instance, string field)
         {
             FieldInfo fieldInfo = GetFieldInfo<TType>(field);
             if (fieldInfo == null || !fieldInfo.IsStatic && instance == null) return default(TValue);
             return (TValue)fieldInfo.GetValue(instance);
         }
+
         internal static void SetFieldValue<TType, TValue>(TType instance, string name, TValue value)
         {
             FieldInfo fieldInfo = GetFieldInfo<TType>(name);
@@ -57,6 +69,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 default: return false;
             }
         }
+
         internal static bool AnyMouseDown()
         {
             return Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2);
