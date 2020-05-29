@@ -30,7 +30,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             GUILayout.BeginHorizontal();
 
-            bool previousState = GUI.enabled;
             GUI.enabled = meidoManager.HasActiveMeido;
 
             PreviousButton.Draw(buttonStyle, GUILayout.Height(40), GUILayout.ExpandWidth(false));
@@ -40,15 +39,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else
                 GUILayout.Box("", boxStyle, GUILayout.Height(70), GUILayout.Width(70));
 
-
             GUILayout.BeginVertical();
             GUILayout.Space(30);
             GUILayout.Label(meidoManager.HasActiveMeido ? meidoManager.ActiveMeido.NameJP : "", labelStyle, GUILayout.ExpandWidth(false));
             GUILayout.EndVertical();
 
             NextButton.Draw(buttonStyle, GUILayout.Height(40), GUILayout.ExpandWidth(false));
-
-            GUI.enabled = previousState;
 
             GUILayout.EndHorizontal();
         }
