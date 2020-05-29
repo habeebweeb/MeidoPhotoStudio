@@ -39,7 +39,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public Slider(float min, float max, float value = 0) : this("", min, max, value) { }
         public override void Draw(params GUILayoutOption[] layoutOptions)
         {
-
             if (!Visible) return;
             GUIStyle sliderStyle = new GUIStyle(GUI.skin.horizontalSlider);
             if (hasLabel)

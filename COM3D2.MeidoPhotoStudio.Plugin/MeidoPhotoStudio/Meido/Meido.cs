@@ -10,6 +10,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private static CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;
         public readonly int stockNo;
+        public readonly PoseInfo defaultPose = new PoseInfo(0, 0, "pose_taiki_f");
         public Maid Maid { get; private set; }
         public Texture2D Image { get; private set; }
         public string FirstName { get; private set; }
@@ -20,12 +21,32 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private DragPointManager dragPointManager;
         public event EventHandler<MeidoChangeEventArgs> SelectMeido;
         public event EventHandler BodyLoad;
+        public event EventHandler AnimeChange;
         private bool isLoading = false;
+        private bool isIK = false;
+        public bool IsIK
+        {
+            get => this.isIK;
+            private set => this.isIK = value;
+        }
+        private bool isStop = false;
+        public bool IsStop
+        {
+            get => isStop;
+            set
+            {
+                isStop = value;
+                this.AnimeChange?.Invoke(this, EventArgs.Empty);
+                if (!isStop) this.SetPose(this.poseInfo.PoseName);
+            }
+        }
+        public bool IsBone { get; set; } = false;
         public bool Visible
         {
             get => Maid.Visible;
             set => Maid.Visible = value;
         }
+        public PoseInfo poseInfo;
 
         public Meido(int stockMaidIndex)
         {
@@ -34,6 +55,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.Image = Maid.GetThumIcon();
             this.FirstName = Maid.status.firstName;
             this.LastName = Maid.status.lastName;
+            this.poseInfo = defaultPose;
+            // I don't know why I put this here. Must've fixed something with proc loading
             Maid.boAllProcPropBUSY = false;
         }
 
@@ -65,7 +88,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else
             {
-                SetPose("pose_taiki_f");
+                SetPose(defaultPose);
             }
 
             if (dragPointManager == null)
@@ -76,6 +99,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else
             {
                 dragPointManager.Activate();
+
+                this.IsIK = true;
+                this.IsStop = false;
+                this.IsBone = false;
             }
 
             Maid.body0.boHeadToCam = true;
@@ -103,12 +130,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Maid.Visible = false;
 
             dragPointManager?.Deactivate();
+            this.IsIK = false;
+            this.IsStop = false;
+            this.IsBone = false;
         }
 
         public void Deactivate()
         {
             Unload();
             dragPointManager?.Destroy();
+            this.IsIK = false;
+            this.IsStop = false;
+            this.IsBone = false;
             Maid.SetPos(Vector3.zero);
             Maid.SetRot(Vector3.zero);
             Maid.SetPosOffset(Vector3.zero);
@@ -117,6 +150,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Maid.Visible = false;
             Maid.ActiveSlotNo = -1;
             Maid.DelPrefabAll();
+        }
+
+        public void SetPose(PoseInfo poseInfo)
+        {
+            this.poseInfo = poseInfo;
+            SetPose(poseInfo.PoseName);
         }
 
         public void SetPose(string pose)
@@ -218,14 +257,53 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             body.FixVisibleFlag(false);
         }
 
+        public void SetIKActive(bool active)
+        {
+            this.IsIK = active;
+            if (dragPointManager == null) this.IsIK = false;
+            else
+            {
+                if (this.IsIK) dragPointManager.Activate();
+                else dragPointManager.Deactivate();
+            }
+        }
+
+        public void IKRelease()
+        {
+            if (!Maid.GetAnimation().isPlaying)
+            {
+                this.IsStop = false;
+                this.SetPose(this.poseInfo.PoseName);
+            }
+        }
+
         private void OnBodyLoad()
         {
             BodyLoad?.Invoke(this, EventArgs.Empty);
+
+            this.IsIK = true;
+            this.IsStop = false;
+            this.IsBone = false;
         }
 
         private void OnMeidoSelect(MeidoChangeEventArgs args)
         {
             SelectMeido?.Invoke(this, args);
         }
+    }
+}
+
+public struct PoseInfo
+{
+    public int PoseGroupIndex { get; private set; }
+    public int PoseIndex { get; private set; }
+    public string PoseName { get; private set; }
+    public bool IsCustomPose { get; private set; }
+    public PoseInfo(int poseGroup, int pose, string poseName, bool isCustomPose = false)
+    {
+        this.PoseGroupIndex = poseGroup;
+        this.PoseIndex = pose;
+        this.PoseName = poseName;
+        this.IsCustomPose = isCustomPose;
     }
 }

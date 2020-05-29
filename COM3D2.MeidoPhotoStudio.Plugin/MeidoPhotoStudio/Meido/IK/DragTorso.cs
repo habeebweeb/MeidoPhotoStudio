@@ -44,6 +44,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (isPlaying)
             {
                 maid.GetAnimation().Stop();
+                OnDragEvent();
             }
 
             Vector3 pos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z);

@@ -11,21 +11,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private int undress = 0;
         public Meido[] meidos { get; private set; }
         public List<Meido> ActiveMeidoList { get; private set; }
-        public Meido ActiveMeido { get; private set; }
+        public Meido ActiveMeido => ActiveMeidoList.Count > 0 ? ActiveMeidoList[selectedMeido] : null;
         public bool HasActiveMeido => ActiveMeido != null;
         public bool IsFade { get; set; } = false;
         public int numberOfMeidos;
         public event EventHandler<MeidoChangeEventArgs> SelectMeido;
         public event EventHandler CalledMeidos;
+        public event EventHandler AnimeChange;
         private int selectedMeido = 0;
         public int SelectedMeido
         {
             get => selectedMeido;
-            set
-            {
-                selectedMeido = Mathf.Clamp(value, 0, ActiveMeidoList.Count);
-                ActiveMeido = ActiveMeidoList.Count > 0 ? ActiveMeidoList[selectedMeido] : null;
-            }
+            private set => selectedMeido = Mathf.Clamp(value, 0, ActiveMeidoList.Count);
         }
         public bool IsBusy
         {
@@ -52,13 +49,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             MaidSwitcherPane.MaidChange += ChangeMeido;
             MaidSwitcherPane.meidoManager = this;
 
-            ActiveMeido = null;
-
             for (int stockMaidIndex = 0; stockMaidIndex < numberOfMeidos; stockMaidIndex++)
             {
                 meidos[stockMaidIndex] = new Meido(stockMaidIndex);
-                meidos[stockMaidIndex].SelectMeido += ChangeMeido;
-                meidos[stockMaidIndex].BodyLoad += EndCallMeidos;
             }
         }
 
@@ -101,6 +94,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (Meido meido in ActiveMeidoList)
             {
                 meido.Unload();
+                meido.SelectMeido -= ChangeMeido;
+                meido.BodyLoad -= EndCallMeidos;
+                meido.AnimeChange -= OnAnimeChangeEvent;
             }
             ActiveMeidoList.Clear();
         }
@@ -110,6 +106,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (Meido meido in meidos)
             {
                 meido.Deactivate();
+                meido.SelectMeido -= ChangeMeido;
+                meido.BodyLoad -= EndCallMeidos;
+                meido.AnimeChange -= OnAnimeChangeEvent;
             }
             ActiveMeidoList.Clear();
         }
@@ -124,6 +123,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Meido meido = meidos[slot];
                 ActiveMeidoList.Add(meido);
+                meido.SelectMeido += ChangeMeido;
+                meido.BodyLoad += EndCallMeidos;
+                meido.AnimeChange += OnAnimeChangeEvent;
             }
 
             for (int i = 0; i < ActiveMeidoList.Count; i++)
@@ -138,16 +140,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (selectedMaids.Count == 0) EndCallMeidos(this, EventArgs.Empty);
         }
 
+        private void OnAnimeChangeEvent(object sender, EventArgs args)
+        {
+            this.AnimeChange?.Invoke(this.ActiveMeido, EventArgs.Empty);
+        }
+
         private void OnSelectMeido(MeidoChangeEventArgs args)
         {
             SelectMeido?.Invoke(this, args);
         }
 
-        public void SetMeidoPose(string pose, int meidoIndex = -1)
-        {
-            Meido meido = meidoIndex == -1 ? ActiveMeido : ActiveMeidoList[meidoIndex];
-            meido.SetPose(pose);
-        }
 
         private void ChangeMeido(object sender, MeidoChangeEventArgs args)
         {
@@ -162,6 +164,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 IsFade = false;
                 GameMain.Instance.MainCamera.FadeIn(1f);
                 CalledMeidos?.Invoke(this, EventArgs.Empty);
+                foreach (Meido meido in ActiveMeidoList)
+                {
+                    meido.BodyLoad -= EndCallMeidos;
+                }
             }
         }
     }

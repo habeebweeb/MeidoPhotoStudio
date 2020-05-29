@@ -50,7 +50,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
         private static bool IsGizmoDrag => Utility.GetFieldValue<GizmoRender, bool>(null, "is_drag_");
-
+        public event EventHandler DragEvent;
         protected enum DragType
         {
             None, Select,
@@ -157,6 +157,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 transform.position = position();
                 transform.eulerAngles = rotation();
             }
+        }
+
+        protected void OnDragEvent()
+        {
+            DragEvent?.Invoke(null, EventArgs.Empty);
         }
     }
 }

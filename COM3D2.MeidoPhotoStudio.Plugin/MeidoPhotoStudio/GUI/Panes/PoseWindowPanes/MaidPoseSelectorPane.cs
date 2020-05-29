@@ -66,13 +66,33 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void ChangePose(object sender, EventArgs args)
         {
             selectedPose = poseDropdown.SelectedItemIndex;
+
+            if (updating) return;
+            PoseInfo poseInfo = MakePoseInfo();
+            meidoManager.ActiveMeido.SetPose(poseInfo);
+        }
+
+        private PoseInfo MakePoseInfo()
+        {
+            int poseGroup = this.poseGroupDropdown.SelectedItemIndex;
+            int pose = this.poseDropdown.SelectedItemIndex;
+
             string poseName;
             if (this.poseGroupDropdown.SelectedItemIndex >= Constants.CustomPoseGroupsIndex)
                 poseName = Constants.CustomPoseDict[selectedPoseGroup][selectedPose].Value;
             else
                 poseName = Constants.PoseDict[selectedPoseGroup][selectedPose];
 
-            meidoManager.ActiveMeido.SetPose(poseName);
+            return new PoseInfo(poseGroup, pose, poseName);
+        }
+
+        public override void Update()
+        {
+            this.updating = true;
+            PoseInfo poseInfo = this.meidoManager.ActiveMeido.poseInfo;
+            this.poseGroupDropdown.SelectedItemIndex = poseInfo.PoseGroupIndex;
+            this.poseDropdown.SelectedItemIndex = poseInfo.PoseIndex;
+            this.updating = false;
         }
 
         public override void Draw(params GUILayoutOption[] layoutOptions)
@@ -90,7 +110,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GUILayout.Width(dropdownButtonWidth)
             };
 
-            GUI.enabled = meidoManager.HasActiveMeido;
+            GUI.enabled = meidoManager.HasActiveMeido && !meidoManager.ActiveMeido.IsStop;
 
             GUILayout.BeginHorizontal();
             this.poseGroupLeftButton.Draw(arrowLayoutOptions);

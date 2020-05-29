@@ -32,6 +32,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (isPlaying)
             {
                 maid.GetAnimation().Stop();
+                OnDragEvent();
             }
 
             if (dragType == DragType.None)

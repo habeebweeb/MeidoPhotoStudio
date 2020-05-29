@@ -9,20 +9,23 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     public class MaidPoseWindow : BaseMainWindow
     {
         private MeidoManager meidoManager;
-        private MaidPoseSelectorPane poseSelectorPane;
+        private MaidPoseSelectorPane maidPosePane;
         private MaidFaceLookPane maidFaceLookPane;
         private MaidDressingPane maidDressingPane;
+        private MaidIKPane maidIKPane;
         private Toggle freeLookToggle;
         public MaidPoseWindow(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
             this.meidoManager.SelectMeido += OnMeidoSelect;
 
-            this.poseSelectorPane = new MaidPoseSelectorPane(meidoManager);
+            this.maidPosePane = new MaidPoseSelectorPane(meidoManager);
             this.maidFaceLookPane = new MaidFaceLookPane(meidoManager);
             this.maidFaceLookPane.Enabled = false;
 
             this.maidDressingPane = new MaidDressingPane(meidoManager);
+
+            this.maidIKPane = new MaidIKPane(meidoManager);
 
             TabsPane.TabChange += OnTabChange;
 
@@ -44,9 +47,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void Draw(params GUILayoutOption[] layoutOptions)
         {
             MaidSwitcherPane.Draw();
-            poseSelectorPane.Draw();
+            maidPosePane.Draw();
 
-            GUILayout.BeginScrollView(this.scrollPos);
+            this.scrollPos = GUILayout.BeginScrollView(this.scrollPos);
 
             GUILayout.BeginHorizontal();
             GUI.enabled = this.meidoManager.HasActiveMeido;
@@ -56,6 +59,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             maidFaceLookPane.Draw();
 
             maidDressingPane.Draw();
+
+            MiscGUI.WhiteLine();
+
+            maidIKPane.Draw();
+
             GUILayout.EndScrollView();
         }
 
@@ -65,8 +73,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (TabsPane.SelectedTab == Constants.Window.Pose)
             {
+                maidPosePane.Update();
                 maidFaceLookPane.Update();
                 maidDressingPane.Update();
+                maidIKPane.Update();
             }
         }
 

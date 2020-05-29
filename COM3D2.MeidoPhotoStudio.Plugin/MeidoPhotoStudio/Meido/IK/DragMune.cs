@@ -80,6 +80,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (isPlaying)
             {
                 maid.GetAnimation().Stop();
+                OnDragEvent();
             }
 
             IKCtrlData ikData = maid.body0.IKCtrl.GetIKData("左手");
