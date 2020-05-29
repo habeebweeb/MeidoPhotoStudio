@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -191,6 +192,30 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Maid.boMabataki = false;
             morph.EyeMabataki = 0f;
             morph.FixBlendValues_Face();
+        }
+
+        public void SetMaskMode(TBody.MaskMode maskMode)
+        {
+            TBody body = Maid.body0;
+            bool invisibleBody = !body.GetMask(TBody.SlotID.body);
+            body.SetMaskMode(maskMode);
+            if (invisibleBody) SetBodyMask(false);
+        }
+
+        public void SetBodyMask(bool enabled)
+        {
+            TBody body = Maid.body0;
+            Hashtable table = Utility.GetFieldValue<TBody, Hashtable>(body, "m_hFoceHide");
+            foreach (TBody.SlotID bodySlot in MaidDressingPane.bodySlots)
+            {
+                table[bodySlot] = enabled;
+            }
+            if (body.goSlot[19].m_strModelFileName.Contains("melala_body"))
+            {
+                table[TBody.SlotID.accHana] = enabled;
+            }
+            body.FixMaskFlag();
+            body.FixVisibleFlag(false);
         }
 
         private void OnBodyLoad()

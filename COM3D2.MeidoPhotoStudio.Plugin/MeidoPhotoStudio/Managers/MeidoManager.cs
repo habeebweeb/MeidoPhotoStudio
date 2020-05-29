@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public Meido[] meidos { get; private set; }
         public List<Meido> ActiveMeidoList { get; private set; }
         public Meido ActiveMeido { get; private set; }
-        public bool HasActiveMeido { get => ActiveMeido != null; }
+        public bool HasActiveMeido => ActiveMeido != null;
         public bool IsFade { get; set; } = false;
         public int numberOfMeidos;
         public event EventHandler<MeidoChangeEventArgs> SelectMeido;
@@ -22,12 +23,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => selectedMeido;
             set
             {
-                int max = Math.Max(ActiveMeidoList.Count, 0);
-                selectedMeido = Mathf.Clamp(value, 0, max);
+                selectedMeido = Mathf.Clamp(value, 0, ActiveMeidoList.Count);
                 ActiveMeido = ActiveMeidoList.Count > 0 ? ActiveMeidoList[selectedMeido] : null;
             }
         }
-
         public bool IsBusy
         {
             get
@@ -80,6 +79,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void UndressAll()
         {
+            if (!HasActiveMeido) return;
             undress = Utility.Wrap(undress + 1, 0, 3);
             TBody.MaskMode maskMode = TBody.MaskMode.None;
             switch (undress)
@@ -91,8 +91,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             foreach (Meido activeMeido in ActiveMeidoList)
             {
-                activeMeido.Maid.body0.SetMaskMode(maskMode);
+                activeMeido.SetMaskMode(maskMode);
             }
+            OnSelectMeido(new MeidoChangeEventArgs(SelectedMeido));
         }
 
         public void UnloadMeidos()
@@ -131,13 +132,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 meido.Load(i);
             }
 
-            if (selectedMaids.Count == 0)
-            {
-                EndCallMeidos(this, EventArgs.Empty);
-                return;
-            }
-
             SelectedMeido = 0;
+            OnSelectMeido(new MeidoChangeEventArgs(SelectedMeido));
+
+            if (selectedMaids.Count == 0) EndCallMeidos(this, EventArgs.Empty);
+        }
+
+        private void OnSelectMeido(MeidoChangeEventArgs args)
+        {
+            SelectMeido?.Invoke(this, args);
         }
 
         public void SetMeidoPose(string pose, int meidoIndex = -1)
@@ -149,7 +152,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void ChangeMeido(object sender, MeidoChangeEventArgs args)
         {
             SelectedMeido = args.selected;
-            SelectMeido?.Invoke(this, args);
+            OnSelectMeido(args);
         }
 
         private void EndCallMeidos(object sender, EventArgs args)
