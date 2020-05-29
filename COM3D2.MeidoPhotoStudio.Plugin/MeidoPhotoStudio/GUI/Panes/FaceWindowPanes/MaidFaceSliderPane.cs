@@ -87,7 +87,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SetFaceValue(key, value ? max : 0f);
         }
 
-        public void SetControlValues()
+        public override void Update()
         {
             this.updating = true;
             TMorph morph = this.meidoManager.ActiveMeido.Maid.body0.Face.morph;

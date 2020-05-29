@@ -60,7 +60,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             MaidSwitcherPane.Draw();
 
-            bool previousState = GUI.enabled;
             GUI.enabled = this.meidoManager.HasActiveMeido;
 
             GUILayout.BeginHorizontal();
@@ -74,30 +73,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.maidFaceSliderPane.Draw();
 
             GUILayout.EndScrollView();
-
-            GUI.enabled = previousState;
         }
 
         private void UpdateFace()
         {
-            if (this.meidoManager.HasActiveMeido)
+            if (!this.meidoManager.HasActiveMeido) return;
+            if (TabsPane.SelectedTab == Constants.Window.Face)
             {
                 this.meidoManager.ActiveMeido.Maid.boMabataki = false;
                 this.meidoManager.ActiveMeido.Maid.body0.Face.morph.EyeMabataki = 0f;
-                this.maidFaceSliderPane.SetControlValues();
+                this.maidFaceSliderPane.Update();
             }
         }
 
         private void SelectMeido(object sender, MeidoChangeEventArgs args)
         {
-            if (TabsPane.SelectedTab == Constants.Window.Face)
-                UpdateFace();
+            UpdateFace();
         }
 
         private void ChangeTab(object sender, EventArgs args)
         {
-            if (TabsPane.SelectedTab == Constants.Window.Face)
-                UpdateFace();
+            UpdateFace();
         }
     }
 }
