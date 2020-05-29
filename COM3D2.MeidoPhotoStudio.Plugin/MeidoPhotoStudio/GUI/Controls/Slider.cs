@@ -22,19 +22,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => value;
             set
             {
-                this.value = Mathf.Clamp(value, Min, Max);
+                this.value = Utility.Bound(value, this.Left, this.Right);
                 OnControlEvent(EventArgs.Empty);
             }
         }
-        public float Min { get; set; }
-        public float Max { get; set; }
+        public float Left { get; set; }
+        public float Right { get; set; }
 
-        public Slider(string label, float min, float max, float value = 0)
+        public Slider(string label, float left, float right, float value = 0)
         {
             Label = label;
-            Min = min;
-            Max = max;
-            this.value = Mathf.Clamp(value, min, max);
+            Left = left;
+            Right = right;
+            this.value = Utility.Bound(value, left, right);
         }
         public Slider(float min, float max, float value = 0) : this("", min, max, value) { }
         public override void Draw(params GUILayoutOption[] layoutOptions)
@@ -53,7 +53,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GUILayout.Label(Label, sliderLabelStyle, GUILayout.ExpandWidth(false));
             }
             else sliderStyle.margin.top = 10;
-            float value = GUILayout.HorizontalSlider(Value, Min, Max, sliderStyle, GUI.skin.horizontalSliderThumb, layoutOptions);
+            float value = GUILayout.HorizontalSlider(Value, Left, Right, sliderStyle, GUI.skin.horizontalSliderThumb, layoutOptions);
             if (hasLabel) GUILayout.EndVertical();
             if (value != Value) Value = value;
         }
