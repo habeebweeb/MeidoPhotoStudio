@@ -26,8 +26,26 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 OnControlEvent(EventArgs.Empty);
             }
         }
-        public float Left { get; set; }
-        public float Right { get; set; }
+        private float left;
+        public float Left
+        {
+            get => this.left;
+            set
+            {
+                this.left = value;
+                this.Value = this.value;
+            }
+        }
+        private float right;
+        public float Right
+        {
+            get => this.right;
+            set
+            {
+                this.right = value;
+                this.Value = this.value;
+            }
+        }
 
         public Slider(string label, float left, float right, float value = 0)
         {
@@ -36,7 +54,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Right = right;
             this.value = Utility.Bound(value, left, right);
         }
+
         public Slider(float min, float max, float value = 0) : this("", min, max, value) { }
+
+        public void SetBounds(float left, float right)
+        {
+            this.left = left;
+            this.right = right;
+            this.Value = this.Value;
+        }
+
         public override void Draw(params GUILayoutOption[] layoutOptions)
         {
             if (!Visible) return;
