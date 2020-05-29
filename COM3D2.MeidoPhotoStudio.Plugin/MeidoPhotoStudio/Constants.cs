@@ -160,12 +160,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             return OpenCsvParser(nei, GameUty.FileSystem);
         }
-    }
 
-    public class SerializePoseList
-    {
-        public string UIName { get; set; }
-        public List<string> PoseList { get; set; }
+        public class SerializePoseList
+        {
+            public string UIName { get; set; }
+            public List<string> PoseList { get; set; }
+        }
     }
 
     public static class Translation
