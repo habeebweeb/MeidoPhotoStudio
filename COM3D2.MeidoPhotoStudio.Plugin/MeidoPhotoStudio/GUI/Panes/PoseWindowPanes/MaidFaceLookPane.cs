@@ -12,6 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public MaidFaceLookPane(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
+            this.meidoManager.AnimeChange += (s, a) => SetBounds();
 
             this.lookXSlider = new Slider(Translation.Get("freeLook", "x"), -0.6f, 0.6f);
             this.lookXSlider.ControlEvent += (s, a) => SetMaidLook();
@@ -27,14 +28,26 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             TBody body = this.meidoManager.ActiveMeido.Maid.body0;
 
-            bool isPlaying = this.meidoManager.ActiveMeido.Maid.GetAnimation().isPlaying;
-            body.offsetLookTarget = new Vector3(lookYSlider.Value * (isPlaying ? 1f : 0.6f), 1f, lookXSlider.Value);
+            body.offsetLookTarget = new Vector3(lookYSlider.Value, 1f, lookXSlider.Value);
+        }
+
+        public void SetBounds()
+        {
+            float left = 0.5f;
+            float right = -0.55f;
+            if (this.meidoManager.ActiveMeido.IsStop)
+            {
+                left *= 0.6f;
+                right *= 0.6f;
+            }
+            this.lookYSlider.SetBounds(left, right);
         }
 
         public override void Update()
         {
             TBody body = this.meidoManager.ActiveMeido.Maid.body0;
             this.updating = true;
+            this.SetBounds();
             this.lookXSlider.Value = body.offsetLookTarget.z;
             this.lookYSlider.Value = body.offsetLookTarget.x;
             this.updating = false;
@@ -42,7 +55,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw(params GUILayoutOption[] layoutOptions)
         {
-            GUI.enabled = this.Enabled;
+            GUI.enabled = this.meidoManager.HasActiveMeido && this.meidoManager.ActiveMeido.IsFreeLook;
             GUILayout.BeginHorizontal();
             lookXSlider.Draw();
             lookYSlider.Draw();

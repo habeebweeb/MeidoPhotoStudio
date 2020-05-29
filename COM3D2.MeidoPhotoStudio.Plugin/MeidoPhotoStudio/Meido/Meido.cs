@@ -23,6 +23,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public event EventHandler BodyLoad;
         public event EventHandler AnimeChange;
         private bool isLoading = false;
+        public bool IsFreeLook { get; set; }
         private bool isIK = false;
         public bool IsIK
         {
@@ -105,6 +106,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.IsBone = false;
             }
 
+            this.IsFreeLook = false;
             Maid.body0.boHeadToCam = true;
             Maid.body0.boEyeToCam = true;
             Maid.body0.SetBoneHitHeightY(-1000f);

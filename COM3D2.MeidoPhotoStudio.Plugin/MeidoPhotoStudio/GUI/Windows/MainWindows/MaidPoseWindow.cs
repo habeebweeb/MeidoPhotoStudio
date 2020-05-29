@@ -30,13 +30,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             TabsPane.TabChange += OnTabChange;
 
             this.freeLookToggle = new Toggle(Translation.Get("freeLook", "freeLookToggle"), false);
-            this.freeLookToggle.ControlEvent += (s, a) =>
-            {
-                TBody body = this.meidoManager.ActiveMeido.Maid.body0;
-                body.trsLookTarget = this.freeLookToggle.Value ? null : GameMain.Instance.MainCamera.transform;
-                this.maidFaceLookPane.Enabled = this.freeLookToggle.Value;
-                if (this.freeLookToggle.Value) this.maidFaceLookPane.SetMaidLook();
-            };
+            this.freeLookToggle.ControlEvent += (s, a) => SetMaidFreeLook();
         }
 
         ~MaidPoseWindow()
@@ -67,12 +61,31 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUILayout.EndScrollView();
         }
 
+        private void SetMaidFreeLook()
+        {
+            if (this.updating) return;
+            TBody body = this.meidoManager.ActiveMeido.Maid.body0;
+            bool isFreeLook = this.freeLookToggle.Value;
+            body.trsLookTarget = isFreeLook ? null : GameMain.Instance.MainCamera.transform;
+            this.meidoManager.ActiveMeido.IsFreeLook = isFreeLook;
+            if (isFreeLook) this.maidFaceLookPane.SetMaidLook();
+        }
+
         private void UpdatePanes()
         {
-            if (!this.meidoManager.HasActiveMeido) return;
+            if (this.meidoManager.ActiveMeido == null)
+            {
+                this.updating = true;
+                this.freeLookToggle.Value = false;
+                this.updating = false;
+                return;
+            }
 
             if (TabsPane.SelectedTab == Constants.Window.Pose)
             {
+                this.updating = true;
+                this.freeLookToggle.Value = this.meidoManager.ActiveMeido?.IsFreeLook ?? false;
+                this.updating = false;
                 maidPosePane.Update();
                 maidFaceLookPane.Update();
                 maidDressingPane.Update();
