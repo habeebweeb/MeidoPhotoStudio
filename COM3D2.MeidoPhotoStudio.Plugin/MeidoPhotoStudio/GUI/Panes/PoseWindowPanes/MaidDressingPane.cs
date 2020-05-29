@@ -236,7 +236,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 DrawSlotGroup(SlotID.accShippo, SlotID.accHat);
                 DrawSlotGroup(SlotID.accKami_1_, SlotID.accKami_2_, SlotID.accKami_3_);
                 DrawSlotGroup(SlotID.accKamiSubL, SlotID.accKamiSubR);
-                DrawSlotGroup(SlotID.accMiMiL, SlotID.accMiMiR, SlotID.accNipL, SlotID.accNipR);
+                DrawSlotGroup(SlotID.accMiMiL, SlotID.accMiMiR);
+                DrawSlotGroup(SlotID.accNipL, SlotID.accNipR);
                 DrawSlotGroup(SlotID.accHana, SlotID.accKubi, SlotID.accKubiwa);
                 DrawSlotGroup(SlotID.accHeso, SlotID.accAshi, SlotID.accXXX);
             }

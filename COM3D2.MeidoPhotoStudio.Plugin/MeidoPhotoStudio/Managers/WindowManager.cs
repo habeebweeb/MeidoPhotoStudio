@@ -110,7 +110,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (Windows[currentWindow].Visible)
             {
-                mainWindowRect.width = 220;
+                mainWindowRect.width = 230;
                 mainWindowRect.height = Screen.height * 0.8f;
 
                 mainWindowRect.x = Mathf.Clamp(mainWindowRect.x, 0, Screen.width - mainWindowRect.width);
