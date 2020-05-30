@@ -141,13 +141,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             Unload();
             dragPointManager?.Destroy();
-            this.IsIK = false;
-            this.IsStop = false;
-            this.IsBone = false;
             Maid.SetPos(Vector3.zero);
             Maid.SetRot(Vector3.zero);
             Maid.SetPosOffset(Vector3.zero);
-            Maid.body0?.SetBoneHitHeightY(0f);
+            Maid.body0.SetBoneHitHeightY(0f);
 
             Maid.Visible = false;
             Maid.ActiveSlotNo = -1;
@@ -162,6 +159,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void SetPose(string pose)
         {
+            if (!Maid.body0.isLoadedBody) return;
             if (pose.StartsWith(Constants.customPosePath))
             {
                 SetPoseCustom(pose);
@@ -195,10 +193,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void SetPoseCustom(string path)
         {
+            if (!Maid.body0.isLoadedBody) return;
             byte[] bytes = File.ReadAllBytes(path);
             string hash = Path.GetFileName(path).GetHashCode().ToString();
             Maid.body0.CrossFade(hash, bytes, false, true, false, 0f);
             Maid.SetAutoTwistAll(true);
+            Maid.body0.MuneYureL(1f);
+            Maid.body0.MuneYureR(1f);
         }
 
         public void SetFaceBlend(string blendValue)

@@ -93,10 +93,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             foreach (Meido meido in ActiveMeidoList)
             {
-                meido.Unload();
                 meido.SelectMeido -= ChangeMeido;
                 meido.BodyLoad -= EndCallMeidos;
                 meido.AnimeChange -= OnAnimeChangeEvent;
+                meido.Unload();
             }
             ActiveMeidoList.Clear();
         }
@@ -105,10 +105,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             foreach (Meido meido in meidos)
             {
-                meido.Deactivate();
                 meido.SelectMeido -= ChangeMeido;
                 meido.BodyLoad -= EndCallMeidos;
                 meido.AnimeChange -= OnAnimeChangeEvent;
+                meido.Deactivate();
             }
             ActiveMeidoList.Clear();
         }
