@@ -8,31 +8,56 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private MeidoManager meidoManager;
 
+        // TODO: Consider placing in external file to be user editable
         private static readonly Dictionary<string, float[]> SliderRange = new Dictionary<string, float[]>()
         {
+            // Eye Shut
             ["eyeclose"] = new[] { 0f, 1f },
+            // Eye Smile
             ["eyeclose2"] = new[] { 0f, 1f },
+            // Glare
             ["eyeclose3"] = new[] { 0f, 1f },
+            // Wide Eyes
             ["eyebig"] = new[] { 0f, 1f },
+            // Wink 1
             ["eyeclose6"] = new[] { 0f, 1f },
+            // Wink 2
             ["eyeclose5"] = new[] { 0f, 1f },
+            // Highlight
             ["hitomih"] = new[] { 0f, 2f },
-            ["hitomis"] = new[] { 0f, 1f },
+            // Pupil Size
+            ["hitomis"] = new[] { 0f, 3f },
+            // Brow 1
             ["mayuha"] = new[] { 0f, 1f },
+            // Brow 2
             ["mayuw"] = new[] { 0f, 1f },
+            // Brow Up
             ["mayuup"] = new[] { 0f, 0.8f },
+            // Brow Down 1
             ["mayuv"] = new[] { 0f, 0.8f },
+            // Brow Down 2
             ["mayuvhalf"] = new[] { 0f, 0.9f },
+            // Mouth Open 1
             ["moutha"] = new[] { 0f, 1f },
+            // Mouth Open 2
             ["mouths"] = new[] { 0f, 0.9f },
+            // Mouth Narrow
             ["mouthc"] = new[] { 0f, 1f },
+            // Mouth Widen
             ["mouthi"] = new[] { 0f, 1f },
+            // Smile
             ["mouthup"] = new[] { 0f, 1.4f },
+            // Frown
             ["mouthdw"] = new[] { 0f, 1f },
+            // Mouth Pucker
             ["mouthhe"] = new[] { 0f, 1f },
+            // Grin
             ["mouthuphalf"] = new[] { 0f, 2f },
+            // Tongue Out
             ["tangout"] = new[] { 0f, 1f },
+            // Tongue Up
             ["tangup"] = new[] { 0f, 0.7f },
+            // Tongue Base
             ["tangopen"] = new[] { 0f, 1f }
         };
 
