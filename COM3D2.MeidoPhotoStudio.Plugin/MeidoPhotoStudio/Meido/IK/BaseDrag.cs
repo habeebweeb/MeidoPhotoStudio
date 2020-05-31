@@ -63,20 +63,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.maid = maid;
             this.position = position;
             this.rotation = rotation;
-            dragPointRenderer = GetComponent<Renderer>();
-            dragPointCollider = GetComponent<Collider>();
-            dragPointRenderer.enabled = true;
+            this.dragPointRenderer = GetComponent<Renderer>();
+            this.dragPointCollider = GetComponent<Collider>();
+            this.dragPointRenderer.enabled = true;
 
             isPlaying = maid.GetAnimation().isPlaying;
         }
 
         protected void InitializeGizmo(GameObject target, float scale = 0.25f)
         {
-            gizmo = target.gameObject.AddComponent<GizmoRender>();
+            gizmo = target.AddComponent<GizmoRender>();
             gizmo.eRotate = true;
             gizmo.offsetScale = scale;
             gizmo.lineRSelectedThick = 0.25f;
-            gizmo.Visible = false;
+            GizmoVisible = false;
         }
 
         protected void InitializeGizmo(Transform target, float scale = 0.25f)
@@ -157,6 +157,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 transform.position = position();
                 transform.eulerAngles = rotation();
             }
+        }
+
+        private void OnDestroy()
+        {
+            GameObject.Destroy(gizmo);
         }
 
         protected void OnDragEvent()
