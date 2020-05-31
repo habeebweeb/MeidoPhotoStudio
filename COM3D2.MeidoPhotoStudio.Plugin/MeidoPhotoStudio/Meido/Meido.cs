@@ -75,17 +75,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             dragPointManager.Update();
         }
 
-        public Maid Load(int activeSlot)
+        public Maid Load(int slot, int activeSlot)
         {
             isLoading = true;
-            this.ActiveSlot = activeSlot;
+            this.ActiveSlot = slot;
 
             Maid.Visible = true;
 
             if (!Maid.body0.isLoadedBody)
             {
-                Maid.DutPropAll();
-                Maid.AllProcPropSeqStart();
+                if (activeSlot >= 12)
+                {
+                    Maid.DutPropAll();
+                    Maid.AllProcPropSeqStart();
+                }
+                else
+                {
+                    GameMain.Instance.CharacterMgr.Activate(activeSlot, activeSlot, false, false);
+                    GameMain.Instance.CharacterMgr.CharaVisible(activeSlot, true, false);
+                }
             }
             else
             {

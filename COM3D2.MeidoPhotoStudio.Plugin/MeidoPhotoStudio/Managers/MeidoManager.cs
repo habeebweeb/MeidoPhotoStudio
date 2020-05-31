@@ -131,7 +131,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             for (int i = 0; i < ActiveMeidoList.Count; i++)
             {
                 Meido meido = ActiveMeidoList[i];
-                meido.Load(i);
+                meido.Load(i, selectedMaids[i]);
             }
 
             SelectedMeido = 0;
