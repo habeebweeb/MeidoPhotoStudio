@@ -85,6 +85,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (meidoManager.IsBusy) return;
             meidoManager.DeactivateMeidos();
+            environmentManager.Deactivate();
 
             isActive = false;
             initialized = false;

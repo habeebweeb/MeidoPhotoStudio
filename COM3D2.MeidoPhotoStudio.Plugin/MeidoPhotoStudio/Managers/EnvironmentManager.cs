@@ -23,26 +23,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Initialize()
         {
-            if (!bgObject)
-            {
-                bgObject = GameObject.Find("__GameMain__/BG");
-                bg = bgObject.transform;
-            }
+            bgObject = GameObject.Find("__GameMain__/BG");
+            bg = bgObject.transform;
 
-            GameObject.Destroy(cameraObject);
-            GameObject.Destroy(subCamera);
-
-            if (cameraObject == null)
-            {
-                cameraObject = new GameObject("subCamera");
-                subCamera = cameraObject.AddComponent<Camera>();
-                subCamera.CopyFrom(Camera.main);
-                cameraObject.SetActive(true);
-                subCamera.clearFlags = CameraClearFlags.Depth;
-                subCamera.cullingMask = 256;
-                subCamera.depth = 1f;
-                subCamera.transform.parent = GameMain.Instance.MainCamera.transform;
-            }
+            cameraObject = new GameObject("subCamera");
+            subCamera = cameraObject.AddComponent<Camera>();
+            subCamera.CopyFrom(Camera.main);
+            cameraObject.SetActive(true);
+            subCamera.clearFlags = CameraClearFlags.Depth;
+            subCamera.cullingMask = 256;
+            subCamera.depth = 1f;
+            subCamera.transform.parent = GameMain.Instance.MainCamera.transform;
 
             bgObject.SetActive(true);
             GameMain.Instance.BgMgr.ChangeBg("Theater");
@@ -58,6 +49,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             cameraMain.Reset(CameraMain.CameraType.Target, true);
             cameraMain.SetTargetPos(new Vector3(0f, 0.9f, 0f), true);
             cameraMain.SetDistance(3f, true);
+        }
+
+        public void Deactivate()
+        {
+            GameObject.Destroy(cameraObject);
+            GameObject.Destroy(subCamera);
         }
     }
 }
