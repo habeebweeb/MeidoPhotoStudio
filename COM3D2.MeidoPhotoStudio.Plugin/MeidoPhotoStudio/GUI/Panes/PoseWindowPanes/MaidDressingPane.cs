@@ -153,24 +153,36 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Update()
         {
+            if (!this.meidoManager.HasActiveMeido) return;
             this.updating = true;
             Maid maid = this.meidoManager.ActiveMeido.Maid;
             TBody body = maid.body0;
             foreach (SlotID clothingSlot in clothingSlots)
             {
-                bool toggleValue;
-                bool hasSlot;
+                bool toggleValue = false;
+                bool hasSlot = false;
                 if (clothingSlot == SlotID.wear)
                 {
-                    toggleValue = body.GetMask(SlotID.wear) || body.GetMask(SlotID.mizugi)
-                        || body.GetMask(SlotID.onepiece);
-                    hasSlot = body.GetSlotLoaded(SlotID.wear) || body.GetSlotLoaded(SlotID.mizugi)
-                        || body.GetMask(SlotID.onepiece);
+                    foreach (SlotID wearSlot in wearSlots)
+                    {
+                        if (body.GetMask(wearSlot)) toggleValue = true;
+                        if (body.GetSlotLoaded(wearSlot)) hasSlot = true;
+                        if (hasSlot && toggleValue) break;
+                    }
                 }
                 else if (clothingSlot == SlotID.megane)
                 {
                     toggleValue = body.GetMask(SlotID.megane) || body.GetMask(SlotID.accHead);
                     hasSlot = body.GetSlotLoaded(SlotID.megane) || body.GetSlotLoaded(SlotID.accHead);
+                }
+                else if (!detailedClothing && clothingSlot == SlotID.headset)
+                {
+                    foreach (SlotID headwearSlot in headwearSlots)
+                    {
+                        if (body.GetMask(headwearSlot)) toggleValue = true;
+                        if (body.GetSlotLoaded(headwearSlot)) hasSlot = true;
+                        if (hasSlot && toggleValue) break;
+                    }
                 }
                 else
                 {
@@ -214,6 +226,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             ClothingToggles[SlotID.headset].Label = detailedClothing
                 ? Translation.Get("clothing", "headset")
                 : Translation.Get("clothing", "headwear");
+            Update();
         }
 
         public override void Draw(params GUILayoutOption[] layoutOptions)
