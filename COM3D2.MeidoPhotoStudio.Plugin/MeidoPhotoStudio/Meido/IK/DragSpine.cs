@@ -8,9 +8,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Transform spine;
         private Vector3 rotate;
 
-        public void Initialize(Transform spine, Maid maid, Func<Vector3> position, Func<Vector3> rotation)
+        public void Initialize(Transform spine, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
         {
-            base.Initialize(maid, position, rotation);
+            base.Initialize(meido, position, rotation);
             this.spine = spine;
 
             InitializeGizmo(this.spine);
@@ -29,11 +29,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void Drag()
         {
-            if (isPlaying)
-            {
-                maid.GetAnimation().Stop();
-                OnDragEvent();
-            }
+            if (isPlaying) meido.IsStop = true;
 
             if (dragType == DragType.None)
             {

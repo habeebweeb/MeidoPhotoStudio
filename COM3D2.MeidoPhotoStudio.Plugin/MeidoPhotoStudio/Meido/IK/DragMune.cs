@@ -12,9 +12,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 off;
         private Vector3 off2;
 
-        public void Initialize(Transform[] ikChain, Maid maid, Func<Vector3> position, Func<Vector3> rotation)
+        public void Initialize(Transform[] ikChain, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
         {
-            base.Initialize(maid, position, rotation);
+            base.Initialize(meido, position, rotation);
             this.ikChain = ikChain;
 
             for (int i = 0; i < things.Length; i++)
@@ -46,13 +46,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void DoubleClick()
         {
-            if (dragType == DragType.RotLocalXZ)
-            {
-                maid.body0.MuneYureL(1f);
-                maid.body0.MuneYureR(1f);
-                maid.body0.jbMuneL.enabled = true;
-                maid.body0.jbMuneR.enabled = true;
-            }
+            if (dragType == DragType.RotLocalXZ) meido.SetMune();
         }
 
         protected override void InitializeDrag()
@@ -67,22 +61,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             jointRotation[upperArmRot] = ikChain[upperArm].localEulerAngles;
             jointRotation[handRot] = ikChain[hand].localEulerAngles;
-            maid.body0.MuneYureL(0f);
-            maid.body0.MuneYureR(0f);
-            maid.body0.jbMuneL.enabled = false;
-            maid.body0.jbMuneR.enabled = false;
+            meido.SetMune(true);
         }
 
         protected override void Drag()
         {
             if (dragType == DragType.None) return;
 
-            if (isPlaying)
-            {
-                maid.GetAnimation().Stop();
-                OnDragEvent();
-            }
-
+            if (isPlaying) meido.IsStop = true;
             IKCtrlData ikData = maid.body0.IKCtrl.GetIKData("左手");
             Vector3 pos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)) + off - off2;
 

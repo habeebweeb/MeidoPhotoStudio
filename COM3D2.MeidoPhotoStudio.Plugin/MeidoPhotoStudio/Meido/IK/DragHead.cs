@@ -14,9 +14,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 mousePosOther;
         public event EventHandler Select;
 
-        public void Initialize(Transform head, Maid maid, Func<Vector3> posFunc, Func<Vector3> rotFunc)
+        public void Initialize(Transform head, Meido meido, Func<Vector3> posFunc, Func<Vector3> rotFunc)
         {
-            base.Initialize(maid, posFunc, rotFunc);
+            base.Initialize(meido, posFunc, rotFunc);
             this.head = head;
 
             // default eye rotations
@@ -80,11 +80,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (!(dragType == DragType.MoveXZ || dragType == DragType.MoveY))
             {
-                if (isPlaying)
-                {
-                    maid.GetAnimation().Stop();
-                    OnDragEvent();
-                }
+                if (isPlaying) meido.IsStop = true;
             }
 
             Vector3 pos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z);

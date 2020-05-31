@@ -12,6 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected const int upperArmRot = 0;
         protected const int handRot = 1;
         protected Maid maid;
+        protected Meido meido;
         protected Func<Vector3> position;
         protected Func<Vector3> rotation;
         protected Renderer dragPointRenderer;
@@ -58,16 +59,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Scale
         }
 
-        public virtual void Initialize(Maid maid, Func<Vector3> position, Func<Vector3> rotation)
+        public virtual void Initialize(Meido meido, Func<Vector3> position, Func<Vector3> rotation)
         {
-            this.maid = maid;
+            this.meido = meido;
+            this.maid = meido.Maid;
             this.position = position;
             this.rotation = rotation;
             this.dragPointRenderer = GetComponent<Renderer>();
             this.dragPointCollider = GetComponent<Collider>();
             this.dragPointRenderer.enabled = true;
 
-            isPlaying = maid.GetAnimation().isPlaying;
+            isPlaying = !meido.IsStop;
         }
 
         protected void InitializeGizmo(GameObject target, float scale = 0.25f)
@@ -89,7 +91,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             worldPoint = Camera.main.WorldToScreenPoint(transform.position);
             mousePos = Input.mousePosition;
 
-            isPlaying = maid.GetAnimation().isPlaying;
+            isPlaying = !meido.IsStop;
         }
 
         protected virtual void DoubleClick() { }
@@ -125,7 +127,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     if (isPlaying && IsGizmoDrag)
                     {
-                        maid.GetAnimation().Stop();
+                        meido.IsStop = true;
                         isPlaying = false;
                     }
                 }

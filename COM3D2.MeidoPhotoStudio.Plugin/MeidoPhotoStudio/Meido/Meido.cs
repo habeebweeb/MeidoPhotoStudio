@@ -30,15 +30,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => this.isIK;
             private set => this.isIK = value;
         }
-        private bool isStop = false;
         public bool IsStop
         {
-            get => isStop;
+            get => !Maid.GetAnimation().isPlaying;
             set
             {
-                isStop = value;
+                if (!value) this.SetPose(this.poseInfo.PoseName);
+                else Maid.GetAnimation().Stop();
                 this.AnimeChange?.Invoke(this, EventArgs.Empty);
-                if (!isStop) this.SetPose(this.poseInfo.PoseName);
             }
         }
         public bool IsBone { get; set; } = false;
@@ -187,16 +186,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Maid.GetAnimation()[pose].speed = 0f;
             }
 
-            if (pose.Contains("_momi") || pose.Contains("paizuri_"))
-            {
-                Maid.body0.MuneYureL(0f);
-                Maid.body0.MuneYureR(0f);
-            }
-            else
-            {
-                Maid.body0.MuneYureL(1f);
-                Maid.body0.MuneYureR(1f);
-            }
+            SetMune();
         }
 
         public void SetPoseCustom(string path)
@@ -206,8 +196,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             string hash = Path.GetFileName(path).GetHashCode().ToString();
             Maid.body0.CrossFade(hash, bytes, false, true, false, 0f);
             Maid.SetAutoTwistAll(true);
-            Maid.body0.MuneYureL(1f);
-            Maid.body0.MuneYureR(1f);
+            SetMune();
+        }
+
+        public void SetMune(bool drag = false)
+        {
+            bool isMomiOrPaizuri = poseInfo.PoseName.Contains("_momi") || poseInfo.PoseName.Contains("paizuri_");
+            float onL = (drag || isMomiOrPaizuri) ? 0f : 1f;
+            Maid.body0.MuneYureL(onL);
+            Maid.body0.MuneYureR(onL);
+            Maid.body0.jbMuneL.enabled = !drag;
+            Maid.body0.jbMuneR.enabled = !drag;
         }
 
         public void SetFaceBlend(string blendValue)
@@ -276,15 +275,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (this.IsIK) dragPointManager.Activate();
                 else dragPointManager.Deactivate();
-            }
-        }
-
-        public void IKRelease()
-        {
-            if (!Maid.GetAnimation().isPlaying)
-            {
-                this.IsStop = false;
-                this.SetPose(this.poseInfo.PoseName);
             }
         }
 

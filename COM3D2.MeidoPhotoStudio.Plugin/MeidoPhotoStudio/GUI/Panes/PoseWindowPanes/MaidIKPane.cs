@@ -36,7 +36,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (updating) return;
             if (toggle == IKToggle.IK) this.meidoManager.ActiveMeido.SetIKActive(value);
-            else if (toggle == IKToggle.Release) this.meidoManager.ActiveMeido.IKRelease();
+            else if (toggle == IKToggle.Release) this.meidoManager.ActiveMeido.IsStop = false;
             else if (toggle == IKToggle.Bone) this.meidoManager.ActiveMeido.IsBone = value;
         }
 

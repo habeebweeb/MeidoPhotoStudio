@@ -14,9 +14,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 off2;
         private int foot = 1;
 
-        public void Initialize(Transform[] ikChain, bool foot, Maid maid, Func<Vector3> position, Func<Vector3> rotation)
+        public void Initialize(Transform[] ikChain, bool foot, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
         {
-            base.Initialize(maid, position, rotation);
+            base.Initialize(meido, position, rotation);
             this.ikChain = ikChain;
             this.foot = foot ? -1 : 1;
             this.ikChainLock = new Transform[3] {
@@ -84,11 +84,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void Drag()
         {
-            if (isPlaying)
-            {
-                maid.GetAnimation().Stop();
-                OnDragEvent();
-            }
+            if (isPlaying) meido.IsStop = true;
 
             IKCtrlData ikData = maid.body0.IKCtrl.GetIKData("左手");
             Vector3 pos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)) + off - off2;
