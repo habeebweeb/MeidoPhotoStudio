@@ -69,6 +69,58 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 CustomPoseGroupsIndex++;
             }
 
+            // Get Other poses that'll go into Normal 2 and Ero 2
+            string[] com3d2MotionList = GameUty.FileSystem.GetList("motion", AFileSystemBase.ListType.AllFile);
+
+            if (com3d2MotionList != null && com3d2MotionList.Length > 0)
+            {
+                HashSet<string> poseSet = new HashSet<string>();
+                foreach (KeyValuePair<string, List<string>> poses in PoseDict)
+                {
+                    foreach (string pose in poses.Value)
+                    {
+                        poseSet.Add(pose);
+                    }
+                }
+
+                List<string> editPoseList = new List<string>();
+                List<string> otherPoseList = new List<string>();
+                List<string> eroPoseList = new List<string>();
+                foreach (string path in com3d2MotionList)
+                {
+                    if (Path.GetExtension(path) == ".anm")
+                    {
+                        string file = Path.GetFileNameWithoutExtension(path);
+                        if (!poseSet.Contains(file))
+                        {
+                            if (file.StartsWith("edit_"))
+                            {
+                                editPoseList.Add(file);
+                            }
+                            else if (file != "dance_cm3d2_001_zoukin" && file != "dance_cm3d2_001_mop" && file != "aruki_1_idougo_f"
+                                && file != "sleep2" && file != "stand_akire2" && !file.EndsWith("_3_") && !file.EndsWith("_5_")
+                                && !file.StartsWith("vr_") && !file.StartsWith("dance_mc") && !file.Contains("_kubi_")
+                                && !file.Contains("a01_") && !file.Contains("b01_") && !file.Contains("b02_")
+                                && !file.EndsWith("_m2") && !file.EndsWith("_m2_once_") && !file.StartsWith("h_")
+                                && !file.StartsWith("event_") && !file.StartsWith("man_") && !file.EndsWith("_m")
+                                && !file.Contains("_m_") && !file.Contains("_man_")
+                            )
+                            {
+                                if (!path.Contains(@"\sex\")) otherPoseList.Add(file);
+                                else eroPoseList.Add(file);
+                            }
+                        }
+                    }
+                }
+                // editPoseList.AddRange(otherPoseList);
+                PoseDict["normal"].AddRange(editPoseList);
+                PoseDict["normal2"] = otherPoseList;
+                PoseDict["ero2"] = eroPoseList;
+
+                PoseGroupList.AddRange(new[] { "normal2", "ero2" });
+                CustomPoseGroupsIndex += 2;
+            }
+
             Action<string> GetPoses = (directory) =>
             {
                 List<KeyValuePair<string, string>> poseList = new List<KeyValuePair<string, string>>();
@@ -89,8 +141,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             };
 
             GetPoses(customPosePath);
-
-            // TODO: Get rest of poses
 
             foreach (string directory in Directory.GetDirectories(customPosePath))
             {
