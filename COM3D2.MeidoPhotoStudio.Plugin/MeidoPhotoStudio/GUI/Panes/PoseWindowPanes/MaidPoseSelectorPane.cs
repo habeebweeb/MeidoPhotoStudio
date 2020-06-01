@@ -24,7 +24,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.poseGroupDropdown = new Dropdown(Translation.GetList("poseGroupDropdown", Constants.PoseGroupList));
             this.poseGroupDropdown.SelectionChange += ChangePoseGroup;
 
-            this.poseDropdown = new Dropdown(Constants.PoseDict[Constants.PoseGroupList[0]].ToArray());
+            this.poseDropdown = new Dropdown(MakePoseList(Constants.PoseDict[Constants.PoseGroupList[0]]));
             this.poseDropdown.SelectionChange += ChangePose;
 
             this.poseGroupLeftButton = new Button("<");
@@ -52,13 +52,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 selectedPoseGroup = newPoseGroup;
                 if (this.poseGroupDropdown.SelectedItemIndex >= Constants.CustomPoseGroupsIndex)
                 {
-                    List<KeyValuePair<string, string>> pairList = Constants.CustomPoseDict[selectedPoseGroup];
-                    string[] poseList = pairList.Select(pair => pair.Key).ToArray();
-                    this.poseDropdown.SetDropdownItems(poseList);
+                    this.poseDropdown.SetDropdownItems(MakePoseList(Constants.CustomPoseDict[selectedPoseGroup]));
                 }
                 else
                 {
-                    this.poseDropdown.SetDropdownItems(Constants.PoseDict[selectedPoseGroup].ToArray());
+                    this.poseDropdown.SetDropdownItems(MakePoseList(Constants.PoseDict[selectedPoseGroup]));
                 }
             }
         }
@@ -86,6 +84,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return new PoseInfo(poseGroup, pose, poseName);
         }
 
+        private string[] MakePoseList(IEnumerable<string> poseList)
+        {
+            return poseList.Select((pose, i) => $"{i + 1}:{pose}").ToArray();
+        }
+
+        private string[] MakePoseList(List<KeyValuePair<string, string>> poseList)
+        {
+            return poseList.Select((kvp, i) => $"{i + 1}:{kvp.Key}").ToArray();
+        }
+
         public override void Update()
         {
             this.updating = true;
@@ -104,7 +112,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             };
 
             float dropdownButtonHeight = arrowButtonSize;
-            float dropdownButtonWidth = 143f;
+            float dropdownButtonWidth = 153f;
             GUILayoutOption[] dropdownLayoutOptions = new GUILayoutOption[] {
                 GUILayout.Height(dropdownButtonHeight),
                 GUILayout.Width(dropdownButtonWidth)
