@@ -71,7 +71,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static readonly string[] faceToggleKeys = new string[12]
         {
+            // blush, shade, nose up, tears, drool, teeth
             "hoho2", "shock", "nosefook", "namida", "yodare", "toothoff",
+            // cry 1, cry 2, cry 3, blush 1, blush 2, blush 3
             "tear1", "tear2", "tear3", "hohos", "hoho", "hohol"
         };
 
