@@ -40,9 +40,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             float windowHeight = Screen.height * 0.8f;
             int buttonHeight = 85;
-            int buttonWidth = 190;
-            Rect positionRect = new Rect(5, 115, 208, windowHeight - 140);
-            Rect viewRect = new Rect(0, 0, 185, buttonHeight * meidoManager.meidos.Length + 5);
+            int buttonWidth = 205;
+            Rect positionRect = new Rect(5, 115, buttonWidth + 15, windowHeight - 140);
+            Rect viewRect = new Rect(0, 0, buttonWidth - 5, buttonHeight * meidoManager.meidos.Length + 5);
             maidListScrollPos = GUI.BeginScrollView(positionRect, maidListScrollPos, viewRect);
 
             for (int i = 0; i < meidoManager.meidos.Length; i++)
