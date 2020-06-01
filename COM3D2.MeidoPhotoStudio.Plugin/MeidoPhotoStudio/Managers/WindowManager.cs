@@ -89,7 +89,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     Vector2 mousePos = Event.current.mousePosition;
                     if (mainWindowVisible && mainWindowRect.Contains(mousePos)
-                        || dropdownVisible && DropdownHelper.dropdownRect.Contains(mousePos)
+                        || dropdownVisible && DropdownHelper.dropdownWindow.Contains(mousePos)
                         || messageWindowVisible && messageWindowRect.Contains(mousePos)
                     )
                     {
@@ -136,7 +136,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 messageWindowRect = GUI.Window(Constants.messageWindowID, messageWindowRect, Windows[Window.Message].OnGUI, "", windowStyle);
             }
 
-            DropdownHelper.HandleDropdown();
+            if (DropdownHelper.Visible) DropdownHelper.HandleDropdown();
         }
     }
 }

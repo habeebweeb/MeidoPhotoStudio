@@ -152,7 +152,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private static bool initialized = false;
         public static bool Visible { get; private set; }
         private static bool onScrollBar = false;
-        public static Rect dropdownRect;
+        public static Rect dropdownWindow;
+        private static Rect dropdownScrollRect;
+        private static Rect dropdownRect;
         public static Vector2 CalculateElementSize(string[] list)
         {
             if (!initialized) InitializeStyle();
@@ -188,26 +190,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (calculatedListHeight > heightBelow && heightAbove > heightBelow)
             {
-                dropdownRect = new Rect(buttonRect.x, buttonRect.y - rectHeight, rectWidth + 18, rectHeight);
+                dropdownWindow = new Rect(buttonRect.x, buttonRect.y - rectHeight, rectWidth + 18, rectHeight);
             }
             else
             {
                 if (calculatedListHeight > heightBelow) rectHeight -= calculatedSize.y;
-                dropdownRect = new Rect(buttonRect.x, buttonRect.y + buttonRect.height, rectWidth + 18, rectHeight);
+                dropdownWindow = new Rect(buttonRect.x, buttonRect.y + buttonRect.height, rectWidth + 18, rectHeight);
             }
 
-            dropdownRect.x = Mathf.Clamp(dropdownRect.x, 0, Screen.width - rectWidth - 18);
+            dropdownWindow.x = Mathf.Clamp(dropdownWindow.x, 0, Screen.width - rectWidth - 18);
+
+            dropdownScrollRect = new Rect(0, 0, dropdownWindow.width, dropdownWindow.height);
+            dropdownRect = new Rect(0, 0, dropdownWindow.width - 18, calculatedListHeight);
 
             Visible = true;
         }
 
         public static void HandleDropdown()
         {
-            if (Visible)
-            {
-                GUILayout.Window(Constants.dropdownWindowID, dropdownRect, GUIFunc, "", windowStyle);
-            }
+            dropdownWindow = GUI.Window(Constants.dropdownWindowID, dropdownWindow, GUIFunc, "", windowStyle);
         }
+
         private static void GUIFunc(int id)
         {
             bool clicked = false;
@@ -217,16 +220,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 clicked = true;
             }
 
-            scrollPos = GUILayout.BeginScrollView(scrollPos);
-            int selection = GUILayout.SelectionGrid(selectedItemIndex, dropdownList, 1, dropdownStyle);
-            GUILayout.EndScrollView();
+            scrollPos = GUI.BeginScrollView(dropdownScrollRect, scrollPos, dropdownRect);
+            int selection = GUI.SelectionGrid(dropdownRect, selectedItemIndex, dropdownList, 1, dropdownStyle);
+            GUI.EndScrollView();
 
             bool clickedYou = false;
             if (Utility.AnyMouseDown())
             {
                 Vector2 mousePos = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
-                bool clickedMe = dropdownRect.Contains(mousePos);
-                onScrollBar = mousePos.x > dropdownRect.x + dropdownRect.width - 12f;
+                bool clickedMe = dropdownWindow.Contains(mousePos);
+                onScrollBar = mousePos.x > dropdownWindow.x + dropdownWindow.width - 12f;
                 if (buttonRect.Contains(mousePos)) clickedYou = true;
                 if (!clickedMe) Visible = false;
             }
