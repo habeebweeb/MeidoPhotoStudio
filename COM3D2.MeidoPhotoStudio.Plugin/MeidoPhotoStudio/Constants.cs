@@ -66,7 +66,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 PoseDict[poseList.UIName] = poseList.PoseList;
                 PoseGroupList.Add(poseList.UIName);
-                CustomPoseGroupsIndex++;
             }
 
             // Get Other poses that'll go into Normal 2 and Ero 2
@@ -118,8 +117,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 PoseDict["ero2"] = eroPoseList;
 
                 PoseGroupList.AddRange(new[] { "normal2", "ero2" });
-                CustomPoseGroupsIndex += 2;
             }
+
+            CustomPoseGroupsIndex = PoseDict.Count;
 
             Action<string> GetPoses = (directory) =>
             {
