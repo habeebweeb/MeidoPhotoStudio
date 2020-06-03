@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using System.Reflection;
 using UnityEngine;
 
@@ -55,8 +57,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         internal static void SetFieldValue<TType, TValue>(TType instance, string name, TValue value)
         {
-            FieldInfo fieldInfo = GetFieldInfo<TType>(name);
-            fieldInfo.SetValue(instance, value);
+            GetFieldInfo<TType>(name).SetValue(instance, value);
         }
 
         internal static bool GetModKey(ModKey key)
@@ -73,6 +74,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         internal static bool AnyMouseDown()
         {
             return Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2);
+        }
+
+        internal static string ScreenshotFilename()
+        {
+            string screenShotDir = Path.Combine(GameMain.Instance.SerializeStorageManager.StoreDirectoryPath, "ScreenShot");
+            if (!Directory.Exists(screenShotDir))
+            {
+                Directory.CreateDirectory(screenShotDir);
+            }
+            return Path.Combine(screenShotDir, $"img{DateTime.Now:yyyyMMddHHmmss}.png");
+        }
+
+        internal static void ShowMouseExposition(string text, float time = 2f)
+        {
+            MouseExposition mouseExposition = MouseExposition.GetObject();
+            mouseExposition.SetText(text, time);
         }
     }
 }
