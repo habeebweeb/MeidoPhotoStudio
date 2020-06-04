@@ -171,6 +171,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     dragPoint.Value.gameObject.SetActive(false);
                 }
+                DragPoint[Bone.Head].SetDragProp(false, true, false);
+                DragPoint[Bone.Body].SetDragProp(false, true, false);
+                DragPoint[Bone.Cube].SetDragProp(false, true, true);
             }
         }
 
@@ -249,6 +252,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     DragPoint[Bone.Body].gameObject.SetActive(true);
                     DragPoint[Bone.Cube].gameObject.SetActive(cubeActive);
+                }
+                else if (ikMode == IKMode.UpperRot || ikMode == IKMode.RotLocal)
+                {
+                    DragPoint[Bone.Head].gameObject.SetActive(true);
                 }
                 else
                 {

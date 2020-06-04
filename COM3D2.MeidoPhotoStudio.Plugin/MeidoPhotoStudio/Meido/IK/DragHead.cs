@@ -35,7 +35,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 // eyes
                 dragType = Utility.GetModKey(Utility.ModKey.Shift) ? DragType.MoveY : DragType.MoveXZ;
             }
-            else if (Input.GetKey(KeyCode.LeftAlt))
+            else if (Utility.GetModKey(Utility.ModKey.Alt))
             {
                 // head
                 dragType = shift ? DragType.RotLocalY : DragType.RotLocalXZ;
@@ -70,6 +70,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 return;
             }
 
+            if (IsBone) return;
+
             base.InitializeDrag();
 
             rotate = head.localEulerAngles;
@@ -81,7 +83,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void Drag()
         {
-            if (dragType == DragType.None || dragType == DragType.Select) return;
+            if ((dragType == DragType.None || dragType == DragType.Select) || IsBone) return;
 
             if (!(dragType == DragType.MoveXZ || dragType == DragType.MoveY))
             {
