@@ -306,19 +306,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SelectMeido?.Invoke(this, args);
         }
     }
-}
 
-public struct PoseInfo
-{
-    public int PoseGroupIndex { get; private set; }
-    public int PoseIndex { get; private set; }
-    public string PoseName { get; private set; }
-    public bool IsCustomPose { get; private set; }
-    public PoseInfo(int poseGroup, int pose, string poseName, bool isCustomPose = false)
+    public struct PoseInfo
     {
-        this.PoseGroupIndex = poseGroup;
-        this.PoseIndex = pose;
-        this.PoseName = poseName;
-        this.IsCustomPose = isCustomPose;
+        public int PoseGroupIndex { get; private set; }
+        public int PoseIndex { get; private set; }
+        public string PoseName { get; private set; }
+        public bool IsCustomPose { get; private set; }
+        public PoseInfo(int poseGroup, int pose, string poseName, bool isCustomPose = false)
+        {
+            this.PoseGroupIndex = poseGroup;
+            this.PoseIndex = pose;
+            this.PoseName = poseName;
+            this.IsCustomPose = isCustomPose;
+        }
     }
 }

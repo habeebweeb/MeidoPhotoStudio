@@ -52,7 +52,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             };
 
             float dropdownButtonHeight = arrowButtonSize;
-            float dropdownButtonWidth = 143f;
+            float dropdownButtonWidth = 153f;
             GUILayoutOption[] dropdownLayoutOptions = new GUILayoutOption[] {
                 GUILayout.Height(dropdownButtonHeight),
                 GUILayout.Width(dropdownButtonWidth)
