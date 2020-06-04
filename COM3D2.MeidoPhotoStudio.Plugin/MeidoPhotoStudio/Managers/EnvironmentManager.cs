@@ -10,6 +10,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Camera subCamera;
         private GameObject bgObject;
         private Transform bg;
+        private CameraInfo cameraInfo;
         public void ChangeBackground(string assetName)
         {
             GameMain.Instance.BgMgr.ChangeBg(assetName);
@@ -45,16 +46,72 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameMain.Instance.MainLight.Reset();
             GameMain.Instance.CharacterMgr.ResetCharaPosAll();
 
-            CameraMain cameraMain = GameMain.Instance.MainCamera;
-            cameraMain.Reset(CameraMain.CameraType.Target, true);
-            cameraMain.SetTargetPos(new Vector3(0f, 0.9f, 0f), true);
-            cameraMain.SetDistance(3f, true);
+            ResetCamera();
+            SaveCameraInfo();
         }
 
         public void Deactivate()
         {
             GameObject.Destroy(cameraObject);
             GameObject.Destroy(subCamera);
+        }
+
+        public void Update()
+        {
+            if (Input.GetKey(KeyCode.Q))
+            {
+                if (Input.GetKeyDown(KeyCode.S))
+                {
+                    SaveCameraInfo();
+                }
+
+                if (Input.GetKeyDown(KeyCode.A))
+                {
+                    LoadCameraInfo(cameraInfo);
+                }
+
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    ResetCamera();
+                }
+            }
+        }
+
+        private void SaveCameraInfo()
+        {
+            this.cameraInfo = new CameraInfo(GameMain.Instance.MainCamera);
+        }
+
+        public void LoadCameraInfo(CameraInfo cameraInfo)
+        {
+            CameraMain camera = GameMain.Instance.MainCamera;
+            camera.SetTargetPos(cameraInfo.TargetPos);
+            camera.SetPos(cameraInfo.Pos);
+            camera.SetDistance(cameraInfo.Distance);
+            camera.transform.eulerAngles = cameraInfo.Angle;
+        }
+
+        private void ResetCamera()
+        {
+            CameraMain cameraMain = GameMain.Instance.MainCamera;
+            cameraMain.Reset(CameraMain.CameraType.Target, true);
+            cameraMain.SetTargetPos(new Vector3(0f, 0.9f, 0f), true);
+            cameraMain.SetDistance(3f, true);
+        }
+    }
+
+    public struct CameraInfo
+    {
+        public Vector3 TargetPos { get; private set; }
+        public Vector3 Pos { get; private set; }
+        public Vector3 Angle { get; private set; }
+        public float Distance { get; private set; }
+        public CameraInfo(CameraMain camera)
+        {
+            this.TargetPos = camera.GetTargetPos();
+            this.Pos = camera.GetPos();
+            this.Angle = camera.transform.eulerAngles;
+            this.Distance = camera.GetDistance();
         }
     }
 }
