@@ -22,13 +22,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public event EventHandler<MeidoChangeEventArgs> SelectMeido;
         public event EventHandler BodyLoad;
         public event EventHandler AnimeChange;
+        public event EventHandler FreeLookChange;
         private bool isLoading = false;
-        public bool IsFreeLook { get; set; }
-        private bool isIK = false;
-        public bool IsIK
+        public bool IsIK { get; private set; }
+        private bool isFreeLook;
+        public bool IsFreeLook
         {
-            get => this.isIK;
-            private set => this.isIK = value;
+            get => isFreeLook;
+            set
+            {
+                this.isFreeLook = value;
+                Maid.body0.trsLookTarget = this.isFreeLook ? null : GameMain.Instance.MainCamera.transform;
+                this.FreeLookChange?.Invoke(this, EventArgs.Empty);
+            }
         }
         public bool IsStop
         {

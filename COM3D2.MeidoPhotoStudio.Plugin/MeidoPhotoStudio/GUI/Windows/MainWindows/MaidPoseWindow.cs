@@ -17,7 +17,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public MaidPoseWindow(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
-            this.meidoManager.SelectMeido += OnMeidoSelect;
+            this.meidoManager.SelectMeido += (s, a) => UpdatePanes();
+            this.meidoManager.FreeLookChange += (s, a) => UpdatePanes();
 
             this.maidPosePane = new MaidPoseSelectorPane(meidoManager);
             this.maidFaceLookPane = new MaidFaceLookPane(meidoManager);
@@ -64,11 +65,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void SetMaidFreeLook()
         {
             if (this.updating) return;
-            TBody body = this.meidoManager.ActiveMeido.Maid.body0;
-            bool isFreeLook = this.freeLookToggle.Value;
-            body.trsLookTarget = isFreeLook ? null : GameMain.Instance.MainCamera.transform;
-            this.meidoManager.ActiveMeido.IsFreeLook = isFreeLook;
-            if (isFreeLook) this.maidFaceLookPane.SetMaidLook();
+            this.meidoManager.ActiveMeido.IsFreeLook = this.freeLookToggle.Value;
         }
 
         private void UpdatePanes()
@@ -91,11 +88,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 maidDressingPane.Update();
                 maidIKPane.Update();
             }
-        }
-
-        private void OnMeidoSelect(object sender, MeidoChangeEventArgs args)
-        {
-            UpdatePanes();
         }
 
         private void OnTabChange(object sender, EventArgs args)

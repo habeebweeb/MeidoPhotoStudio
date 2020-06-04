@@ -27,7 +27,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (updating) return;
 
             TBody body = this.meidoManager.ActiveMeido.Maid.body0;
-
             body.offsetLookTarget = new Vector3(lookYSlider.Value, 1f, lookXSlider.Value);
         }
 

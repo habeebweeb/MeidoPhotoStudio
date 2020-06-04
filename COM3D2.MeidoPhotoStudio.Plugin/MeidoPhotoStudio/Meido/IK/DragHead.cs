@@ -55,6 +55,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 maid.body0.quaDefEyeL.eulerAngles = defEyeRotL;
                 maid.body0.quaDefEyeR.eulerAngles = defEyeRotR;
             }
+            if (dragType == DragType.RotLocalY || dragType == DragType.RotLocalXZ)
+            {
+                meido.IsFreeLook = !meido.IsFreeLook;
+            }
         }
 
         protected override void InitializeDrag()

@@ -18,6 +18,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public event EventHandler EndCallMeidos;
         public event EventHandler BeginCallMeidos;
         public event EventHandler AnimeChange;
+        public event EventHandler FreeLookChange;
         private int selectedMeido = 0;
         public int SelectedMeido
         {
@@ -96,6 +97,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 meido.SelectMeido -= ChangeMeido;
                 meido.BodyLoad -= OnEndCallMeidos;
                 meido.AnimeChange -= OnAnimeChangeEvent;
+                meido.FreeLookChange -= OnFreeLookChangeEvent;
                 meido.Unload();
             }
             ActiveMeidoList.Clear();
@@ -108,6 +110,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 meido.SelectMeido -= ChangeMeido;
                 meido.BodyLoad -= OnEndCallMeidos;
                 meido.AnimeChange -= OnAnimeChangeEvent;
+                meido.FreeLookChange -= OnFreeLookChangeEvent;
                 meido.Deactivate();
             }
             ActiveMeidoList.Clear();
@@ -124,6 +127,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 meido.SelectMeido += ChangeMeido;
                 meido.BodyLoad += OnEndCallMeidos;
                 meido.AnimeChange += OnAnimeChangeEvent;
+                meido.FreeLookChange += OnFreeLookChangeEvent;
             }
 
             for (int i = 0; i < ActiveMeidoList.Count; i++)
@@ -141,6 +145,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void OnAnimeChangeEvent(object sender, EventArgs args)
         {
             this.AnimeChange?.Invoke(this.ActiveMeido, EventArgs.Empty);
+        }
+
+        private void OnFreeLookChangeEvent(object sender, EventArgs args)
+        {
+            this.FreeLookChange?.Invoke(this.ActiveMeido, args);
         }
 
         private void OnSelectMeido(MeidoChangeEventArgs args)
