@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityInjector;
@@ -54,10 +56,68 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 if (isActive)
                 {
+                    bool qFlag = Input.GetKey(KeyCode.Q);
+                    if (!qFlag && Input.GetKeyDown(KeyCode.S))
+                    {
+                        StartCoroutine(TakeScreenShot());
+                    }
+
                     meidoManager.Update();
                     windowManager.Update();
+                    environmentManager.Update();
                 }
             }
+        }
+
+        private IEnumerator TakeScreenShot()
+        {
+            // Hide UI and dragpoints
+            GameObject editUI = GameObject.Find("/UI Root/Camera");
+            GameObject fpsViewer = UTY.GetChildObject(GameMain.Instance.gameObject, "SystemUI Root/FpsCounter", false);
+            GameObject sysDialog = UTY.GetChildObject(GameMain.Instance.gameObject, "SystemUI Root/SystemDialog", false);
+            GameObject sysShortcut = UTY.GetChildObject(GameMain.Instance.gameObject, "SystemUI Root/SystemShortcut", false);
+            if (editUI != null) editUI.SetActive(false);
+            fpsViewer.SetActive(false);
+            sysDialog.SetActive(false);
+            sysShortcut.SetActive(false);
+            uiActive = false;
+
+            List<Meido> activeMeidoList = this.meidoManager.ActiveMeidoList;
+            bool[] isIK = new bool[activeMeidoList.Count];
+            for (int i = 0; i < activeMeidoList.Count; i++)
+            {
+                Meido meido = activeMeidoList[i];
+                isIK[i] = meido.IsIK;
+                if (meido.IsIK) meido.SetIKActive(false);
+            }
+
+            GizmoRender.UIVisible = false;
+
+            yield return new WaitForEndOfFrame();
+
+            // Take Screenshot
+            int[] superSize = new[] { 1, 2, 4 };
+            int selectedSuperSize = superSize[(int)GameMain.Instance.CMSystem.ScreenShotSuperSize];
+
+            Application.CaptureScreenshot(Utility.ScreenshotFilename(), selectedSuperSize);
+            GameMain.Instance.SoundMgr.PlaySe("se022.ogg", false);
+
+            yield return new WaitForEndOfFrame();
+
+            // Show UI and dragpoints
+            uiActive = true;
+            if (editUI != null) editUI.SetActive(true);
+            fpsViewer.SetActive(GameMain.Instance.CMSystem.ViewFps);
+            sysDialog.SetActive(true);
+            sysShortcut.SetActive(true);
+
+            for (int i = 0; i < activeMeidoList.Count; i++)
+            {
+                Meido meido = activeMeidoList[i];
+                if (isIK[i]) meido.SetIKActive(true);
+            }
+
+            GizmoRender.UIVisible = true;
         }
         private void OnGUI()
         {
@@ -69,21 +129,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
         {
             currentScene = (Constants.Scene)scene.buildIndex;
-
-            // if (currentScene == Constants.Scene.Daily)
-            // {
-            //     if (initialized)
-            //     {
-
-            //     }
-            // }
-            // else
-            // {
-            //     if (initialized)
-            //     {
-            //         initialized = false;
-            //     }
-            // }
         }
         private void ReturnToMenu()
         {
