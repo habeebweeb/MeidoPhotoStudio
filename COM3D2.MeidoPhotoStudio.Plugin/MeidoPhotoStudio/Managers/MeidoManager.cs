@@ -13,10 +13,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public List<Meido> ActiveMeidoList { get; private set; }
         public Meido ActiveMeido => ActiveMeidoList.Count > 0 ? ActiveMeidoList[selectedMeido] : null;
         public bool HasActiveMeido => ActiveMeido != null;
-        public bool IsFade { get; set; } = false;
         public int numberOfMeidos;
         public event EventHandler<MeidoChangeEventArgs> SelectMeido;
-        public event EventHandler CalledMeidos;
+        public event EventHandler EndCallMeidos;
+        public event EventHandler BeginCallMeidos;
         public event EventHandler AnimeChange;
         private int selectedMeido = 0;
         public int SelectedMeido
@@ -94,7 +94,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (Meido meido in ActiveMeidoList)
             {
                 meido.SelectMeido -= ChangeMeido;
-                meido.BodyLoad -= EndCallMeidos;
+                meido.BodyLoad -= OnEndCallMeidos;
                 meido.AnimeChange -= OnAnimeChangeEvent;
                 meido.Unload();
             }
@@ -106,7 +106,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (Meido meido in meidos)
             {
                 meido.SelectMeido -= ChangeMeido;
-                meido.BodyLoad -= EndCallMeidos;
+                meido.BodyLoad -= OnEndCallMeidos;
                 meido.AnimeChange -= OnAnimeChangeEvent;
                 meido.Deactivate();
             }
@@ -115,8 +115,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void CallMeidos(List<int> selectedMaids)
         {
-            IsFade = true;
-
             UnloadMeidos();
 
             foreach (int slot in selectedMaids)
@@ -124,7 +122,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Meido meido = meidos[slot];
                 ActiveMeidoList.Add(meido);
                 meido.SelectMeido += ChangeMeido;
-                meido.BodyLoad += EndCallMeidos;
+                meido.BodyLoad += OnEndCallMeidos;
                 meido.AnimeChange += OnAnimeChangeEvent;
             }
 
@@ -137,7 +135,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SelectedMeido = 0;
             OnSelectMeido(new MeidoChangeEventArgs(SelectedMeido));
 
-            if (selectedMaids.Count == 0) EndCallMeidos(this, EventArgs.Empty);
+            if (selectedMaids.Count == 0) OnEndCallMeidos(this, EventArgs.Empty);
         }
 
         private void OnAnimeChangeEvent(object sender, EventArgs args)
@@ -157,16 +155,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             OnSelectMeido(args);
         }
 
-        private void EndCallMeidos(object sender, EventArgs args)
+        public void OnBeginCallMeidos(List<int> selectList)
+        {
+            this.BeginCallMeidos?.Invoke(this, EventArgs.Empty);
+            GameMain.Instance.MainCamera.FadeOut(0.01f, false, () => CallMeidos(selectList), false);
+        }
+
+        private void OnEndCallMeidos(object sender, EventArgs args)
         {
             if (!IsBusy)
             {
-                IsFade = false;
                 GameMain.Instance.MainCamera.FadeIn(1f);
-                CalledMeidos?.Invoke(this, EventArgs.Empty);
+                EndCallMeidos?.Invoke(this, EventArgs.Empty);
                 foreach (Meido meido in ActiveMeidoList)
                 {
-                    meido.BodyLoad -= EndCallMeidos;
+                    meido.BodyLoad -= OnEndCallMeidos;
                 }
             }
         }

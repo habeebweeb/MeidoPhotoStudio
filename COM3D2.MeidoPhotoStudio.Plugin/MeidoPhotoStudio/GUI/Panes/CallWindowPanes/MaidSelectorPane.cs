@@ -11,7 +11,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector2 maidListScrollPos;
         private Button clearMaidsButton;
         private Button callMaidsButton;
-        public event EventHandler MaidCall;
         public MaidSelectorPane(MeidoManager meidoManager) : base()
         {
             this.meidoManager = meidoManager;
@@ -21,7 +20,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Controls.Add(clearMaidsButton);
 
             callMaidsButton = new Button("Call");
-            callMaidsButton.ControlEvent += (s, a) => MaidCall?.Invoke(this, EventArgs.Empty);
+            callMaidsButton.ControlEvent += (s, a) => this.meidoManager.OnBeginCallMeidos(this.selectedMaidList);
             Controls.Add(callMaidsButton);
         }
 

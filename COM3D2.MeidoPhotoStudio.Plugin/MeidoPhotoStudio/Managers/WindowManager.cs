@@ -23,13 +23,28 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Rect messageWindowRect;
         private MeidoManager meidoManager;
         private bool initializeWindows = false;
-        public bool Visible { get; set; }
+        public bool MainWindowVisible { get; set; }
+        public bool MessageWindowVisible
+        {
+            get => Windows[Window.Message].Visible;
+            set
+            {
+                Windows[Window.Message].Visible = value;
+            }
+        }
+        public bool DropdownVisible
+        {
+            get => DropdownHelper.Visible;
+            set
+            {
+                DropdownHelper.Visible = value;
+            }
+        }
         public WindowManager(MeidoManager meidoManager, EnvironmentManager environmentManager, MessageWindowManager messageWindowManager)
         {
             TabsPane.TabChange += ChangeTab;
             this.meidoManager = meidoManager;
             this.meidoManager.SelectMeido += MeidoSelect;
-            this.meidoManager.CalledMeidos += (s, a) => Visible = true;
 
             mainWindowRect.y = Screen.height * 0.08f;
             mainWindowRect.x = Screen.width;
@@ -65,24 +80,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (Input.GetKeyDown(KeyCode.M))
             {
-                (Windows[Window.Message] as MessageWindow).SetVisibility();
+                (Windows[Window.Message] as MessageWindow).ToggleVisibility();
             }
 
             if (Input.GetKeyDown(KeyCode.Tab))
             {
-                Visible = !Visible;
+                MainWindowVisible = !MainWindowVisible;
             }
-
-            if (this.meidoManager.IsFade) Visible = false;
 
             HandleZoom();
         }
 
         private void HandleZoom()
         {
-            bool mainWindowVisible = Windows[currentWindow].Visible;
-            bool dropdownVisible = DropdownHelper.Visible;
-            bool messageWindowVisible = Windows[currentWindow].Visible;
+            bool mainWindowVisible = MainWindowVisible;
+            bool dropdownVisible = DropdownVisible;
+            bool messageWindowVisible = MessageWindowVisible;
             if (mainWindowVisible || dropdownVisible || messageWindowVisible)
             {
                 if (Input.mouseScrollDelta.y != 0f)
@@ -103,12 +116,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void OnGUI()
         {
-            if (!Visible) return;
-
             GUIStyle windowStyle = new GUIStyle(GUI.skin.box);
             GameMain.Instance.MainCamera.SetControl(true);
 
-            if (Windows[currentWindow].Visible)
+            if (MainWindowVisible)
             {
                 mainWindowRect.width = 230;
                 mainWindowRect.height = Screen.height * 0.8f;
@@ -118,7 +129,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 mainWindowRect = GUI.Window(Constants.mainWindowID, mainWindowRect, Windows[CurrentWindow].OnGUI, "", windowStyle);
             }
-            if (Windows[Window.Message].Visible)
+
+            if (MessageWindowVisible)
             {
                 messageWindowRect.width = Mathf.Clamp(Screen.width * 0.4f, 440, Mathf.Infinity);
                 messageWindowRect.height = Mathf.Clamp(Screen.height * 0.15f, 150, Mathf.Infinity);
@@ -136,7 +148,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 messageWindowRect = GUI.Window(Constants.messageWindowID, messageWindowRect, Windows[Window.Message].OnGUI, "", windowStyle);
             }
 
-            if (DropdownHelper.Visible) DropdownHelper.HandleDropdown();
+            if (DropdownVisible) DropdownHelper.HandleDropdown();
         }
     }
 }

@@ -150,7 +150,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private static int currentDropdownID;
         private static int selectedItemIndex;
         private static bool initialized = false;
-        public static bool Visible { get; private set; }
+        public static bool Visible { get; set; }
+        public static bool DropdownOpen { get; private set; }
         private static bool onScrollBar = false;
         public static Rect dropdownWindow;
         private static Rect dropdownScrollRect;
@@ -203,6 +204,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             dropdownScrollRect = new Rect(0, 0, dropdownWindow.width, dropdownWindow.height);
             dropdownRect = new Rect(0, 0, dropdownWindow.width - 18, calculatedListHeight);
 
+            DropdownOpen = true;
             Visible = true;
         }
 
@@ -231,16 +233,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 bool clickedMe = dropdownWindow.Contains(mousePos);
                 onScrollBar = mousePos.x > dropdownWindow.x + dropdownWindow.width - 12f;
                 if (buttonRect.Contains(mousePos)) clickedYou = true;
-                if (!clickedMe) Visible = false;
+                if (!clickedMe) DropdownOpen = false;
             }
 
             if (selection != selectedItemIndex || (clicked && !onScrollBar))
             {
                 SelectionChange?.Invoke(null, new DropdownSelectArgs(currentDropdownID, selection));
-                Visible = false;
+                DropdownOpen = false;
             }
 
-            if (!Visible) DropdownClose?.Invoke(null, new DropdownCloseArgs(currentDropdownID, scrollPos, clickedYou));
+            if (!DropdownOpen)
+            {
+                Visible = false;
+                DropdownClose?.Invoke(null, new DropdownCloseArgs(currentDropdownID, scrollPos, clickedYou));
+            }
         }
 
         private static void InitializeStyle()

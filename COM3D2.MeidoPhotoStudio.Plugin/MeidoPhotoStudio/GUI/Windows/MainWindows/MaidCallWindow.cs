@@ -23,14 +23,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Controls.Add(placementOKButton);
 
             maidSelectorPane = new MaidSelectorPane(meidoManager);
-            maidSelectorPane.MaidCall += (s, e) =>
-            {
-                this.meidoManager.IsFade = true;
-                GameMain.Instance.MainCamera.FadeOut(0.01f, false, () =>
-                {
-                    this.meidoManager.CallMeidos(maidSelectorPane.selectedMaidList);
-                }, false);
-            };
         }
 
         public override void Draw(params GUILayoutOption[] layoutOptions)

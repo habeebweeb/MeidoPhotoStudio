@@ -18,6 +18,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Constants.Scene currentScene;
         private bool initialized = false;
         private bool isActive = false;
+        private bool uiActive = false;
         private MeidoPhotoStudio()
         {
             MeidoPhotoStudio.instance = this;
@@ -42,13 +43,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     if (!initialized)
                     {
                         Initialize();
-                        windowManager.Visible = true;
+                        windowManager.MainWindowVisible = true;
                     }
                     else
                     {
                         ReturnToMenu();
                     }
                 }
+
 
                 if (isActive)
                 {
@@ -59,7 +61,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         private void OnGUI()
         {
-            if (isActive)
+            if (uiActive)
             {
                 windowManager.OnGUI();
             }
@@ -91,8 +93,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             messageWindowManager.Deactivate();
 
             isActive = false;
+            uiActive = false;
             initialized = false;
-            windowManager.Visible = false;
+            windowManager.MainWindowVisible = false;
             GameMain.Instance.SoundMgr.PlayBGM("bgm009.ogg", 1f, true);
             GameObject go = GameObject.Find("UI Root").transform.Find("DailyPanel").gameObject;
             go.SetActive(true);
@@ -117,6 +120,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             initialized = true;
             meidoManager = new MeidoManager();
+            meidoManager.BeginCallMeidos += (s, a) => this.uiActive = false;
+            meidoManager.EndCallMeidos += (s, a) => this.uiActive = true;
             environmentManager = new EnvironmentManager();
             messageWindowManager = new MessageWindowManager();
             windowManager = new WindowManager(meidoManager, environmentManager, messageWindowManager);
@@ -124,6 +129,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             environmentManager.Initialize();
 
             isActive = true;
+            uiActive = true;
 
             #region maid stuff
             // if (maid)
