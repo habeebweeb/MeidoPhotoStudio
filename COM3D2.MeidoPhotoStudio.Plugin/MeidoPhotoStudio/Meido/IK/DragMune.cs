@@ -12,7 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 off;
         private Vector3 off2;
 
-        public void Initialize(Transform[] ikChain, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
+        public DragMune Initialize(Transform[] ikChain, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
         {
             base.Initialize(meido, position, rotation);
             this.ikChain = ikChain;
@@ -25,6 +25,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             InitializeIK();
+            return this;
         }
 
         public void InitializeIK()

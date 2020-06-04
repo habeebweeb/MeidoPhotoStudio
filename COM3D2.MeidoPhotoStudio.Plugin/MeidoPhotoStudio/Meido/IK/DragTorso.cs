@@ -8,10 +8,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Transform[] spine;
         private Vector3[] spineRotation = new Vector3[4];
 
-        public void Initialize(Transform[] spine, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
+        public DragTorso Initialize(Transform[] spine, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
         {
             base.Initialize(meido, position, rotation);
             this.spine = spine;
+            return this;
         }
 
         protected override void GetDragType()

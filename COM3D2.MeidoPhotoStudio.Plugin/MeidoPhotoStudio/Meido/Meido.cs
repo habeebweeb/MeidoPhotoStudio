@@ -46,7 +46,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.AnimeChange?.Invoke(this, EventArgs.Empty);
             }
         }
-        public bool IsBone { get; set; } = false;
+        private bool isBone = false;
+        public bool IsBone
+        {
+            get => isBone;
+            set
+            {
+                this.isBone = value;
+                this.dragPointManager?.BoneModeActive(this.isBone);
+            }
+        }
         public bool Visible
         {
             get => Maid.Visible;
@@ -112,7 +121,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else
             {
-                dragPointManager.Activate();
+                dragPointManager.SetActive(true);
 
                 this.IsIK = true;
                 this.IsStop = false;
@@ -144,7 +153,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             Maid.Visible = false;
 
-            dragPointManager?.Deactivate();
+            dragPointManager?.SetActive(false);
             this.IsIK = false;
             this.IsStop = false;
             this.IsBone = false;
@@ -279,8 +288,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (dragPointManager == null) this.IsIK = false;
             else
             {
-                if (this.IsIK) dragPointManager.Activate();
-                else dragPointManager.Deactivate();
+                dragPointManager.SetActive(this.IsIK);
             }
         }
 

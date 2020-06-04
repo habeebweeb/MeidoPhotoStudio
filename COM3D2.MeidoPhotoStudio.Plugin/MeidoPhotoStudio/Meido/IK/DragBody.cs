@@ -10,8 +10,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 mousePos2;
         private float maidScale;
         private Vector3 maidRot;
-        public bool renderBody = true;
+        private bool scaling;
         public event EventHandler Select;
+        public event EventHandler Scale;
 
         protected override void GetDragType()
         {
@@ -54,14 +55,30 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             off2 = new Vector3(
                 transform.position.x - maid.transform.position.x,
                 transform.position.y - maid.transform.position.y,
-                transform.position.z - maid.transform.position.z);
+                transform.position.z - maid.transform.position.z
+            );
         }
 
         protected override void DoubleClick()
         {
-            if (dragType == DragType.Scale) maid.transform.localScale = new Vector3(1f, 1f, 1f);
+            if (dragType == DragType.Scale)
+            {
+                maid.transform.localScale = new Vector3(1f, 1f, 1f);
+                Scale?.Invoke(this, EventArgs.Empty);
+            }
+
             if (dragType == DragType.RotLocalY || dragType == DragType.RotLocalXZ)
                 maid.transform.eulerAngles = new Vector3(0f, maid.transform.eulerAngles.y, 0f);
+        }
+
+        protected override void OnMouseUp()
+        {
+            base.OnMouseUp();
+            if (scaling)
+            {
+                scaling = false;
+                Scale?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         protected override void Drag()
@@ -120,6 +137,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (dragType == DragType.Scale)
             {
+                scaling = true;
                 Vector3 posOther = Input.mousePosition - mousePos;
                 float scale = maidScale + posOther.y / 200f;
                 if (scale < 0.1f) scale = 0.1f;

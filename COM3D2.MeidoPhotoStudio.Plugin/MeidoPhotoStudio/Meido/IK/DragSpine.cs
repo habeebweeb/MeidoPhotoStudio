@@ -7,24 +7,48 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private Transform spine;
         private Vector3 rotate;
+        private Vector3 off;
+        private Vector3 off2;
+        private bool isHip;
 
-        public void Initialize(Transform spine, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
+        public DragSpine Initialize(Transform spine, bool isHip, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
         {
             base.Initialize(meido, position, rotation);
             this.spine = spine;
+            this.isHip = isHip;
 
             InitializeGizmo(this.spine);
+            return this;
         }
 
         protected override void GetDragType()
         {
-            dragType = DragType.None;
+            if (isHip && Utility.GetModKey(Utility.ModKey.Control))
+            {
+                dragType = DragType.MoveY;
+                if (GizmoActive) SetGizmo(GizmoType.Rotate);
+            }
+            else
+            {
+                dragType = DragType.None;
+                if (GizmoActive) SetGizmo(GizmoType.Rotate);
+            }
         }
 
         protected override void InitializeDrag()
         {
             base.InitializeDrag();
             rotate = spine.localEulerAngles;
+
+            if (isHip)
+            {
+                off = transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z));
+                off2 = new Vector3(
+                    transform.position.x - spine.position.x,
+                    transform.position.y - spine.position.y,
+                    transform.position.z - spine.position.z
+                );
+            }
         }
 
         protected override void Drag()
@@ -41,6 +65,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 spine.localEulerAngles = rotate;
                 spine.RotateAround(spine.position, new Vector3(vec32.x, 0.0f, vec32.z), vec31.y / 3f);
                 spine.RotateAround(spine.position, new Vector3(vec33.x, 0.0f, vec33.z), (-vec31.x / 4.5f));
+            }
+
+            if (dragType == DragType.MoveY)
+            {
+                Vector3 pos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)) + off - off2;
+                spine.position = new Vector3(spine.position.x, pos.y, spine.position.z);
             }
         }
     }

@@ -13,14 +13,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 off2;
         private bool baseFinger;
 
-        public void Initialize(Transform[] ikChain, bool baseFinger, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
+        public DragJointFinger Initialize(Transform[] ikChain, bool baseFinger, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
         {
             base.Initialize(meido, position, rotation);
             this.ikChain = ikChain;
             this.baseFinger = baseFinger;
-
             InitializeIK();
             InitializeIK2();
+            return this;
         }
         public void InitializeIK()
         {

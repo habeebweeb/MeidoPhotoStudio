@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,7 +10,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         enum IKMode
         {
-            None, UpperLock, Mune, RotLocal, BodyTransform, FingerRotLocalY, FingerRotLocalXZ, BodySelect
+            None, UpperLock, Mune, RotLocal, BodyTransform, FingerRotLocalY, FingerRotLocalXZ, BodySelect,
+            UpperRot
         }
         enum Bone
         {
@@ -79,15 +81,52 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Bone.Toe01L, Bone.Toe11L, Bone.Toe21L, Bone.Toe01R, Bone.Toe11R, Bone.Toe21R
             }
         };
+
+        private static readonly Dictionary<IKMode, DragInfo[]> IKGroupBone = new Dictionary<IKMode, DragInfo[]>()
+        {
+            [IKMode.None] = new[] {
+                DragInfo.DragBone(Bone.UpperArmL), DragInfo.DragBone(Bone.ForearmL), DragInfo.DragBone(Bone.HandL),
+                DragInfo.DragBone(Bone.UpperArmR), DragInfo.DragBone(Bone.ForearmR), DragInfo.DragBone(Bone.HandR),
+                DragInfo.DragBone(Bone.CalfL), DragInfo.DragBone(Bone.FootL), DragInfo.DragBone(Bone.CalfR),
+                DragInfo.DragBone(Bone.FootR), DragInfo.DragBone(Bone.Neck), DragInfo.DragBone(Bone.Spine1a),
+                DragInfo.DragBone(Bone.Spine1), DragInfo.DragBone(Bone.Spine0a), DragInfo.DragBone(Bone.Spine),
+                DragInfo.DragBone(Bone.Hip)
+            },
+            [IKMode.UpperLock] = new[] {
+                DragInfo.Gizmo(Bone.Neck), DragInfo.Gizmo(Bone.Spine1a), DragInfo.Gizmo(Bone.Spine1),
+                DragInfo.Gizmo(Bone.Spine0a), DragInfo.Gizmo(Bone.Spine), DragInfo.DragBone(Bone.Hip),
+                DragInfo.DragBone(Bone.HandR), DragInfo.DragBone(Bone.HandL), DragInfo.DragBone(Bone.FootL),
+                DragInfo.DragBone(Bone.FootR)
+            },
+            [IKMode.RotLocal] = new[] {
+                DragInfo.Gizmo(Bone.HandL), DragInfo.Gizmo(Bone.HandR), DragInfo.Gizmo(Bone.FootL),
+                DragInfo.Gizmo(Bone.FootR), DragInfo.Gizmo(Bone.Hip)
+            },
+            [IKMode.Mune] = new[] {
+                DragInfo.Gizmo(Bone.ForearmL), DragInfo.Gizmo(Bone.ForearmR), DragInfo.Gizmo(Bone.CalfL),
+                DragInfo.Gizmo(Bone.CalfR), DragInfo.Drag(Bone.MuneL), DragInfo.Drag(Bone.MuneR),
+                DragInfo.Drag(Bone.Head)
+            },
+            [IKMode.UpperRot] = new[] {
+                DragInfo.Gizmo(Bone.UpperArmL), DragInfo.Gizmo(Bone.UpperArmR), DragInfo.Gizmo(Bone.ThighL),
+                DragInfo.Gizmo(Bone.ThighR)
+            },
+            [IKMode.BodyTransform] = new[] { DragInfo.Drag(Bone.Body), DragInfo.Drag(Bone.Cube) },
+            [IKMode.BodySelect] = new[] { DragInfo.Drag(Bone.Head), DragInfo.Drag(Bone.Body) },
+            [IKMode.FingerRotLocalXZ] = IKGroup[IKMode.FingerRotLocalXZ].Select(bone => DragInfo.DragBone(bone)).ToArray(),
+            [IKMode.FingerRotLocalY] = IKGroup[IKMode.FingerRotLocalY].Select(bone => DragInfo.DragBone(bone)).ToArray()
+        };
         private Meido meido;
         private Maid maid;
-        private Dictionary<Bone, GameObject> DragPoint;
+        private Dictionary<Bone, BaseDrag> DragPoint;
         private Dictionary<Bone, Transform> BoneTransform;
         private IKMode ikMode;
         private IKMode ikModeOld = IKMode.None;
         public event EventHandler<MeidoChangeEventArgs> SelectMaid;
         public bool Initialized { get; private set; }
         public bool Active { get; set; }
+        public bool IsBone { get; set; }
+        private static bool cubeActive = false;
         public DragPointManager(Meido meido)
         {
             this.meido = meido;
@@ -99,18 +138,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (Initialized) return;
 
-            this.Active = true;
+            Initialized = true;
             InitializeBones();
             InitializeDragPoints();
-            Initialized = true;
+            SetActive(true);
             meido.BodyLoad -= Initialize;
         }
 
         public void Destroy()
         {
-            foreach (KeyValuePair<Bone, GameObject> dragPoint in DragPoint)
+            foreach (KeyValuePair<Bone, BaseDrag> dragPoint in DragPoint)
             {
-                GameObject.Destroy(dragPoint.Value);
+                GameObject.Destroy(dragPoint.Value.gameObject);
             }
             DragPoint.Clear();
             BoneTransform.Clear();
@@ -118,20 +157,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.Active = false;
         }
 
-        public void Deactivate()
+        public void SetActive(bool active)
         {
-            this.Active = false;
-            foreach (KeyValuePair<Bone, GameObject> dragPoint in DragPoint)
+            this.Active = active;
+            if (this.Active)
             {
-                dragPoint.Value.SetActive(false);
+                ikMode = ikModeOld = IKMode.None;
+                UpdateIK();
             }
-        }
-
-        public void Activate()
-        {
-            this.Active = true;
-            ikMode = ikModeOld = IKMode.None;
-            UpdateIK();
+            else
+            {
+                foreach (KeyValuePair<Bone, BaseDrag> dragPoint in DragPoint)
+                {
+                    dragPoint.Value.gameObject.SetActive(false);
+                }
+            }
         }
 
         public void Update()
@@ -152,9 +192,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 ikMode = IKMode.FingerRotLocalY;
             }
-            else if (Utility.GetModKey(ModKey.Alt) /* && Utility.GetModKey(ModKey.Shift) */)
+            else if (Utility.GetModKey(ModKey.Alt))
             {
-                ikMode = IKMode.RotLocal;
+                bool shift = IsBone && Utility.GetModKey(ModKey.Shift);
+                ikMode = shift ? IKMode.UpperRot : IKMode.RotLocal;
             }
             else if (Input.GetKey(KeyCode.Space))
             {
@@ -178,43 +219,92 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (Active)
             {
-                foreach (KeyValuePair<Bone, GameObject> dragPoint in DragPoint)
+                if (this.IsBone) UpdateBoneIK();
+                else
                 {
-                    dragPoint.Value.SetActive(false);
-                }
+                    foreach (KeyValuePair<Bone, BaseDrag> dragPoint in DragPoint)
+                    {
+                        dragPoint.Value.gameObject.SetActive(false);
+                    }
 
-                foreach (Bone bone in IKGroup[ikMode])
-                {
-                    DragPoint[bone].SetActive(true);
+                    foreach (Bone bone in IKGroup[ikMode])
+                    {
+                        DragPoint[bone].gameObject.SetActive(true);
+                    }
+
+                    if (ikMode == IKMode.BodyTransform)
+                    {
+                        DragPoint[Bone.Cube].gameObject.SetActive(cubeActive);
+                    }
                 }
             }
             else
             {
                 if (ikMode == IKMode.BodySelect)
                 {
-                    DragPoint[Bone.Body].SetActive(true);
-                    DragPoint[Bone.Head].SetActive(true);
+                    DragPoint[Bone.Body].gameObject.SetActive(true);
+                    DragPoint[Bone.Head].gameObject.SetActive(true);
                 }
                 else if (ikMode == IKMode.BodyTransform)
                 {
-                    DragPoint[Bone.Body].SetActive(true);
-                    DragPoint[Bone.Cube].SetActive(true);
+                    DragPoint[Bone.Body].gameObject.SetActive(true);
+                    DragPoint[Bone.Cube].gameObject.SetActive(cubeActive);
                 }
                 else
                 {
-                    DragPoint[Bone.Body].SetActive(false);
-                    DragPoint[Bone.Head].SetActive(false);
-                    DragPoint[Bone.Cube].SetActive(false);
+                    DragPoint[Bone.Body].gameObject.SetActive(false);
+                    DragPoint[Bone.Head].gameObject.SetActive(false);
+                    DragPoint[Bone.Cube].gameObject.SetActive(false);
                 }
             }
+        }
+
+        private void UpdateBoneIK()
+        {
+            foreach (KeyValuePair<Bone, BaseDrag> dragPoint in DragPoint)
+            {
+                dragPoint.Value.gameObject.SetActive(false);
+                dragPoint.Value.SetDragProp(false, false, dragPoint.Key >= Bone.Finger0L);
+            }
+
+            foreach (DragInfo info in IKGroupBone[ikMode])
+            {
+                BaseDrag drag = DragPoint[info.Bone];
+                drag.gameObject.SetActive(true);
+                drag.SetDragProp(info.GizmoActive, info.DragPointActive, info.DragPointVisible);
+            }
+        }
+
+        private void SetDragPointScale(float scale)
+        {
+            foreach (KeyValuePair<Bone, BaseDrag> kvp in DragPoint)
+            {
+                BaseDrag dragPoint = kvp.Value;
+                dragPoint.DragPointScale = dragPoint.BaseScale * scale;
+            }
+        }
+
+        public void BoneModeActive(bool active)
+        {
+            this.IsBone = active;
+            foreach (KeyValuePair<Bone, BaseDrag> dragPoint in DragPoint)
+            {
+                dragPoint.Value.IsBone = this.IsBone;
+                if (!this.IsBone)
+                {
+                    dragPoint.Value.SetDragProp(false, true, dragPoint.Key >= Bone.Finger0L);
+                }
+            }
+            SetActive(true);
         }
 
         // TODO: Rework this a little to reduce number of needed BaseDrag derived components
         private void InitializeDragPoints()
         {
-            DragPoint = new Dictionary<Bone, GameObject>();
+            DragPoint = new Dictionary<Bone, BaseDrag>();
 
             Vector3 limbDragPointSize = Vector3.one * 0.12f;
+            Vector3 limbDragPointSizeBone = Vector3.one * 0.07f;
             Vector3 fingerDragPointSize = Vector3.one * 0.015f;
 
             Material transparentBlue = new Material(Shader.Find("Transparent/Diffuse"))
@@ -236,7 +326,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 return dragPoint;
             };
 
-            Func<Transform[], Transform[], Transform[], bool, GameObject[]> MakeIKChainDragPoint = (upper, middle, lower, leg) =>
+            Func<Transform[], Transform[], Transform[], bool, BaseDrag[]> MakeIKChainDragPoint = (upper, middle, lower, leg) =>
             {
                 GameObject[] dragPoints = new GameObject[3];
                 for (int i = 0; i < dragPoints.Length; i++)
@@ -244,49 +334,50 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     dragPoints[i] = MakeDragPoint(PrimitiveType.Sphere, limbDragPointSize, transparentBlue);
                 }
 
-                DragJointForearm dragUpper = dragPoints[0].AddComponent<DragJointForearm>();
-                dragUpper.Initialize(upper, false, meido, () => upper[2].position, () => Vector3.zero);
-                // dragUpper.DragEvent += OnDragEvent;
-                DragJointForearm dragMiddle = dragPoints[1].AddComponent<DragJointForearm>();
-                dragMiddle.Initialize(middle, leg, meido, () => middle[2].position, () => Vector3.zero);
-                // dragMiddle.DragEvent += OnDragEvent;
-                DragJointHand dragLower = dragPoints[2].AddComponent<DragJointHand>();
-                dragLower.Initialize(lower, leg, meido, () => lower[2].position, () => Vector3.zero);
-                // dragLower.DragEvent += OnDragEvent;
-                return dragPoints;
+                return new BaseDrag[3] {
+                    dragPoints[0].AddComponent<DragJointForearm>()
+                        .Initialize(upper, false, meido, () => upper[2].position, () => Vector3.zero),
+                    dragPoints[1].AddComponent<DragJointForearm>()
+                        .Initialize(middle, leg, meido, () => middle[2].position, () => Vector3.zero),
+                    dragPoints[2].AddComponent<DragJointHand>()
+                        .Initialize(lower, leg, meido, () => lower[2].position, () => Vector3.zero)
+                };
             };
 
             // Cube Dragpoint
-            DragPoint[Bone.Cube] = MakeDragPoint(PrimitiveType.Cube, new Vector3(0.12f, 0.12f, 0.12f), transparentBlue2);
-
-            DragPoint[Bone.Cube].AddComponent<DragBody>()
+            DragPoint[Bone.Cube] = MakeDragPoint(PrimitiveType.Cube, new Vector3(0.12f, 0.12f, 0.12f), transparentBlue2)
+                .AddComponent<DragBody>()
                 .Initialize(meido,
                     () => maid.transform.position,
                     () => maid.transform.eulerAngles
                 );
+            DragBody dragCube = DragPoint[Bone.Cube] as DragBody;
+            dragCube.Scale += (s, a) => SetDragPointScale(maid.transform.localScale.x);
+            dragCube.DragPointVisible = true;
 
             // Body Dragpoint
-            DragPoint[Bone.Body] = MakeDragPoint(PrimitiveType.Capsule, new Vector3(0.2f, 0.3f, 0.24f), transparentBlue);
-
-            DragBody dragBody = DragPoint[Bone.Body].AddComponent<DragBody>();
-            dragBody.Initialize(meido,
-                () => new Vector3(
-                    (BoneTransform[Bone.Hip].position.x + BoneTransform[Bone.Spine0a].position.x) / 2f,
-                    (BoneTransform[Bone.Spine1].position.y + BoneTransform[Bone.Spine0a].position.y) / 2f,
-                    (BoneTransform[Bone.Spine0a].position.z + BoneTransform[Bone.Hip].position.z) / 2f
-                ),
-                () => new Vector3(
-                    BoneTransform[Bone.Spine0a].transform.eulerAngles.x,
-                    BoneTransform[Bone.Spine0a].transform.eulerAngles.y,
-                    BoneTransform[Bone.Spine0a].transform.eulerAngles.z + 90f
-                )
+            DragPoint[Bone.Body] = MakeDragPoint(PrimitiveType.Capsule, new Vector3(0.2f, 0.3f, 0.24f), transparentBlue)
+                .AddComponent<DragBody>()
+                .Initialize(meido,
+                    () => new Vector3(
+                        (BoneTransform[Bone.Hip].position.x + BoneTransform[Bone.Spine0a].position.x) / 2f,
+                        (BoneTransform[Bone.Spine1].position.y + BoneTransform[Bone.Spine0a].position.y) / 2f,
+                        (BoneTransform[Bone.Spine0a].position.z + BoneTransform[Bone.Hip].position.z) / 2f
+                    ),
+                    () => new Vector3(
+                        BoneTransform[Bone.Spine0a].transform.eulerAngles.x,
+                        BoneTransform[Bone.Spine0a].transform.eulerAngles.y,
+                        BoneTransform[Bone.Spine0a].transform.eulerAngles.z + 90f
+                    )
             );
+            DragBody dragBody = DragPoint[Bone.Body] as DragBody;
             dragBody.Select += (s, e) => OnMeidoSelect(new MeidoChangeEventArgs(meido.ActiveSlot, true));
+            dragBody.Scale += (s, a) => SetDragPointScale(maid.transform.localScale.x);
 
             // Head Dragpoint
-            DragPoint[Bone.Head] = MakeDragPoint(PrimitiveType.Sphere, new Vector3(0.2f, 0.24f, 0.2f), transparentBlue);
-            DragHead dragHead = DragPoint[Bone.Head].AddComponent<DragHead>();
-            dragHead.Initialize(BoneTransform[Bone.Neck], meido,
+            DragPoint[Bone.Head] = MakeDragPoint(PrimitiveType.Sphere, new Vector3(0.2f, 0.24f, 0.2f), transparentBlue)
+                .AddComponent<DragHead>()
+                .Initialize(BoneTransform[Bone.Neck], meido,
                 () => new Vector3(
                     BoneTransform[Bone.Head].position.x,
                     (BoneTransform[Bone.Head].position.y * 1.2f + BoneTransform[Bone.HeadNub].position.y * 0.8f) / 2f,
@@ -294,11 +385,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 ),
                 () => new Vector3(BoneTransform[Bone.Head].eulerAngles.x, BoneTransform[Bone.Head].eulerAngles.y, BoneTransform[Bone.Head].eulerAngles.z + 90f)
             );
+            DragHead dragHead = DragPoint[Bone.Head] as DragHead;
             dragHead.Select += (s, a) => OnMeidoSelect(new MeidoChangeEventArgs(meido.ActiveSlot, true, false));
-            // dragHead.DragEvent += OnDragEvent;
 
             // Torso Dragpoint
-            DragPoint[Bone.Torso] = MakeDragPoint(PrimitiveType.Capsule, new Vector3(0.2f, 0.19f, 0.24f), transparentBlue);
+            DragPoint[Bone.Torso] = MakeDragPoint(PrimitiveType.Capsule, new Vector3(0.2f, 0.19f, 0.24f), transparentBlue)
+                .AddComponent<DragTorso>();
             Transform spineTrans1 = BoneTransform[Bone.Spine1];
             Transform spineTrans2 = BoneTransform[Bone.Spine1a];
             Transform[] spineParts = new Transform[4] {
@@ -307,7 +399,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 BoneTransform[Bone.Spine0a],
                 BoneTransform[Bone.Spine]
             };
-            DragTorso dragTorso = DragPoint[Bone.Torso].AddComponent<DragTorso>();
+            DragTorso dragTorso = DragPoint[Bone.Torso] as DragTorso;
             dragTorso.Initialize(spineParts, meido,
                 () => new Vector3(
                     spineTrans1.position.x,
@@ -320,13 +412,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     spineTrans1.eulerAngles.z + 90f
                 )
             );
-            // dragTorso.DragEvent += OnDragEvent;
 
             // Pelvis Dragpoint
-            DragPoint[Bone.Pelvis] = MakeDragPoint(PrimitiveType.Capsule, new Vector3(0.2f, 0.15f, 0.24f), transparentBlue);
+            DragPoint[Bone.Pelvis] = MakeDragPoint(PrimitiveType.Capsule, new Vector3(0.2f, 0.15f, 0.24f), transparentBlue)
+                .AddComponent<DragPelvis>();
             Transform pelvisTrans = BoneTransform[Bone.Pelvis];
             Transform spineTrans = BoneTransform[Bone.Spine];
-            DragPelvis dragPelvis = DragPoint[Bone.Pelvis].AddComponent<DragPelvis>();
+            DragPelvis dragPelvis = DragPoint[Bone.Pelvis] as DragPelvis;
             dragPelvis.Initialize(BoneTransform[Bone.Pelvis], meido,
                 () => new Vector3(
                     pelvisTrans.position.x,
@@ -339,38 +431,37 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     pelvisTrans.eulerAngles.z
                 )
             );
-            // dragPelvis.DragEvent += OnDragEvent;
 
             // Left Mune Dragpoint
-            DragPoint[Bone.MuneL] = MakeDragPoint(PrimitiveType.Sphere, new Vector3(0.12f, 0.12f, 0.12f), transparentBlue);
-            DragMune dragMuneL = DragPoint[Bone.MuneL].AddComponent<DragMune>();
+            DragPoint[Bone.MuneL] = MakeDragPoint(PrimitiveType.Sphere, new Vector3(0.12f, 0.12f, 0.12f), transparentBlue)
+                .AddComponent<DragMune>();
             Transform[] muneIKChainL = new Transform[3] {
                 BoneTransform[Bone.MuneL],
                 BoneTransform[Bone.MuneL],
                 BoneTransform[Bone.MuneSubL]
             };
+            DragMune dragMuneL = DragPoint[Bone.MuneL] as DragMune;
             dragMuneL.Initialize(muneIKChainL, meido,
                 () => (BoneTransform[Bone.MuneL].position + BoneTransform[Bone.MuneSubL].position) / 2f,
                 () => Vector3.zero
             );
-            // dragMuneL.DragEvent += OnDragEvent;
 
             // Right Mune Dragpoint
-            DragPoint[Bone.MuneR] = MakeDragPoint(PrimitiveType.Sphere, new Vector3(0.12f, 0.12f, 0.12f), transparentBlue);
-            DragMune dragMuneR = DragPoint[Bone.MuneR].AddComponent<DragMune>();
+            DragPoint[Bone.MuneR] = MakeDragPoint(PrimitiveType.Sphere, new Vector3(0.12f, 0.12f, 0.12f), transparentBlue)
+                .AddComponent<DragMune>();
             Transform[] muneIKChainR = new Transform[3] {
                 BoneTransform[Bone.MuneR],
                 BoneTransform[Bone.MuneR],
                 BoneTransform[Bone.MuneSubR]
             };
+            DragMune dragMuneR = DragPoint[Bone.MuneR] as DragMune;
             dragMuneR.Initialize(muneIKChainR, meido,
                 () => (BoneTransform[Bone.MuneR].position + BoneTransform[Bone.MuneSubR].position) / 2f,
                 () => Vector3.zero
             );
-            // dragMuneR.DragEvent += OnDragEvent;
 
             // Left Arm Dragpoint
-            GameObject[] ikChainArmL = MakeIKChainDragPoint(
+            BaseDrag[] ikChainArmL = MakeIKChainDragPoint(
                 new Transform[3] {
                     BoneTransform[Bone.ClavicleL],
                     BoneTransform[Bone.ClavicleL],
@@ -393,7 +484,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DragPoint[Bone.HandL] = ikChainArmL[2];
 
             // Right Arm Dragpoint
-            GameObject[] ikChainArmR = MakeIKChainDragPoint(
+            BaseDrag[] ikChainArmR = MakeIKChainDragPoint(
                 new Transform[3] {
                     BoneTransform[Bone.ClavicleR],
                     BoneTransform[Bone.ClavicleR],
@@ -416,7 +507,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DragPoint[Bone.HandR] = ikChainArmR[2];
 
             // Left Leg Dragpoint
-            GameObject[] ikChainLegL = MakeIKChainDragPoint(
+            BaseDrag[] ikChainLegL = MakeIKChainDragPoint(
                 new Transform[3] {
                     BoneTransform[Bone.ThighL],
                     BoneTransform[Bone.CalfL],
@@ -438,7 +529,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DragPoint[Bone.FootL] = ikChainLegL[2];
 
             // Right Arm Dragpoint
-            GameObject[] ikChainLegR = MakeIKChainDragPoint(
+            BaseDrag[] ikChainLegR = MakeIKChainDragPoint(
                 new Transform[3] {
                     BoneTransform[Bone.ThighR],
                     BoneTransform[Bone.CalfR],
@@ -460,66 +551,51 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DragPoint[Bone.FootR] = ikChainLegR[2];
 
             // destroy unused thigh dragpoints 
-            GameObject.Destroy(ikChainLegL[0]);
-            GameObject.Destroy(ikChainLegR[0]);
+            GameObject.Destroy(ikChainLegL[0].gameObject);
+            GameObject.Destroy(ikChainLegR[0].gameObject);
 
             // Spine Dragpoints
             for (Bone bone = Bone.Neck; bone <= Bone.ThighR; ++bone)
             {
                 Transform pos = BoneTransform[bone];
-                DragPoint[bone] = MakeDragPoint(PrimitiveType.Sphere, limbDragPointSize, transparentBlue);
-                DragSpine dragSpine = DragPoint[bone].AddComponent<DragSpine>();
-                dragSpine.Initialize(BoneTransform[bone], meido,
-                    () => pos.position,
+                DragPoint[bone] = MakeDragPoint(PrimitiveType.Sphere, Vector3.one * 0.04f, transparentBlue)
+                    .AddComponent<DragSpine>()
+                    .Initialize(BoneTransform[bone], false, meido,
+                        () => pos.position,
+                        () => Vector3.zero
+                    );
+            }
+
+            // Hip DragPoint
+            DragPoint[Bone.Hip] = MakeDragPoint(PrimitiveType.Cube, Vector3.one * 0.045f, transparentBlue)
+                .AddComponent<DragSpine>()
+                .Initialize(BoneTransform[Bone.Hip], true, meido,
+                    () => BoneTransform[Bone.Hip].position,
                     () => Vector3.zero
                 );
-                // dragSpine.DragEvent += OnDragEvent;
-            }
 
-            // Finger Dragpoints
-            for (Bone finger = Bone.Finger0L; finger <= Bone.Finger4R; finger += 4)
+            Action<Bone, Bone, int> MakeFingerDragPoint = (start, end, joints) =>
             {
-                for (int i = 0; i < 3; i++)
+                for (Bone it = start; it <= end; it += joints)
                 {
-                    Bone bone = finger + 1 + i; // Bone.Finger01
-                    DragPoint[bone] = MakeDragPoint(PrimitiveType.Sphere, fingerDragPointSize, transparentBlue);
-                    Transform[] trans = new Transform[3] {
-                        BoneTransform[bone - 1],
-                        BoneTransform[bone - 1],
-                        BoneTransform[bone]
-                    };
-                    Func<Vector3> pos = () => BoneTransform[bone].position;
-                    bool baseFinger = i == 0;
-                    DragJointFinger dragJointFinger = DragPoint[bone].AddComponent<DragJointFinger>();
-                    dragJointFinger.Initialize(trans, baseFinger, meido, pos, () => Vector3.zero);
-                    // dragJointFinger.DragEvent += OnDragEvent;
+                    for (int i = 0; i < joints - 1; i++)
+                    {
+                        Bone bone = it + 1 + i;
+                        DragPoint[bone] = MakeDragPoint(PrimitiveType.Sphere, fingerDragPointSize, transparentBlue2)
+                            .AddComponent<DragJointFinger>()
+                            .Initialize(new Transform[3] {
+                                BoneTransform[bone - 1],
+                                BoneTransform[bone - 1],
+                                BoneTransform[bone]
+                                }, i == 0, meido, () => BoneTransform[bone].position, () => Vector3.zero
+                            );
+                        DragPoint[bone].DragPointVisible = true;
+                    }
                 }
-            }
+            };
 
-            // Toe Dragpoints
-            for (Bone toe = Bone.Toe0L; toe <= Bone.Toe2R; toe += 3)
-            {
-                for (int i = 0; i < 2; i++)
-                {
-                    Bone bone = toe + 1 + i; // Bone.Toe01
-                    DragPoint[bone] = MakeDragPoint(PrimitiveType.Sphere, fingerDragPointSize, transparentBlue);
-                    Transform[] trans = new Transform[3] {
-                        BoneTransform[bone - 1],
-                        BoneTransform[bone - 1],
-                        BoneTransform[bone]
-                    };
-                    Func<Vector3> pos = () => BoneTransform[bone].position;
-                    bool baseFinger = i == 0;
-                    DragJointFinger dragJointFinger = DragPoint[bone].AddComponent<DragJointFinger>();
-                    dragJointFinger.Initialize(trans, baseFinger, meido, pos, () => Vector3.zero);
-                    // dragJointFinger.DragEvent += OnDragEvent;
-                }
-            }
-
-            ikModeOld = IKMode.None;
-            ikMode = IKMode.None;
-
-            UpdateIK();
+            MakeFingerDragPoint(Bone.Finger0L, Bone.Finger4R, 4);
+            MakeFingerDragPoint(Bone.Toe0L, Bone.Toe2R, 3);
         }
 
         private void InitializeBones()
@@ -626,6 +702,33 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void OnDragEvent(object sender, EventArgs args)
         {
             this.meido.IsStop = true;
+        }
+
+        private struct DragInfo
+        {
+            public Bone Bone { get; private set; }
+            public bool GizmoActive { get; private set; }
+            public bool DragPointActive { get; private set; }
+            public bool DragPointVisible { get; private set; }
+            public DragInfo(Bone bone, bool gizmoActive, bool dragPointActive, bool dragPointVisible)
+            {
+                this.Bone = bone;
+                this.GizmoActive = gizmoActive;
+                this.DragPointActive = dragPointActive;
+                this.DragPointVisible = dragPointVisible;
+            }
+            public static DragInfo Gizmo(Bone bone)
+            {
+                return new DragInfo(bone, true, false, false);
+            }
+            public static DragInfo Drag(Bone bone)
+            {
+                return new DragInfo(bone, false, true, false);
+            }
+            public static DragInfo DragBone(Bone bone)
+            {
+                return new DragInfo(bone, false, true, true);
+            }
         }
     }
 }

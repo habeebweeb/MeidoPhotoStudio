@@ -14,7 +14,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 off2;
         private int foot = 1;
 
-        public void Initialize(Transform[] ikChain, bool foot, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
+        public DragJointHand Initialize(Transform[] ikChain, bool foot, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
         {
             base.Initialize(meido, position, rotation);
             this.ikChain = ikChain;
@@ -28,6 +28,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             InitializeIK();
             InitializeIK2();
             InitializeGizmo(this.ikChain[hand]);
+            return this;
         }
         public void InitializeIK()
         {
@@ -46,15 +47,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void GetDragType()
         {
-            if (Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.LeftAlt))
+            if (Utility.GetModKey(Utility.ModKey.Shift) && Utility.GetModKey(Utility.ModKey.Alt))
             {
                 dragType = DragType.RotLocalY;
             }
-            else if (Input.GetKey(KeyCode.LeftAlt))
+            else if (Utility.GetModKey(Utility.ModKey.Alt))
             {
                 dragType = DragType.RotLocalXZ;
             }
-            else if (Input.GetKey(KeyCode.LeftControl))
+            else if (Utility.GetModKey(Utility.ModKey.Control))
             {
                 dragType = DragType.MoveXZ;
             }

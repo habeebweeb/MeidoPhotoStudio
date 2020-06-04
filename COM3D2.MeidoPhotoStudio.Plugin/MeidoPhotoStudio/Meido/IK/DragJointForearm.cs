@@ -13,7 +13,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 off2;
         private bool knee = false;
 
-        public void Initialize(Transform[] ikChain, bool knee, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
+        public DragJointForearm Initialize(Transform[] ikChain, bool knee, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
         {
             base.Initialize(meido, position, rotation);
             this.ikChain = ikChain;
@@ -29,6 +29,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             InitializeIK();
 
             InitializeGizmo(this.ikChain[hand]);
+            return this;
         }
 
         public void InitializeIK()

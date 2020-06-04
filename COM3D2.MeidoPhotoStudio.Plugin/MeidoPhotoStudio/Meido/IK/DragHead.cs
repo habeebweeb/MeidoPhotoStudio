@@ -14,7 +14,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 mousePosOther;
         public event EventHandler Select;
 
-        public void Initialize(Transform head, Meido meido, Func<Vector3> posFunc, Func<Vector3> rotFunc)
+        public DragHead Initialize(Transform head, Meido meido, Func<Vector3> posFunc, Func<Vector3> rotFunc)
         {
             base.Initialize(meido, posFunc, rotFunc);
             this.head = head;
@@ -24,6 +24,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             defEyeRotR = this.maid.body0.quaDefEyeR.eulerAngles;
 
             InitializeGizmo(this.head);
+            return this;
         }
 
         protected override void GetDragType()

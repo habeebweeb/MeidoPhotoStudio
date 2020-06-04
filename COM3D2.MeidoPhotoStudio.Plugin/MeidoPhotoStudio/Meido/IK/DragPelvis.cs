@@ -8,10 +8,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Transform pelvis;
         private Vector3 pelvisRotation;
 
-        public void Initialize(Transform pelvis, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
+        public DragPelvis Initialize(Transform pelvis, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
         {
             base.Initialize(meido, position, rotation);
             this.pelvis = pelvis;
+            return this;
         }
 
         protected override void GetDragType()
