@@ -14,6 +14,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private WindowManager windowManager;
         private MeidoManager meidoManager;
         private EnvironmentManager environmentManager;
+        private MessageWindowManager messageWindowManager;
         private Constants.Scene currentScene;
         private bool initialized = false;
         private bool isActive = false;
@@ -31,6 +32,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
+
         private void Update()
         {
             if (currentScene == Constants.Scene.Daily)
@@ -86,6 +88,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (meidoManager.IsBusy) return;
             meidoManager.DeactivateMeidos();
             environmentManager.Deactivate();
+            messageWindowManager.Deactivate();
 
             isActive = false;
             initialized = false;
@@ -115,7 +118,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             initialized = true;
             meidoManager = new MeidoManager();
             environmentManager = new EnvironmentManager();
-            windowManager = new WindowManager(meidoManager, environmentManager);
+            messageWindowManager = new MessageWindowManager();
+            windowManager = new WindowManager(meidoManager, environmentManager, messageWindowManager);
 
             environmentManager.Initialize();
 

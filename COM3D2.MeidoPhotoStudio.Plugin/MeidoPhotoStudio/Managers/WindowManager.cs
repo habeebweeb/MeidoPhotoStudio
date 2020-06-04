@@ -24,7 +24,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private MeidoManager meidoManager;
         private bool initializeWindows = false;
         public bool Visible { get; set; }
-        public WindowManager(MeidoManager meidoManager, EnvironmentManager environmentManager)
+        public WindowManager(MeidoManager meidoManager, EnvironmentManager environmentManager, MessageWindowManager messageWindowManager)
         {
             TabsPane.TabChange += ChangeTab;
             this.meidoManager = meidoManager;
@@ -40,7 +40,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 [Window.Face] = new MaidFaceWindow(meidoManager),
                 [Window.BG] = new BackgroundWindow(environmentManager),
                 [Window.BG2] = new Background2Window(environmentManager),
-                [Window.Message] = new MessageWindow()
+                [Window.Message] = new MessageWindow(messageWindowManager)
             };
             Windows[Window.Message].Visible = false;
         }
