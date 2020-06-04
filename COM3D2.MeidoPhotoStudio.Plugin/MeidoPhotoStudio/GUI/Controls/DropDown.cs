@@ -256,8 +256,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             dropdownStyle.margin = new RectOffset(0, 0, 0, 0);
             dropdownStyle.padding.top = dropdownStyle.padding.bottom = 2;
             dropdownStyle.normal.background = Utility.MakeTex(2, 2, new Color(0f, 0f, 0f, 0.5f));
-            dropdownStyle.onHover.background = dropdownStyle.hover.background = dropdownStyle.onNormal.background = new Texture2D(2, 2);
-            dropdownStyle.onHover.textColor = dropdownStyle.onNormal.textColor = dropdownStyle.hover.textColor = Color.black;
+            Texture2D whiteBackground = new Texture2D(2, 2);
+            dropdownStyle.onHover.background
+                = dropdownStyle.hover.background
+                = dropdownStyle.onNormal.background
+                = whiteBackground;
+            dropdownStyle.onHover.textColor
+                = dropdownStyle.onNormal.textColor
+                = dropdownStyle.hover.textColor
+                = Color.black;
 
             windowStyle = new GUIStyle(GUI.skin.box);
             windowStyle.padding = new RectOffset(0, 0, 0, 0);

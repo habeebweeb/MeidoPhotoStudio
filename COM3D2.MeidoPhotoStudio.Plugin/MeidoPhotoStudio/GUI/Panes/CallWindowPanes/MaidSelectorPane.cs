@@ -60,11 +60,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     int selectedIndex = selectedMaidList.IndexOf(i) + 1;
                     GUI.DrawTexture(new Rect(5, y + 5, buttonWidth - 10, buttonHeight - 10), Texture2D.whiteTexture);
-                    GUI.Label(new Rect(0, y + 5, buttonWidth - 10, buttonHeight), selectedIndex.ToString(), selectLabelStyle);
+                    GUI.Label(
+                        new Rect(0, y + 5, buttonWidth - 10, buttonHeight), selectedIndex.ToString(), selectLabelStyle
+                    );
                 }
 
                 GUI.DrawTexture(new Rect(5, y, buttonHeight, buttonHeight), meido.Image);
-                GUI.Label(new Rect(95, y + 30, buttonWidth - 80, buttonHeight), meido.NameJP, selectedMaid ? labelSelectedStyle : labelStyle);
+                GUI.Label(
+                    new Rect(95, y + 30, buttonWidth - 80, buttonHeight),
+                    meido.NameJP, selectedMaid ? labelSelectedStyle : labelStyle
+                );
 
             }
             GUI.EndScrollView();

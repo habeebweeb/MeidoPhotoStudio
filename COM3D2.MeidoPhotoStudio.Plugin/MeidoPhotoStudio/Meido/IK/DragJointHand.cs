@@ -14,7 +14,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 off2;
         private int foot = 1;
 
-        public DragJointHand Initialize(Transform[] ikChain, bool foot, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
+        public DragJointHand Initialize(
+            Transform[] ikChain, bool foot,
+            Meido meido, Func<Vector3> position, Func<Vector3> rotation
+        )
         {
             base.Initialize(meido, position, rotation);
             this.ikChain = ikChain;
@@ -72,7 +75,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Transform[] ikChain = dragType == DragType.MoveXZ ? this.ikChainLock : this.ikChain;
 
             IKCtrlData ikData = maid.body0.IKCtrl.GetIKData("左手");
-            off = transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z));
+            off = transform.position - Camera.main.ScreenToWorldPoint(
+                new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
+            );
             off2 = new Vector3(
                 transform.position.x - ikChain[hand].position.x,
                 transform.position.y - ikChain[hand].position.y,
@@ -88,7 +93,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (isPlaying) meido.IsStop = true;
 
             IKCtrlData ikData = maid.body0.IKCtrl.GetIKData("左手");
-            Vector3 pos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)) + off - off2;
+            Vector3 pos = Camera.main.ScreenToWorldPoint(
+                new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
+            ) + off - off2;
 
             if (dragType == DragType.None || dragType == DragType.MoveXZ)
             {

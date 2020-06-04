@@ -41,7 +41,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             GUILayout.BeginVertical();
             GUILayout.Space(30);
-            GUILayout.Label(meidoManager.HasActiveMeido ? meidoManager.ActiveMeido.NameJP : "", labelStyle, GUILayout.ExpandWidth(false));
+            GUILayout.Label(
+                meidoManager.HasActiveMeido
+                    ? meidoManager.ActiveMeido.NameJP
+                    : "",
+                labelStyle, GUILayout.ExpandWidth(false)
+            );
             GUILayout.EndVertical();
 
             NextButton.Draw(buttonStyle, GUILayout.Height(40), GUILayout.ExpandWidth(false));

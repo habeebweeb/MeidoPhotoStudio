@@ -40,7 +40,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 DropdownHelper.Visible = value;
             }
         }
-        public WindowManager(MeidoManager meidoManager, EnvironmentManager environmentManager, MessageWindowManager messageWindowManager)
+        public WindowManager(
+            MeidoManager meidoManager,
+            EnvironmentManager environmentManager,
+            MessageWindowManager messageWindowManager
+        )
         {
             TabsPane.TabChange += ChangeTab;
             this.meidoManager = meidoManager;
@@ -127,7 +131,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 mainWindowRect.x = Mathf.Clamp(mainWindowRect.x, 0, Screen.width - mainWindowRect.width);
                 mainWindowRect.y = Mathf.Clamp(mainWindowRect.y, -mainWindowRect.height + 30, Screen.height - 50);
 
-                mainWindowRect = GUI.Window(Constants.mainWindowID, mainWindowRect, Windows[CurrentWindow].OnGUI, "", windowStyle);
+                mainWindowRect = GUI.Window(
+                    Constants.mainWindowID, mainWindowRect, Windows[CurrentWindow].OnGUI, "", windowStyle
+                );
             }
 
             if (MessageWindowVisible)
@@ -135,8 +141,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 messageWindowRect.width = Mathf.Clamp(Screen.width * 0.4f, 440, Mathf.Infinity);
                 messageWindowRect.height = Mathf.Clamp(Screen.height * 0.15f, 150, Mathf.Infinity);
 
-                messageWindowRect.x = Mathf.Clamp(messageWindowRect.x, -messageWindowRect.width + Utility.GetPix(20), Screen.width - Utility.GetPix(20));
-                messageWindowRect.y = Mathf.Clamp(messageWindowRect.y, -messageWindowRect.height + Utility.GetPix(20), Screen.height - Utility.GetPix(20));
+                messageWindowRect.x = Mathf.Clamp(
+                    messageWindowRect.x,
+                    -messageWindowRect.width + Utility.GetPix(20),
+                    Screen.width - Utility.GetPix(20)
+                );
+                messageWindowRect.y = Mathf.Clamp(
+                    messageWindowRect.y,
+                    -messageWindowRect.height + Utility.GetPix(20),
+                    Screen.height - Utility.GetPix(20)
+                );
 
                 if (!initializeWindows)
                 {
@@ -145,7 +159,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     initializeWindows = true;
                 }
 
-                messageWindowRect = GUI.Window(Constants.messageWindowID, messageWindowRect, Windows[Window.Message].OnGUI, "", windowStyle);
+                messageWindowRect = GUI.Window(
+                    Constants.messageWindowID, messageWindowRect, Windows[Window.Message].OnGUI, "", windowStyle
+                );
             }
 
             if (DropdownVisible) DropdownHelper.HandleDropdown();

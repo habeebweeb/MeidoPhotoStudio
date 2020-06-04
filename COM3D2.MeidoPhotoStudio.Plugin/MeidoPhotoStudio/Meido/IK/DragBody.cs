@@ -51,7 +51,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             maidScale = maid.transform.localScale.x;
             maidRot = maid.transform.localEulerAngles;
-            off = transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z));
+            off = transform.position - Camera.main.ScreenToWorldPoint(
+                new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
+            );
             off2 = new Vector3(
                 transform.position.x - maid.transform.position.x,
                 transform.position.y - maid.transform.position.y,
@@ -83,7 +85,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void Drag()
         {
-            Vector3 pos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)) + off - off2;
+            Vector3 pos = Camera.main.ScreenToWorldPoint(
+                new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
+            ) + off - off2;
 
             if (dragType == DragType.MoveXZ)
             {
@@ -98,8 +102,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (dragType == DragType.RotY)
             {
                 Vector3 posOther = Input.mousePosition - mousePos;
-                maid.transform.eulerAngles =
-                    new Vector3(maid.transform.eulerAngles.x, maidRot.y - posOther.x / 3f, maid.transform.eulerAngles.z);
+                maid.transform.eulerAngles = new Vector3(
+                    maid.transform.eulerAngles.x, maidRot.y - posOther.x / 3f, maid.transform.eulerAngles.z
+                );
 
             }
 
@@ -113,8 +118,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (mousePos2 != Input.mousePosition)
                 {
                     maid.transform.localEulerAngles = maidRot;
-                    maid.transform.RotateAround(maid.transform.position, new Vector3(vector3_3.x, 0.0f, vector3_3.z), posOther.y / 4f);
-                    maid.transform.RotateAround(maid.transform.position, new Vector3(vector3_4.x, 0.0f, vector3_4.z), (-posOther.x / 6.0f));
+                    maid.transform.RotateAround(
+                        maid.transform.position,
+                        new Vector3(vector3_3.x, 0.0f, vector3_3.z),
+                        posOther.y / 4f
+                    );
+                    maid.transform.RotateAround(
+                        maid.transform.position,
+                        new Vector3(vector3_4.x, 0.0f, vector3_4.z),
+                        -posOther.x / 6.0f
+                    );
                 }
                 mousePos2 = Input.mousePosition;
             }

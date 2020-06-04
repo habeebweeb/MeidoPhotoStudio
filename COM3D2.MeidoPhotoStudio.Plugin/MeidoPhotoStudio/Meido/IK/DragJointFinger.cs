@@ -13,7 +13,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 off2;
         private bool baseFinger;
 
-        public DragJointFinger Initialize(Transform[] ikChain, bool baseFinger, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
+        public DragJointFinger Initialize(
+            Transform[] ikChain, bool baseFinger,
+            Meido meido, Func<Vector3> position, Func<Vector3> rotation)
         {
             base.Initialize(meido, position, rotation);
             this.ikChain = ikChain;
@@ -54,11 +56,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             base.InitializeDrag();
 
             IKCtrlData ikData = maid.body0.IKCtrl.GetIKData("左手");
-            off = transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z));
+            off = transform.position - Camera.main.ScreenToWorldPoint(
+                new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
+            );
             off2 = new Vector3(
                 transform.position.x - ikChain[hand].position.x,
                 transform.position.y - ikChain[hand].position.y,
-                transform.position.z - ikChain[hand].position.z);
+                transform.position.z - ikChain[hand].position.z
+            );
 
             jointRotation[upperArmRot] = ikChain[upperArm].localEulerAngles;
             jointRotation[handRot] = ikChain[hand].localEulerAngles;
@@ -70,7 +75,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (isPlaying) meido.IsStop = true;
 
             IKCtrlData ikData = maid.body0.IKCtrl.GetIKData("左手");
-            Vector3 pos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)) + off - off2;
+            Vector3 pos = Camera.main.ScreenToWorldPoint(
+                new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
+            ) + off - off2;
 
             if (dragType == DragType.None)
             {
@@ -85,8 +92,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
                 else
                 {
-                    ikChain[hand].localEulerAngles = new Vector3(jointRotation[handRot].x, jointRotation[handRot].y, ikChain[hand].localEulerAngles.z);
-                    ikChain[upperArm].localEulerAngles = new Vector3(jointRotation[upperArmRot].x, jointRotation[upperArmRot].y, ikChain[upperArm].localEulerAngles.z);
+                    ikChain[hand].localEulerAngles = new Vector3(
+                        jointRotation[handRot].x, jointRotation[handRot].y, ikChain[hand].localEulerAngles.z
+                    );
+                    ikChain[upperArm].localEulerAngles = new Vector3(
+                        jointRotation[upperArmRot].x, jointRotation[upperArmRot].y, ikChain[upperArm].localEulerAngles.z
+                    );
                 }
             }
             else

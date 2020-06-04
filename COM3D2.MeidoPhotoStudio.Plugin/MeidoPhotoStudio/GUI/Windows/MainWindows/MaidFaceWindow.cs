@@ -23,7 +23,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.maidFaceSliderPane = new MaidFaceSliderPane(this.meidoManager);
 
-            this.faceBlendDropdown = new Dropdown(Translation.GetList("faceBlendPresetsDropdown", Constants.FaceBlendList));
+            this.faceBlendDropdown = new Dropdown(
+                Translation.GetList("faceBlendPresetsDropdown", Constants.FaceBlendList)
+            );
             this.faceBlendDropdown.SelectionChange += (s, a) =>
             {
                 string faceBlend = Constants.FaceBlendList[this.faceBlendDropdown.SelectedItemIndex];

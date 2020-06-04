@@ -44,7 +44,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         internal static FieldInfo GetFieldInfo<T>(string field)
         {
-            BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+            BindingFlags bindingFlags = BindingFlags.Instance
+                | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
             return typeof(T).GetField(field, bindingFlags);
         }
 
@@ -78,7 +79,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         internal static string ScreenshotFilename()
         {
-            string screenShotDir = Path.Combine(GameMain.Instance.SerializeStorageManager.StoreDirectoryPath, "ScreenShot");
+            string screenShotDir = Path.Combine(
+                GameMain.Instance.SerializeStorageManager.StoreDirectoryPath, "ScreenShot"
+            );
             if (!Directory.Exists(screenShotDir))
             {
                 Directory.CreateDirectory(screenShotDir);

@@ -106,7 +106,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (dragType == DragType.RotLocalY)
             {
                 head.localEulerAngles = rotate;
-                head.localRotation = Quaternion.Euler(head.localEulerAngles) * Quaternion.AngleAxis(vec31.x / 3f, Vector3.right);
+                head.localRotation = Quaternion.Euler(head.localEulerAngles)
+                    * Quaternion.AngleAxis(vec31.x / 3f, Vector3.right);
             }
 
             if (dragType == DragType.MoveXZ || dragType == DragType.MoveY)
@@ -117,8 +118,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 mousePosOther.y = vec31.y;
                 mousePosOther.x = vec31.x;
 
-                maid.body0.quaDefEyeL.eulerAngles = new Vector3(eyeRotL.x, eyeRotL.y - mousePosOther.x / 10f, eyeRotL.z - mousePosOther.y / 10f);
-                maid.body0.quaDefEyeR.eulerAngles = new Vector3(eyeRotR.x, eyeRotR.y + inv * mousePosOther.x / 10f, eyeRotR.z + mousePosOther.y / 10f);
+                maid.body0.quaDefEyeL.eulerAngles = new Vector3(
+                    eyeRotL.x, eyeRotL.y - mousePosOther.x / 10f, eyeRotL.z - mousePosOther.y / 10f
+                );
+                maid.body0.quaDefEyeR.eulerAngles = new Vector3(
+                    eyeRotR.x, eyeRotR.y + inv * mousePosOther.x / 10f, eyeRotR.z + mousePosOther.y / 10f
+                );
             }
         }
     }

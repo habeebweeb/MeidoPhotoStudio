@@ -79,7 +79,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GUILayout.Label(Label, sliderLabelStyle, GUILayout.ExpandWidth(false));
             }
             else sliderStyle.margin.top = 10;
-            float value = GUILayout.HorizontalSlider(Value, Left, Right, sliderStyle, GUI.skin.horizontalSliderThumb, layoutOptions);
+            float value = GUILayout.HorizontalSlider(
+                Value, Left, Right, sliderStyle, GUI.skin.horizontalSliderThumb, layoutOptions
+            );
             if (hasLabel) GUILayout.EndVertical();
             if (value != Value) Value = value;
         }

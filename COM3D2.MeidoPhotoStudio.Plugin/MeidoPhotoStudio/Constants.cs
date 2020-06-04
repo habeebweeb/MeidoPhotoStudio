@@ -40,7 +40,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             customPosePath = Path.Combine(modsPath, "Custom Poses");
             scenesPath = Path.Combine(modsPath, "Scenes");
             kankyoPath = Path.Combine(modsPath, "Environments");
-            configPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), @"Config\MeidoPhotoStudio");
+            configPath = Path.Combine(
+                Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+                @"Config\MeidoPhotoStudio"
+            );
 
             PoseDict = new Dictionary<string, List<string>>();
             PoseGroupList = new List<string>();
@@ -96,13 +99,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                             {
                                 editPoseList.Add(file);
                             }
-                            else if (file != "dance_cm3d2_001_zoukin" && file != "dance_cm3d2_001_mop" && file != "aruki_1_idougo_f"
-                                && file != "sleep2" && file != "stand_akire2" && !file.EndsWith("_3_") && !file.EndsWith("_5_")
-                                && !file.StartsWith("vr_") && !file.StartsWith("dance_mc") && !file.Contains("_kubi_")
-                                && !file.Contains("a01_") && !file.Contains("b01_") && !file.Contains("b02_")
-                                && !file.EndsWith("_m2") && !file.EndsWith("_m2_once_") && !file.StartsWith("h_")
-                                && !file.StartsWith("event_") && !file.StartsWith("man_") && !file.EndsWith("_m")
-                                && !file.Contains("_m_") && !file.Contains("_man_")
+                            else if (file != "dance_cm3d2_001_zoukin" && file != "dance_cm3d2_001_mop"
+                                && file != "aruki_1_idougo_f" && file != "sleep2" && file != "stand_akire2"
+                                && !file.EndsWith("_3_") && !file.EndsWith("_5_") && !file.StartsWith("vr_")
+                                && !file.StartsWith("dance_mc") && !file.Contains("_kubi_") && !file.Contains("a01_")
+                                && !file.Contains("b01_") && !file.Contains("b02_") && !file.EndsWith("_m2")
+                                && !file.EndsWith("_m2_once_") && !file.StartsWith("h_") && !file.StartsWith("event_")
+                                && !file.StartsWith("man_") && !file.EndsWith("_m") && !file.Contains("_m_")
+                                && !file.Contains("_man_")
                             )
                             {
                                 if (!path.Contains(@"\sex\")) otherPoseList.Add(file);
@@ -233,7 +237,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             JObject translation = JObject.Parse(translationJson);
 
-            Translations = new Dictionary<string, Dictionary<string, string>>(StringComparer.InvariantCultureIgnoreCase);
+            Translations = new Dictionary<string, Dictionary<string, string>>(
+                StringComparer.InvariantCultureIgnoreCase
+            );
 
             foreach (JProperty translationProp in translation.AsJEnumerable())
             {

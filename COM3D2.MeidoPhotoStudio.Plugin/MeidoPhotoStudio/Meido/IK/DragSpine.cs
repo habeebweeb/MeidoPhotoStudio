@@ -11,7 +11,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 off2;
         private bool isHip;
 
-        public DragSpine Initialize(Transform spine, bool isHip, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
+        public DragSpine Initialize(
+            Transform spine, bool isHip,
+            Meido meido, Func<Vector3> position, Func<Vector3> rotation
+        )
         {
             base.Initialize(meido, position, rotation);
             this.spine = spine;

@@ -13,7 +13,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 off2;
         private bool knee = false;
 
-        public DragJointForearm Initialize(Transform[] ikChain, bool knee, Meido meido, Func<Vector3> position, Func<Vector3> rotation)
+        public DragJointForearm Initialize(
+            Transform[] ikChain, bool knee,
+            Meido meido, Func<Vector3> position, Func<Vector3> rotation
+        )
         {
             base.Initialize(meido, position, rotation);
             this.ikChain = ikChain;
@@ -53,11 +56,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             base.InitializeDrag();
 
-            off = transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z));
+            off = transform.position - Camera.main.ScreenToWorldPoint(
+                new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
+            );
             off2 = new Vector3(
                 transform.position.x - ikChain[hand].position.x,
                 transform.position.y - ikChain[hand].position.y,
-                transform.position.z - ikChain[hand].position.z);
+                transform.position.z - ikChain[hand].position.z
+            );
 
             jointRotation[upperArmRot] = ikChain[upperArm].localEulerAngles;
             jointRotation[handRot] = ikChain[hand].localEulerAngles;

@@ -40,7 +40,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameMain.Instance.BgMgr.ChangeBg("Theater");
 
             GameMain.Instance.MainCamera.GetComponent<Camera>().backgroundColor = new Color(0.0f, 0.0f, 0.0f);
-            UltimateOrbitCamera UOCamera = Utility.GetFieldValue<CameraMain, UltimateOrbitCamera>(GameMain.Instance.MainCamera, "m_UOCamera");
+            UltimateOrbitCamera UOCamera =
+                Utility.GetFieldValue<CameraMain, UltimateOrbitCamera>(GameMain.Instance.MainCamera, "m_UOCamera");
             UOCamera.enabled = true;
 
             GameMain.Instance.MainLight.Reset();

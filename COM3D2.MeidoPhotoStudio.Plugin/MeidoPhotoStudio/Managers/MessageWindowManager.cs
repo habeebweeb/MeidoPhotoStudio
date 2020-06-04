@@ -16,9 +16,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             sysRoot = GameObject.Find("__GameMain__/SystemUI Root");
             this.msgWnd = GameMain.Instance.MsgWnd;
             this.msgGameObject = sysRoot.transform.Find("MessageWindowPanel").gameObject;
-            this.msgClass = new MessageClass(this.msgGameObject, this.msgWnd);// new MessageClass(this.msgGameObject, this.msgWnd);
-            this.nameLabel = UTY.GetChildObject(this.msgGameObject, "MessageViewer/MsgParent/SpeakerName/Name", false).GetComponent<UILabel>();
-            this.msgLabel = UTY.GetChildObject(this.msgGameObject, "MessageViewer/MsgParent/Message", false).GetComponent<UILabel>();
+            this.msgClass = new MessageClass(this.msgGameObject, this.msgWnd);
+            this.nameLabel = UTY.GetChildObject(this.msgGameObject, "MessageViewer/MsgParent/SpeakerName/Name", false)
+                .GetComponent<UILabel>();
+            this.msgLabel = UTY.GetChildObject(this.msgGameObject, "MessageViewer/MsgParent/Message", false)
+                .GetComponent<UILabel>();
             Utility.SetFieldValue<MessageClass, UILabel>(this.msgClass, "message_label_", this.msgLabel);
             Utility.SetFieldValue<MessageClass, UILabel>(this.msgClass, "name_label_", this.nameLabel);
             SetPhotoMessageWindowActive(true);

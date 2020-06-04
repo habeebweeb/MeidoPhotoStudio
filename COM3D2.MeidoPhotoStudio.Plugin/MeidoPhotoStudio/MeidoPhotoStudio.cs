@@ -73,9 +73,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             // Hide UI and dragpoints
             GameObject editUI = GameObject.Find("/UI Root/Camera");
-            GameObject fpsViewer = UTY.GetChildObject(GameMain.Instance.gameObject, "SystemUI Root/FpsCounter", false);
-            GameObject sysDialog = UTY.GetChildObject(GameMain.Instance.gameObject, "SystemUI Root/SystemDialog", false);
-            GameObject sysShortcut = UTY.GetChildObject(GameMain.Instance.gameObject, "SystemUI Root/SystemShortcut", false);
+            GameObject fpsViewer =
+                UTY.GetChildObject(GameMain.Instance.gameObject, "SystemUI Root/FpsCounter", false);
+            GameObject sysDialog =
+                UTY.GetChildObject(GameMain.Instance.gameObject, "SystemUI Root/SystemDialog", false);
+            GameObject sysShortcut =
+                UTY.GetChildObject(GameMain.Instance.gameObject, "SystemUI Root/SystemShortcut", false);
             if (editUI != null) editUI.SetActive(false);
             fpsViewer.SetActive(false);
             sysDialog.SetActive(false);
