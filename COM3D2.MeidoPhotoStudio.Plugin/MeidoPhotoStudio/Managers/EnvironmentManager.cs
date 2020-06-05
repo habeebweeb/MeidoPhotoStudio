@@ -11,14 +11,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private GameObject bgObject;
         private Transform bg;
         private CameraInfo cameraInfo;
-        public void ChangeBackground(string assetName)
+        public void ChangeBackground(string assetName, bool creative = false)
         {
-            GameMain.Instance.BgMgr.ChangeBg(assetName);
-            if (assetName == "KaraokeRoom")
+            if (creative)
             {
-                bg.transform.position = bgObject.transform.position;
-                bg.transform.localPosition = new Vector3(1f, 0f, 4f);
-                bg.transform.localRotation = Quaternion.Euler(new Vector3(0f, 90f, 0f));
+                GameMain.Instance.BgMgr.ChangeBgMyRoom(assetName);
+            }
+            else
+            {
+                GameMain.Instance.BgMgr.ChangeBg(assetName);
+                if (assetName == "KaraokeRoom")
+                {
+                    bg.transform.position = bgObject.transform.position;
+                    bg.transform.localPosition = new Vector3(1f, 0f, 4f);
+                    bg.transform.localRotation = Quaternion.Euler(new Vector3(0f, 90f, 0f));
+                }
             }
         }
 

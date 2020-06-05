@@ -30,9 +30,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static readonly List<string> PoseGroupList;
         public static readonly Dictionary<string, List<string>> PoseDict;
         public static readonly Dictionary<string, List<KeyValuePair<string, string>>> CustomPoseDict;
-        public static int CustomPoseGroupsIndex { get; private set; }
+        public static int CustomPoseGroupsIndex { get; private set; } = -1;
+        public static int MyRoomCustomBGIndex { get; private set; } = -1;
         public static readonly List<string> FaceBlendList;
         public static readonly List<string> BGList;
+        public static List<KeyValuePair<string, string>> MyRoomCustomBGList;
 
         static Constants()
         {
@@ -52,6 +54,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             FaceBlendList = new List<string>();
 
             BGList = new List<string>();
+            MyRoomCustomBGList = new List<KeyValuePair<string, string>>();
         }
 
         public static void Initialize()
@@ -125,7 +128,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             CustomPoseGroupsIndex = PoseDict.Count;
 
-            Action<string> GetPoses = (directory) =>
+            Action<string> GetPoses = directory =>
             {
                 List<KeyValuePair<string, string>> poseList = new List<KeyValuePair<string, string>>();
                 foreach (string file in Directory.GetFiles(directory))
@@ -189,9 +192,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         {
                             string bg = csvParser.GetCellAsString(3, cell_y);
                             BGList.Add(bg);
+                            // ew
+                            if (bg == "Yashiki") BGList.Add("Yashiki_Pillow");
+                            else if (bg == "Train") BGList.Add("train_notsurikawa");
                         }
                     }
                 }
+            }
+
+            Dictionary<string, string> saveDataDict = MyRoomCustom.CreativeRoomManager.GetSaveDataDic();
+
+            if (saveDataDict != null)
+            {
+                MyRoomCustomBGIndex = BGList.Count;
+                MyRoomCustomBGList.AddRange(saveDataDict);
             }
         }
 
@@ -264,9 +278,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return Translations[category][text];
         }
 
-        public static string[] GetList(string category, IEnumerable<string> list)
+        public static string[] GetArray(string category, IEnumerable<string> list)
         {
-            return list.Select(uiName => Get(category, uiName) ?? uiName).ToArray();
+            return GetList(category, list).ToArray();
+        }
+
+        public static IEnumerable<string> GetList(string category, IEnumerable<string> list)
+        {
+
+            return list.Select(uiName => Get(category, uiName) ?? uiName);
         }
 
         public static string[] GetList(string category, IEnumerable<KeyValuePair<string, string>> list)

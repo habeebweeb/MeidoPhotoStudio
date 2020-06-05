@@ -21,7 +21,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.meidoManager = meidoManager;
 
-            this.poseGroupDropdown = new Dropdown(Translation.GetList("poseGroupDropdown", Constants.PoseGroupList));
+            this.poseGroupDropdown = new Dropdown(Translation.GetArray("poseGroupDropdown", Constants.PoseGroupList));
             this.poseGroupDropdown.SelectionChange += ChangePoseGroup;
 
             this.poseDropdown = new Dropdown(MakePoseList(Constants.PoseDict[Constants.PoseGroupList[0]]));

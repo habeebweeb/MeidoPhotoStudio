@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -15,11 +16,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             int theaterIndex = Constants.BGList.FindIndex(bg => bg == "Theater");
 
-            this.bgDropdown = new Dropdown(Translation.GetList("bgDropdown", Constants.BGList), theaterIndex);
+            List<string> bgList = new List<string>(Translation.GetList("bgDropdown", Constants.BGList));
+            if (Constants.MyRoomCustomBGIndex >= 0)
+            {
+                foreach (KeyValuePair<string, string> kvp in Constants.MyRoomCustomBGList)
+                {
+                    bgList.Add(kvp.Value);
+                }
+            }
+
+            this.bgDropdown = new Dropdown(bgList.ToArray(), theaterIndex);
             this.bgDropdown.SelectionChange += (s, a) =>
             {
-                string bg = Constants.BGList[this.bgDropdown.SelectedItemIndex];
-                environmentManager.ChangeBackground(bg);
+                int selectedIndex = this.bgDropdown.SelectedItemIndex;
+                bool isCreative = this.bgDropdown.SelectedItemIndex >= Constants.MyRoomCustomBGIndex;
+                string bg = isCreative
+                    ? Constants.MyRoomCustomBGList[selectedIndex - Constants.MyRoomCustomBGIndex].Key
+                    : Constants.BGList[selectedIndex];
+
+                environmentManager.ChangeBackground(bg, isCreative);
             };
 
             this.prevBGButton = new Button("<");
