@@ -33,30 +33,30 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (Utility.GetModKey(Utility.ModKey.Alt) && Utility.GetModKey(Utility.ModKey.Control))
             {
                 // eyes
-                dragType = Utility.GetModKey(Utility.ModKey.Shift) ? DragType.MoveY : DragType.MoveXZ;
+                CurrentDragType = Utility.GetModKey(Utility.ModKey.Shift) ? DragType.MoveY : DragType.MoveXZ;
             }
             else if (Utility.GetModKey(Utility.ModKey.Alt))
             {
                 // head
-                dragType = shift ? DragType.RotLocalY : DragType.RotLocalXZ;
+                CurrentDragType = shift ? DragType.RotLocalY : DragType.RotLocalXZ;
             }
             else if (Input.GetKey(KeyCode.A))
             {
-                dragType = DragType.Select;
+                CurrentDragType = DragType.Select;
             }
             else
             {
-                dragType = DragType.None;
+                CurrentDragType = DragType.None;
             }
         }
         protected override void DoubleClick()
         {
-            if (dragType == DragType.MoveXZ || dragType == DragType.MoveY)
+            if (CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY)
             {
                 maid.body0.quaDefEyeL.eulerAngles = defEyeRotL;
                 maid.body0.quaDefEyeR.eulerAngles = defEyeRotR;
             }
-            if (dragType == DragType.RotLocalY || dragType == DragType.RotLocalXZ)
+            if (CurrentDragType == DragType.RotLocalY || CurrentDragType == DragType.RotLocalXZ)
             {
                 meido.IsFreeLook = !meido.IsFreeLook;
             }
@@ -64,7 +64,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void InitializeDrag()
         {
-            if (dragType == DragType.Select)
+            if (CurrentDragType == DragType.Select)
             {
                 Select?.Invoke(this, EventArgs.Empty);
                 return;
@@ -83,9 +83,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void Drag()
         {
-            if ((dragType == DragType.None || dragType == DragType.Select) || IsBone) return;
+            if ((CurrentDragType == DragType.None || CurrentDragType == DragType.Select) || IsBone) return;
 
-            if (!(dragType == DragType.MoveXZ || dragType == DragType.MoveY))
+            if (!(CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY))
             {
                 if (isPlaying) meido.IsStop = true;
             }
@@ -96,23 +96,23 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Vector3 vec32 = t.TransformDirection(Vector3.right);
             Vector3 vec33 = t.TransformDirection(Vector3.forward);
 
-            if (dragType == DragType.RotLocalXZ)
+            if (CurrentDragType == DragType.RotLocalXZ)
             {
                 head.localEulerAngles = rotate;
                 head.RotateAround(head.position, new Vector3(vec32.x, 0.0f, vec32.z), vec31.y / 3f);
                 head.RotateAround(head.position, new Vector3(vec33.x, 0.0f, vec33.z), (-vec31.x / 4.5f));
             }
 
-            if (dragType == DragType.RotLocalY)
+            if (CurrentDragType == DragType.RotLocalY)
             {
                 head.localEulerAngles = rotate;
                 head.localRotation = Quaternion.Euler(head.localEulerAngles)
                     * Quaternion.AngleAxis(vec31.x / 3f, Vector3.right);
             }
 
-            if (dragType == DragType.MoveXZ || dragType == DragType.MoveY)
+            if (CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY)
             {
-                int inv = dragType == DragType.MoveY ? -1 : 1;
+                int inv = CurrentDragType == DragType.MoveY ? -1 : 1;
                 Vector3 vec34 = new Vector3(eyeRotR.x, eyeRotR.y + vec31.x / 10f, eyeRotR.z + vec31.y / 10f);
 
                 mousePosOther.y = vec31.y;

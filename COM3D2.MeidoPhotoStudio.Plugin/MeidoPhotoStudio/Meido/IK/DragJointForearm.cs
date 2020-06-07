@@ -44,11 +44,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (knee && Utility.GetModKey(Utility.ModKey.Shift) && Utility.GetModKey(Utility.ModKey.Alt))
             {
-                dragType = DragType.RotLocalY;
+                CurrentDragType = DragType.RotLocalY;
             }
             else
             {
-                dragType = DragType.None;
+                CurrentDragType = DragType.None;
             }
         }
 
@@ -77,7 +77,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             IKCtrlData ikData = maid.body0.IKCtrl.GetIKData("左手");
             Vector3 pos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)) + off - off2;
 
-            if (dragType == DragType.None)
+            if (CurrentDragType == DragType.None)
             {
                 IK.Porc(ikChain[upperArm], ikChain[foreArm], ikChain[hand], pos, Vector3.zero, ikData);
 
@@ -90,7 +90,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Vector3 vec31 = Input.mousePosition - mousePos;
 
-                if (dragType == DragType.RotLocalY)
+                if (CurrentDragType == DragType.RotLocalY)
                 {
                     ikChain[upperArm].localEulerAngles = jointRotation[upperArmRot];
                     ikChain[upperArm].localRotation = Quaternion.Euler(ikChain[upperArm].localEulerAngles)

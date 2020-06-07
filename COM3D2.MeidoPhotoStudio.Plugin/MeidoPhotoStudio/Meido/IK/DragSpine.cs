@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
+    using static CustomGizmo;
     public class DragSpine : BaseDrag
     {
         private Transform spine;
@@ -28,13 +29,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (isHip && Utility.GetModKey(Utility.ModKey.Control))
             {
-                dragType = DragType.MoveY;
-                if (GizmoActive) SetGizmo(GizmoType.Rotate);
+                CurrentDragType = DragType.MoveY;
             }
             else
             {
-                dragType = DragType.None;
-                if (GizmoActive) SetGizmo(GizmoType.Rotate);
+                CurrentDragType = DragType.None;
             }
         }
 
@@ -45,7 +44,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (isHip)
             {
-                off = transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z));
+                off = transform.position - Camera.main.ScreenToWorldPoint(
+                    new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
+                );
                 off2 = new Vector3(
                     transform.position.x - spine.position.x,
                     transform.position.y - spine.position.y,
@@ -58,7 +59,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (isPlaying) meido.IsStop = true;
 
-            if (dragType == DragType.None)
+            if (CurrentDragType == DragType.None)
             {
                 Vector3 vec31 = Input.mousePosition - mousePos;
                 Transform t = GameMain.Instance.MainCamera.gameObject.transform;
@@ -70,9 +71,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 spine.RotateAround(spine.position, new Vector3(vec33.x, 0.0f, vec33.z), (-vec31.x / 4.5f));
             }
 
-            if (dragType == DragType.MoveY)
+            if (CurrentDragType == DragType.MoveY)
             {
-                Vector3 pos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)) + off - off2;
+                Vector3 pos = Camera.main.ScreenToWorldPoint(
+                    new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
+                ) + off - off2;
                 spine.position = new Vector3(spine.position.x, pos.y, spine.position.z);
             }
         }

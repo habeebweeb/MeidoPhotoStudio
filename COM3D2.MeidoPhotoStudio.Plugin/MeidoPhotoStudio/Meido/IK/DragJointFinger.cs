@@ -43,11 +43,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (Utility.GetModKey(Utility.ModKey.Shift))
             {
-                dragType = DragType.RotLocalY;
+                CurrentDragType = DragType.RotLocalY;
             }
             else
             {
-                dragType = DragType.None;
+                CurrentDragType = DragType.None;
             }
         }
 
@@ -79,7 +79,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
             ) + off - off2;
 
-            if (dragType == DragType.None)
+            if (CurrentDragType == DragType.None)
             {
                 IK.Porc(ikChain[upperArm], ikChain[foreArm], ikChain[hand], pos, Vector3.zero, ikData);
 
@@ -102,7 +102,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else
             {
-                if (dragType == DragType.RotLocalY)
+                if (CurrentDragType == DragType.RotLocalY)
                 {
                     Vector3 vec31 = Input.mousePosition - mousePos;
                     ikChain[upperArm].localEulerAngles = jointRotation[upperArmRot];

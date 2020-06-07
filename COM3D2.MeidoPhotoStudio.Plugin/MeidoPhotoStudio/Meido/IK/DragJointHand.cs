@@ -52,19 +52,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (Utility.GetModKey(Utility.ModKey.Shift) && Utility.GetModKey(Utility.ModKey.Alt))
             {
-                dragType = DragType.RotLocalY;
+                CurrentDragType = DragType.RotLocalY;
             }
             else if (Utility.GetModKey(Utility.ModKey.Alt))
             {
-                dragType = DragType.RotLocalXZ;
+                CurrentDragType = DragType.RotLocalXZ;
             }
             else if (Utility.GetModKey(Utility.ModKey.Control))
             {
-                dragType = DragType.MoveXZ;
+                CurrentDragType = DragType.MoveXZ;
             }
             else
             {
-                dragType = DragType.None;
+                CurrentDragType = DragType.None;
             }
         }
 
@@ -72,7 +72,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             base.InitializeDrag();
 
-            Transform[] ikChain = dragType == DragType.MoveXZ ? this.ikChainLock : this.ikChain;
+            Transform[] ikChain = CurrentDragType == DragType.MoveXZ ? this.ikChainLock : this.ikChain;
 
             IKCtrlData ikData = maid.body0.IKCtrl.GetIKData("左手");
             off = transform.position - Camera.main.ScreenToWorldPoint(
@@ -97,9 +97,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
             ) + off - off2;
 
-            if (dragType == DragType.None || dragType == DragType.MoveXZ)
+            if (CurrentDragType == DragType.None || CurrentDragType == DragType.MoveXZ)
             {
-                Transform[] ikChain = dragType == DragType.MoveXZ ? this.ikChainLock : this.ikChain;
+                Transform[] ikChain = CurrentDragType == DragType.MoveXZ ? this.ikChainLock : this.ikChain;
 
                 IK.Porc(ikChain[upperArm], ikChain[foreArm], ikChain[hand], pos, Vector3.zero, ikData);
 
@@ -112,14 +112,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Vector3 vec31 = Input.mousePosition - mousePos;
 
-                if (dragType == DragType.RotLocalY)
+                if (CurrentDragType == DragType.RotLocalY)
                 {
                     ikChain[hand].localEulerAngles = jointRotation[handRot];
                     ikChain[hand].localRotation = Quaternion.Euler(ikChain[hand].localEulerAngles)
                         * Quaternion.AngleAxis(vec31.x / 1.5f, Vector3.right);
                 }
 
-                if (dragType == DragType.RotLocalXZ)
+                if (CurrentDragType == DragType.RotLocalXZ)
                 {
                     ikChain[hand].localEulerAngles = jointRotation[handRot];
                     ikChain[hand].localRotation = Quaternion.Euler(ikChain[hand].localEulerAngles)

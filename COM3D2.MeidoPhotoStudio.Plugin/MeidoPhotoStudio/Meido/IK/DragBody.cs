@@ -19,29 +19,29 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bool holdShift = Utility.GetModKey(Utility.ModKey.Shift);
             if (Input.GetKey(KeyCode.A))
             {
-                dragType = DragType.Select;
+                CurrentDragType = DragType.Select;
             }
             else if (Input.GetKey(KeyCode.Z))
             {
-                if (Utility.GetModKey(Utility.ModKey.Control)) dragType = DragType.MoveY;
-                else dragType = holdShift ? DragType.RotY : DragType.MoveXZ;
+                if (Utility.GetModKey(Utility.ModKey.Control)) CurrentDragType = DragType.MoveY;
+                else CurrentDragType = holdShift ? DragType.RotY : DragType.MoveXZ;
             }
             else if (Input.GetKey(KeyCode.X))
             {
-                dragType = holdShift ? DragType.RotLocalY : DragType.RotLocalXZ;
+                CurrentDragType = holdShift ? DragType.RotLocalY : DragType.RotLocalXZ;
             }
             else if (Input.GetKey(KeyCode.C))
             {
-                dragType = DragType.Scale;
+                CurrentDragType = DragType.Scale;
             }
             else
             {
-                dragType = DragType.None;
+                CurrentDragType = DragType.None;
             }
         }
         protected override void InitializeDrag()
         {
-            if (dragType == DragType.Select)
+            if (CurrentDragType == DragType.Select)
             {
                 Select?.Invoke(this, EventArgs.Empty);
                 return;
@@ -63,13 +63,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void DoubleClick()
         {
-            if (dragType == DragType.Scale)
+            if (CurrentDragType == DragType.Scale)
             {
                 maid.transform.localScale = new Vector3(1f, 1f, 1f);
                 Scale?.Invoke(this, EventArgs.Empty);
             }
 
-            if (dragType == DragType.RotLocalY || dragType == DragType.RotLocalXZ)
+            if (CurrentDragType == DragType.RotLocalY || CurrentDragType == DragType.RotLocalXZ)
                 maid.transform.eulerAngles = new Vector3(0f, maid.transform.eulerAngles.y, 0f);
         }
 
@@ -89,17 +89,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
             ) + off - off2;
 
-            if (dragType == DragType.MoveXZ)
+            if (CurrentDragType == DragType.MoveXZ)
             {
                 maid.transform.position = new Vector3(pos.x, maid.transform.position.y, pos.z);
             }
 
-            if (dragType == DragType.MoveY)
+            if (CurrentDragType == DragType.MoveY)
             {
                 maid.transform.position = new Vector3(maid.transform.position.x, pos.y, maid.transform.position.z);
             }
 
-            if (dragType == DragType.RotY)
+            if (CurrentDragType == DragType.RotY)
             {
                 Vector3 posOther = Input.mousePosition - mousePos;
                 maid.transform.eulerAngles = new Vector3(
@@ -108,7 +108,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             }
 
-            if (dragType == DragType.RotLocalXZ)
+            if (CurrentDragType == DragType.RotLocalXZ)
             {
                 Vector3 posOther = Input.mousePosition - mousePos;
                 Transform transform = Camera.main.transform;
@@ -132,7 +132,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 mousePos2 = Input.mousePosition;
             }
 
-            if (dragType == DragType.RotLocalY)
+            if (CurrentDragType == DragType.RotLocalY)
             {
                 Vector3 posOther = Input.mousePosition - mousePos;
                 Transform transform = Camera.main.transform;
@@ -148,7 +148,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 mousePos2 = Input.mousePosition;
             }
 
-            if (dragType == DragType.Scale)
+            if (CurrentDragType == DragType.Scale)
             {
                 scaling = true;
                 Vector3 posOther = Input.mousePosition - mousePos;

@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
+    using static CustomGizmo;
     // TODO: Finalize dragpopint scaling
     public abstract class BaseDrag : MonoBehaviour
     {
@@ -12,6 +13,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected const int hand = 2;
         protected const int upperArmRot = 0;
         protected const int handRot = 1;
+        private GameObject gizmoGo;
         protected Maid maid;
         protected Meido meido;
         protected Func<Vector3> position;
@@ -20,14 +22,33 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected Collider dragPointCollider;
         protected Vector3 worldPoint;
         protected Vector3 mousePos;
-        protected DragType dragType = DragType.None;
+        private DragType dragType = DragType.None;
+        protected DragType CurrentDragType
+        {
+            get => dragType;
+            set
+            {
+                dragType = value;
+                reInitDrag = dragType != dragTypeOld;
+                dragTypeOld = dragType;
+            }
+        }
         protected DragType dragTypeOld;
-        protected GizmoType gizmoType;
-        protected GizmoType gizmoTypeOld;
         protected float doubleClickStart = 0f;
         protected bool reInitDrag = false;
         protected bool isPlaying;
-        protected GizmoRender gizmo;
+        protected CustomGizmo gizmo;
+        protected GizmoType CurrentGizmoType
+        {
+            get => gizmo?.CurrentGizmoType ?? GizmoType.None;
+            set
+            {
+                if (gizmo != null)
+                {
+                    if (GizmoActive) gizmo.CurrentGizmoType = value;
+                }
+            }
+        }
         public Vector3 BaseScale { get; private set; }
         public Vector3 DragPointScale
         {
@@ -38,14 +59,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
         public bool IsBone { get; set; }
-        public float GizmoScale
-        {
-            get => gizmo.offsetScale;
-            set
-            {
-                if (gizmo != null) gizmo.offsetScale = value;
-            }
-        }
         public bool GizmoVisible
         {
             get => gizmo?.Visible ?? false;
@@ -60,8 +73,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => gizmoActive;
             set
             {
-                gizmoActive = value;
-                GizmoVisible = gizmoActive;
+                if (gizmoGo != null)
+                {
+                    gizmoActive = value;
+                    gizmoGo.SetActive(gizmoActive);
+                    GizmoVisible = gizmoActive;
+                }
             }
         }
         private bool dragPointVisible;
@@ -84,7 +101,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 dragPointCollider.enabled = dragPointActive;
             }
         }
-        protected static bool IsGizmoDrag => Utility.GetFieldValue<GizmoRender, bool>(null, "is_drag_");
         public event EventHandler DragEvent;
         protected enum DragType
         {
@@ -92,12 +108,36 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             MoveXZ, MoveY, RotLocalXZ, RotY, RotLocalY,
             Scale
         }
-        protected enum GizmoType
+
+        public static Material LightBlue = new Material(Shader.Find("Transparent/Diffuse"))
         {
-            Rotate, Move, Scale, None
+            color = new Color(0.4f, 0.4f, 1f, 0.3f)
+        };
+
+        public static Material Blue = new Material(Shader.Find("Transparent/Diffuse"))
+        {
+            color = new Color(0.5f, 0.5f, 1f, 0.8f)
+        };
+
+        public static GameObject MakeDragPoint(PrimitiveType primitiveType, Vector3 scale, Material material)
+        {
+            GameObject dragPoint = GameObject.CreatePrimitive(primitiveType);
+            dragPoint.transform.localScale = scale;
+            dragPoint.GetComponent<Renderer>().material = material;
+            dragPoint.layer = 8;
+            return dragPoint;
         }
 
-        public virtual void Initialize(Func<Vector3> position, Func<Vector3> rotation)
+        public BaseDrag Initialize(Meido meido, Func<Vector3> position, Func<Vector3> rotation)
+        {
+            this.InitializeDragPoint(position, rotation);
+            this.meido = meido;
+            this.maid = meido.Maid;
+            isPlaying = !meido.IsStop;
+            return this;
+        }
+
+        protected void InitializeDragPoint(Func<Vector3> position, Func<Vector3> rotation)
         {
             this.BaseScale = transform.localScale;
             this.position = position;
@@ -107,59 +147,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.DragPointVisible = true;
         }
 
-        public virtual BaseDrag Initialize(Meido meido, Func<Vector3> position, Func<Vector3> rotation)
+        protected void InitializeGizmo(Transform target, float scale = 0.25f, GizmoMode mode = GizmoMode.Local)
         {
-            this.Initialize(position, rotation);
-            this.meido = meido;
-            this.maid = meido.Maid;
-            isPlaying = !meido.IsStop;
-            return this;
-        }
+            gizmoGo = CustomGizmo.MakeGizmo(target, scale, mode);
+            gizmo = gizmoGo.GetComponent<CustomGizmo>();
+            if (meido != null)
+            {
+                gizmo.GizmoDrag += (s, a) =>
+                {
+                    meido.IsStop = true;
+                    isPlaying = false;
+                };
+            }
 
-        protected void InitializeGizmo(GameObject target, float scale = 0.25f)
-        {
-            gizmo = target.AddComponent<GizmoRender>();
-            gizmo.eRotate = true;
-            gizmo.offsetScale = scale;
-            gizmo.lineRSelectedThick = 0.25f;
+            GizmoActive = false;
             GizmoVisible = false;
-        }
-
-        protected void InitializeGizmo(Transform target, float scale = 0.25f)
-        {
-            InitializeGizmo(target.gameObject, scale);
-        }
-
-        protected void SetGizmo(GizmoType type)
-        {
-            if (type == GizmoType.Move)
-            {
-                gizmo.eAxis = true;
-                gizmo.eRotate = false;
-                gizmo.eScal = false;
-                GizmoVisible = true;
-            }
-            else if (type == GizmoType.Rotate)
-            {
-                gizmo.eAxis = false;
-                gizmo.eRotate = true;
-                gizmo.eScal = false;
-                GizmoVisible = true;
-            }
-            else if (type == GizmoType.Scale)
-            {
-                gizmo.eAxis = false;
-                gizmo.eRotate = false;
-                gizmo.eScal = true;
-                GizmoVisible = true;
-            }
-            else if (type == GizmoType.None)
-            {
-                gizmo.eAxis = false;
-                gizmo.eRotate = false;
-                gizmo.eScal = false;
-                GizmoVisible = false;
-            }
         }
 
         public void SetDragProp(bool gizmoActive, bool dragPointActive, bool dragPointVisible)
@@ -197,35 +199,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GetDragType();
 
-            reInitDrag = dragType != dragTypeOld;
-
-            dragTypeOld = dragType;
-
             transform.position = position();
             transform.eulerAngles = rotation();
-
-            if (GizmoActive)
-            {
-                if (meido != null && IsGizmoDrag)
-                {
-                    meido.IsStop = true;
-                    isPlaying = false;
-                }
-
-                if (gizmoType != gizmoTypeOld) SetGizmo(gizmoType);
-
-                gizmoTypeOld = gizmoType;
-            }
         }
 
-        private void OnMouseDown()
+        protected virtual void OnMouseDown()
         {
             InitializeDrag();
         }
 
-        private void OnMouseDrag()
+        protected virtual void OnMouseDrag()
         {
-            if (dragType == DragType.Select) return;
+            if (CurrentDragType == DragType.Select) return;
 
             if (reInitDrag)
             {

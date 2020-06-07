@@ -37,17 +37,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftAlt))
             {
-                dragType = DragType.RotLocalXZ;
+                CurrentDragType = DragType.RotLocalXZ;
             }
             else
             {
-                dragType = DragType.None;
+                CurrentDragType = DragType.None;
             }
         }
 
         protected override void DoubleClick()
         {
-            if (dragType == DragType.RotLocalXZ) meido.SetMune();
+            if (CurrentDragType == DragType.RotLocalXZ) meido.SetMune();
         }
 
         protected override void InitializeDrag()
@@ -69,7 +69,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void Drag()
         {
-            if (dragType == DragType.None) return;
+            if (CurrentDragType == DragType.None) return;
 
             if (isPlaying) meido.IsStop = true;
             IKCtrlData ikData = maid.body0.IKCtrl.GetIKData("左手");
@@ -77,7 +77,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
             ) + off - off2;
 
-            if (dragType == DragType.RotLocalXZ)
+            if (CurrentDragType == DragType.RotLocalXZ)
             {
                 IK.Porc(ikChain[upperArm], ikChain[foreArm], ikChain[hand], pos, Vector3.zero, ikData);
 

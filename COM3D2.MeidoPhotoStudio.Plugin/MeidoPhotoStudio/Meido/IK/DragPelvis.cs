@@ -20,11 +20,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bool shift = Input.GetKey(KeyCode.LeftShift);
             if (Input.GetKey(KeyCode.LeftAlt))
             {
-                dragType = shift ? DragType.RotLocalY : DragType.RotLocalXZ;
+                CurrentDragType = shift ? DragType.RotLocalY : DragType.RotLocalXZ;
             }
             else
             {
-                dragType = DragType.None;
+                CurrentDragType = DragType.None;
             }
         }
 
@@ -36,7 +36,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void Drag()
         {
-            if (dragType == DragType.None) return;
+            if (CurrentDragType == DragType.None) return;
 
             if (isPlaying) meido.IsStop = true;
 
@@ -46,14 +46,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Vector3 vec32 = t.TransformDirection(Vector3.right);
             Vector3 vec33 = t.TransformDirection(Vector3.forward);
 
-            if (dragType == DragType.RotLocalXZ)
+            if (CurrentDragType == DragType.RotLocalXZ)
             {
                 pelvis.localEulerAngles = pelvisRotation;
                 pelvis.RotateAround(pelvis.position, new Vector3(vec32.x, 0.0f, vec32.z), vec31.y / 4f);
                 pelvis.RotateAround(pelvis.position, new Vector3(vec33.x, 0.0f, vec33.z), vec31.x / 6f);
             }
 
-            if (dragType == DragType.RotLocalY)
+            if (CurrentDragType == DragType.RotLocalY)
             {
                 pelvis.localEulerAngles = pelvisRotation;
                 pelvis.localRotation = Quaternion.Euler(pelvis.localEulerAngles)
