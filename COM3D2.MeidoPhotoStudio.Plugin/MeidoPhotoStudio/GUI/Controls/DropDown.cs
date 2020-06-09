@@ -59,10 +59,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void SetDropdownItems(string[] itemList, int selectedItemIndex = 0)
         {
-            this.scrollPos = (this.elementSize = Vector2.zero);
+            this.elementSize = Vector2.zero;
+
+            // TODO: Calculate scrollpos position maybe
+            if ((selectedItemIndex != this.selectedItemIndex) && (itemList.Length != this.DropdownList?.Length))
+            {
+                this.scrollPos = Vector2.zero;
+            }
             this.DropdownList = itemList;
             this.SelectedItemIndex = selectedItemIndex;
         }
+
         public void Step(int dir)
         {
             dir = (int)Mathf.Sign(dir);
@@ -92,7 +99,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.Draw(buttonStyle, layoutOptions);
         }
 
-
         private void OnChangeSelection(object sender, DropdownSelectArgs args)
         {
             if (args.DropdownID == this.DropdownID)
@@ -113,6 +119,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 OnDropdownEvent(DropdownClose);
             }
         }
+
         private void InitializeDropdown()
         {
             showDropdown = false;
@@ -156,6 +163,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static Rect dropdownWindow;
         private static Rect dropdownScrollRect;
         private static Rect dropdownRect;
+
         public static Vector2 CalculateElementSize(string[] list)
         {
             if (!initialized) InitializeStyle();

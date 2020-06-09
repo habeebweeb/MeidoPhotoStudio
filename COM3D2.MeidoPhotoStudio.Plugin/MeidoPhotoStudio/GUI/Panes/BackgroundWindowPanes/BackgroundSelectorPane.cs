@@ -28,6 +28,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.bgDropdown = new Dropdown(bgList.ToArray(), theaterIndex);
             this.bgDropdown.SelectionChange += (s, a) =>
             {
+                if (updating) return;
                 int selectedIndex = this.bgDropdown.SelectedItemIndex;
                 bool isCreative = this.bgDropdown.SelectedItemIndex >= Constants.MyRoomCustomBGIndex;
                 string bg = isCreative
@@ -42,6 +43,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.nextBGButton = new Button(">");
             this.nextBGButton.ControlEvent += (s, a) => this.bgDropdown.Step(1);
+        }
+
+        protected override void ReloadTranslation()
+        {
+            List<string> bgList = new List<string>(Translation.GetList("bgDropdown", Constants.BGList));
+            if (Constants.MyRoomCustomBGIndex >= 0)
+            {
+                foreach (KeyValuePair<string, string> kvp in Constants.MyRoomCustomBGList)
+                {
+                    bgList.Add(kvp.Value);
+                }
+            }
+
+            updating = true;
+            this.bgDropdown.SetDropdownItems(bgList.ToArray(), this.bgDropdown.SelectedItemIndex);
+            updating = false;
         }
 
         public override void Draw(params GUILayoutOption[] layoutOptions)

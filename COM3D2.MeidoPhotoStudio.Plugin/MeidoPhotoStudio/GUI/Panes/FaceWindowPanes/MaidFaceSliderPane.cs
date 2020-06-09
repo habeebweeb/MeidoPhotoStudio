@@ -101,6 +101,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
+        protected override void ReloadTranslation()
+        {
+            for (int i = 0; i < faceKeys.Length; i++)
+            {
+                Slider slider = (Slider)Controls[i];
+                slider.Label = Translation.Get("faceBlendValues", faceKeys[i]);
+            }
+
+            for (int i = faceKeys.Length; i < faceKeys.Length + faceToggleKeys.Length; i++)
+            {
+                Toggle toggle = (Toggle)Controls[i];
+                toggle.Label = Translation.Get("faceBlendValues", faceToggleKeys[i - faceKeys.Length]);
+            }
+        }
+
         public void SetFaceValue(string key, float value)
         {
             if (updating) return;

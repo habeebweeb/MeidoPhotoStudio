@@ -28,6 +28,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             );
             this.faceBlendDropdown.SelectionChange += (s, a) =>
             {
+                if (updating) return;
                 string faceBlend = Constants.FaceBlendList[this.faceBlendDropdown.SelectedItemIndex];
                 this.meidoManager.ActiveMeido.SetFaceBlend(faceBlend);
                 this.UpdateFace();
@@ -43,6 +44,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         ~MaidFaceWindow()
         {
             TabsPane.TabChange -= ChangeTab;
+        }
+
+        protected override void ReloadTranslation()
+        {
+            updating = true;
+            faceBlendDropdown.SetDropdownItems(
+                Translation.GetArray("faceBlendPresetsDropdown", Constants.FaceBlendList),
+                faceBlendDropdown.SelectedItemIndex
+            );
+            updating = false;
         }
 
         public override void Draw(params GUILayoutOption[] layoutOptions)

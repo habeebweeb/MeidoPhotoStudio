@@ -15,13 +15,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.meidoManager = meidoManager;
             selectedMaidList = new List<int>();
-            clearMaidsButton = new Button("Clear");
+            clearMaidsButton = new Button(Translation.Get("maidCallWindow", "clearButton"));
             clearMaidsButton.ControlEvent += (s, a) => selectedMaidList.Clear();
             Controls.Add(clearMaidsButton);
 
-            callMaidsButton = new Button("Call");
+            callMaidsButton = new Button(Translation.Get("maidCallWindow", "callButton"));
             callMaidsButton.ControlEvent += (s, a) => this.meidoManager.OnBeginCallMeidos(this.selectedMaidList);
             Controls.Add(callMaidsButton);
+        }
+
+        protected override void ReloadTranslation()
+        {
+            clearMaidsButton.Label = Translation.Get("maidCallWindow", "clearButton");
+            callMaidsButton.Label = Translation.Get("maidCallWindow", "callButton");
         }
 
         public override void Draw(params GUILayoutOption[] layoutOptions)

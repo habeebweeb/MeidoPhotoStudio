@@ -55,15 +55,28 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             BGList = new List<string>();
             MyRoomCustomBGList = new List<KeyValuePair<string, string>>();
+            DoguList = new List<string>();
+            OtherDoguList = new List<string>();
         }
 
         public static void Initialize()
         {
-            foreach (string dir in new[] { customPosePath, scenesPath, kankyoPath, configPath })
-            {
-                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-            }
+            MakeDirectories();
+            InitializePoses();
+            InitializeFaceBlends();
+            InitializeBGs();
+        }
 
+        public static void MakeDirectories()
+        {
+            foreach (string directory in new[] { customPosePath, scenesPath, kankyoPath, configPath })
+            {
+                if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
+            }
+        }
+
+        public static void InitializePoses()
+        {
             // Load Poses
             string poseListJson = File.ReadAllText(Path.Combine(configPath, "mm_pose_list.json"));
             List<SerializePoseList> poseLists = JsonConvert.DeserializeObject<List<SerializePoseList>>(poseListJson);
@@ -118,7 +131,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         }
                     }
                 }
-                // editPoseList.AddRange(otherPoseList);
                 PoseDict["normal"].AddRange(editPoseList);
                 PoseDict["normal2"] = otherPoseList;
                 PoseDict["ero2"] = eroPoseList;
@@ -126,7 +138,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 PoseGroupList.AddRange(new[] { "normal2", "ero2" });
             }
 
-            CustomPoseGroupsIndex = PoseDict.Count;
+            CustomPoseGroupsIndex = PoseGroupList.Count;
 
             Action<string> GetPoses = directory =>
             {
@@ -153,8 +165,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 GetPoses(directory);
             }
+        }
 
-            // Load Face Blends Presets
+        public static void InitializeFaceBlends()
+        {
             using (CsvParser csvParser = OpenCsvParser("phot_face_list.nei"))
             {
                 for (int cell_y = 1; cell_y < csvParser.max_cell_y; cell_y++)
@@ -166,7 +180,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     }
                 }
             }
+        }
 
+        public static void InitializeBGs()
+        {
             // Load BGs
             PhotoBGData.Create();
             List<PhotoBGData> photList = PhotoBGData.data;
@@ -218,6 +235,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     AFileBase file = fs.FileOpen(nei);
                     CsvParser csvParser = new CsvParser();
                     if (csvParser.Open(file)) return csvParser;
+                    else file?.Dispose();
                 }
             }
             catch { }
@@ -229,69 +247,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return OpenCsvParser(nei, GameUty.FileSystem);
         }
 
+        public static void WriteToFile(string name, IEnumerable<string> list)
+        {
+            if (Path.GetExtension(name) != ".txt") name += ".txt";
+            File.WriteAllLines(Path.Combine(configPath, name), list.ToArray());
+        }
+
         public class SerializePoseList
         {
             public string UIName { get; set; }
             public List<string> PoseList { get; set; }
-        }
-    }
-
-    public static class Translation
-    {
-        public static Dictionary<string, Dictionary<string, string>> Translations;
-        public static string CurrentLanguage { get; set; }
-
-        public static void Initialize(string language)
-        {
-            CurrentLanguage = language;
-
-            string translationFile = $"translations.{language}.json";
-            string translationPath = Path.Combine(Constants.configPath, translationFile);
-            string translationJson = File.ReadAllText(translationPath);
-
-            JObject translation = JObject.Parse(translationJson);
-
-            Translations = new Dictionary<string, Dictionary<string, string>>(
-                StringComparer.InvariantCultureIgnoreCase
-            );
-
-            foreach (JProperty translationProp in translation.AsJEnumerable())
-            {
-                JToken token = translationProp.Value;
-                Translations[translationProp.Path] = token.ToObject<Dictionary<string, string>>();
-            }
-        }
-
-        public static string Get(string category, string text)
-        {
-            if (!Translations.ContainsKey(category))
-            {
-                Debug.LogWarning($"Could not find category '{category}'");
-                return null;
-            }
-
-            if (!Translations[category].ContainsKey(text))
-            {
-                Debug.LogWarning($"Could not find translation for '{text}'");
-                return null;
-            }
-            return Translations[category][text];
-        }
-
-        public static string[] GetArray(string category, IEnumerable<string> list)
-        {
-            return GetList(category, list).ToArray();
-        }
-
-        public static IEnumerable<string> GetList(string category, IEnumerable<string> list)
-        {
-
-            return list.Select(uiName => Get(category, uiName) ?? uiName);
-        }
-
-        public static string[] GetList(string category, IEnumerable<KeyValuePair<string, string>> list)
-        {
-            return list.Select(kvp => Get(category, kvp.Key) ?? kvp.Key).ToArray();
         }
     }
 }

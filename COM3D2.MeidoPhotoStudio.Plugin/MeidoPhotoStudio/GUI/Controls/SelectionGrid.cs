@@ -25,6 +25,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.selectedItem = selectedTab;
         }
 
+        public void SetItems(string[] items, int selectedIndex = 0)
+        {
+            this.Items = items;
+            this.SelectedItem = selectedIndex;
+        }
+
         public void Draw(GUIStyle gridStyle, params GUILayoutOption[] layoutOptions)
         {
             if (!Visible) return;

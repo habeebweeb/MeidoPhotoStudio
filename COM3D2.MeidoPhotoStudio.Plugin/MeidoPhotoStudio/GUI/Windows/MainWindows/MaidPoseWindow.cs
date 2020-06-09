@@ -39,6 +39,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             TabsPane.TabChange -= OnTabChange;
         }
 
+        protected override void ReloadTranslation()
+        {
+            this.freeLookToggle.Label = Translation.Get("freeLook", "freeLookToggle");
+        }
+
         public override void Draw(params GUILayoutOption[] layoutOptions)
         {
             MaidSwitcherPane.Draw();

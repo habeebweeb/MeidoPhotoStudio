@@ -22,6 +22,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         }
 
+        protected override void ReloadTranslation()
+        {
+            this.lookXSlider.Label = Translation.Get("freeLook", "x");
+            this.lookYSlider.Label = Translation.Get("freeLook", "y");
+        }
+
         public void SetMaidLook()
         {
             if (updating) return;

@@ -14,15 +14,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         }
         public static event EventHandler TabChange;
+        private static new bool updating;
+        private static readonly string[] tabNames = { "call", "pose", "face", "bg", "bg2" };
         static TabsPane()
         {
-            string[] tabs = { "Call", "Pose", "Face", "BG", "BG2" };
-            Tabs = new SelectionGrid(tabs, tabs.Length);
+            Translation.ReloadTranslationEvent += (s, a) => ReloadTranslation();
+            Tabs = new SelectionGrid(Translation.GetArray("tabs", tabNames), tabNames.Length);
             Tabs.ControlEvent += (s, a) => OnChangeTab();
+        }
+
+        protected static new void ReloadTranslation()
+        {
+            updating = true;
+            Tabs.SetItems(Translation.GetArray("tabs", tabNames), Tabs.SelectedItem);
+            updating = false;
         }
 
         private static void OnChangeTab()
         {
+            if (updating) return;
             selectedTab = (Constants.Window)Tabs.SelectedItem;
             TabChange?.Invoke(null, EventArgs.Empty);
         }

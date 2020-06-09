@@ -21,7 +21,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.meidoManager = meidoManager;
 
-            this.poseGroupDropdown = new Dropdown(Translation.GetArray("poseGroupDropdown", Constants.PoseGroupList));
+            List<string> poseGroups = new List<string>(Constants.PoseGroupList.Count);
+
+            for (int i = 0; i < Constants.PoseGroupList.Count; i++)
+            {
+                string poseGroup = Constants.PoseGroupList[i];
+                poseGroups.Add(i < Constants.CustomPoseGroupsIndex
+                    ? Translation.Get("poseGroupDropdown", poseGroup)
+                    : poseGroup
+                );
+            }
+
+            this.poseGroupDropdown = new Dropdown(poseGroups.ToArray());
             this.poseGroupDropdown.SelectionChange += ChangePoseGroup;
 
             this.poseDropdown = new Dropdown(MakePoseList(Constants.PoseDict[Constants.PoseGroupList[0]]));
@@ -40,8 +51,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.poseRightButton.ControlEvent += (s, a) => poseDropdown.Step(1);
         }
 
+        protected override void ReloadTranslation()
+        {
+            List<string> poseGroups = new List<string>(Constants.PoseGroupList.Count);
+
+            for (int i = 0; i < Constants.PoseGroupList.Count; i++)
+            {
+                string poseGroup = Constants.PoseGroupList[i];
+                poseGroups.Add(i < Constants.CustomPoseGroupsIndex
+                    ? Translation.Get("poseGroupDropdown", poseGroup)
+                    : poseGroup
+                );
+            }
+
+            updating = true;
+            this.poseGroupDropdown.SetDropdownItems(poseGroups.ToArray(), this.poseGroupDropdown.SelectedItemIndex);
+            updating = false;
+        }
+
         private void ChangePoseGroup(object sender, EventArgs args)
         {
+            if (updating) return;
             string newPoseGroup = Constants.PoseGroupList[this.poseGroupDropdown.SelectedItemIndex];
             if (selectedPoseGroup == newPoseGroup)
             {

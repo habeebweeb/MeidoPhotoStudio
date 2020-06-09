@@ -77,6 +77,29 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             UpdateDetailedClothing();
         }
 
+        protected override void ReloadTranslation()
+        {
+            foreach (SlotID slot in clothingSlots)
+            {
+                Toggle clothingToggle = ClothingToggles[slot];
+                if (slot == SlotID.headset)
+                {
+                    clothingToggle.Label = detailedClothing
+                        ? Translation.Get("clothing", "headset")
+                        : Translation.Get("clothing", "headwear");
+                }
+                else
+                {
+                    clothingToggle.Label = Translation.Get("clothing", slot.ToString());
+                }
+            }
+
+            detailedClothingToggle.Label = Translation.Get("clothing", "detail");
+            curlingFrontToggle.Label = Translation.Get("clothing", "curlingFront");
+            curlingBackToggle.Label = Translation.Get("clothing", "curlingBack");
+            pantsuShiftToggle.Label = Translation.Get("clothing", "shiftPanties");
+        }
+
         public void ToggleClothing(SlotID slot, bool enabled)
         {
             if (this.updating) return;

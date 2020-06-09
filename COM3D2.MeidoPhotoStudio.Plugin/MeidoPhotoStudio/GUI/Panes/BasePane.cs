@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -11,8 +11,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public BasePane()
         {
+            Translation.ReloadTranslationEvent += OnReloadTranslation;
             Controls = new List<BaseControl>();
             Panes = new List<BasePane>();
         }
+
+        ~BasePane()
+        {
+            Translation.ReloadTranslationEvent -= OnReloadTranslation;
+        }
+
+        private void OnReloadTranslation(object sender, EventArgs args)
+        {
+            ReloadTranslation();
+        }
+
+        protected virtual void ReloadTranslation() { }
     }
 }
