@@ -103,7 +103,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             ActiveMeidoList.Clear();
         }
 
-        public void DeactivateMeidos()
+        public void Deactivate()
         {
             foreach (Meido meido in meidos)
             {
@@ -156,7 +156,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             SelectMeido?.Invoke(this, args);
         }
-
 
         private void ChangeMeido(object sender, MeidoChangeEventArgs args)
         {

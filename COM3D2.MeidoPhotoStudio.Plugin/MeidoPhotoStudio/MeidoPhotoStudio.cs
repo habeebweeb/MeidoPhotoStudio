@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +9,7 @@ using UnityInjector.Attributes;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    [PluginName("Meido Photo Studio"), PluginVersion("0.0.0")]
+    [PluginName("COM3D2.MeidoPhotoStudio.Plugin"), PluginVersion("0.0.0")]
     public class MeidoPhotoStudio : PluginBase
     {
         private static MonoBehaviour instance;
@@ -17,6 +17,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private MeidoManager meidoManager;
         private EnvironmentManager environmentManager;
         private MessageWindowManager messageWindowManager;
+        private PropManager propManager;
+        private LightManager lightManager;
+        private EffectManager effectManager;
         private Constants.Scene currentScene;
         private bool initialized = false;
         private bool isActive = false;
@@ -52,7 +55,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         ReturnToMenu();
                     }
                 }
-
 
                 if (isActive)
                 {
@@ -136,7 +138,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void ReturnToMenu()
         {
             if (meidoManager.IsBusy) return;
-            meidoManager.DeactivateMeidos();
+            meidoManager.Deactivate();
             environmentManager.Deactivate();
             messageWindowManager.Deactivate();
 
@@ -166,11 +168,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void Initialize()
         {
+            TabsPane.SelectedTab = Constants.Window.Call;
             initialized = true;
             meidoManager = new MeidoManager();
+
             meidoManager.BeginCallMeidos += (s, a) => this.uiActive = false;
             meidoManager.EndCallMeidos += (s, a) => this.uiActive = true;
-            environmentManager = new EnvironmentManager();
+
+            lightManager = new LightManager();
+            propManager = new PropManager();
+            effectManager = new EffectManager();
+            environmentManager = new EnvironmentManager(propManager, lightManager, effectManager);
             messageWindowManager = new MessageWindowManager();
             windowManager = new WindowManager(meidoManager, environmentManager, messageWindowManager);
 

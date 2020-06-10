@@ -162,7 +162,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Deactivate()
         {
             Unload();
-            dragPointManager?.Destroy();
+            dragPointManager?.Deactivate();
             Maid.SetPos(Vector3.zero);
             Maid.SetRot(Vector3.zero);
             Maid.SetPosOffset(Vector3.zero);

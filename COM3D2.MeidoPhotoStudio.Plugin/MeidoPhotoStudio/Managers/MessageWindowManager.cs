@@ -11,6 +11,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private UILabel nameLabel;
         private GameObject msgGameObject;
         public bool ShowingMessage { get; private set; }
+
         public MessageWindowManager()
         {
             sysRoot = GameObject.Find("__GameMain__/SystemUI Root");

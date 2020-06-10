@@ -5,6 +5,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     class PropsPane : BasePane
     {
         private EnvironmentManager environmentManager;
+        private PropManager propManager;
         private Dropdown otherDoguDropdown;
         private Dropdown doguDropdown;
         private Button addDoguButton;
@@ -17,6 +18,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public PropsPane(EnvironmentManager environmentManager)
         {
             this.environmentManager = environmentManager;
+            this.propManager = this.environmentManager.PropManager;
 
             this.doguDropdown = new Dropdown(Translation.GetArray("props1Dropdown", Constants.DoguList));
 
@@ -26,14 +28,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.addOtherDoguButton.ControlEvent += (s, a) =>
             {
                 string assetName = Constants.OtherDoguList[this.otherDoguDropdown.SelectedItemIndex];
-                this.environmentManager.SpawnObject(assetName);
+                this.propManager.SpawnObject(assetName);
             };
 
             this.addDoguButton = new Button("+");
             this.addDoguButton.ControlEvent += (s, a) =>
             {
                 string assetName = Constants.DoguList[this.doguDropdown.SelectedItemIndex];
-                this.environmentManager.SpawnObject(assetName);
+                this.propManager.SpawnObject(assetName);
             };
 
             this.nextDoguButton = new Button(">");

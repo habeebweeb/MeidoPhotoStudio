@@ -148,7 +148,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             meido.BodyLoad -= Initialize;
         }
 
-        public void Destroy()
+        public void Deactivate()
         {
             foreach (KeyValuePair<Bone, BaseDrag> dragPoint in DragPoint)
             {
