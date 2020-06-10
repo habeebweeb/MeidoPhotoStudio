@@ -32,5 +32,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GUILayout.Box(texture, textureBoxStyle, layoutOptions);
         }
+
+        public static void Header(string text, params GUILayoutOption[] layoutOptions)
+        {
+            GUIStyle style = new GUIStyle(GUI.skin.label);
+            style.padding = new RectOffset(7, 0, 0, 0);
+
+            GUILayout.Label(text, style, layoutOptions);
+        }
     }
 }

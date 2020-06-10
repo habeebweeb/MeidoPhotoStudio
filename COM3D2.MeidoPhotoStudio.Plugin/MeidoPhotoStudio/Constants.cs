@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using wf;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -34,7 +35,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static int MyRoomCustomBGIndex { get; private set; } = -1;
         public static readonly List<string> FaceBlendList;
         public static readonly List<string> BGList;
-        public static List<KeyValuePair<string, string>> MyRoomCustomBGList;
+        public static readonly List<KeyValuePair<string, string>> MyRoomCustomBGList;
+        public static readonly List<string> DoguList;
+        public static readonly List<string> OtherDoguList;
 
         static Constants()
         {
@@ -65,6 +68,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             InitializePoses();
             InitializeFaceBlends();
             InitializeBGs();
+            InitializeDogu();
         }
 
         public static void MakeDirectories()
@@ -223,6 +227,161 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 MyRoomCustomBGIndex = BGList.Count;
                 MyRoomCustomBGList.AddRange(saveDataDict);
+            }
+        }
+
+        public static void InitializeDogu()
+        {
+            InitializeDeskItems();
+            InitializePhotoBGItems();
+            // InitializeHandItems();
+        }
+
+        private static void InitializeDeskItems()
+        {
+            // enabled id
+            HashSet<int> enabledIDs = new HashSet<int>();
+            CsvCommonIdManager.ReadEnabledIdList(
+                CsvCommonIdManager.FileSystemType.Normal, true, "desk_item_enabled_id", ref enabledIDs
+            );
+            CsvCommonIdManager.ReadEnabledIdList(
+                CsvCommonIdManager.FileSystemType.Old, true, "desk_item_enabled_id", ref enabledIDs
+            );
+
+            List<string> com3d2DeskDogu = new List<string>(new[] {
+                "Mob_Man_Stand001", "Mob_Man_Stand002", "Mob_Man_Stand003", "Mob_Man_Sit001", "Mob_Man_Sit002",
+                "Mob_Man_Sit003", "Mob_Girl_Stand001", "Mob_Girl_Stand002", "Mob_Girl_Stand003", "Mob_Girl_Sit001",
+                "Mob_Girl_Sit002", "Mob_Girl_Sit003", "Salon:65", "Salon:63", "Salon:69"
+            });
+
+            Action<AFileSystemBase> GetDeskItems = fs =>
+            {
+                using (CsvParser csvParser = OpenCsvParser("desk_item_detail.nei", fs))
+                {
+                    for (int cell_y = 1; cell_y < csvParser.max_cell_y; cell_y++)
+                    {
+                        if (csvParser.IsCellToExistData(0, cell_y))
+                        {
+                            int cell = csvParser.GetCellAsInteger(0, cell_y);
+                            if (enabledIDs.Contains(cell))
+                            {
+                                string dogu = String.Empty;
+                                if (csvParser.IsCellToExistData(3, cell_y))
+                                {
+                                    dogu = csvParser.GetCellAsString(3, cell_y);
+                                }
+                                else if (csvParser.IsCellToExistData(4, cell_y))
+                                {
+                                    dogu = csvParser.GetCellAsString(4, cell_y);
+                                }
+
+                                if (!string.IsNullOrEmpty(dogu))
+                                {
+                                    com3d2DeskDogu.Add(dogu);
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            GetDeskItems(GameUty.FileSystem);
+            // GetDeskItems(GameUty.FileSystemOld);
+
+            OtherDoguList.AddRange(com3d2DeskDogu);
+        }
+
+        private static void InitializePhotoBGItems()
+        {
+            PhotoBGObjectData.Create();
+            List<PhotoBGObjectData> photoBGObjectList = PhotoBGObjectData.data;
+
+            List<string> particleList = new List<string>();
+
+            List<string> doguPrefabList = new List<string>();
+            List<string> doguAssetList = new List<string>();
+            List<string> directFileList = new List<string>();
+
+            foreach (PhotoBGObjectData photoBgObject in photoBGObjectList)
+            {
+                if (!string.IsNullOrEmpty(photoBgObject.create_prefab_name))
+                {
+                    List<string> list = photoBgObject.category == "パーティクル"
+                        ? particleList
+                        : doguPrefabList;
+                    list.Add(photoBgObject.create_prefab_name);
+                }
+                else if (!string.IsNullOrEmpty(photoBgObject.create_asset_bundle_name))
+                {
+                    doguAssetList.Add(photoBgObject.create_asset_bundle_name);
+                }
+                else if (!string.IsNullOrEmpty(photoBgObject.direct_file))
+                {
+                    directFileList.Add(photoBgObject.direct_file);
+                }
+            }
+
+            OtherDoguList.AddRange(new[] {
+                "Particle/pLineY", "Particle/pLineP02", "Particle/pHeart01",
+                "Particle/pLine_act2", "Particle/pstarY_act2"
+            });
+
+            OtherDoguList.AddRange(particleList);
+
+            DoguList.AddRange(doguPrefabList);
+            DoguList.AddRange(doguAssetList);
+            DoguList.AddRange(directFileList);
+
+            string ignoreListPath = Path.Combine(configPath, "mm_ignore_list.json");
+            string ignoreListJson = File.ReadAllText(ignoreListPath);
+            string[] bgList = JsonConvert.DeserializeObject<IEnumerable<string>>(ignoreListJson).ToArray();
+
+            // bg object extend
+            HashSet<string> doguHashSet = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+            foreach (string bg in bgList)
+            {
+                doguHashSet.Add(bg);
+            }
+            foreach (string dogu in DoguList)
+            {
+                doguHashSet.Add(dogu);
+            }
+            foreach (string dogu in OtherDoguList)
+            {
+                doguHashSet.Add(dogu);
+            }
+
+            string[] com3d2BgList = GameUty.FileSystem.GetList("bg", AFileSystemBase.ListType.AllFile);
+            foreach (string path in com3d2BgList)
+            {
+                if (Path.GetExtension(path) == ".asset_bg" && !path.Contains("myroomcustomize"))
+                {
+                    string file = Path.GetFileNameWithoutExtension(path);
+                    if (!doguHashSet.Contains(file) && !file.EndsWith("_hit"))
+                    {
+                        DoguList.Add(file);
+                        doguHashSet.Add(file);
+                    }
+                }
+            }
+
+            // Get cherry picked dogu that I can't find in the game files
+            string doguExtendPath = Path.Combine(configPath, "mm_dogu_extend.json");
+            string doguExtendJson = File.ReadAllText(doguExtendPath);
+
+            DoguList.AddRange(JsonConvert.DeserializeObject<IEnumerable<string>>(doguExtendJson));
+
+            string[] cm3d2BgList = GameUty.FileSystemOld.GetList("bg", AFileSystemBase.ListType.AllFile);
+            foreach (string path in cm3d2BgList)
+            {
+                if (Path.GetExtension(path) == ".asset_bg")
+                {
+                    string file = Path.GetFileNameWithoutExtension(path);
+                    if (!doguHashSet.Contains(file) && !file.EndsWith("_not_optimisation"))
+                    {
+                        DoguList.Add(file);
+                    }
+                }
             }
         }
 
