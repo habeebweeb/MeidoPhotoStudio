@@ -37,7 +37,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => selectedItemIndex;
             set
             {
-                this.selectedItemIndex = Mathf.Clamp(value, 0, DropdownList.Length);
+                this.selectedItemIndex = Mathf.Clamp(value, 0, DropdownList.Length - 1);
                 OnDropdownEvent(SelectionChange);
             }
         }

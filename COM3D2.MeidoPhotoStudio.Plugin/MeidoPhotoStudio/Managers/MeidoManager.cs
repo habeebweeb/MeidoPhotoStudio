@@ -23,7 +23,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public int SelectedMeido
         {
             get => selectedMeido;
-            private set => selectedMeido = Mathf.Clamp(value, 0, ActiveMeidoList.Count);
+            private set => selectedMeido = Mathf.Clamp(value, 0, ActiveMeidoList.Count - 1);
         }
         public bool IsBusy
         {
