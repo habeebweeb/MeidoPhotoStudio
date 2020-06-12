@@ -55,7 +55,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.value = Utility.Bound(value, left, right);
         }
 
-        public Slider(float min, float max, float value = 0) : this("", min, max, value) { }
+        public Slider(float min, float max, float value = 0) : this(String.Empty, min, max, value) { }
+
+        public Slider(string label, SliderProp prop) : this(label, prop.Left, prop.Right, prop.Initial) { }
+
+        public Slider(SliderProp prop) : this(String.Empty, prop.Left, prop.Right, prop.Initial) { }
 
         public void SetBounds(float left, float right)
         {
@@ -84,6 +88,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             );
             if (hasLabel) GUILayout.EndVertical();
             if (value != Value) Value = value;
+        }
+    }
+
+    public struct SliderProp
+    {
+        public float Left { get; private set; }
+        public float Right { get; private set; }
+        public float Initial { get; private set; }
+
+        public SliderProp(float left, float right, float initial = 0f)
+        {
+            this.Left = left;
+            this.Right = right;
+            this.Initial = initial;
         }
     }
 }
