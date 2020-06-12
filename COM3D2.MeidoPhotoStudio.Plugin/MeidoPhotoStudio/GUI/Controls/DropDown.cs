@@ -71,6 +71,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.SelectedItemIndex = selectedItemIndex;
         }
 
+        public void SetDropdownItem(int index, string newItem)
+        {
+            if (index < 0 || index >= DropdownList.Length) return;
+
+            Vector2 itemSize = DropdownHelper.CalculateElementSize(newItem);
+
+            if (itemSize.x > ElementSize.x) ElementSize = itemSize;
+
+            DropdownList[index] = newItem;
+        }
+
+        public void SetDropdownItem(string newItem)
+        {
+            SetDropdownItem(this.SelectedItemIndex, newItem);
+        }
+
         public void Step(int dir)
         {
             dir = (int)Mathf.Sign(dir);
@@ -165,15 +181,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private static Rect dropdownScrollRect;
         private static Rect dropdownRect;
 
+        public static Vector2 CalculateElementSize(string item)
+        {
+            if (!initialized) InitializeStyle();
+
+            return dropdownStyle.CalcSize(new GUIContent(item));
+        }
+
         public static Vector2 CalculateElementSize(string[] list)
         {
             if (!initialized) InitializeStyle();
 
-            Vector2 calculatedSize = dropdownStyle.CalcSize(new GUIContent(list[0]));
+            GUIContent content = new GUIContent(list[0]);
+            Vector2 calculatedSize = dropdownStyle.CalcSize(content);
             for (int i = 1; i < list.Length; i++)
             {
                 string word = list[i];
-                Vector2 calcSize = dropdownStyle.CalcSize(new GUIContent(word));
+                content.text = word;
+                Vector2 calcSize = dropdownStyle.CalcSize(content);
                 if (calcSize.x > calculatedSize.x) calculatedSize = calcSize;
             }
 
