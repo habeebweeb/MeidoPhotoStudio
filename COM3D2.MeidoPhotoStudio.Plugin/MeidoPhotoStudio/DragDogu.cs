@@ -13,21 +13,49 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private float doguScale;
         private Vector3 doguRot;
         public event EventHandler Delete;
+        public event EventHandler Rotate;
+        public event EventHandler Scale;
+        public event EventHandler Select;
         public bool DeleteMe { get; private set; }
+        public bool keepDogu = false;
+        public float scaleFactor = 1f;
+
         public void Initialize(GameObject dogu)
         {
+            Initialize(dogu, false, GizmoMode.World,
+                () => this.dogu.transform.position,
+                () => Vector3.zero
+            );
+        }
+
+        public void Initialize(GameObject dogu, bool keepDogu, GizmoMode mode,
+            Func<Vector3> position, Func<Vector3> rotation
+        )
+        {
+            this.keepDogu = keepDogu;
             this.dogu = dogu;
-            base.InitializeDragPoint(() => this.dogu.transform.position, () => Vector3.zero);
-            InitializeGizmo(this.dogu.transform, 1f, GizmoMode.World);
+            base.InitializeDragPoint(position, rotation);
+            InitializeGizmo(this.dogu.transform, 1f, mode);
+            gizmo.GizmoDrag += (s, a) =>
+            {
+                if (CurrentDragType == DragType.RotLocalY || CurrentDragType == DragType.RotLocalXZ)
+                {
+                    OnRotate();
+                }
+            };
         }
 
         protected override void GetDragType()
         {
             bool holdShift = Utility.GetModKey(Utility.ModKey.Shift);
-            if (Input.GetKey(KeyCode.D))
+            if (Input.GetKey(KeyCode.A))
             {
-                // Actually delete
                 CurrentDragType = DragType.Select;
+                CurrentGizmoType = GizmoType.None;
+            }
+            else if (Input.GetKey(KeyCode.D))
+            {
+                CurrentDragType = DragType.Delete;
                 CurrentGizmoType = GizmoType.None;
             }
             else if (Input.GetKey(KeyCode.Z))
@@ -55,10 +83,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void InitializeDrag()
         {
-            if (CurrentDragType == DragType.Select)
+            if (CurrentDragType == DragType.Delete)
             {
                 this.DeleteMe = true;
                 this.Delete?.Invoke(this, EventArgs.Empty);
+                return;
+            }
+
+            if (CurrentDragType == DragType.Select)
+            {
+                this.Select?.Invoke(this, EventArgs.Empty);
                 return;
             }
 
@@ -78,13 +112,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void DoubleClick()
         {
-            if (CurrentDragType == DragType.Scale) dogu.transform.localScale = new Vector3(1f, 1f, 1f);
+            if (CurrentDragType == DragType.Scale)
+            {
+                dogu.transform.localScale = new Vector3(1f, 1f, 1f);
+                OnScale();
+            }
             if (CurrentDragType == DragType.RotLocalY || CurrentDragType == DragType.RotLocalXZ)
+            {
                 dogu.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                OnRotate();
+            }
         }
 
         protected override void Drag()
         {
+            if (CurrentDragType == DragType.Select || CurrentDragType == DragType.Delete) return;
+
             Vector3 pos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)) + off - off2;
 
             if (CurrentDragType == DragType.MoveXZ)
@@ -102,7 +145,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Vector3 posOther = Input.mousePosition - mousePos;
                 dogu.transform.eulerAngles =
                     new Vector3(dogu.transform.eulerAngles.x, doguRot.y - posOther.x / 3f, dogu.transform.eulerAngles.z);
-
+                OnRotate();
             }
 
             if (CurrentDragType == DragType.RotLocalXZ)
@@ -119,6 +162,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     dogu.transform.RotateAround(dogu.transform.position, new Vector3(vector3_4.x, 0.0f, vector3_4.z), (-posOther.x / 6.0f));
                 }
                 mousePos2 = Input.mousePosition;
+                OnRotate();
             }
 
             if (CurrentDragType == DragType.RotLocalY)
@@ -126,29 +170,39 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Vector3 posOther = Input.mousePosition - mousePos;
                 Transform transform = Camera.main.transform;
                 Vector3 vector3_3 = transform.TransformDirection(Vector3.right);
+
                 transform.TransformDirection(Vector3.forward);
-                if (mousePos2 != Input.mousePosition)
-                {
-                    dogu.transform.localEulerAngles = doguRot;
-                    dogu.transform.localRotation = Quaternion.Euler(dogu.transform.localEulerAngles)
-                        * Quaternion.AngleAxis((-posOther.x / 2.2f), Vector3.up);
-                }
+                dogu.transform.localEulerAngles = doguRot;
+                dogu.transform.localRotation = Quaternion.Euler(dogu.transform.localEulerAngles)
+                    * Quaternion.AngleAxis((-posOther.x / 2.2f), Vector3.up);
 
                 mousePos2 = Input.mousePosition;
+                OnRotate();
             }
 
             if (CurrentDragType == DragType.Scale)
             {
                 Vector3 posOther = Input.mousePosition - mousePos;
-                float scale = doguScale + posOther.y / 200f;
+                float scale = doguScale + (posOther.y / 200f) * scaleFactor;
                 if (scale < 0.1f) scale = 0.1f;
                 dogu.transform.localScale = new Vector3(scale, scale, scale);
+                OnScale();
             }
+        }
+
+        private void OnRotate()
+        {
+            Rotate?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnScale()
+        {
+            Scale?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnDestroy()
         {
-            GameObject.Destroy(this.dogu);
+            if (!keepDogu) GameObject.Destroy(this.dogu);
         }
     }
 }

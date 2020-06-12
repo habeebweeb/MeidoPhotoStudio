@@ -101,10 +101,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 dragPointCollider.enabled = dragPointActive;
             }
         }
+        public GizmoMode CurrentGizmoMode
+        {
+            get => gizmo?.gizmoMode ?? GizmoMode.Local;
+            set
+            {
+                if (gizmo != null)
+                {
+                    if (GizmoActive) gizmo.gizmoMode = value;
+                }
+            }
+        }
         public event EventHandler DragEvent;
         protected enum DragType
         {
-            None, Select,
+            None, Select, Delete,
             MoveXZ, MoveY, RotLocalXZ, RotY, RotLocalY,
             Scale
         }
@@ -169,6 +180,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.GizmoActive = gizmoActive;
             this.DragPointActive = dragPointActive;
             this.DragPointVisible = dragPointVisible;
+        }
+
+        public void SetDragProp(bool gizmoActive, bool dragPointActive, bool dragPointVisible, GizmoMode mode)
+        {
+            SetDragProp(gizmoActive, dragPointActive, dragPointVisible);
+            this.CurrentGizmoMode = mode;
         }
 
         protected virtual void InitializeDrag()
