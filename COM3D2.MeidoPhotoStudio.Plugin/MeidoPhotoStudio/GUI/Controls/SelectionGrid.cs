@@ -5,45 +5,91 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     public class SelectionGrid : BaseControl
     {
-        public string[] Items { get; set; }
-        public int XCount { get; set; }
+        private SimpleToggle[] toggles;
         private int selectedItem;
         public int SelectedItem
         {
             get => selectedItem;
             set
             {
-                this.selectedItem = value;
+                this.selectedItem = Mathf.Clamp(value, 0, this.toggles.Length - 1);
+                foreach (SimpleToggle toggle in toggles)
+                {
+                    toggle.value = toggle.toggleIndex == this.selectedItem;
+                }
                 OnControlEvent(EventArgs.Empty);
             }
         }
 
-        public SelectionGrid(string[] items, int xCount, int selectedTab = 0)
+        public SelectionGrid(string[] items, int selected = 0)
         {
-            Items = items;
-            XCount = xCount;
-            this.selectedItem = selectedTab;
+            this.selectedItem = Mathf.Clamp(selected, 0, items.Length - 1);
+            toggles = MakeToggles(items);
         }
 
-        public void SetItems(string[] items, int selectedIndex = 0)
+        private SimpleToggle[] MakeToggles(string[] items)
         {
-            this.Items = items;
-            this.SelectedItem = selectedIndex;
+            SimpleToggle[] toggles = new SimpleToggle[items.Length];
+            for (int i = 0; i < items.Length; i++)
+            {
+                SimpleToggle toggle = new SimpleToggle(items[i], i == SelectedItem);
+                toggle.toggleIndex = i;
+                toggle.ControlEvent += (s, a) => this.SelectedItem = (s as SimpleToggle).toggleIndex;
+                toggles[i] = toggle;
+            }
+            return toggles;
         }
 
-        public void Draw(GUIStyle gridStyle, params GUILayoutOption[] layoutOptions)
+        public void SetItems(string[] items, int selectedItem = 0)
         {
-            if (!Visible) return;
-            GUILayout.BeginHorizontal();
-            int selected;
-            selected = GUILayout.SelectionGrid(SelectedItem, Items, XCount, gridStyle, layoutOptions);
-            GUILayout.EndHorizontal();
-            if (selected != SelectedItem) SelectedItem = selected;
+            this.SelectedItem = Mathf.Clamp(selectedItem, 0, items.Length - 1);
+            if (items.Length != toggles.Length)
+            {
+                this.toggles = MakeToggles(items);
+            }
+            else
+            {
+                for (int i = 0; i < items.Length; i++)
+                {
+                    string item = items[i];
+                    this.toggles[i].value = i == SelectedItem;
+                    this.toggles[i].label = item;
+                }
+            }
         }
 
         public override void Draw(params GUILayoutOption[] layoutOptions)
         {
-            this.Draw(new GUIStyle(GUI.skin.button));
+            GUILayout.BeginHorizontal();
+            foreach (SimpleToggle toggle in toggles)
+            {
+                toggle.Draw(layoutOptions);
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        private class SimpleToggle
+        {
+            public int toggleIndex;
+            public bool value;
+            public string label;
+            public event EventHandler ControlEvent;
+
+            public SimpleToggle(string label, bool value = false)
+            {
+                this.label = label;
+                this.value = value;
+            }
+
+            public void Draw(params GUILayoutOption[] layoutOptions)
+            {
+                bool value = GUILayout.Toggle(this.value, label, layoutOptions);
+                if (value != this.value)
+                {
+                    this.value = value;
+                    ControlEvent?.Invoke(this, EventArgs.Empty);
+                }
+            }
         }
     }
 }

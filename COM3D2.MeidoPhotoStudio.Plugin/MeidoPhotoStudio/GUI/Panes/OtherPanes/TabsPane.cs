@@ -19,7 +19,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         static TabsPane()
         {
             Translation.ReloadTranslationEvent += (s, a) => ReloadTranslation();
-            Tabs = new SelectionGrid(Translation.GetArray("tabs", tabNames), tabNames.Length);
+            Tabs = new SelectionGrid(Translation.GetArray("tabs", tabNames));
             Tabs.ControlEvent += (s, a) => OnChangeTab();
         }
 
@@ -39,11 +39,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static void Draw()
         {
-            GUIStyle tabStyle = new GUIStyle(GUI.skin.toggle);
-            tabStyle.padding.right = -6;
-            Tabs.Draw(tabStyle, GUILayout.ExpandWidth(false));
+            Tabs.Draw(GUILayout.ExpandWidth(false));
             MiscGUI.BlackLine();
         }
-
     }
 }
