@@ -50,8 +50,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             updating = true;
             faceBlendDropdown.SetDropdownItems(
-                Translation.GetArray("faceBlendPresetsDropdown", Constants.FaceBlendList),
-                faceBlendDropdown.SelectedItemIndex
+                Translation.GetArray("faceBlendPresetsDropdown", Constants.FaceBlendList)
             );
             updating = false;
         }

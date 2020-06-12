@@ -57,7 +57,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             updating = true;
-            this.bgDropdown.SetDropdownItems(bgList.ToArray(), this.bgDropdown.SelectedItemIndex);
+            this.bgDropdown.SetDropdownItems(bgList.ToArray());
             updating = false;
         }
 

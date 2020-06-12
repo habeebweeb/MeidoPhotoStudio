@@ -65,7 +65,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             updating = true;
-            this.poseGroupDropdown.SetDropdownItems(poseGroups.ToArray(), this.poseGroupDropdown.SelectedItemIndex);
+            this.poseGroupDropdown.SetDropdownItems(poseGroups.ToArray());
             updating = false;
         }
 
@@ -82,11 +82,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 selectedPoseGroup = newPoseGroup;
                 if (this.poseGroupDropdown.SelectedItemIndex >= Constants.CustomPoseGroupsIndex)
                 {
-                    this.poseDropdown.SetDropdownItems(MakePoseList(Constants.CustomPoseDict[selectedPoseGroup]));
+                    this.poseDropdown.SetDropdownItems(MakePoseList(Constants.CustomPoseDict[selectedPoseGroup]), 0);
                 }
                 else
                 {
-                    this.poseDropdown.SetDropdownItems(MakePoseList(Constants.PoseDict[selectedPoseGroup]));
+                    this.poseDropdown.SetDropdownItems(MakePoseList(Constants.PoseDict[selectedPoseGroup]), 0);
                 }
             }
         }

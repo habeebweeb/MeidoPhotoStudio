@@ -57,8 +57,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DropdownHelper.DropdownClose -= OnCloseDropdown;
         }
 
-        public void SetDropdownItems(string[] itemList, int selectedItemIndex = 0)
+        public void SetDropdownItems(string[] itemList, int selectedItemIndex = -1)
         {
+            if (selectedItemIndex < 0) selectedItemIndex = this.SelectedItemIndex;
             this.elementSize = Vector2.zero;
 
             // TODO: Calculate scrollpos position maybe

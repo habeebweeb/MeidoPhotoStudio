@@ -54,15 +54,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void ReloadTranslation()
         {
-            this.doguDropdown.SetDropdownItems(
-                Translation.GetArray("props1Dropdown", Constants.DoguList),
-                this.doguDropdown.SelectedItemIndex
-            );
-
-            this.otherDoguDropdown.SetDropdownItems(
-                Translation.GetArray("props2Dropdown", Constants.OtherDoguList),
-                this.otherDoguDropdown.SelectedItemIndex
-            );
+            this.doguDropdown.SetDropdownItems(Translation.GetArray("props1Dropdown", Constants.DoguList));
+            this.otherDoguDropdown.SetDropdownItems(Translation.GetArray("props2Dropdown", Constants.OtherDoguList));
         }
 
         public override void Draw(params GUILayoutOption[] layoutOptions)
