@@ -56,13 +56,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (!Translations.ContainsKey(category))
             {
                 Debug.LogWarning($"Could not find category '{category}'");
-                return null;
+                return text;
             }
 
             if (!Translations[category].ContainsKey(text))
             {
                 Debug.LogWarning($"Could not find translation for '{text}' in '{category}'");
-                return null;
+                return text;
             }
 
             return Translations[category][text];
@@ -77,8 +77,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             return list.Select(uiName =>
             {
-                string text = Get(category, uiName);
-                return string.IsNullOrEmpty(text) ? uiName : text;
+                return Get(category, uiName);
             });
         }
 
@@ -86,8 +85,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             return list.Select(kvp =>
             {
-                string text = Get(category, kvp.Key);
-                return string.IsNullOrEmpty(text) ? kvp.Key : text;
+                return Get(category, kvp.Key);
             }).ToArray();
         }
     }
