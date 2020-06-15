@@ -34,7 +34,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 SimpleToggle toggle = new SimpleToggle(items[i], i == SelectedItem);
                 toggle.toggleIndex = i;
-                toggle.ControlEvent += (s, a) => this.SelectedItem = (s as SimpleToggle).toggleIndex;
+                toggle.ControlEvent += (s, a) =>
+                {
+                    int value = (s as SimpleToggle).toggleIndex;
+                    if (value != this.SelectedItem) this.SelectedItem = value;
+                };
                 toggles[i] = toggle;
             }
             return toggles;
