@@ -4,7 +4,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     class PropsPane : BasePane
     {
-        private EnvironmentManager environmentManager;
         private PropManager propManager;
         private Dropdown otherDoguDropdown;
         private Dropdown doguDropdown;
@@ -15,10 +14,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Button nextOtherDoguButton;
         private Button prevOtherDoguButton;
 
-        public PropsPane(EnvironmentManager environmentManager)
+        public PropsPane(PropManager propManager)
         {
-            this.environmentManager = environmentManager;
-            this.propManager = this.environmentManager.PropManager;
+            this.propManager = propManager;
 
             this.doguDropdown = new Dropdown(Translation.GetArray("props1Dropdown", Constants.DoguList));
 
@@ -58,7 +56,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.otherDoguDropdown.SetDropdownItems(Translation.GetArray("props2Dropdown", Constants.OtherDoguList));
         }
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
+        public override void Draw()
         {
             float arrowButtonSize = 30;
             GUILayoutOption[] arrowLayoutOptions = {

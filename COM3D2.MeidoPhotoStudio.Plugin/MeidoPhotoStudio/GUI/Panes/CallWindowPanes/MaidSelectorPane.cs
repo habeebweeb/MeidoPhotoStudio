@@ -16,11 +16,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.meidoManager = meidoManager;
             selectedMaidList = new List<int>();
             clearMaidsButton = new Button(Translation.Get("maidCallWindow", "clearButton"));
-            clearMaidsButton.ControlEvent += (s, a) => selectedMaidList.Clear();
+            clearMaidsButton.ControlEvent += (s, a) => this.meidoManager.SelectMeidoList.Clear();
             Controls.Add(clearMaidsButton);
 
             callMaidsButton = new Button(Translation.Get("maidCallWindow", "callButton"));
-            callMaidsButton.ControlEvent += (s, a) => this.meidoManager.OnBeginCallMeidos(this.selectedMaidList);
+            callMaidsButton.ControlEvent += (s, a) => this.meidoManager.CallMeidos();
             Controls.Add(callMaidsButton);
         }
 
@@ -30,7 +30,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             callMaidsButton.Label = Translation.Get("maidCallWindow", "callButton");
         }
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
+        public override void Draw()
         {
             clearMaidsButton.Draw();
             callMaidsButton.Draw();
@@ -54,17 +54,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Meido meido = meidoManager.meidos[i];
                 float y = i * buttonHeight;
-                bool selectedMaid = selectedMaidList.Contains(i);
+                bool selectedMaid = this.meidoManager.SelectMeidoList.Contains(i);
 
                 if (GUI.Button(new Rect(0, y, buttonWidth, buttonHeight), ""))
                 {
-                    if (selectedMaid) selectedMaidList.Remove(i);
-                    else selectedMaidList.Add(i);
+                    if (selectedMaid) this.meidoManager.SelectMeidoList.Remove(i);
+                    else this.meidoManager.SelectMeidoList.Add(i);
                 }
 
                 if (selectedMaid)
                 {
-                    int selectedIndex = selectedMaidList.IndexOf(i) + 1;
+                    int selectedIndex = this.meidoManager.SelectMeidoList.IndexOf(i) + 1;
                     GUI.DrawTexture(new Rect(5, y + 5, buttonWidth - 10, buttonHeight - 10), Texture2D.whiteTexture);
                     GUI.Label(
                         new Rect(0, y + 5, buttonWidth - 10, buttonHeight), selectedIndex.ToString(), selectLabelStyle

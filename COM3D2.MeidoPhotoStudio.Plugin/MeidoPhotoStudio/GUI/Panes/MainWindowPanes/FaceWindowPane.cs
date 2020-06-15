@@ -1,25 +1,23 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class MaidFaceWindow : BaseMainWindow
+    public class FaceWindowPane : BaseWindowPane
     {
         private MeidoManager meidoManager;
         private MaidFaceSliderPane maidFaceSliderPane;
+        private MaidSwitcherPane maidSwitcherPane;
         private Dropdown faceBlendDropdown;
         private Button facePrevButton;
         private Button faceNextButton;
 
-        public MaidFaceWindow(MeidoManager meidoManager)
+        public FaceWindowPane(MeidoManager meidoManager, MaidSwitcherPane maidSwitcherPane)
         {
             this.meidoManager = meidoManager;
-            this.meidoManager.SelectMeido += SelectMeido;
+            // this.meidoManager.UpdateMeido += UpdateMeido;
 
-            TabsPane.TabChange += ChangeTab;
+            this.maidSwitcherPane = maidSwitcherPane;
 
             this.maidFaceSliderPane = new MaidFaceSliderPane(this.meidoManager);
 
@@ -31,7 +29,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (updating) return;
                 string faceBlend = Constants.FaceBlendList[this.faceBlendDropdown.SelectedItemIndex];
                 this.meidoManager.ActiveMeido.SetFaceBlend(faceBlend);
-                this.UpdateFace();
+                this.UpdatePanes();
             };
 
             this.facePrevButton = new Button("<");
@@ -39,11 +37,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.faceNextButton = new Button(">");
             this.faceNextButton.ControlEvent += (s, a) => this.faceBlendDropdown.Step(1);
-        }
-
-        ~MaidFaceWindow()
-        {
-            TabsPane.TabChange -= ChangeTab;
         }
 
         protected override void ReloadTranslation()
@@ -55,7 +48,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             updating = false;
         }
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
+        public override void Draw()
         {
             float arrowButtonSize = 30;
             GUILayoutOption[] arrowLayoutOptions = {
@@ -70,7 +63,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GUILayout.Width(dropdownButtonWidth)
             };
 
-            MaidSwitcherPane.Draw();
+            this.maidSwitcherPane.Draw();
 
             GUI.enabled = this.meidoManager.HasActiveMeido;
 
@@ -87,25 +80,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUILayout.EndScrollView();
         }
 
-        private void UpdateFace()
+        public override void UpdatePanes()
         {
             if (!this.meidoManager.HasActiveMeido) return;
-            if (TabsPane.SelectedTab == Constants.Window.Face)
+            if (ActiveWindow)
             {
                 this.meidoManager.ActiveMeido.Maid.boMabataki = false;
                 this.meidoManager.ActiveMeido.Maid.body0.Face.morph.EyeMabataki = 0f;
-                this.maidFaceSliderPane.Update();
+                this.maidFaceSliderPane.UpdatePane();
             }
         }
 
-        private void SelectMeido(object sender, MeidoChangeEventArgs args)
+        private void UpdateMeido(object sender, EventArgs args)
         {
-            UpdateFace();
-        }
-
-        private void ChangeTab(object sender, EventArgs args)
-        {
-            UpdateFace();
+            UpdatePanes();
         }
     }
 }

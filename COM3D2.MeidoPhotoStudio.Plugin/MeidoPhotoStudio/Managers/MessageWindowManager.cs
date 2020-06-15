@@ -24,6 +24,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 .GetComponent<UILabel>();
             Utility.SetFieldValue<MessageClass, UILabel>(this.msgClass, "message_label_", this.msgLabel);
             Utility.SetFieldValue<MessageClass, UILabel>(this.msgClass, "name_label_", this.nameLabel);
+        }
+
+        public void Activate()
+        {
             SetPhotoMessageWindowActive(true);
         }
 

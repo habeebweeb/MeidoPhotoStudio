@@ -174,10 +174,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             maid.AllProcProp();
         }
 
-        public override void Update()
+        public override void UpdatePane()
         {
             if (!this.meidoManager.HasActiveMeido) return;
+
             this.updating = true;
+
             Maid maid = this.meidoManager.ActiveMeido.Maid;
             TBody body = maid.body0;
             foreach (SlotID clothingSlot in clothingSlots)
@@ -249,10 +251,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             ClothingToggles[SlotID.headset].Label = detailedClothing
                 ? Translation.Get("clothing", "headset")
                 : Translation.Get("clothing", "headwear");
-            Update();
+            UpdatePane();
         }
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
+        public override void Draw()
         {
             this.Enabled = this.meidoManager.HasActiveMeido;
 

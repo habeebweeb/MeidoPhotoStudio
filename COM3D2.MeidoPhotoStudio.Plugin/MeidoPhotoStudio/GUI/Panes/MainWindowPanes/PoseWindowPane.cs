@@ -1,24 +1,25 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class MaidPoseWindow : BaseMainWindow
+    public class PoseWindowPane : BaseWindowPane
     {
         private MeidoManager meidoManager;
         private MaidPoseSelectorPane maidPosePane;
+        private MaidSwitcherPane maidSwitcherPane;
         private MaidFaceLookPane maidFaceLookPane;
         private MaidDressingPane maidDressingPane;
         private MaidIKPane maidIKPane;
         private Toggle freeLookToggle;
-        public MaidPoseWindow(MeidoManager meidoManager)
+
+        public PoseWindowPane(MeidoManager meidoManager, MaidSwitcherPane maidSwitcherPane)
         {
             this.meidoManager = meidoManager;
-            this.meidoManager.SelectMeido += (s, a) => UpdatePanes();
-            this.meidoManager.FreeLookChange += (s, a) => UpdatePanes();
+            this.maidSwitcherPane = maidSwitcherPane;
+
+            // this.meidoManager.UpdateMeido += UpdateMeido;
+            // this.meidoManager.FreeLookChange += UpdateMeido;
 
             this.maidPosePane = new MaidPoseSelectorPane(meidoManager);
             this.maidFaceLookPane = new MaidFaceLookPane(meidoManager);
@@ -28,15 +29,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.maidIKPane = new MaidIKPane(meidoManager);
 
-            TabsPane.TabChange += OnTabChange;
-
             this.freeLookToggle = new Toggle(Translation.Get("freeLook", "freeLookToggle"), false);
             this.freeLookToggle.ControlEvent += (s, a) => SetMaidFreeLook();
-        }
-
-        ~MaidPoseWindow()
-        {
-            TabsPane.TabChange -= OnTabChange;
         }
 
         protected override void ReloadTranslation()
@@ -44,9 +38,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.freeLookToggle.Label = Translation.Get("freeLook", "freeLookToggle");
         }
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
+        public override void Draw()
         {
-            MaidSwitcherPane.Draw();
+            this.maidSwitcherPane.Draw();
             maidPosePane.Draw();
 
             this.scrollPos = GUILayout.BeginScrollView(this.scrollPos);
@@ -73,31 +67,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.meidoManager.ActiveMeido.IsFreeLook = this.freeLookToggle.Value;
         }
 
-        private void UpdatePanes()
+        public override void UpdatePanes()
         {
-            if (this.meidoManager.ActiveMeido == null)
-            {
-                this.updating = true;
-                this.freeLookToggle.Value = false;
-                this.updating = false;
-                return;
-            }
+            if (this.meidoManager.ActiveMeido == null) return;
 
-            if (TabsPane.SelectedTab == Constants.Window.Pose)
+            if (ActiveWindow)
             {
                 this.updating = true;
                 this.freeLookToggle.Value = this.meidoManager.ActiveMeido?.IsFreeLook ?? false;
                 this.updating = false;
-                maidPosePane.Update();
-                maidFaceLookPane.Update();
-                maidDressingPane.Update();
-                maidIKPane.Update();
+                maidPosePane.UpdatePane();
+                maidFaceLookPane.UpdatePane();
+                maidDressingPane.UpdatePane();
+                maidIKPane.UpdatePane();
             }
         }
 
-        private void OnTabChange(object sender, EventArgs args)
+        private void UpdateMeido(object sender, EventArgs args)
         {
-            UpdatePanes();
+            this.UpdatePanes();
         }
     }
 }

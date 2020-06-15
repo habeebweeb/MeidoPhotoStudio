@@ -3,17 +3,17 @@ using System.Collections.Generic;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public abstract class BasePane : BaseControl
+    public abstract class BasePane
     {
         protected List<BaseControl> Controls { get; set; }
-        protected List<BasePane> Panes { get; set; }
         protected bool updating = false;
+        public virtual bool Visible { get; set; }
+        public bool Enabled { get; set; }
 
         public BasePane()
         {
             Translation.ReloadTranslationEvent += OnReloadTranslation;
             Controls = new List<BaseControl>();
-            Panes = new List<BasePane>();
         }
 
         ~BasePane()
@@ -27,5 +27,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
 
         protected virtual void ReloadTranslation() { }
+
+        public virtual void UpdatePane() { }
+
+        public virtual void Draw() { }
     }
 }

@@ -5,13 +5,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     public class MaidSwitcherPane : BasePane
     {
-        public static MeidoManager meidoManager;
-        private static Button PreviousButton;
-        private static Button NextButton;
-        public static event EventHandler<MeidoChangeEventArgs> MaidChange;
-        private static int SelectedMeido => meidoManager.SelectedMeido;
-        static MaidSwitcherPane()
+        private MeidoManager meidoManager;
+        private Button PreviousButton;
+        private Button NextButton;
+        private int SelectedMeido => meidoManager.SelectedMeido;
+        public MaidSwitcherPane(MeidoManager meidoManager)
         {
+            this.meidoManager = meidoManager;
             PreviousButton = new Button("<");
             PreviousButton.ControlEvent += (s, a) => ChangeMaid(-1);
 
@@ -19,7 +19,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             NextButton.ControlEvent += (s, a) => ChangeMaid(1);
         }
 
-        public static void Draw()
+        public override void Draw()
         {
             GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
             GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
@@ -54,16 +54,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUILayout.EndHorizontal();
         }
 
-        private static void ChangeMaid(int dir)
+        private void ChangeMaid(int dir)
         {
             dir = (int)Mathf.Sign(dir);
-            int selected = Utility.Wrap(SelectedMeido + dir, 0, meidoManager.ActiveMeidoList.Count);
-            OnMaidChange(new MeidoChangeEventArgs(selected));
-        }
-
-        private static void OnMaidChange(MeidoChangeEventArgs args)
-        {
-            MaidChange?.Invoke(null, args);
+            int selected = Utility.Wrap(
+                this.meidoManager.SelectedMeido + dir, 0, this.meidoManager.ActiveMeidoList.Count
+            );
+            this.meidoManager.ChangeMaid(selected);
         }
     }
 }

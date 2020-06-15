@@ -13,6 +13,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 defEyeRotR;
         private Vector3 mousePosOther;
         public event EventHandler Select;
+        public bool IsIK { get; set; }
 
         public DragHead Initialize(Transform head, Meido meido, Func<Vector3> posFunc, Func<Vector3> rotFunc)
         {
@@ -83,7 +84,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void Drag()
         {
-            if ((CurrentDragType == DragType.None || CurrentDragType == DragType.Select) || IsBone) return;
+            if (!IsIK || (CurrentDragType == DragType.None || CurrentDragType == DragType.Select) || IsBone) return;
 
             if (!(CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY))
             {

@@ -124,10 +124,29 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Dictionary<Bone, Transform> BoneTransform;
         private IKMode ikMode;
         private IKMode ikModeOld = IKMode.None;
-        public event EventHandler<MeidoChangeEventArgs> SelectMaid;
-        public bool Initialized { get; private set; }
-        public bool Active { get; set; }
-        public bool IsBone { get; set; }
+        public event EventHandler<MeidoUpdateEventArgs> SelectMaid;
+        private bool active = false;
+        public bool Active
+        {
+            get => active;
+            set
+            {
+                if (this.active == value) return;
+                this.active = value;
+                this.SetActive(this.active);
+            }
+        }
+        private bool isBone = false;
+        public bool IsBone
+        {
+            get => isBone;
+            set
+            {
+                if (this.isBone == value) return;
+                this.isBone = value;
+                this.SetBoneMode(this.isBone);
+            }
+        }
         private static bool cubeActive = false;
 
         public DragPointManager(Meido meido)
@@ -137,47 +156,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.meido.BodyLoad += Initialize;
         }
 
-        public void Initialize(object sender, EventArgs args)
-        {
-            if (Initialized) return;
-
-            Initialized = true;
-            InitializeBones();
-            InitializeDragPoints();
-            SetActive(true);
-            meido.BodyLoad -= Initialize;
-        }
-
-        public void Deactivate()
+        public void Destroy()
         {
             foreach (KeyValuePair<Bone, BaseDrag> dragPoint in DragPoint)
             {
                 GameObject.Destroy(dragPoint.Value.gameObject);
             }
-            DragPoint.Clear();
             BoneTransform.Clear();
-            Initialized = false;
-            this.Active = false;
-        }
-
-        public void SetActive(bool active)
-        {
-            this.Active = active;
-            if (this.Active)
-            {
-                ikMode = ikModeOld = IKMode.None;
-                UpdateIK();
-            }
-            else
-            {
-                foreach (KeyValuePair<Bone, BaseDrag> dragPoint in DragPoint)
-                {
-                    dragPoint.Value.gameObject.SetActive(false);
-                }
-                DragPoint[Bone.Head].SetDragProp(false, true, false);
-                DragPoint[Bone.Body].SetDragProp(false, true, false);
-                DragPoint[Bone.Cube].SetDragProp(false, true, true);
-            }
+            DragPoint.Clear();
         }
 
         public void Update()
@@ -221,9 +207,52 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             ikModeOld = ikMode;
         }
 
+        private void Initialize(object sender, EventArgs args)
+        {
+            meido.BodyLoad -= Initialize;
+            InitializeBones();
+            InitializeDragPoints();
+            this.Active = true;
+            this.SetBoneMode(false);
+        }
+
+        private void SetBoneMode(bool active)
+        {
+            foreach (KeyValuePair<Bone, BaseDrag> dragPoint in DragPoint)
+            {
+                dragPoint.Value.IsBone = this.IsBone;
+                if (!this.IsBone)
+                {
+                    dragPoint.Value.SetDragProp(false, true, dragPoint.Key >= Bone.Finger0L);
+                }
+            }
+            UpdateIK();
+        }
+
+        private void SetActive(bool active)
+        {
+            if (active)
+            {
+                ikMode = ikModeOld = IKMode.None;
+                ((DragHead)DragPoint[Bone.Head]).IsIK = true;
+                UpdateIK();
+            }
+            else
+            {
+                foreach (KeyValuePair<Bone, BaseDrag> dragPoint in DragPoint)
+                {
+                    dragPoint.Value.gameObject.SetActive(false);
+                }
+                ((DragHead)DragPoint[Bone.Head]).IsIK = false;
+                DragPoint[Bone.Head].SetDragProp(false, true, false);
+                DragPoint[Bone.Body].SetDragProp(false, true, false);
+                DragPoint[Bone.Cube].SetDragProp(false, true, true);
+            }
+        }
+
         private void UpdateIK()
         {
-            if (Active)
+            if (this.Active)
             {
                 if (this.IsBone) UpdateBoneIK();
                 else
@@ -285,6 +314,26 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
+        private void OnSelectFace(object sender, EventArgs args)
+        {
+            OnMeidoSelect(new MeidoUpdateEventArgs(meido.ActiveSlot, true, false));
+        }
+
+        private void OnSelectBody(object sender, EventArgs args)
+        {
+            OnMeidoSelect(new MeidoUpdateEventArgs(meido.ActiveSlot, true, true));
+        }
+
+        private void OnSetDragPointScale(object sender, EventArgs args)
+        {
+            this.SetDragPointScale(maid.transform.localScale.x);
+        }
+
+        private void OnMeidoSelect(MeidoUpdateEventArgs args)
+        {
+            SelectMaid?.Invoke(this, args);
+        }
+
         private void SetDragPointScale(float scale)
         {
             foreach (KeyValuePair<Bone, BaseDrag> kvp in DragPoint)
@@ -292,20 +341,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 BaseDrag dragPoint = kvp.Value;
                 dragPoint.DragPointScale = dragPoint.BaseScale * scale;
             }
-        }
-
-        public void BoneModeActive(bool active)
-        {
-            this.IsBone = active;
-            foreach (KeyValuePair<Bone, BaseDrag> dragPoint in DragPoint)
-            {
-                dragPoint.Value.IsBone = this.IsBone;
-                if (!this.IsBone)
-                {
-                    dragPoint.Value.SetDragProp(false, true, dragPoint.Key >= Bone.Finger0L);
-                }
-            }
-            SetActive(true);
         }
 
         // TODO: Rework this a little to reduce number of needed BaseDrag derived components
@@ -367,8 +402,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     () => maid.transform.position,
                     () => maid.transform.eulerAngles
                 );
-            DragBody dragCube = DragPoint[Bone.Cube] as DragBody;
-            dragCube.Scale += (s, a) => SetDragPointScale(maid.transform.localScale.x);
+            DragBody dragCube = (DragBody)DragPoint[Bone.Cube];
+            dragCube.Scale += OnSetDragPointScale;
             dragCube.DragPointVisible = true;
 
             // Body Dragpoint
@@ -387,9 +422,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         BoneTransform[Bone.Spine0a].transform.eulerAngles.z + 90f
                     )
             );
-            DragBody dragBody = DragPoint[Bone.Body] as DragBody;
-            dragBody.Select += (s, e) => OnMeidoSelect(new MeidoChangeEventArgs(meido.ActiveSlot, true));
-            dragBody.Scale += (s, a) => SetDragPointScale(maid.transform.localScale.x);
+            DragBody dragBody = (DragBody)DragPoint[Bone.Body];
+            dragBody.Select += OnSelectBody;
+            dragBody.Scale += OnSetDragPointScale;
 
             // Head Dragpoint
             DragPoint[Bone.Head] =
@@ -408,8 +443,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 )
             );
-            DragHead dragHead = DragPoint[Bone.Head] as DragHead;
-            dragHead.Select += (s, a) => OnMeidoSelect(new MeidoChangeEventArgs(meido.ActiveSlot, true, false));
+            DragHead dragHead = (DragHead)DragPoint[Bone.Head];
+            dragHead.Select += OnSelectFace;
 
             // Torso Dragpoint
             DragPoint[Bone.Torso] =
@@ -423,7 +458,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 BoneTransform[Bone.Spine0a],
                 BoneTransform[Bone.Spine]
             };
-            DragTorso dragTorso = DragPoint[Bone.Torso] as DragTorso;
+            DragTorso dragTorso = (DragTorso)DragPoint[Bone.Torso];
             dragTorso.Initialize(spineParts, meido,
                 () => new Vector3(
                     spineTrans1.position.x,
@@ -443,7 +478,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 .AddComponent<DragPelvis>();
             Transform pelvisTrans = BoneTransform[Bone.Pelvis];
             Transform spineTrans = BoneTransform[Bone.Spine];
-            DragPelvis dragPelvis = DragPoint[Bone.Pelvis] as DragPelvis;
+            DragPelvis dragPelvis = (DragPelvis)DragPoint[Bone.Pelvis];
             dragPelvis.Initialize(BoneTransform[Bone.Pelvis], meido,
                 () => new Vector3(
                     pelvisTrans.position.x,
@@ -466,7 +501,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 BoneTransform[Bone.MuneL],
                 BoneTransform[Bone.MuneSubL]
             };
-            DragMune dragMuneL = DragPoint[Bone.MuneL] as DragMune;
+            DragMune dragMuneL = (DragMune)DragPoint[Bone.MuneL];
             dragMuneL.Initialize(muneIKChainL, meido,
                 () => (BoneTransform[Bone.MuneL].position + BoneTransform[Bone.MuneSubL].position) / 2f,
                 () => Vector3.zero
@@ -481,7 +516,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 BoneTransform[Bone.MuneR],
                 BoneTransform[Bone.MuneSubR]
             };
-            DragMune dragMuneR = DragPoint[Bone.MuneR] as DragMune;
+            DragMune dragMuneR = (DragMune)DragPoint[Bone.MuneR];
             dragMuneR.Initialize(muneIKChainR, meido,
                 () => (BoneTransform[Bone.MuneR].position + BoneTransform[Bone.MuneSubR].position) / 2f,
                 () => Vector3.zero
@@ -699,16 +734,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 [Bone.Toe21R] = CMT.SearchObjName(maid.body0.m_Bones.transform, "Bip01 R Toe21", true),
                 [Bone.Toe2NubR] = CMT.SearchObjName(maid.body0.m_Bones.transform, "Bip01 R Toe2Nub", true)
             };
-        }
-
-        private void OnMeidoSelect(MeidoChangeEventArgs args)
-        {
-            SelectMaid?.Invoke(this, args);
-        }
-
-        private void OnDragEvent(object sender, EventArgs args)
-        {
-            this.meido.IsStop = true;
         }
 
         private struct DragInfo

@@ -1073,15 +1073,27 @@
         "bg": "BG"
     },
     "lights": {
-        "labelNormal": "Norm",
-        "labelSpot": "Spot",
-        "labelPoint": "Point",
-        "labelColor": "Color",
         "x": "Light X",
         "y": "Light Y",
-        "brightness": "Brightness",
+        "intensity": "Brightness",
         "range": "Range",
+        "spot": "Spot Angle",
         "shadow": "Shadow"
+    },
+    "lightsPane": {
+        "header": "Lights",
+        "add": "+",
+        "delete": "Del",
+        "reset": "Reset",
+        "clear": "Clear",
+        "color": "Color",
+        "disable": "Disable"
+    },
+    "lightType": {
+        "main": "Main",
+        "normal": "Normal",
+        "spot": "Spot",
+        "point": "Point"
     },
     "effectBloom": {
         "strength": "Strength",

@@ -61,7 +61,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             updating = false;
         }
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
+        public override void Draw()
         {
             float arrowButtonSize = 30;
             GUILayoutOption[] arrowLayoutOptions = {

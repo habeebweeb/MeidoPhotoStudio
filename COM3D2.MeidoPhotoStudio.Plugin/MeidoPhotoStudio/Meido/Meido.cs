@@ -8,9 +8,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     public class Meido
     {
+        private const int MAX_MAIDS = 12;
         private static CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;
         public readonly int stockNo;
-        public readonly PoseInfo defaultPose = new PoseInfo(0, 0, "pose_taiki_f");
+        public static readonly PoseInfo defaultPose = new PoseInfo(0, 0, "pose_taiki_f");
         public Maid Maid { get; private set; }
         public Texture2D Image { get; private set; }
         public string FirstName { get; private set; }
@@ -19,31 +20,46 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public string NameEN => $"{FirstName}\n{LastName}";
         public int ActiveSlot { get; private set; }
         private DragPointManager dragPointManager;
-        public event EventHandler<MeidoChangeEventArgs> SelectMeido;
+        public event EventHandler<MeidoUpdateEventArgs> UpdateMeido;
         public event EventHandler BodyLoad;
-        public event EventHandler AnimeChange;
-        public event EventHandler FreeLookChange;
         private bool isLoading = false;
-        public bool IsIK { get; private set; }
+        public bool IsIK
+        {
+            get => dragPointManager?.Active ?? false;
+            set
+            {
+                if (dragPointManager == null || value == dragPointManager.Active) return;
+                else dragPointManager.Active = value;
+            }
+        }
         private bool isFreeLook;
         public bool IsFreeLook
         {
             get => isFreeLook;
             set
             {
+                if (this.isFreeLook == value) return;
                 this.isFreeLook = value;
                 Maid.body0.trsLookTarget = this.isFreeLook ? null : GameMain.Instance.MainCamera.transform;
-                this.FreeLookChange?.Invoke(this, EventArgs.Empty);
+                this.UpdateMeido?.Invoke(this, MeidoUpdateEventArgs.Empty);
             }
         }
         public bool IsStop
         {
-            get => !Maid.GetAnimation().isPlaying;
+            get
+            {
+                if (!Maid.body0.isLoadedBody) return true;
+                else return !Maid.GetAnimation().isPlaying;
+            }
             set
             {
-                if (!value) this.SetPose(this.poseInfo.PoseName);
-                else Maid.GetAnimation().Stop();
-                this.AnimeChange?.Invoke(this, EventArgs.Empty);
+                if (!Maid.body0.isLoadedBody || value == !Maid.GetAnimation().isPlaying) return;
+                else
+                {
+                    if (value) Maid.GetAnimation().Stop();
+                    else this.SetPose(this.CachedPose.PoseName);
+                    this.UpdateMeido?.Invoke(this, MeidoUpdateEventArgs.Empty);
+                }
             }
         }
         private bool isBone = false;
@@ -52,8 +68,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => isBone;
             set
             {
+                if (this.isBone == value) return;
                 this.isBone = value;
-                this.dragPointManager?.BoneModeActive(this.isBone);
+                if (this.dragPointManager != null) this.dragPointManager.IsBone = this.isBone;
+                this.UpdateMeido?.Invoke(this, MeidoUpdateEventArgs.Empty);
             }
         }
         public bool Visible
@@ -61,7 +79,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => Maid.Visible;
             set => Maid.Visible = value;
         }
-        public PoseInfo poseInfo;
+        private PoseInfo cachedPose;
+        public PoseInfo CachedPose
+        {
+            get => cachedPose;
+            private set => cachedPose = value;
+        }
 
         public Meido(int stockMaidIndex)
         {
@@ -70,7 +93,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.Image = Maid.GetThumIcon();
             this.FirstName = Maid.status.firstName;
             this.LastName = Maid.status.lastName;
-            this.poseInfo = defaultPose;
+            this.CachedPose = defaultPose;
             // I don't know why I put this here. Must've fixed something with proc loading
             Maid.boAllProcPropBUSY = false;
         }
@@ -86,6 +109,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
                 return;
             }
+
             dragPointManager.Update();
         }
 
@@ -98,7 +122,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (!Maid.body0.isLoadedBody)
             {
-                if (activeSlot >= 12)
+                if (activeSlot >= MAX_MAIDS)
                 {
                     Maid.DutPropAll();
                     Maid.AllProcPropSeqStart();
@@ -117,11 +141,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (dragPointManager == null)
             {
                 dragPointManager = new DragPointManager(this);
-                dragPointManager.SelectMaid += (sender, meidoChangeArgs) => OnMeidoSelect(meidoChangeArgs);
+                dragPointManager.SelectMaid += OnMeidoSelect;
             }
             else
             {
-                dragPointManager.SetActive(true);
+                dragPointManager.Active = true;
 
                 this.IsIK = true;
                 this.IsStop = false;
@@ -153,7 +177,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             Maid.Visible = false;
 
-            dragPointManager?.SetActive(false);
+            if (dragPointManager != null) dragPointManager.Active = false;
+
             this.IsIK = false;
             this.IsStop = false;
             this.IsBone = false;
@@ -162,20 +187,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Deactivate()
         {
             Unload();
-            dragPointManager?.Deactivate();
+            if (dragPointManager != null)
+            {
+                dragPointManager.Destroy();
+                dragPointManager.SelectMaid -= OnMeidoSelect;
+            }
+
             Maid.SetPos(Vector3.zero);
             Maid.SetRot(Vector3.zero);
             Maid.SetPosOffset(Vector3.zero);
             Maid.body0.SetBoneHitHeightY(0f);
 
-            Maid.Visible = false;
-            Maid.ActiveSlotNo = -1;
             Maid.DelPrefabAll();
+
+            Maid.ActiveSlotNo = -1;
         }
 
         public void SetPose(PoseInfo poseInfo)
         {
-            this.poseInfo = poseInfo;
+            this.CachedPose = poseInfo;
             SetPose(poseInfo.PoseName);
         }
 
@@ -216,7 +246,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void SetMune(bool drag = false)
         {
-            bool isMomiOrPaizuri = poseInfo.PoseName.Contains("_momi") || poseInfo.PoseName.Contains("paizuri_");
+            bool isMomiOrPaizuri = CachedPose.PoseName.Contains("_momi") || CachedPose.PoseName.Contains("paizuri_");
             float onL = (drag || isMomiOrPaizuri) ? 0f : 1f;
             Maid.body0.MuneYureL(onL);
             Maid.body0.MuneYureR(onL);
@@ -282,16 +312,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             body.FixVisibleFlag(false);
         }
 
-        public void SetIKActive(bool active)
-        {
-            this.IsIK = active;
-            if (dragPointManager == null) this.IsIK = false;
-            else
-            {
-                dragPointManager.SetActive(this.IsIK);
-            }
-        }
-
         private void OnBodyLoad()
         {
             BodyLoad?.Invoke(this, EventArgs.Empty);
@@ -301,18 +321,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.IsBone = false;
         }
 
-        private void OnMeidoSelect(MeidoChangeEventArgs args)
+        private void OnMeidoSelect(object sender, MeidoUpdateEventArgs args)
         {
-            SelectMeido?.Invoke(this, args);
+            UpdateMeido?.Invoke(this, args);
         }
     }
 
     public struct PoseInfo
     {
-        public int PoseGroupIndex { get; private set; }
-        public int PoseIndex { get; private set; }
-        public string PoseName { get; private set; }
-        public bool IsCustomPose { get; private set; }
+        public int PoseGroupIndex { get; }
+        public int PoseIndex { get; }
+        public string PoseName { get; }
+        public bool IsCustomPose { get; }
         public PoseInfo(int poseGroup, int pose, string poseName, bool isCustomPose = false)
         {
             this.PoseGroupIndex = poseGroup;
@@ -320,5 +340,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.PoseName = poseName;
             this.IsCustomPose = isCustomPose;
         }
+        public override string ToString() => $"pose group: {PoseGroupIndex}, pose index: {PoseIndex}, pose name: {PoseName}, is custom: {IsCustomPose}";
     }
 }

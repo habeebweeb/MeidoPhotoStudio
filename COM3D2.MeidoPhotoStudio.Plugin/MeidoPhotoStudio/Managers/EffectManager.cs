@@ -12,7 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         }
 
-        public void Initialize()
+        public void Activate()
         {
 
         }

@@ -18,10 +18,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             None, Move, Rotate, Scale, Delete, Other
         }
 
-        public PropManager()
-        {
-
-        }
+        public void Activate() { }
 
         public void Deactivate()
         {

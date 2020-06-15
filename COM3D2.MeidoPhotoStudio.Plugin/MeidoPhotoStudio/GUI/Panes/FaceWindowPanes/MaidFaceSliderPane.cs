@@ -129,7 +129,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SetFaceValue(key, value ? max : 0f);
         }
 
-        public override void Update()
+        public override void UpdatePane()
         {
             this.updating = true;
             TMorph morph = this.meidoManager.ActiveMeido.Maid.body0.Face.morph;
@@ -160,7 +160,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.updating = false;
         }
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
+        public override void Draw()
         {
             for (int i = 0; i < faceKeys.Length; i += 2)
             {

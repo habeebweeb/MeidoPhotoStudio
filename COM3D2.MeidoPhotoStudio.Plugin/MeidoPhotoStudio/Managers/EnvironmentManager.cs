@@ -4,23 +4,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     public class EnvironmentManager
     {
-        public PropManager PropManager { get; private set; }
-        public LightManager LightManager { get; private set; }
-        public EffectManager EffectManager { get; private set; }
         private GameObject cameraObject;
         private Camera subCamera;
         private GameObject bgObject;
         private Transform bg;
         private CameraInfo cameraInfo;
+        public LightManager LightManager { get; set; }
+        public PropManager PropManager { get; set; }
+        public EffectManager EffectManager { get; set; }
 
-        public EnvironmentManager(PropManager propManager, LightManager lightManager, EffectManager effectManager)
-        {
-            this.PropManager = propManager;
-            this.LightManager = lightManager;
-            this.EffectManager = effectManager;
-        }
-
-        public void Initialize()
+        public void Activate()
         {
             bgObject = GameObject.Find("__GameMain__/BG");
             bg = bgObject.transform;
@@ -28,11 +21,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             cameraObject = new GameObject("subCamera");
             subCamera = cameraObject.AddComponent<Camera>();
             subCamera.CopyFrom(Camera.main);
-            cameraObject.SetActive(true);
             subCamera.clearFlags = CameraClearFlags.Depth;
             subCamera.cullingMask = 256;
             subCamera.depth = 1f;
             subCamera.transform.parent = GameMain.Instance.MainCamera.transform;
+
+            cameraObject.SetActive(true);
 
             bgObject.SetActive(true);
             GameMain.Instance.BgMgr.ChangeBg("Theater");
@@ -42,17 +36,38 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Utility.GetFieldValue<CameraMain, UltimateOrbitCamera>(GameMain.Instance.MainCamera, "m_UOCamera");
             UOCamera.enabled = true;
 
-            GameMain.Instance.MainLight.Reset();
-            GameMain.Instance.CharacterMgr.ResetCharaPosAll();
-
             ResetCamera();
             SaveCameraInfo();
+
+            PropManager.Activate();
+            // LightManager.Activate();
+            // EffectManager.Activate();
         }
 
         public void Deactivate()
         {
             GameObject.Destroy(cameraObject);
             GameObject.Destroy(subCamera);
+
+            PropManager.Deactivate();
+            // LightManager.Deactivate();
+            // EffectManager.Deactivate();
+
+            bool isNight = GameMain.Instance.CharacterMgr.status.GetFlag("時間帯") == 3;
+
+            if (isNight)
+            {
+                GameMain.Instance.BgMgr.ChangeBg("ShinShitsumu_ChairRot_Night");
+            }
+            else
+            {
+                GameMain.Instance.BgMgr.ChangeBg("ShinShitsumu_ChairRot");
+            }
+
+            GameMain.Instance.MainCamera.Reset(CameraMain.CameraType.Target, true);
+            GameMain.Instance.MainCamera.SetTargetPos(new Vector3(0.5609447f, 1.380762f, -1.382336f), true);
+            GameMain.Instance.MainCamera.SetDistance(1.6f, true);
+            GameMain.Instance.MainCamera.SetAroundAngle(new Vector2(245.5691f, 6.273283f), true);
         }
 
         public void Update()
@@ -76,7 +91,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             PropManager.Update();
-            LightManager.Update();
+            // LightManager.Update();
+            // EffectManager.Update();
         }
 
         public void ChangeBackground(string assetName, bool creative = false)
@@ -118,8 +134,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             cameraMain.SetTargetPos(new Vector3(0f, 0.9f, 0f), true);
             cameraMain.SetDistance(3f, true);
         }
-
-
     }
 
     public struct CameraInfo

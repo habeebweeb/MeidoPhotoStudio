@@ -4,167 +4,89 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    using Window = Constants.Window;
+    using static Constants;
     public class WindowManager
     {
-        private Dictionary<Window, BaseWindow> Windows;
-        private static Window currentWindow = Window.Call;
-        private static Window CurrentWindow
+        private Dictionary<Window, BaseWindow> Windows = new Dictionary<Window, BaseWindow>();
+        private List<BaseWindow> WindowList = new List<BaseWindow>();
+        public BaseWindow this[Window id]
         {
-            get => currentWindow;
+            get => Windows[id];
             set
             {
-                if (value > Window.BG2) currentWindow = Window.BG2;
-                else if (value < Window.Call) currentWindow = Window.Call;
-                else currentWindow = value;
+                Windows[id] = value;
+                WindowList.Add(Windows[id]);
             }
         }
-        private Rect mainWindowRect;
-        private Rect messageWindowRect;
-        private MeidoManager meidoManager;
-        private bool initializeWindows = false;
-        public bool MainWindowVisible { get; set; }
-        public bool MessageWindowVisible
+
+        public bool AddWindow(Window id, BaseWindow window)
         {
-            get => Windows[Window.Message].Visible;
-            set
+            if (!this.Windows.ContainsKey(id))
             {
-                Windows[Window.Message].Visible = value;
+                this.Windows[id] = window;
+                this.WindowList.Add(window);
+                return true;
             }
+            return false;
         }
-        public bool DropdownVisible
+
+        public bool RemoveWindow(Window id)
         {
-            get => DropdownHelper.Visible;
-            set
+            if (Windows.ContainsKey(id))
             {
-                DropdownHelper.Visible = value;
+                WindowList.Remove(Windows[id]);
+                Windows.Remove(id);
+                return true;
             }
+            return false;
         }
-        public WindowManager(
-            MeidoManager meidoManager,
-            EnvironmentManager environmentManager,
-            MessageWindowManager messageWindowManager
-        )
-        {
-            TabsPane.TabChange += ChangeTab;
-            this.meidoManager = meidoManager;
-            this.meidoManager.SelectMeido += MeidoSelect;
 
-            mainWindowRect.y = Screen.height * 0.08f;
-            mainWindowRect.x = Screen.width;
-            Windows = new Dictionary<Window, BaseWindow>()
+        public void DrawWindow(Window id)
+        {
+            DrawWindow(Windows[id]);
+        }
+
+        public void DrawWindow(BaseWindow window)
+        {
+            if (window.Visible)
             {
-                [Window.Call] = new MaidCallWindow(meidoManager),
-                [Window.Pose] = new MaidPoseWindow(meidoManager),
-                [Window.Face] = new MaidFaceWindow(meidoManager),
-                [Window.BG] = new BackgroundWindow(environmentManager),
-                [Window.BG2] = new Background2Window(environmentManager),
-                [Window.Message] = new MessageWindow(messageWindowManager)
-            };
-            Windows[Window.Message].Visible = false;
+                GUIStyle windowStyle = new GUIStyle(GUI.skin.box);
+                window.WindowRect = GUI.Window(window.windowID, window.WindowRect, window.GUIFunc, "", windowStyle);
+            }
+
+            if (DropdownHelper.Visible) DropdownHelper.HandleDropdown();
         }
 
-        ~WindowManager()
+        public void DrawWindows()
         {
-            TabsPane.TabChange -= ChangeTab;
-        }
-
-        private void MeidoSelect(object sender, MeidoChangeEventArgs args)
-        {
-            if (args.fromMeido)
-                TabsPane.SelectedTab = args.isBody ? Window.Pose : Window.Face;
-        }
-
-        private void ChangeTab(object sender, EventArgs args)
-        {
-            CurrentWindow = TabsPane.SelectedTab;
+            foreach (BaseWindow window in WindowList)
+            {
+                DrawWindow(window);
+            }
         }
 
         public void Update()
         {
-            if (Input.GetKeyDown(KeyCode.M))
+            foreach (BaseWindow window in WindowList)
             {
-                (Windows[Window.Message] as MessageWindow).ToggleVisibility();
-            }
-
-            if (Input.GetKeyDown(KeyCode.Tab))
-            {
-                MainWindowVisible = !MainWindowVisible;
-            }
-
-            HandleZoom();
-        }
-
-        private void HandleZoom()
-        {
-            bool mainWindowVisible = MainWindowVisible;
-            bool dropdownVisible = DropdownVisible;
-            bool messageWindowVisible = MessageWindowVisible;
-            if (mainWindowVisible || dropdownVisible || messageWindowVisible)
-            {
-                if (Input.mouseScrollDelta.y != 0f)
-                {
-                    Vector2 mousePos = Event.current.mousePosition;
-                    if (mainWindowVisible && mainWindowRect.Contains(mousePos)
-                        || dropdownVisible && DropdownHelper.dropdownWindow.Contains(mousePos)
-                        || messageWindowVisible && messageWindowRect.Contains(mousePos)
-                    )
-                    {
-                        GameMain.Instance.MainCamera.SetControl(false);
-                        Input.ResetInputAxes();
-                    }
-
-                }
+                window.Update();
             }
         }
 
-        public void OnGUI()
+        public void Activate()
         {
-            GUIStyle windowStyle = new GUIStyle(GUI.skin.box);
-            GameMain.Instance.MainCamera.SetControl(true);
-
-            if (MainWindowVisible)
+            foreach (BaseWindow window in WindowList)
             {
-                mainWindowRect.width = 230;
-                mainWindowRect.height = Screen.height * 0.8f;
-
-                mainWindowRect.x = Mathf.Clamp(mainWindowRect.x, 0, Screen.width - mainWindowRect.width);
-                mainWindowRect.y = Mathf.Clamp(mainWindowRect.y, -mainWindowRect.height + 30, Screen.height - 50);
-
-                mainWindowRect = GUI.Window(
-                    Constants.mainWindowID, mainWindowRect, Windows[CurrentWindow].OnGUI, "", windowStyle
-                );
+                window.Activate();
             }
+        }
 
-            if (MessageWindowVisible)
+        public void Deactivate()
+        {
+            foreach (BaseWindow window in WindowList)
             {
-                messageWindowRect.width = Mathf.Clamp(Screen.width * 0.4f, 440, Mathf.Infinity);
-                messageWindowRect.height = Mathf.Clamp(Screen.height * 0.15f, 150, Mathf.Infinity);
-
-                messageWindowRect.x = Mathf.Clamp(
-                    messageWindowRect.x,
-                    -messageWindowRect.width + Utility.GetPix(20),
-                    Screen.width - Utility.GetPix(20)
-                );
-                messageWindowRect.y = Mathf.Clamp(
-                    messageWindowRect.y,
-                    -messageWindowRect.height + Utility.GetPix(20),
-                    Screen.height - Utility.GetPix(20)
-                );
-
-                if (!initializeWindows)
-                {
-                    messageWindowRect.x = Screen.width / 2 - messageWindowRect.width / 2;
-                    messageWindowRect.y = Screen.height - messageWindowRect.height;
-                    initializeWindows = true;
-                }
-
-                messageWindowRect = GUI.Window(
-                    Constants.messageWindowID, messageWindowRect, Windows[Window.Message].OnGUI, "", windowStyle
-                );
+                window.Deactivate();
             }
-
-            if (DropdownVisible) DropdownHelper.HandleDropdown();
         }
     }
 }

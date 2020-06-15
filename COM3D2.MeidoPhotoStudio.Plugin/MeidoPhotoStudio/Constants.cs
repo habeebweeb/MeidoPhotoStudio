@@ -22,7 +22,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static readonly int dropdownWindowID = 777;
         public enum Window
         {
-            Call, Pose, Face, BG, BG2, Message, Save, SaveModal
+            Call, Pose, Face, BG, BG2, Main, Message, Save, SaveModal
         }
         public enum Scene
         {
@@ -383,6 +383,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     }
                 }
             }
+        }
+
+        private static void InitializeHandItems()
+        {
+            List<string> handItems = new List<string>(
+                GameUty.MenuFiles.Where(menu => menu.StartsWith("handiteml") || menu.StartsWith("handitemr"))
+            );
+
+            WriteToFile("mm_hand_items", handItems);
         }
 
         private static CsvParser OpenCsvParser(string nei, AFileSystemBase fs)

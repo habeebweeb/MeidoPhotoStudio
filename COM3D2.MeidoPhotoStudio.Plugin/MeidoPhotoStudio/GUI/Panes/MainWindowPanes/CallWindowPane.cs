@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class MaidCallWindow : BaseMainWindow
+    public class CallWindowPane : BaseWindowPane
     {
         private MeidoManager meidoManager;
         private MaidSelectorPane maidSelectorPane;
         private Button placementButton;
         private Button placementOKButton;
-        public MaidCallWindow(MeidoManager meidoManager) : base()
+
+        public CallWindowPane(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
             placementButton = new Button(Translation.Get("placementDropdown", "normal"));
@@ -31,7 +29,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             placementOKButton.Label = Translation.Get("maidCallWindow", "okButton");
         }
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
+        public override void UpdatePanes()
+        {
+            maidSelectorPane.UpdatePane();
+        }
+
+        public override void Draw()
         {
             GUILayout.BeginHorizontal();
             placementButton.Draw(GUILayout.Width(150));

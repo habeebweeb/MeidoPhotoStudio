@@ -16,11 +16,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public MaidIKPane(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
-            this.meidoManager.AnimeChange += (s, a) =>
-            {
-                if (!this.meidoManager.HasActiveMeido) return;
-                if (TabsPane.SelectedTab == Constants.Window.Pose) Update();
-            };
 
             this.ikToggle = new Toggle(Translation.Get("maidPoseWindow", "ikToggle"), true);
             this.ikToggle.ControlEvent += (s, a) => SetIK(IKToggle.IK, this.ikToggle.Value);
@@ -42,12 +37,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void SetIK(IKToggle toggle, bool value)
         {
             if (updating) return;
-            if (toggle == IKToggle.IK) this.meidoManager.ActiveMeido.SetIKActive(value);
+            if (toggle == IKToggle.IK) this.meidoManager.ActiveMeido.IsIK = value;
             else if (toggle == IKToggle.Release) this.meidoManager.ActiveMeido.IsStop = false;
             else if (toggle == IKToggle.Bone) this.meidoManager.ActiveMeido.IsBone = value;
         }
 
-        public override void Update()
+        public override void UpdatePane()
         {
             this.updating = true;
             this.ikToggle.Value = this.meidoManager.ActiveMeido.IsIK;
@@ -56,7 +51,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.updating = false;
         }
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
+        public override void Draw()
         {
             bool active = this.meidoManager.HasActiveMeido;
 

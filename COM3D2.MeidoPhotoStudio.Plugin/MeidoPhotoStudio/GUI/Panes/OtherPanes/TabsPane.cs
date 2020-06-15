@@ -5,39 +5,40 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     public class TabsPane : BasePane
     {
-        private static SelectionGrid Tabs;
-        private static Constants.Window selectedTab;
-        public static Constants.Window SelectedTab
+        private SelectionGrid Tabs;
+        private Constants.Window selectedTab;
+        public Constants.Window SelectedTab
         {
             get => selectedTab;
             set => Tabs.SelectedItem = (int)value;
 
         }
-        public static event EventHandler TabChange;
-        private static new bool updating;
-        private static readonly string[] tabNames = { "call", "pose", "face", "bg", "bg2" };
-        static TabsPane()
+        public event EventHandler TabChange;
+        private new bool updating;
+        private readonly string[] tabNames = { "call", "pose", "face", "bg", "bg2" };
+
+        public TabsPane()
         {
             Translation.ReloadTranslationEvent += (s, a) => ReloadTranslation();
             Tabs = new SelectionGrid(Translation.GetArray("tabs", tabNames));
             Tabs.ControlEvent += (s, a) => OnChangeTab();
         }
 
-        protected static new void ReloadTranslation()
+        protected override void ReloadTranslation()
         {
             updating = true;
             Tabs.SetItems(Translation.GetArray("tabs", tabNames), Tabs.SelectedItem);
             updating = false;
         }
 
-        private static void OnChangeTab()
+        private void OnChangeTab()
         {
             if (updating) return;
             selectedTab = (Constants.Window)Tabs.SelectedItem;
             TabChange?.Invoke(null, EventArgs.Empty);
         }
 
-        public static void Draw()
+        public override void Draw()
         {
             Tabs.Draw(GUILayout.ExpandWidth(false));
             MiscGUI.BlackLine();

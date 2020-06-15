@@ -49,6 +49,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.poseRightButton = new Button(">");
             this.poseRightButton.ControlEvent += (s, a) => poseDropdown.Step(1);
+
+            selectedPoseGroup = Constants.PoseGroupList[this.poseGroupDropdown.SelectedItemIndex];
         }
 
         protected override void ReloadTranslation()
@@ -71,7 +73,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void ChangePoseGroup(object sender, EventArgs args)
         {
-            if (updating) return;
             string newPoseGroup = Constants.PoseGroupList[this.poseGroupDropdown.SelectedItemIndex];
             if (selectedPoseGroup == newPoseGroup)
             {
@@ -124,16 +125,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return poseList.Select((kvp, i) => $"{i + 1}:{kvp.Key}").ToArray();
         }
 
-        public override void Update()
+        public override void UpdatePane()
         {
             this.updating = true;
-            PoseInfo poseInfo = this.meidoManager.ActiveMeido.poseInfo;
+            PoseInfo poseInfo = this.meidoManager.ActiveMeido.CachedPose;
             this.poseGroupDropdown.SelectedItemIndex = poseInfo.PoseGroupIndex;
             this.poseDropdown.SelectedItemIndex = poseInfo.PoseIndex;
             this.updating = false;
         }
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
+        public override void Draw()
         {
             float arrowButtonSize = 30;
             GUILayoutOption[] arrowLayoutOptions = {

@@ -245,6 +245,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static void HandleDropdown()
         {
             dropdownWindow = GUI.Window(Constants.dropdownWindowID, dropdownWindow, GUIFunc, "", windowStyle);
+            if (Input.mouseScrollDelta.y != 0f)
+            {
+                if (Visible && dropdownWindow.Contains(Event.current.mousePosition))
+                {
+                    Input.ResetInputAxes();
+                }
+            }
         }
 
         private static void GUIFunc(int id)
