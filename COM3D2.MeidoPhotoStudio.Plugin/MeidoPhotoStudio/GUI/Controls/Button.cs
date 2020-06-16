@@ -21,7 +21,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void Draw(params GUILayoutOption[] layoutOptions)
         {
             GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
-            buttonStyle.fontSize = 14;
             Draw(buttonStyle, layoutOptions);
         }
     }
