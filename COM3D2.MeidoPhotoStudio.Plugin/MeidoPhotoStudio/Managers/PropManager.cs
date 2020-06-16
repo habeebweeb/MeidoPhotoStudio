@@ -179,7 +179,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (dogu != null)
             {
-                // TODO: Figure out why some props aren't centered properly
+                // TODO: Figure out why some props aren't centred properly
                 // Doesn't happen in MM but even after copy pasting the code, it doesn't work :/
                 GameObject deploymentObject = GetDeploymentObject();
                 GameObject finalDogu = new GameObject();

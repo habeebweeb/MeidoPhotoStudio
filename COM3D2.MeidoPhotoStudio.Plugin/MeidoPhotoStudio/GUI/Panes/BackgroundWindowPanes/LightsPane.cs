@@ -50,7 +50,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.lightManager = this.environmentManager.LightManager;
             this.lightManager.Rotate += (s, a) => UpdateRotation();
             this.lightManager.Scale += (s, a) => UpdateScale();
-            this.lightManager.Select += (s, a) => UpdateCurretLight();
+            this.lightManager.Select += (s, a) => UpdateCurrentLight();
             this.lightManager.ListModified += (s, a) => UpdateList();
 
             this.lightTypeGrid = new SelectionGrid(Translation.GetArray("lightType", lightTypes));
@@ -237,7 +237,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.updating = false;
         }
 
-        private void UpdateCurretLight()
+        private void UpdateCurrentLight()
         {
             this.updating = true;
             this.lightDropdown.SelectedItemIndex = this.lightManager.SelectedLightIndex;
