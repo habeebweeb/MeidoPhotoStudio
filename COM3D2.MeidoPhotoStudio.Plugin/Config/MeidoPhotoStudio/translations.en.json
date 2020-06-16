@@ -1084,9 +1084,10 @@
         "header": "Lights",
         "add": "+",
         "delete": "Del",
-        "reset": "Reset",
+        "resetPosition": "R Pos",
+        "resetProperties": "R Props",
         "clear": "Clear",
-        "color": "Color",
+        "colour": "Colour",
         "disable": "Disable"
     },
     "lightType": {

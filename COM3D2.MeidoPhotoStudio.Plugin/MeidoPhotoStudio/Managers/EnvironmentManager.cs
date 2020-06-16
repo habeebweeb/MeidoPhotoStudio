@@ -12,6 +12,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public LightManager LightManager { get; set; }
         public PropManager PropManager { get; set; }
         public EffectManager EffectManager { get; set; }
+        private bool bgVisible = true;
+        public bool BGVisible
+        {
+            get => bgVisible;
+            set
+            {
+                this.bgVisible = value;
+                bgObject.SetActive(this.bgVisible);
+            }
+        }
 
         public void Activate()
         {
@@ -31,7 +41,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bgObject.SetActive(true);
             GameMain.Instance.BgMgr.ChangeBg("Theater");
 
-            GameMain.Instance.MainCamera.GetComponent<Camera>().backgroundColor = new Color(0.0f, 0.0f, 0.0f);
             UltimateOrbitCamera UOCamera =
                 Utility.GetFieldValue<CameraMain, UltimateOrbitCamera>(GameMain.Instance.MainCamera, "m_UOCamera");
             UOCamera.enabled = true;
@@ -40,7 +49,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SaveCameraInfo();
 
             PropManager.Activate();
-            // LightManager.Activate();
+            LightManager.Activate();
             // EffectManager.Activate();
         }
 
@@ -50,7 +59,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameObject.Destroy(subCamera);
 
             PropManager.Deactivate();
-            // LightManager.Deactivate();
+            LightManager.Deactivate();
             // EffectManager.Deactivate();
 
             bool isNight = GameMain.Instance.CharacterMgr.status.GetFlag("時間帯") == 3;
@@ -91,7 +100,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             PropManager.Update();
-            // LightManager.Update();
+            LightManager.Update();
             // EffectManager.Update();
         }
 

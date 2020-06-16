@@ -18,7 +18,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private MeidoManager meidoManager;
         private EnvironmentManager environmentManager;
         private PropManager propManager;
-        // private LightManager lightManager;
+        private LightManager lightManager;
         // private EffectManager effectManager;
         private MessageWindowManager messageWindowManager;
         private Constants.Scene currentScene;
@@ -143,11 +143,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             meidoManager = new MeidoManager();
             propManager = new PropManager();
-            // lightManager = new LightManager();
+            lightManager = new LightManager();
             environmentManager = new EnvironmentManager()
             {
                 PropManager = propManager,
-                // LightManager = lightManager
+                LightManager = lightManager
             };
 
             messageWindowManager = new MessageWindowManager();

@@ -16,7 +16,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get
             {
                 windowRect.width = 230f;
-                windowRect.height = Screen.height * 0.8f;
+                windowRect.height = Screen.height * 0.9f;
                 windowRect.x = Mathf.Clamp(windowRect.x, 0, Screen.width - windowRect.width);
                 windowRect.y = Mathf.Clamp(windowRect.y, -windowRect.height + 30, Screen.height - 50);
                 return windowRect;
@@ -37,7 +37,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.meidoManager.UpdateMeido += UpdateMeido;
 
             windowPanes = new Dictionary<Constants.Window, BaseWindowPane>();
-            windowRect = new Rect(Screen.width, Screen.height * 0.08f, 230f, Screen.height * 0.8f);
+            windowRect = new Rect(Screen.width, Screen.height * 0.08f, 230f, Screen.height * 0.9f);
 
             tabsPane = new TabsPane();
             tabsPane.TabChange += (s, a) => ChangeTab();

@@ -36,7 +36,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static void Header(string text, params GUILayoutOption[] layoutOptions)
         {
             GUIStyle style = new GUIStyle(GUI.skin.label);
-            style.padding = new RectOffset(7, 0, 0, 0);
+            style.padding = new RectOffset(7, 0, 0, -5);
 
             GUILayout.Label(text, style, layoutOptions);
         }

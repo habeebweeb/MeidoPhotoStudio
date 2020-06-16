@@ -7,19 +7,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private BackgroundSelectorPane backgroundSelectorPane;
         private PropsPane propsPane;
-        // private LightsPane lightsPane;
+        private LightsPane lightsPane;
 
         public BGWindowPane(EnvironmentManager environmentManager)
         {
             this.backgroundSelectorPane = new BackgroundSelectorPane(environmentManager);
             this.propsPane = new PropsPane(environmentManager.PropManager);
-            // this.lightsPane = new LightsPane(environmentManager.LightManager);
+            this.lightsPane = new LightsPane(environmentManager);
         }
         public override void Draw()
         {
             this.backgroundSelectorPane.Draw();
             this.propsPane.Draw();
-            // this.lightsPane.Draw();
+            this.lightsPane.Draw();
         }
 
         public override void UpdatePanes()
@@ -27,7 +27,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (ActiveWindow)
             {
                 this.propsPane.UpdatePane();
-                // this.lightsPane.UpdatePane();
+                this.lightsPane.UpdatePane();
             }
         }
     }
