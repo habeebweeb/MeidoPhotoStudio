@@ -30,7 +30,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (JProperty translationProp in translation.AsJEnumerable())
             {
                 JToken token = translationProp.Value;
-                Translations[translationProp.Path] = token.ToObject<Dictionary<string, string>>();
+                Translations[translationProp.Path] = new Dictionary<string, string>(
+                    token.ToObject<Dictionary<string, string>>(), StringComparer.InvariantCultureIgnoreCase
+                );
             }
         }
 
