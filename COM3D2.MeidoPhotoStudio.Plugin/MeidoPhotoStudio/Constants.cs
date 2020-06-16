@@ -213,9 +213,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         {
                             string bg = csvParser.GetCellAsString(3, cell_y);
                             BGList.Add(bg);
-                            // ew
-                            if (bg == "Yashiki") BGList.Add("Yashiki_Pillow");
-                            else if (bg == "Train") BGList.Add("train_notsurikawa");
                         }
                     }
                 }
@@ -334,11 +331,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             string ignoreListPath = Path.Combine(configPath, "mm_ignore_list.json");
             string ignoreListJson = File.ReadAllText(ignoreListPath);
-            string[] bgList = JsonConvert.DeserializeObject<IEnumerable<string>>(ignoreListJson).ToArray();
+            string[] ignoreList = JsonConvert.DeserializeObject<IEnumerable<string>>(ignoreListJson).ToArray();
 
             // bg object extend
             HashSet<string> doguHashSet = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-            foreach (string bg in bgList)
+            foreach (string bg in BGList)
+            {
+                doguHashSet.Add(bg);
+            }
+            foreach (string bg in ignoreList)
             {
                 doguHashSet.Add(bg);
             }
