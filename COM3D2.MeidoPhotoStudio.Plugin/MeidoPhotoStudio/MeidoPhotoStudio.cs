@@ -140,6 +140,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void Initialize()
         {
             if (initialized) return;
+            initialized = true;
 
             meidoManager = new MeidoManager();
             propManager = new PropManager();
