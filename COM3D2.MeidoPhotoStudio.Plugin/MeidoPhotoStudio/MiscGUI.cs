@@ -3,8 +3,9 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public static class MiscGUI
+    internal static class MiscGUI
     {
+        public static readonly GUILayoutOption HalfSlider = GUILayout.Width(94);
         private static GUIStyle lineStyleWhite;
         private static GUIStyle lineStyleBlack;
         private static GUIStyle textureBoxStyle;
