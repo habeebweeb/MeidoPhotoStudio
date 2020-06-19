@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class MaidPoseSelectorPane : BasePane
+    internal class MaidPoseSelectorPane : BasePane
     {
         private MeidoManager meidoManager;
         private Button poseLeftButton;

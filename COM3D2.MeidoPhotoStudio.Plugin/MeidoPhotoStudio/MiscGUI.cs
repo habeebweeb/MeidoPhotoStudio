@@ -5,7 +5,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal static class MiscGUI
     {
-        public static readonly GUILayoutOption HalfSlider = GUILayout.Width(94);
+        public static readonly GUILayoutOption HalfSlider = GUILayout.Width(98);
         private static GUIStyle lineStyleWhite;
         private static GUIStyle lineStyleBlack;
         private static GUIStyle textureBoxStyle;

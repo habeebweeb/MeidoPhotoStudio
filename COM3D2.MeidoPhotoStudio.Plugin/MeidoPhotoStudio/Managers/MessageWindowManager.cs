@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class MessageWindowManager
+    internal class MessageWindowManager
     {
         private static GameObject sysRoot;
         private MessageClass msgClass;

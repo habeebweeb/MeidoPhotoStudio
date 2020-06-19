@@ -7,7 +7,7 @@ using static TBody;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class MaidDressingPane : BasePane
+    internal class MaidDressingPane : BasePane
     {
         private MeidoManager meidoManager;
         private Dictionary<SlotID, Toggle> ClothingToggles;

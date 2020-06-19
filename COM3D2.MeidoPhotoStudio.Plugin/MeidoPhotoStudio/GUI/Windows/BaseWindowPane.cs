@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public abstract class BaseWindowPane : BasePane
+    internal abstract class BaseWindowPane : BasePane
     {
         protected List<BasePane> Panes = new List<BasePane>();
         protected Vector2 scrollPos;

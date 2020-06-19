@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class PropManager
+    internal class PropManager
     {
         private List<DragDogu> doguList = new List<DragDogu>();
         private DragType dragTypeOld = DragType.None;

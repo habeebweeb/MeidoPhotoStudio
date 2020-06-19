@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class FaceWindowPane : BaseWindowPane
+    internal class FaceWindowPane : BaseWindowPane
     {
         private MeidoManager meidoManager;
         private MaidFaceSliderPane maidFaceSliderPane;

@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static MPSLight;
-    public class LightManager
+    internal class LightManager
     {
         private List<MPSLight> LightList { get; set; } = new List<MPSLight>();
         private int selectedLightIndex = 0;

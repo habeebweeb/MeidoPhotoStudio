@@ -3,8 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    using static CustomGizmo;
-    public class DragSpine : BaseDrag
+    internal class DragSpine : BaseDrag
     {
         private Transform spine;
         private Vector3 rotate;

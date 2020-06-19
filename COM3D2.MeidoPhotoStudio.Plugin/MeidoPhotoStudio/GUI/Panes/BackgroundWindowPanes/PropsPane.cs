@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    class PropsPane : BasePane
+    internal class PropsPane : BasePane
     {
         private PropManager propManager;
         private Dropdown otherDoguDropdown;

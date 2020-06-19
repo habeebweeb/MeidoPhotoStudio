@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class DragBody : BaseDrag
+    internal class DragBody : BaseDrag
     {
         private Vector3 off;
         private Vector3 off2;

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class Meido
+    internal class Meido
     {
         private const int MAX_MAIDS = 12;
         private static CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class DragPelvis : BaseDrag
+    internal class DragPelvis : BaseDrag
     {
         private Transform pelvis;
         private Vector3 pelvisRotation;

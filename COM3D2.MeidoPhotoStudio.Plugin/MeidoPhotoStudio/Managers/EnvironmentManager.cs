@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class EnvironmentManager
+    internal class EnvironmentManager
     {
         private GameObject cameraObject;
         private Camera subCamera;

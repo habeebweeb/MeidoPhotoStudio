@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class MaidSelectorPane : BasePane
+    internal class MaidSelectorPane : BasePane
     {
         private MeidoManager meidoManager;
         public List<int> selectedMaidList { get; private set; }

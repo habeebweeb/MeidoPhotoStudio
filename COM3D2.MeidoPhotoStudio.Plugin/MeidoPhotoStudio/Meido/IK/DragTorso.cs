@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class DragTorso : BaseDrag
+    internal class DragTorso : BaseDrag
     {
         private Transform[] spine;
         private Vector3[] spineRotation = new Vector3[4];

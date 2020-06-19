@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class DragHead : BaseDrag
+    internal class DragHead : BaseDrag
     {
         private Transform head;
         private Vector3 rotate;

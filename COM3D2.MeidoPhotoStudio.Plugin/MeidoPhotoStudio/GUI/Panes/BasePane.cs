@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public abstract class BasePane
+    internal abstract class BasePane
     {
         protected List<BaseControl> Controls { get; set; }
         protected bool updating = false;

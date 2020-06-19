@@ -5,31 +5,31 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public static class Utility
+    internal static class Utility
     {
         public enum ModKey
         {
             Control, Shift, Alt
         }
 
-        internal static int Wrap(int value, int min, int max)
+        public static int Wrap(int value, int min, int max)
         {
             max -= 1;
             return value < min ? max : value > max ? min : value;
         }
 
-        internal static int GetPix(int num)
+        public static int GetPix(int num)
         {
             return (int)((1f + (Screen.width / 1280f - 1f) * 0.6f) * num);
         }
 
-        internal static float Bound(float value, float left, float right)
+        public static float Bound(float value, float left, float right)
         {
             if ((double)left > (double)right) return Mathf.Clamp(value, right, left);
             else return Mathf.Clamp(value, left, right);
         }
 
-        internal static Texture2D MakeTex(int width, int height, Color color)
+        public static Texture2D MakeTex(int width, int height, Color color)
         {
             Color[] colors = new Color[width * height];
             for (int i = 0; i < colors.Length; i++)
@@ -42,26 +42,26 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return texture2D;
         }
 
-        internal static FieldInfo GetFieldInfo<T>(string field)
+        public static FieldInfo GetFieldInfo<T>(string field)
         {
             BindingFlags bindingFlags = BindingFlags.Instance
                 | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
             return typeof(T).GetField(field, bindingFlags);
         }
 
-        internal static TValue GetFieldValue<TType, TValue>(TType instance, string field)
+        public static TValue GetFieldValue<TType, TValue>(TType instance, string field)
         {
             FieldInfo fieldInfo = GetFieldInfo<TType>(field);
             if (fieldInfo == null || !fieldInfo.IsStatic && instance == null) return default(TValue);
             return (TValue)fieldInfo.GetValue(instance);
         }
 
-        internal static void SetFieldValue<TType, TValue>(TType instance, string name, TValue value)
+        public static void SetFieldValue<TType, TValue>(TType instance, string name, TValue value)
         {
             GetFieldInfo<TType>(name).SetValue(instance, value);
         }
 
-        internal static bool GetModKey(ModKey key)
+        public static bool GetModKey(ModKey key)
         {
             switch (key)
             {
@@ -72,12 +72,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        internal static bool AnyMouseDown()
+        public static bool AnyMouseDown()
         {
             return Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2);
         }
 
-        internal static string ScreenshotFilename()
+        public static string ScreenshotFilename()
         {
             string screenShotDir = Path.Combine(
                 GameMain.Instance.SerializeStorageManager.StoreDirectoryPath, "ScreenShot"
@@ -89,7 +89,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return Path.Combine(screenShotDir, $"img{DateTime.Now:yyyyMMddHHmmss}.png");
         }
 
-        internal static void ShowMouseExposition(string text, float time = 2f)
+        public static void ShowMouseExposition(string text, float time = 2f)
         {
             MouseExposition mouseExposition = MouseExposition.GetObject();
             mouseExposition.SetText(text, time);

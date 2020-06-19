@@ -6,7 +6,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using ModKey = Utility.ModKey;
-    public class DragPointManager
+    internal class DragPointManager
     {
         enum IKMode
         {

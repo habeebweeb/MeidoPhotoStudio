@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class BG2WindowPane : BaseWindowPane
+    internal class BG2WindowPane : BaseWindowPane
     {
         EnvironmentManager environmentManager;
         public BG2WindowPane(EnvironmentManager environmentManager)

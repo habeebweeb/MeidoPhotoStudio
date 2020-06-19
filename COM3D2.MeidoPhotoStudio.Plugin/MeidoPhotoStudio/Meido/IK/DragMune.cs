@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class DragMune : BaseDrag
+    internal class DragMune : BaseDrag
     {
         private readonly TBody.IKCMO IK = new TBody.IKCMO();
         private readonly GameObject[] things = new GameObject[3];

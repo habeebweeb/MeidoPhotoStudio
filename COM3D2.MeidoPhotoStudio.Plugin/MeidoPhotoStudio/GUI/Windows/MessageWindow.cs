@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class MessageWindow : BaseWindow
+    internal class MessageWindow : BaseWindow
     {
         private MessageWindowManager messageWindowManager;
         private TextField nameTextField;

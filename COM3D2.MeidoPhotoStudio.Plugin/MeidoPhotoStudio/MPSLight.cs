@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class MPSLight
+    internal class MPSLight
     {
         private static Camera camera = GameMain.Instance.MainCamera.GetComponent<Camera>();
         private Light light;
@@ -287,7 +287,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
-    public class LightProperty
+    internal class LightProperty
     {
         public static readonly Vector3 DefaultPosition = new Vector3(0f, 1.5f, 0.4f);
         public static readonly Quaternion DefaultRotation = Quaternion.Euler(40f, 180f, 0f);

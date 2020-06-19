@@ -5,7 +5,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static CustomGizmo;
     // TODO: Finalize dragpopint scaling
-    public abstract class BaseDrag : MonoBehaviour
+    internal abstract class BaseDrag : MonoBehaviour
     {
         private const float doubleClickSensitivity = 0.3f;
         protected const int upperArm = 0;

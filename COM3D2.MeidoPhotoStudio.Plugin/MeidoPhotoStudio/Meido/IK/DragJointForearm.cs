@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class DragJointForearm : BaseDrag
+    internal class DragJointForearm : BaseDrag
     {
         private readonly TBody.IKCMO IK = new TBody.IKCMO();
         private readonly GameObject[] otherIK = new GameObject[3];

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class BGWindowPane : BaseWindowPane
+    internal class BGWindowPane : BaseWindowPane
     {
         private BackgroundSelectorPane backgroundSelectorPane;
         private PropsPane propsPane;

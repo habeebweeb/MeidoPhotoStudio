@@ -9,7 +9,7 @@ using wf;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class Constants
+    internal class Constants
     {
         public static readonly string customPosePath;
         public static readonly string scenesPath;
@@ -422,7 +422,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             File.WriteAllLines(Path.Combine(configPath, name), list.ToArray());
         }
 
-        public class SerializePoseList
+        private class SerializePoseList
         {
             public string UIName { get; set; }
             public List<string> PoseList { get; set; }

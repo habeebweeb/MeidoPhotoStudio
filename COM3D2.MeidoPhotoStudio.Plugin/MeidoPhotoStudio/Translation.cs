@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public static class Translation
+    internal static class Translation
     {
         public static Dictionary<string, Dictionary<string, string>> Translations;
         public static string CurrentLanguage { get; private set; }

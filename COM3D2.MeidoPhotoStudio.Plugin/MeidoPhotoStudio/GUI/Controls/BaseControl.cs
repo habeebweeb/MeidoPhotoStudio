@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public abstract class BaseControl
+    internal abstract class BaseControl
     {
         public event EventHandler ControlEvent;
         public bool Enabled { get; set; } = true;

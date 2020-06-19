@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class MaidFaceSliderPane : BasePane
+    internal class MaidFaceSliderPane : BasePane
     {
         private MeidoManager meidoManager;
 

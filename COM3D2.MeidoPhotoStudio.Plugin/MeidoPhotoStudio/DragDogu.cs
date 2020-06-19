@@ -4,7 +4,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static CustomGizmo;
-    public class DragDogu : BaseDrag
+    internal class DragDogu : BaseDrag
     {
         private GameObject dogu;
         private Vector3 off;

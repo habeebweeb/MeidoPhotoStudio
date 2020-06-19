@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class TextArea : BaseControl
+    internal class TextArea : BaseControl
     {
         public string Value { get; set; } = string.Empty;
         public void Draw(GUIStyle textAreaStyle, params GUILayoutOption[] layoutOptions)
