@@ -8,7 +8,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected List<BaseControl> Controls { get; set; }
         protected bool updating = false;
         public virtual bool Visible { get; set; }
-        public bool Enabled { get; set; }
+        public virtual bool Enabled { get; set; }
 
         public BasePane()
         {

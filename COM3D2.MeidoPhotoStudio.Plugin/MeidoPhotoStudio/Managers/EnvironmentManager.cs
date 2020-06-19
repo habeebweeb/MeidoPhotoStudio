@@ -9,9 +9,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private GameObject bgObject;
         private Transform bg;
         private CameraInfo cameraInfo;
-        public LightManager LightManager { get; set; }
-        public PropManager PropManager { get; set; }
-        public EffectManager EffectManager { get; set; }
+        public LightManager LightManager { get; }
+        public PropManager PropManager { get; }
+        public EffectManager EffectManager { get; }
         private bool bgVisible = true;
         public bool BGVisible
         {
@@ -21,6 +21,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.bgVisible = value;
                 bgObject.SetActive(this.bgVisible);
             }
+        }
+
+        public EnvironmentManager()
+        {
+            PropManager = new PropManager();
+            LightManager = new LightManager();
+            EffectManager = new EffectManager();
         }
 
         public void Activate()
@@ -50,7 +57,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             PropManager.Activate();
             LightManager.Activate();
-            // EffectManager.Activate();
+            EffectManager.Activate();
         }
 
         public void Deactivate()
@@ -60,7 +67,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             PropManager.Deactivate();
             LightManager.Deactivate();
-            // EffectManager.Deactivate();
+            EffectManager.Deactivate();
 
             bool isNight = GameMain.Instance.CharacterMgr.status.GetFlag("時間帯") == 3;
 
@@ -101,7 +108,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             PropManager.Update();
             LightManager.Update();
-            // EffectManager.Update();
+            EffectManager.Update();
         }
 
         public void ChangeBackground(string assetName, bool creative = false)

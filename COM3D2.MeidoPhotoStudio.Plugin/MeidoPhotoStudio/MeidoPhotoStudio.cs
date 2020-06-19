@@ -17,9 +17,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private WindowManager windowManager;
         private MeidoManager meidoManager;
         private EnvironmentManager environmentManager;
-        private PropManager propManager;
-        private LightManager lightManager;
-        // private EffectManager effectManager;
         private MessageWindowManager messageWindowManager;
         private Constants.Scene currentScene;
         private bool initialized = false;
@@ -143,14 +140,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             initialized = true;
 
             meidoManager = new MeidoManager();
-            propManager = new PropManager();
-            lightManager = new LightManager();
-            environmentManager = new EnvironmentManager()
-            {
-                PropManager = propManager,
-                LightManager = lightManager
-            };
-
+            environmentManager = new EnvironmentManager();
             messageWindowManager = new MessageWindowManager();
 
             MaidSwitcherPane maidSwitcherPane = new MaidSwitcherPane(meidoManager);
