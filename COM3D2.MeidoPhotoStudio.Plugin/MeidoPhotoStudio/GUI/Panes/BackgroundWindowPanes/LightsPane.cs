@@ -5,7 +5,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static MPSLight;
-    class LightsPane : BasePane
+    internal class LightsPane : BasePane
     {
         private LightManager lightManager;
         private EnvironmentManager environmentManager;
@@ -23,7 +23,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private MPSLightType currentLightType = MPSLightType.Normal;
         private string lightHeader;
         private static readonly Dictionary<LightProp, SliderProp> LightSliderProp =
-            new Dictionary<LightProp, SliderProp>
+            new Dictionary<LightProp, SliderProp>()
             {
                 [LightProp.LightRotX] = new SliderProp(0f, 360f, LightProperty.DefaultRotation.eulerAngles.x),
                 [LightProp.LightRotY] = new SliderProp(0f, 360f, LightProperty.DefaultRotation.eulerAngles.y),
@@ -170,7 +170,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (updating) return;
 
-            currentLightType = (MPSLightType)this.lightTypeGrid.SelectedItem;
+            currentLightType = (MPSLightType)this.lightTypeGrid.SelectedItemIndex;
 
             LightType lightType;
             if (currentLightType == MPSLightType.Normal)
@@ -250,7 +250,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.updating = true;
             MPSLight currentLight = this.lightManager.CurrentLight;
             this.currentLightType = currentLight.SelectedLightType;
-            this.lightTypeGrid.SelectedItem = (int)this.currentLightType;
+            this.lightTypeGrid.SelectedItemIndex = (int)this.currentLightType;
             this.disableToggle.Value = currentLight.IsDisabled;
             this.LightSlider[LightProp.LightRotX].Value = currentLight.Rotation.eulerAngles.x;
             this.LightSlider[LightProp.LightRotY].Value = currentLight.Rotation.eulerAngles.y;
@@ -288,7 +288,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.lightTypeGrid.Draw(GUILayout.ExpandWidth(false));
             if (!isMain)
             {
-                GUILayout.FlexibleSpace();
                 GUI.enabled = true;
                 this.disableToggle.Draw();
             }
@@ -318,13 +317,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.LightSlider[LightProp.SpotAngle].Draw();
             }
 
+            GUILayoutOption sliderWidth = MiscGUI.HalfSlider;
             GUILayout.BeginHorizontal();
-            this.LightSlider[LightProp.Red].Draw();
-            this.LightSlider[LightProp.Green].Draw();
+            this.LightSlider[LightProp.Red].Draw(sliderWidth);
+            this.LightSlider[LightProp.Green].Draw(sliderWidth);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            this.LightSlider[LightProp.Blue].Draw(GUILayout.Width(96));
+            this.LightSlider[LightProp.Blue].Draw(sliderWidth);
             if ((lightManager.SelectedLightIndex == 0) && (currentLightType == MPSLightType.Normal))
             {
                 this.colorToggle.Draw();
@@ -333,7 +333,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             GUILayout.BeginHorizontal();
             this.resetPropsButton.Draw(GUILayout.ExpandWidth(false));
-            GUILayout.FlexibleSpace();
             this.resetPositionButton.Draw(GUILayout.ExpandWidth(false));
             GUILayout.EndHorizontal();
 

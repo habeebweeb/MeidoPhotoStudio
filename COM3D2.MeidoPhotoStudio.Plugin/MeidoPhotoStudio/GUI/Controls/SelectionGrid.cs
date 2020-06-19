@@ -3,19 +3,19 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class SelectionGrid : BaseControl
+    internal class SelectionGrid : BaseControl
     {
         private SimpleToggle[] toggles;
-        private int selectedItem;
-        public int SelectedItem
+        private int selectedItemIndex;
+        public int SelectedItemIndex
         {
-            get => selectedItem;
+            get => selectedItemIndex;
             set
             {
-                this.selectedItem = Mathf.Clamp(value, 0, this.toggles.Length - 1);
+                this.selectedItemIndex = Mathf.Clamp(value, 0, this.toggles.Length - 1);
                 foreach (SimpleToggle toggle in toggles)
                 {
-                    toggle.value = toggle.toggleIndex == this.selectedItem;
+                    toggle.value = toggle.toggleIndex == this.selectedItemIndex;
                 }
                 OnControlEvent(EventArgs.Empty);
             }
@@ -23,7 +23,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public SelectionGrid(string[] items, int selected = 0)
         {
-            this.selectedItem = Mathf.Clamp(selected, 0, items.Length - 1);
+            this.selectedItemIndex = Mathf.Clamp(selected, 0, items.Length - 1);
             toggles = MakeToggles(items);
         }
 
@@ -32,21 +32,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SimpleToggle[] toggles = new SimpleToggle[items.Length];
             for (int i = 0; i < items.Length; i++)
             {
-                SimpleToggle toggle = new SimpleToggle(items[i], i == SelectedItem);
+                SimpleToggle toggle = new SimpleToggle(items[i], i == SelectedItemIndex);
                 toggle.toggleIndex = i;
                 toggle.ControlEvent += (s, a) =>
                 {
                     int value = (s as SimpleToggle).toggleIndex;
-                    if (value != this.SelectedItem) this.SelectedItem = value;
+                    if (value != this.SelectedItemIndex) this.SelectedItemIndex = value;
                 };
                 toggles[i] = toggle;
             }
             return toggles;
         }
 
-        public void SetItems(string[] items, int selectedItem = 0)
+        public void SetItems(string[] items, int selectedItemIndex = -1)
         {
-            this.SelectedItem = Mathf.Clamp(selectedItem, 0, items.Length - 1);
+            if (selectedItemIndex < 0) selectedItemIndex = this.SelectedItemIndex;
             if (items.Length != toggles.Length)
             {
                 this.toggles = MakeToggles(items);
@@ -56,10 +56,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 for (int i = 0; i < items.Length; i++)
                 {
                     string item = items[i];
-                    this.toggles[i].value = i == SelectedItem;
+                    this.toggles[i].value = i == SelectedItemIndex;
                     this.toggles[i].label = item;
                 }
             }
+            this.SelectedItemIndex = Mathf.Clamp(selectedItemIndex, 0, items.Length - 1);
         }
 
         public override void Draw(params GUILayoutOption[] layoutOptions)
@@ -90,8 +91,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 bool value = GUILayout.Toggle(this.value, label, layoutOptions);
                 if (value != this.value)
                 {
-                    this.value = value;
-                    ControlEvent?.Invoke(this, EventArgs.Empty);
+                    if (value == false) this.value = true;
+                    else
+                    {
+                        this.value = value;
+                        ControlEvent?.Invoke(this, EventArgs.Empty);
+                    }
                 }
             }
         }

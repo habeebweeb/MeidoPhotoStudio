@@ -3,14 +3,14 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class TabsPane : BasePane
+    internal class TabsPane : BasePane
     {
         private SelectionGrid Tabs;
         private Constants.Window selectedTab;
         public Constants.Window SelectedTab
         {
             get => selectedTab;
-            set => Tabs.SelectedItem = (int)value;
+            set => Tabs.SelectedItemIndex = (int)value;
 
         }
         public event EventHandler TabChange;
@@ -27,14 +27,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected override void ReloadTranslation()
         {
             updating = true;
-            Tabs.SetItems(Translation.GetArray("tabs", tabNames), Tabs.SelectedItem);
+            Tabs.SetItems(Translation.GetArray("tabs", tabNames), Tabs.SelectedItemIndex);
             updating = false;
         }
 
         private void OnChangeTab()
         {
             if (updating) return;
-            selectedTab = (Constants.Window)Tabs.SelectedItem;
+            selectedTab = (Constants.Window)Tabs.SelectedItemIndex;
             TabChange?.Invoke(null, EventArgs.Empty);
         }
 
