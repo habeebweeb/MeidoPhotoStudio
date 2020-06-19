@@ -77,18 +77,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static IEnumerable<string> GetList(string category, IEnumerable<string> list)
         {
-            return list.Select(uiName =>
-            {
-                return Get(category, uiName);
-            });
+            return list.Select(uiName => Get(category, uiName));
         }
 
         public static string[] GetList(string category, IEnumerable<KeyValuePair<string, string>> list)
         {
-            return list.Select(kvp =>
-            {
-                return Get(category, kvp.Key);
-            }).ToArray();
+            return list.Select(kvp => Get(category, kvp.Key)).ToArray();
         }
     }
 }
