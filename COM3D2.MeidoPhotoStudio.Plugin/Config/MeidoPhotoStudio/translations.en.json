@@ -279,8 +279,7 @@
         "lightLabel": "Light",
         "red": "Red",
         "green": "Green",
-        "blue": "Blue",
-        "onToggle": "On"
+        "blue": "Blue"
     },
     "bgDropdown": {
         "adultshop": "Adult Shop",
@@ -1088,7 +1087,7 @@
         "resetProperties": "R Props",
         "clear": "Clear",
         "colour": "Colour",
-        "disable": "Disable"
+        "disable": "On"
     },
     "lightType": {
         "main": "Main",
@@ -1096,27 +1095,36 @@
         "spot": "Spot",
         "point": "Point"
     },
+    "effectsPane": {
+        "onToggle": "On",
+        "bloom": "Bloom",
+        "dof": "DOF",
+        "vignette": "Blur",
+        "fog": "Fog",
+        "sepia": "Sepia",
+        "reset": "Reset Effect"
+    },
     "effectBloom": {
-        "strength": "Strength",
+        "intensity": "Intensity",
         "blur": "Blur",
         "hdrToggle": "HDR"
     },
-    "effectDOF": {
+    "effectDof": {
         "focalLength": "Focal Length",
         "focalArea": "Focal Area",
         "aperture": "Aperture",
         "blur": "Blur",
         "thicknessToggle": "Thickness"
     },
-    "effectBlur": {
-        "strength": "Strength",
-        "blur1": "Blur 1",
-        "blur2": "Blur 2",
+    "effectVignette": {
+        "intensity": "Strength",
+        "blur": "Blur",
+        "blurSpread": "Spread",
         "aberration": "Aberration"
     },
     "effectFog": {
-        "range": "Range",
-        "opacity": "Opacity",
+        "distance": "Distance",
+        "density": "Density",
         "strength": "Strength",
         "height": "Height"
     },
