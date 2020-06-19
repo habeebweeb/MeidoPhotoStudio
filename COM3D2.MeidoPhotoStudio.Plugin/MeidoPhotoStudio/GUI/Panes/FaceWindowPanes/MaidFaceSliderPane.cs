@@ -162,12 +162,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
+            GUILayoutOption sliderWidth = MiscGUI.HalfSlider;
             for (int i = 0; i < faceKeys.Length; i += 2)
             {
                 GUILayout.BeginHorizontal();
                 for (int j = 0; j < 2; j++)
                 {
-                    Controls[i + j].Draw(GUILayout.Width(90));
+                    Controls[i + j].Draw(sliderWidth);
                     if (i + j == 12 || i + j == 23)
                     {
                         i--;

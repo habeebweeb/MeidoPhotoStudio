@@ -72,6 +72,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (!Visible) return;
             GUIStyle sliderStyle = new GUIStyle(GUI.skin.horizontalSlider);
+            sliderStyle.margin.bottom = 0;
             if (hasLabel)
             {
                 GUILayout.BeginVertical(GUILayout.ExpandWidth(false));

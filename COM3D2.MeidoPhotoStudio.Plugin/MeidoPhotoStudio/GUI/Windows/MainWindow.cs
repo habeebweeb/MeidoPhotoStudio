@@ -15,7 +15,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             get
             {
-                windowRect.width = 230f;
+                windowRect.width = 240f;
                 windowRect.height = Screen.height * 0.9f;
                 windowRect.x = Mathf.Clamp(windowRect.x, 0, Screen.width - windowRect.width);
                 windowRect.y = Mathf.Clamp(windowRect.y, -windowRect.height + 30, Screen.height - 50);

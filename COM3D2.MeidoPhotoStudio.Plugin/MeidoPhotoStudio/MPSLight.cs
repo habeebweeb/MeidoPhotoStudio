@@ -126,7 +126,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.IsMain = isMain;
 
             GameObject gameobject = lightGo ?? new GameObject();
-            this.light = gameobject.GetComponent<Light>() ?? gameobject.AddComponent<Light>();
+            this.light = gameobject.GetOrAddComponent<Light>();
 
             float spotAngle = CurrentLightProperty.SpotAngle;
             this.light.transform.position = LightProperty.DefaultPosition;
