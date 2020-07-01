@@ -94,9 +94,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
     public struct SliderProp
     {
-        public float Left { get; private set; }
-        public float Right { get; private set; }
-        public float Initial { get; private set; }
+        public float Left { get; }
+        public float Right { get; }
+        public float Initial { get; }
 
         public SliderProp(float left, float right, float initial = 0f)
         {

@@ -738,10 +738,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private struct DragInfo
         {
-            public Bone Bone { get; private set; }
-            public bool GizmoActive { get; private set; }
-            public bool DragPointActive { get; private set; }
-            public bool DragPointVisible { get; private set; }
+            public Bone Bone { get; }
+            public bool GizmoActive { get; }
+            public bool DragPointActive { get; }
+            public bool DragPointVisible { get; }
+
             public DragInfo(Bone bone, bool gizmoActive, bool dragPointActive, bool dragPointVisible)
             {
                 this.Bone = bone;
@@ -749,17 +750,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.DragPointActive = dragPointActive;
                 this.DragPointVisible = dragPointVisible;
             }
+
             public static DragInfo Gizmo(Bone bone)
             {
                 return new DragInfo(bone, true, false, false);
             }
+
             public static DragInfo Drag(Bone bone)
             {
                 return new DragInfo(bone, false, true, false);
             }
+
             public static DragInfo DragBone(Bone bone)
             {
                 return new DragInfo(bone, false, true, true);
+            }
+
+            public static DragInfo DragAll(Bone bone)
+            {
+                return new DragInfo(bone, true, true, true);
             }
         }
     }

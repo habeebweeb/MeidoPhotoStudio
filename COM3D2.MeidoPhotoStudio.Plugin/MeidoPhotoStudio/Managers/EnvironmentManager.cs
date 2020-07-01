@@ -154,10 +154,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
     public struct CameraInfo
     {
-        public Vector3 TargetPos { get; private set; }
-        public Vector3 Pos { get; private set; }
-        public Vector3 Angle { get; private set; }
-        public float Distance { get; private set; }
+        public Vector3 TargetPos { get; }
+        public Vector3 Pos { get; }
+        public Vector3 Angle { get; }
+        public float Distance { get; }
         public CameraInfo(CameraMain camera)
         {
             this.TargetPos = camera.GetTargetPos();
