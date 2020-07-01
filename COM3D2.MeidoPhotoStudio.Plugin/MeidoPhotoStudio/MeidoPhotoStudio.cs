@@ -121,6 +121,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (uiActive)
             {
                 windowManager.DrawWindows();
+
+                if (DropdownHelper.Visible) DropdownHelper.HandleDropdown();
             }
         }
 

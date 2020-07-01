@@ -53,8 +53,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GUIStyle windowStyle = new GUIStyle(GUI.skin.box);
                 window.WindowRect = GUI.Window(window.windowID, window.WindowRect, window.GUIFunc, "", windowStyle);
             }
-
-            if (DropdownHelper.Visible) DropdownHelper.HandleDropdown();
         }
 
         public void DrawWindows()
