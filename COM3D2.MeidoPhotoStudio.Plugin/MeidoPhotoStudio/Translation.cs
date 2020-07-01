@@ -9,7 +9,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal static class Translation
     {
-        public static Dictionary<string, Dictionary<string, string>> Translations;
+        private static readonly string[] props = { "ui", "props", "bg", "face" };
+        private static Dictionary<string, Dictionary<string, string>> Translations;
         public static string CurrentLanguage { get; private set; }
         public static event EventHandler ReloadTranslationEvent;
 
@@ -17,22 +18,46 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             CurrentLanguage = language;
 
-            string translationFile = $"translations.{language}.json";
-            string translationPath = Path.Combine(Constants.configPath, translationFile);
-            string translationJson = File.ReadAllText(translationPath);
-
-            JObject translation = JObject.Parse(translationJson);
-
             Translations = new Dictionary<string, Dictionary<string, string>>(
                 StringComparer.InvariantCultureIgnoreCase
             );
 
-            foreach (JProperty translationProp in translation.AsJEnumerable())
+            string rootTranslationPath = Path.Combine(Constants.configPath, "Translations");
+
+            string currentTranslationPath = Path.Combine(rootTranslationPath, CurrentLanguage);
+
+            if (!Directory.Exists(currentTranslationPath))
             {
-                JToken token = translationProp.Value;
-                Translations[translationProp.Path] = new Dictionary<string, string>(
-                    token.ToObject<Dictionary<string, string>>(), StringComparer.InvariantCultureIgnoreCase
+                // Directory.CreateDirectory(currentTranslationPath);
+                Debug.LogWarning(
+                    $"No translations found for '{CurrentLanguage}' in '{currentTranslationPath}'"
                 );
+                return;
+            }
+
+            foreach (string prop in props)
+            {
+                string translationFile = $"translation.{prop}.json";
+                try
+                {
+                    string translationPath = Path.Combine(currentTranslationPath, translationFile);
+
+                    string translationJson = File.ReadAllText(translationPath);
+
+                    JObject translation = JObject.Parse(translationJson);
+
+                    foreach (JProperty translationProp in translation.AsJEnumerable())
+                    {
+                        JToken token = translationProp.Value;
+                        Translations[translationProp.Path] = new Dictionary<string, string>(
+                            token.ToObject<Dictionary<string, string>>(), StringComparer.InvariantCultureIgnoreCase
+                        );
+                    }
+                }
+                catch
+                {
+                    Debug.LogError($"Could not find translation file '{translationFile}'");
+                }
             }
         }
 
@@ -57,7 +82,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (!Translations.ContainsKey(category))
             {
-                Debug.LogWarning($"Could not find category '{category}'");
+                Debug.LogWarning($"Could not find translation category '{category}'");
                 return text;
             }
 

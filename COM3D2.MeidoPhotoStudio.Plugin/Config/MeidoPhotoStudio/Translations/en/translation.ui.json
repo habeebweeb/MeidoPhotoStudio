@@ -1,0 +1,284 @@
+{
+    "tabs": {
+        "call": "Call",
+        "pose": "Pose",
+        "face": "Face",
+        "bg": "BG",
+        "bg2": "BG2"
+    },
+    "maidCallWindow": {
+        "okButton": "OK",
+        "clearButton": "Clear",
+        "callButton": "Call"
+    },
+    "placementDropdown": {
+        "normal": "Normal",
+        "horizontalRow": "Horizontal Row",
+        "diagonal": "Diagonal",
+        "circleOut": "Circle (outer)",
+        "circleIn": "Circle (Inner)",
+        "fan": "Fan",
+        "v": "V",
+        "^": "^",
+        "m": "M",
+        "w": "W"
+    },
+    "maidPoseWindow": {
+        "ikToggle": "IK",
+        "releaseToggle": "Release",
+        "boneToggle": "Bone",
+        "flipToggle": "Flip IK",
+        "fixSkirtToggle": "Fix Skirt"
+    },
+    "poseGroupDropdown": {
+        "normal": "Normal",
+        "standing": "Standing",
+        "halfStand": "Half-Standing",
+        "kneeling": "Kneeling",
+        "sitting": "Sitting",
+        "onAllFours": "On All Fours",
+        "sittingFloor": "Sitting (Floor)",
+        "sittingChair": "Sitting (Chair)",
+        "sittingSofa": "Sitting (Sofa)",
+        "walking": "Walking",
+        "other": "Other",
+        "danceDokiDoki": "Doki Doki ☆ Fallin' Love",
+        "danceEntranceToYou": "Entrance To You",
+        "danceScarletLeap": "Scarlet Leap",
+        "danceRhythmix": "Rhythmix to You",
+        "dance": "Dance",
+        "danceMC": "Dance (MC)",
+        "restraint": "Restraint",
+        "ero": "Ero",
+        "normal2": "Normal 2",
+        "ero2": "Ero 2"
+    },
+    "poseSave": {
+        "saveToggle": "Save Pose",
+        "saveButton": "Add",
+        "deleteButton": "D"
+    },
+    "freeLook": {
+        "freeLookToggle": "F-Look",
+        "x": "Look X",
+        "y": "Look Y"
+    },
+    "clothing": {
+        "accHat": "Hat",
+        "headset": "Headdress",
+        "wear": "Top",
+        "skirt": "Bottoms",
+        "onepiece": "One-Piece",
+        "mizugi": "Bathing Suit",
+        "glove": "Gloves",
+        "shoes": "Shoes",
+        "stkg": "Socks",
+        "bra": "Bra",
+        "panz": "Panties",
+        "megane": "Eyewear",
+        "accHead": "Eye Mask",
+        "accSenaka": "Back",
+        "accShippo": "Tail",
+        "accKami_1_": "Pin 1",
+        "accKami_2_": "Pin 2",
+        "accKami_3_": "Pin 3",
+        "accKamiSubL": "Ribbon L",
+        "accKamiSubR": "Ribbon R",
+        "accMiMiL": "Ear L",
+        "accMiMiR": "Ear R",
+        "accHana": "Nose",
+        "accKubiwa": "Choker",
+        "accKubi": "Necklace",
+        "accNipL": "Nip L",
+        "accNipR": "Nip R",
+        "accUde": "Arms",
+        "accHeso": "Navel",
+        "accAshi": "Ankles",
+        "accXXX": "Genitals",
+        "body": "Body",
+        "headwear": "Headwear",
+        "curlingFront": "Curl Front",
+        "curlingBack": "Curl Rear",
+        "shiftPanties": "Shift",
+        "detail": "Detailed Clothing"
+    },
+    "hands": {
+        "rightHand": "R Hand",
+        "leftHand": "L Hand"
+    },
+    "copyIK": {
+        "copyLabel": "copy",
+        "copyButton": "OK"
+    },
+    "voiceLines": {
+        "speak": "Speak",
+        "speakEro": "H Lines"
+    },
+    "maidFaceWindow": {
+        "faceLock": "L"
+    },
+    "faceBlendValues": {
+        "eyeclose": "Eye Shut",
+        "eyeclose2": "Eye Smile",
+        "eyeclose3": "Glare",
+        "eyebig": "Eyes Widen",
+        "eyeclose6": "Wink Smile",
+        "eyeclose5": "Wink Shut",
+        "hitomih": "Highlight",
+        "hitomis": "Pupil Size",
+        "mayuha": "Brows Angle",
+        "mayuw": "Brows Sad",
+        "mayuup": "Brows Up",
+        "mayuv": "Brows Angry 1",
+        "mayuvhalf": "Brows Angry 2",
+        "moutha": "Mouth Open 1",
+        "mouths": "Mouth Open 2",
+        "mouthc": "Mouth Narrow",
+        "mouthi": "Mouth Widen",
+        "mouthup": "Smile",
+        "mouthdw": "Frown",
+        "mouthhe": "Pout",
+        "mouthuphalf": "Grin",
+        "tangout": "Tongue Out",
+        "tangup": "Tongue Up",
+        "tangopen": "Tongue Base",
+        "hoho2": "Blush",
+        "shock": "Shade",
+        "nosefook": "Nose Up",
+        "namida": "Tears",
+        "yodare": "Drool",
+        "toothoff": "Teeth",
+        "tear1": "Cry 1",
+        "tear2": "Cry 2",
+        "tear3": "Cry 3",
+        "hohos": "Blush 1",
+        "hoho": "Blush 2",
+        "hohol": "Blush 3"
+    },
+    "faceSave": {
+        "saveButton": "Add",
+        "deleteButton": "D"
+    },
+    "backgroundWindow": {
+        "saveLoadButton": "Save\nLoad",
+        "lightLabel": "Light",
+        "red": "Red",
+        "green": "Green",
+        "blue": "Blue"
+    },
+    "props": {
+        "props1Label": "Props 1",
+        "props2Label": "Props 2",
+        "props1AddButton": "Add",
+        "props2AddButton": "Add"
+    },
+    "movementCube": {
+        "header": "Movement Cube",
+        "props": "Props",
+        "small": "Small",
+        "maid": "Maid",
+        "bg": "BG"
+    },
+    "lights": {
+        "x": "Light X",
+        "y": "Light Y",
+        "intensity": "Brightness",
+        "range": "Range",
+        "spot": "Spot Angle",
+        "shadow": "Shadow"
+    },
+    "lightsPane": {
+        "header": "Lights",
+        "add": "+",
+        "delete": "Del",
+        "resetPosition": "R Pos",
+        "resetProperties": "R Props",
+        "clear": "Clear",
+        "colour": "Colour",
+        "disable": "On"
+    },
+    "lightType": {
+        "main": "Main",
+        "normal": "Normal",
+        "spot": "Spot",
+        "point": "Point"
+    },
+    "effectsPane": {
+        "onToggle": "On",
+        "bloom": "Bloom",
+        "dof": "DOF",
+        "vignette": "Blur",
+        "fog": "Fog",
+        "sepia": "Sepia",
+        "reset": "Reset Effect"
+    },
+    "effectBloom": {
+        "intensity": "Intensity",
+        "blur": "Blur",
+        "hdrToggle": "HDR"
+    },
+    "effectDof": {
+        "focalLength": "Focal Length",
+        "focalArea": "Focal Area",
+        "aperture": "Aperture",
+        "blur": "Blur",
+        "thicknessToggle": "Thickness"
+    },
+    "effectVignette": {
+        "intensity": "Strength",
+        "blur": "Blur",
+        "blurSpread": "Spread",
+        "aberration": "Aberration"
+    },
+    "effectFog": {
+        "distance": "Distance",
+        "density": "Density",
+        "strength": "Strength",
+        "height": "Height"
+    },
+    "effectSepia": {
+        "toggle": "Sepia",
+        "blur": "Blur"
+    },
+    "background2Window": {
+        "envButton": "Environments",
+        "itemLabel": "Item",
+        "smallBGLabel": "BG (Prop)",
+        "propLabel": "Clothes",
+        "modsToggle": "Mods"
+    },
+    "clothingDropdown": {
+        "myRoom": "My Room Custom",
+        "hat": "Hat",
+        "headset": "Headset",
+        "top": "Top",
+        "bottom": "Bottom",
+        "onepiece": "One-Piece",
+        "swimsuit": "Swimsuit",
+        "bra": "Bra",
+        "panties": "Panties",
+        "socks": "Socks",
+        "shoes": "Shoes",
+        "hairAccessory": "Hair Accessory",
+        "glasses": "Glasses",
+        "eyeMask": "Eye Mask",
+        "nose": "Nose",
+        "ear": "Ear",
+        "gloves": "Gloves",
+        "necklace": "Necklace",
+        "choker": "Choker",
+        "ribbon": "Ribbon",
+        "nipple": "Nipple",
+        "arms": "Arms",
+        "belly": "Belly",
+        "ankle": "Ankle",
+        "back": "Back",
+        "tail": "Tail",
+        "genitals": "Genitals"
+    },
+    "messageWindow": {
+        "name": "Name",
+        "fontSize": "Font Size",
+        "okButton": "OK"
+    }
+}
