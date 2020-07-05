@@ -12,6 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private static CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;
         public readonly int stockNo;
         public static readonly PoseInfo defaultPose = new PoseInfo(0, 0, "pose_taiki_f");
+        public static readonly string defaultFaceBlendSet = "通常";
         public Maid Maid { get; private set; }
         public Texture2D Image { get; private set; }
         public string FirstName { get; private set; }
@@ -41,7 +42,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (this.isFreeLook == value) return;
                 this.isFreeLook = value;
                 Maid.body0.trsLookTarget = this.isFreeLook ? null : GameMain.Instance.MainCamera.transform;
-                this.UpdateMeido?.Invoke(this, MeidoUpdateEventArgs.Empty);
+                OnUpdateMeido();
             }
         }
         public bool IsStop
@@ -58,7 +59,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     if (value) Maid.GetAnimation().Stop();
                     else this.SetPose(this.CachedPose.PoseName);
-                    this.UpdateMeido?.Invoke(this, MeidoUpdateEventArgs.Empty);
+                    OnUpdateMeido();
                 }
             }
         }
@@ -71,7 +72,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (this.isBone == value) return;
                 this.isBone = value;
                 if (this.dragPointManager != null) this.dragPointManager.IsBone = this.isBone;
-                this.UpdateMeido?.Invoke(this, MeidoUpdateEventArgs.Empty);
+                OnUpdateMeido();
             }
         }
         public bool Visible
@@ -84,6 +85,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             get => cachedPose;
             private set => cachedPose = value;
+        }
+        private string faceBlendSet = defaultFaceBlendSet;
+        public string FaceBlendSet
+        {
+            get => faceBlendSet;
+            private set => faceBlendSet = value;
         }
 
         public Meido(int stockMaidIndex)
@@ -254,13 +261,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Maid.body0.jbMuneR.enabled = !drag;
         }
 
-        public void SetFaceBlend(string blendValue)
+        public void SetFaceBlendSet(string blendSet)
         {
+            FaceBlendSet = blendSet;
             Maid.boMabataki = false;
             TMorph morph = Maid.body0.Face.morph;
             morph.EyeMabataki = 0f;
-            morph.MulBlendValues(blendValue, 1f);
+            morph.MulBlendValues(blendSet, 1f);
             morph.FixBlendValues_Face();
+            OnUpdateMeido();
         }
 
         public void SetFaceBlendValue(string hash, float value)
@@ -319,6 +328,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.IsIK = true;
             this.IsStop = false;
             this.IsBone = false;
+        }
+
+        private void OnUpdateMeido(MeidoUpdateEventArgs args = null)
+        {
+            this.UpdateMeido?.Invoke(this, args ?? MeidoUpdateEventArgs.Empty);
         }
 
         private void OnMeidoSelect(object sender, MeidoUpdateEventArgs args)
