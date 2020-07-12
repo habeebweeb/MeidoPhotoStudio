@@ -18,7 +18,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
         }
+        private static bool cubeSmall;
+        public static bool CubeSmall
+        {
+            get => cubeSmall;
+            set
+            {
+                if (value != cubeSmall)
+                {
+                    cubeSmall = value;
+                    CubeSmallChange?.Invoke(null, EventArgs.Empty);
+                }
+            }
+        }
         private static event EventHandler CubeActiveChange;
+        private static event EventHandler CubeSmallChange;
         private GameObject cameraObject;
         private Camera subCamera;
         private GameObject bgObject;
@@ -88,6 +102,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             PropManager.Activate();
             LightManager.Activate();
             EffectManager.Activate();
+
+            CubeSmallChange += OnCubeSmall;
         }
 
         public void Deactivate()
@@ -114,6 +130,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameMain.Instance.MainCamera.SetTargetPos(new Vector3(0.5609447f, 1.380762f, -1.382336f), true);
             GameMain.Instance.MainCamera.SetDistance(1.6f, true);
             GameMain.Instance.MainCamera.SetAroundAngle(new Vector2(245.5691f, 6.273283f), true);
+            CubeSmallChange -= OnCubeSmall;
         }
 
         public void Update()
@@ -196,6 +213,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             cameraMain.Reset(CameraMain.CameraType.Target, true);
             cameraMain.SetTargetPos(new Vector3(0f, 0.9f, 0f), true);
             cameraMain.SetDistance(3f, true);
+        }
+
+        private void OnCubeSmall(object sender, EventArgs args)
+        {
+            this.bgDragPoint.DragPointScale = this.bgDragPoint.BaseScale * (CubeSmall ? 0.4f : 1f);
         }
     }
 

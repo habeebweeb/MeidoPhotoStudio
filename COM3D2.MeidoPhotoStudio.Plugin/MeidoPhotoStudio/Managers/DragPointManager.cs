@@ -81,7 +81,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Bone.Toe01L, Bone.Toe11L, Bone.Toe21L, Bone.Toe01R, Bone.Toe11R, Bone.Toe21R
             }
         };
-
         private static readonly Dictionary<IKMode, DragInfo[]> IKGroupBone = new Dictionary<IKMode, DragInfo[]>()
         {
             [IKMode.None] = new[] {
@@ -111,13 +110,41 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 DragInfo.Gizmo(Bone.UpperArmL), DragInfo.Gizmo(Bone.UpperArmR), DragInfo.Gizmo(Bone.ThighL),
                 DragInfo.Gizmo(Bone.ThighR)
             },
-            [IKMode.BodyTransform] = new[] { DragInfo.Drag(Bone.Body), DragInfo.Drag(Bone.Cube) },
+            [IKMode.BodyTransform] = new[] { DragInfo.Drag(Bone.Body), DragInfo.DragAll(Bone.Cube) },
             [IKMode.BodySelect] = new[] { DragInfo.Drag(Bone.Head), DragInfo.Drag(Bone.Body) },
             [IKMode.FingerRotLocalXZ] = IKGroup[IKMode.FingerRotLocalXZ]
                 .Select(bone => DragInfo.DragBone(bone)).ToArray(),
             [IKMode.FingerRotLocalY] = IKGroup[IKMode.FingerRotLocalY]
                 .Select(bone => DragInfo.DragBone(bone)).ToArray()
         };
+        private static bool cubeActive = false;
+        public static bool CubeActive
+        {
+            get => cubeActive;
+            set
+            {
+                if (value != cubeActive)
+                {
+                    cubeActive = value;
+                    CubeActiveChange?.Invoke(null, EventArgs.Empty);
+                }
+            }
+        }
+        private static bool cubeSmall = false;
+        public static bool CubeSmall
+        {
+            get => cubeSmall;
+            set
+            {
+                if (value != cubeSmall)
+                {
+                    cubeSmall = value;
+                    CubeSmallChange?.Invoke(null, EventArgs.Empty);
+                }
+            }
+        }
+        private static event EventHandler CubeActiveChange;
+        private static event EventHandler CubeSmallChange;
         private Meido meido;
         private Maid maid;
         private Dictionary<Bone, BaseDrag> DragPoint;
@@ -147,7 +174,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.SetBoneMode(this.isBone);
             }
         }
-        private static bool cubeActive = false;
 
         public DragPointManager(Meido meido)
         {
@@ -155,6 +181,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.maid = meido.Maid;
             this.meido.BodyLoad += Initialize;
         }
+
 
         public void Destroy()
         {
@@ -164,6 +191,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             BoneTransform.Clear();
             DragPoint.Clear();
+            CubeSmallChange -= OnCubeSmall;
+
         }
 
         public void Update()
@@ -214,6 +243,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             InitializeDragPoints();
             this.Active = true;
             this.SetBoneMode(false);
+            CubeSmallChange += OnCubeSmall;
         }
 
         private void SetBoneMode(bool active)
@@ -266,12 +296,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     {
                         DragPoint[bone].gameObject.SetActive(true);
                     }
-
-                    if (ikMode == IKMode.BodyTransform)
-                    {
-                        DragPoint[Bone.Cube].gameObject.SetActive(cubeActive);
-                    }
                 }
+
+                bool cubeVisible = CubeActive && (ikMode == IKMode.BodyTransform);
+                DragPoint[Bone.Cube].SetDragProp(cubeVisible, cubeVisible, cubeVisible);
+                DragPoint[Bone.Cube].gameObject.SetActive(cubeVisible);
             }
             else
             {
@@ -283,7 +312,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 else if (ikMode == IKMode.BodyTransform)
                 {
                     DragPoint[Bone.Body].gameObject.SetActive(true);
-                    DragPoint[Bone.Cube].gameObject.SetActive(cubeActive);
+                    DragPoint[Bone.Cube].gameObject.SetActive(CubeActive);
                 }
                 else if (ikMode == IKMode.UpperRot || ikMode == IKMode.RotLocal)
                 {
@@ -314,6 +343,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
+        private void OnCubeSmall(object sender, EventArgs args)
+        {
+            DragBody dragPoint = (DragBody)DragPoint[Bone.Cube];
+            dragPoint.DragPointScale = dragPoint.BaseScale * (CubeSmall ? 0.4f : 1f);
+        }
+
         private void OnSelectFace(object sender, EventArgs args)
         {
             OnMeidoSelect(new MeidoUpdateEventArgs(meido.ActiveSlot, true, false));
@@ -338,6 +373,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             foreach (KeyValuePair<Bone, BaseDrag> kvp in DragPoint)
             {
+                if (kvp.Key == Bone.Cube) continue;
                 BaseDrag dragPoint = kvp.Value;
                 dragPoint.DragPointScale = dragPoint.BaseScale * scale;
             }
@@ -396,7 +432,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             // Cube Dragpoint
             DragPoint[Bone.Cube] =
-                BaseDrag.MakeDragPoint(PrimitiveType.Cube, new Vector3(0.12f, 0.12f, 0.12f), BaseDrag.Blue)
+                BaseDrag.MakeDragPoint(PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.Blue)
                 .AddComponent<DragBody>()
                 .Initialize(meido,
                     () => maid.transform.position,
@@ -405,6 +441,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DragBody dragCube = (DragBody)DragPoint[Bone.Cube];
             dragCube.Scale += OnSetDragPointScale;
             dragCube.DragPointVisible = true;
+            // TODO: Make gizmos work on cube
 
             // Body Dragpoint
             DragPoint[Bone.Body] =
@@ -494,7 +531,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             // Left Mune Dragpoint
             DragPoint[Bone.MuneL] =
-                BaseDrag.MakeDragPoint(PrimitiveType.Sphere, new Vector3(0.12f, 0.12f, 0.12f), BaseDrag.LightBlue)
+                BaseDrag.MakeDragPoint(PrimitiveType.Sphere, Vector3.one * 0.12f, BaseDrag.LightBlue)
                 .AddComponent<DragMune>();
             Transform[] muneIKChainL = new Transform[3] {
                 BoneTransform[Bone.MuneL],
@@ -509,7 +546,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             // Right Mune Dragpoint
             DragPoint[Bone.MuneR] =
-                BaseDrag.MakeDragPoint(PrimitiveType.Sphere, new Vector3(0.12f, 0.12f, 0.12f), BaseDrag.LightBlue)
+                BaseDrag.MakeDragPoint(PrimitiveType.Sphere, Vector3.one * 0.12f, BaseDrag.LightBlue)
                 .AddComponent<DragMune>();
             Transform[] muneIKChainR = new Transform[3] {
                 BoneTransform[Bone.MuneR],

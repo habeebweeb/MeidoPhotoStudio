@@ -9,16 +9,47 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class PropManager
     {
+        private static bool cubeActive = true;
+        public static bool CubeActive
+        {
+            get => cubeActive;
+            set
+            {
+                if (value != cubeActive)
+                {
+                    cubeActive = value;
+                    CubeActiveChange?.Invoke(null, EventArgs.Empty);
+                }
+            }
+        }
+        private static bool cubeSmall;
+        public static bool CubeSmall
+        {
+            get => cubeSmall;
+            set
+            {
+                if (value != cubeSmall)
+                {
+                    cubeSmall = value;
+                    CubeSmallChange?.Invoke(null, EventArgs.Empty);
+                }
+            }
+        }
+        private static event EventHandler CubeActiveChange;
+        private static event EventHandler CubeSmallChange;
         private List<DragDogu> doguList = new List<DragDogu>();
         private DragType dragTypeOld = DragType.None;
         private DragType currentDragType = DragType.None;
         private bool showGizmos = false;
-        enum DragType
+        private enum DragType
         {
             None, Move, Rotate, Scale, Delete, Other
         }
 
-        public void Activate() { }
+        public void Activate()
+        {
+            CubeSmallChange += OnCubeSmall;
+        }
 
         public void Deactivate()
         {
@@ -27,19 +58,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GameObject.Destroy(dogu.gameObject);
             }
             doguList.Clear();
+            CubeSmallChange -= OnCubeSmall;
         }
 
         public void Update()
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                showGizmos = !showGizmos;
-                currentDragType = dragTypeOld = DragType.None;
-                UpdateDragType();
+                //     showGizmos = !showGizmos;
+                //     currentDragType = dragTypeOld = DragType.None;
+                //     UpdateDragType();
             }
 
-            if (Input.GetKey(KeyCode.Z) || Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.C)
-                || Input.GetKey(KeyCode.D)
+            if (CubeActive && (Input.GetKey(KeyCode.Z) || Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.C)
+                || Input.GetKey(KeyCode.D))
             )
             {
                 currentDragType = DragType.Other;
@@ -56,7 +88,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void UpdateDragType()
         {
-            bool dragPointActive = currentDragType == DragType.Other;
+            bool dragPointActive = (currentDragType == DragType.Other);
             foreach (DragDogu dogu in doguList)
             {
                 dogu.SetDragProp(showGizmos, dragPointActive, dragPointActive);
@@ -198,6 +230,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 dragDogu.Delete += (s, a) => DeleteDogu();
                 dragDogu.SetDragProp(showGizmos, false, false);
                 doguList.Add(dragDogu);
+                dragDogu.DragPointScale = dragDogu.BaseScale * (CubeSmall ? 0.4f : 1f);
             }
         }
 
@@ -213,6 +246,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     return false;
                 }
             );
+        }
+
+        private void OnCubeSmall(object sender, EventArgs args)
+        {
+            foreach (DragDogu dogu in doguList)
+            {
+                dogu.DragPointScale = dogu.BaseScale * (CubeSmall ? 0.4f : 1f);
+            }
         }
     }
 }
