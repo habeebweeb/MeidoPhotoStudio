@@ -136,7 +136,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Vector3 posOther = Input.mousePosition - mousePos;
                 Transform transform = Camera.main.transform;
-                Vector3 vector3_3 = transform.TransformDirection(Vector3.right);
                 transform.TransformDirection(Vector3.forward);
                 if (mousePos2 != Input.mousePosition)
                 {
