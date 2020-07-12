@@ -50,6 +50,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 @"Config\MeidoPhotoStudio"
             );
 
+            foreach (string directory in new[] { customPosePath, scenesPath, kankyoPath, configPath })
+            {
+                if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
+            }
+
             PoseDict = new Dictionary<string, List<string>>();
             PoseGroupList = new List<string>();
             CustomPoseDict = new Dictionary<string, List<KeyValuePair<string, string>>>();
@@ -64,19 +69,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static void Initialize()
         {
-            MakeDirectories();
             InitializePoses();
             InitializeFaceBlends();
             InitializeBGs();
             InitializeDogu();
-        }
-
-        public static void MakeDirectories()
-        {
-            foreach (string directory in new[] { customPosePath, scenesPath, kankyoPath, configPath })
-            {
-                if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
-            }
         }
 
         public static void InitializePoses()
@@ -391,8 +387,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             List<string> handItems = new List<string>(
                 GameUty.MenuFiles.Where(menu => menu.StartsWith("handiteml") || menu.StartsWith("handitemr"))
             );
-
-            WriteToFile("mm_hand_items", handItems);
         }
 
         private static CsvParser OpenCsvParser(string nei, AFileSystemBase fs)
