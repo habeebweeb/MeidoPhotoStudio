@@ -1,14 +1,30 @@
+using System;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class EnvironmentManager
     {
+        private static bool cubeActive;
+        public static bool CubeActive
+        {
+            get => cubeActive;
+            set
+            {
+                if (value != cubeActive)
+                {
+                    cubeActive = value;
+                    CubeActiveChange?.Invoke(null, EventArgs.Empty);
+                }
+            }
+        }
+        private static event EventHandler CubeActiveChange;
         private GameObject cameraObject;
         private Camera subCamera;
         private GameObject bgObject;
         private Transform bg;
         private CameraInfo cameraInfo;
+        private DragDogu bgDragPoint;
         public LightManager LightManager { get; }
         public PropManager PropManager { get; }
         public EffectManager EffectManager { get; }
@@ -22,6 +38,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 bgObject.SetActive(this.bgVisible);
             }
         }
+        private DragType currentDragType = DragType.None;
+        private DragType dragTypeOld = DragType.None;
+        private enum DragType
+        {
+            None, Transform
+        }
 
         public EnvironmentManager()
         {
@@ -34,6 +56,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             bgObject = GameObject.Find("__GameMain__/BG");
             bg = bgObject.transform;
+
+            GameObject dragPoint = BaseDrag.MakeDragPoint(
+                PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.LightBlue
+            );
+
+            bgDragPoint = dragPoint.AddComponent<DragDogu>();
+            bgDragPoint.Initialize(bgObject);
+            bgDragPoint.SetDragProp(false, false, false);
 
             cameraObject = new GameObject("subCamera");
             subCamera = cameraObject.AddComponent<Camera>();
@@ -105,6 +135,23 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     ResetCamera();
                 }
             }
+
+            if (CubeActive && (Input.GetKey(KeyCode.Z) || Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.C)))
+            {
+                currentDragType = DragType.Transform;
+            }
+            else
+            {
+                currentDragType = DragType.None;
+            }
+
+            if (currentDragType != dragTypeOld)
+            {
+                bool visible = currentDragType == DragType.Transform;
+                this.bgDragPoint.SetDragProp(visible, visible, visible);
+            }
+
+            dragTypeOld = currentDragType;
 
             PropManager.Update();
             LightManager.Update();
