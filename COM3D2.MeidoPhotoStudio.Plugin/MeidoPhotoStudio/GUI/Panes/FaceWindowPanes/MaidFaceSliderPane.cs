@@ -162,6 +162,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
+            GUI.enabled = this.meidoManager.HasActiveMeido;
             GUILayoutOption sliderWidth = MiscGUI.HalfSlider;
             for (int i = 0; i < faceKeys.Length; i += 2)
             {
@@ -190,6 +191,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
                 GUILayout.EndHorizontal();
             }
+
+            GUI.enabled = true;
         }
     }
 }
