@@ -78,21 +78,26 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             ReloadTranslationEvent?.Invoke(null, EventArgs.Empty);
         }
 
-        public static string Get(string category, string text)
+        public static bool Has(string category, string text, bool warn = false)
         {
             if (!Translations.ContainsKey(category))
             {
-                Debug.LogWarning($"Could not find translation category '{category}'");
-                return text;
+                if (warn) Debug.LogWarning($"Could not find translation category '{category}'");
+                return false;
             }
 
             if (!Translations[category].ContainsKey(text))
             {
-                Debug.LogWarning($"Could not find translation for '{text}' in '{category}'");
-                return text;
+                if (warn) Debug.LogWarning($"Could not find translation for '{text}' in '{category}'");
+                return false;
             }
 
-            return Translations[category][text];
+            return true;
+        }
+
+        public static string Get(string category, string text)
+        {
+            return Has(category, text, true) ? Translations[category][text] : text;
         }
 
         public static string[] GetArray(string category, IEnumerable<string> list)
