@@ -182,7 +182,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.meido.BodyLoad += Initialize;
         }
 
-
         public void Destroy()
         {
             foreach (KeyValuePair<Bone, BaseDrag> dragPoint in DragPoint)
@@ -192,7 +191,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             BoneTransform.Clear();
             DragPoint.Clear();
             CubeSmallChange -= OnCubeSmall;
-
         }
 
         public void Update()

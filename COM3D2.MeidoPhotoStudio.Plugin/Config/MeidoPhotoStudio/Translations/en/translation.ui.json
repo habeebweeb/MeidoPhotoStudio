@@ -166,11 +166,18 @@
         "green": "Green",
         "blue": "Blue"
     },
-    "props": {
+    "propsPane": {
         "props1Label": "Props 1",
         "props2Label": "Props 2",
         "props1AddButton": "Add",
-        "props2AddButton": "Add"
+        "props2AddButton": "Add",
+        "header": "Props"
+    },
+    "myRoomPane": {
+        "header": "My Room"
+    },
+    "modPropsPane": {
+        "header": "Mod Props",
     },
     "movementCube": {
         "header": "Movement Cube",
@@ -280,5 +287,8 @@
         "name": "Name",
         "fontSize": "Font Size",
         "okButton": "OK"
+    },
+    "systemMessage": {
+        "initializing": "Initializing"
     }
 }

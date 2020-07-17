@@ -16,7 +16,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             int theaterIndex = Constants.BGList.FindIndex(bg => bg == "Theater");
 
-            List<string> bgList = new List<string>(Translation.GetList("bgDropdown", Constants.BGList));
+            List<string> bgList = new List<string>(Translation.GetList("bgNames", Constants.BGList));
             if (Constants.MyRoomCustomBGIndex >= 0)
             {
                 foreach (KeyValuePair<string, string> kvp in Constants.MyRoomCustomBGList)
@@ -47,7 +47,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void ReloadTranslation()
         {
-            List<string> bgList = new List<string>(Translation.GetList("bgDropdown", Constants.BGList));
+            List<string> bgList = new List<string>(Translation.GetList("bgNames", Constants.BGList));
             if (Constants.MyRoomCustomBGIndex >= 0)
             {
                 foreach (KeyValuePair<string, string> kvp in Constants.MyRoomCustomBGList)
