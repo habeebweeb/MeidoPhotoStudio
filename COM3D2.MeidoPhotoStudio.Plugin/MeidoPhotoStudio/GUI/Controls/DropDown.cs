@@ -63,7 +63,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.elementSize = Vector2.zero;
 
             // TODO: Calculate scrollpos position maybe
-            if ((selectedItemIndex != this.selectedItemIndex) && (itemList.Length != this.DropdownList?.Length))
+            if ((selectedItemIndex != this.selectedItemIndex) || (itemList.Length != this.DropdownList?.Length))
             {
                 this.scrollPos = Vector2.zero;
             }

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -93,6 +94,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             MouseExposition mouseExposition = MouseExposition.GetObject();
             mouseExposition.SetText(text, time);
+        }
+
+        public static string HandItemToOdogu(string menu)
+        {
+            menu = menu.Substring(menu.IndexOf('_') + 1);
+            menu = menu.Substring(0, menu.IndexOf("_i_.menu"));
+            menu = $"odogu_{menu}";
+            return menu;
         }
     }
 }

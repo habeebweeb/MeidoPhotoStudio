@@ -6,7 +6,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class BGWindowPane : BaseWindowPane
     {
         private BackgroundSelectorPane backgroundSelectorPane;
-        private PropsPane propsPane;
         private LightsPane lightsPane;
         private EffectsPane effectsPane;
         private DragPointPane dragPointPane;
@@ -15,7 +14,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.backgroundSelectorPane = new BackgroundSelectorPane(environmentManager);
             this.dragPointPane = new DragPointPane();
-            this.propsPane = new PropsPane(environmentManager.PropManager);
             this.lightsPane = new LightsPane(environmentManager);
 
             EffectManager effectManager = environmentManager.EffectManager;
@@ -32,7 +30,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void Draw()
         {
             this.backgroundSelectorPane.Draw();
-            this.propsPane.Draw();
             this.dragPointPane.Draw();
             this.scrollPos = GUILayout.BeginScrollView(this.scrollPos);
             this.lightsPane.Draw();
@@ -44,7 +41,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (ActiveWindow)
             {
-                this.propsPane.UpdatePane();
                 this.lightsPane.UpdatePane();
                 this.effectsPane.UpdatePane();
             }

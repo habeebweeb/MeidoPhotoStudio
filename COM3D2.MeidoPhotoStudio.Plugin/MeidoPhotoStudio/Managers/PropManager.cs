@@ -106,7 +106,32 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             // TODO: Add a couple more things to ignore list
             GameObject dogu = null;
-            if (assetName.StartsWith("mirror"))
+            string doguName = assetName;
+            Vector3 doguPosition = new Vector3(0f, 0f, 0.5f);
+            Vector3 doguScale = Vector3.one;
+
+            if (assetName.EndsWith(".menu"))
+            {
+                dogu = MenuFileUtility.LoadModel(assetName);
+            }
+            else if (assetName.StartsWith("BG_"))
+            {
+                assetName = assetName.Remove(0, 3);
+                GameObject obj = GameMain.Instance.BgMgr.CreateAssetBundle(assetName);
+                if (obj == null)
+                {
+                    obj = (Resources.Load("BG/" + assetName) ?? Resources.Load("BG/2_0/" + assetName)) as GameObject;
+                }
+
+                if (obj != null)
+                {
+                    dogu = GameObject.Instantiate(obj);
+                    doguPosition = Vector3.zero;
+                    doguScale = Vector3.one * 0.1f;
+                }
+
+            }
+            else if (assetName.StartsWith("mirror"))
             {
                 Material mirrorMaterial = new Material(Shader.Find("Mirror"));
                 dogu = GameObject.CreatePrimitive(PrimitiveType.Plane);
@@ -162,7 +187,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 MeshRenderer[] meshRenderers = dogu.GetComponentsInChildren<MeshRenderer>();
                 for (int i = 0; i < meshRenderers.Length; i++)
                 {
-                    if (meshRenderers[i] != null)
+                    if (meshRenderers[i] != null
+                        && meshRenderers[i].gameObject.name.ToLower().IndexOf("castshadow") < 0
+                    )
                     {
                         meshRenderers[i].shadowCastingMode = ShadowCastingMode.Off;
                     }
@@ -216,10 +243,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GameObject deploymentObject = GetDeploymentObject();
                 GameObject finalDogu = new GameObject();
 
+                dogu.transform.localScale = doguScale;
+
                 dogu.transform.SetParent(finalDogu.transform, true);
                 finalDogu.transform.SetParent(deploymentObject.transform, false);
 
-                finalDogu.transform.position = new Vector3(0f, 0f, 0.5f);
+                finalDogu.transform.position = doguPosition;
+                finalDogu.name = doguName;
 
                 GameObject dragPoint = BaseDrag.MakeDragPoint(
                     PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.LightBlue
@@ -231,6 +261,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 dragDogu.SetDragProp(showGizmos, false, false);
                 doguList.Add(dragDogu);
                 dragDogu.DragPointScale = dragDogu.BaseScale * (CubeSmall ? 0.4f : 1f);
+            }
+            else
+            {
+                Debug.LogError($"Could not spawn object '{assetName}'");
             }
         }
 
