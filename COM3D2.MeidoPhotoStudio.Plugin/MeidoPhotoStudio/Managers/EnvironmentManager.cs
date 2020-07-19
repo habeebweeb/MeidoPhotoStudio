@@ -76,7 +76,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             );
 
             bgDragPoint = dragPoint.AddComponent<DragDogu>();
-            bgDragPoint.Initialize(bgObject);
+            bgDragPoint.Initialize(bgObject, true);
             bgDragPoint.SetDragProp(false, false, false);
 
             cameraObject = new GameObject("subCamera");
@@ -108,6 +108,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Deactivate()
         {
+            if (bgDragPoint != null) GameObject.Destroy(bgDragPoint.gameObject);
             GameObject.Destroy(cameraObject);
             GameObject.Destroy(subCamera);
 

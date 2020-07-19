@@ -20,10 +20,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public bool keepDogu = false;
         public float scaleFactor = 1f;
 
-        public void Initialize(GameObject dogu)
+        public void Initialize(GameObject dogu, bool keepDogu = false)
         {
-            Initialize(dogu, false, GizmoMode.World,
-                () => this.dogu.transform.position,
+            Initialize(dogu, keepDogu, GizmoMode.World,
                 () => Vector3.zero
             );
         }
