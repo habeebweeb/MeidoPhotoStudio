@@ -49,13 +49,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
         }
-        public Vector3 BaseScale { get; private set; }
-        public Vector3 DragPointScale
+        public Vector3 InitialScale { get; private set; }
+        private float dragPointScale = 1f;
+        public float DragPointScale
         {
-            get => transform.localScale;
+            get => dragPointScale;
             set
             {
-                transform.localScale = value;
+                dragPointScale = value;
+                transform.localScale = InitialScale * dragPointScale;
             }
         }
         public bool IsBone { get; set; }
@@ -158,7 +160,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected void InitializeDragPoint(Func<Vector3> position, Func<Vector3> rotation)
         {
-            this.BaseScale = transform.localScale;
+            this.InitialScale = transform.localScale;
             this.position = position;
             this.rotation = rotation;
             this.dragPointRenderer = GetComponent<Renderer>();

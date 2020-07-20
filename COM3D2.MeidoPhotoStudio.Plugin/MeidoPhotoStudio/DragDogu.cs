@@ -21,15 +21,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public bool keepDogu = false;
         public float scaleFactor = 1f;
 
-        public void Initialize(GameObject dogu, bool keepDogu = false)
+        public DragDogu Initialize(GameObject dogu, bool keepDogu = false)
         {
-            Initialize(dogu, keepDogu, GizmoMode.World,
+            return Initialize(dogu, keepDogu, GizmoMode.World,
                 () => this.Dogu.transform.position,
                 () => Vector3.zero
             );
         }
 
-        public void Initialize(GameObject dogu, bool keepDogu, GizmoMode mode,
+        public DragDogu Initialize(GameObject dogu, bool keepDogu, GizmoMode mode,
             Func<Vector3> position, Func<Vector3> rotation
         )
         {
@@ -44,6 +44,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     OnRotate();
                 }
             };
+            return this;
+        }
+
+        protected override void Update()
+        {
+            float distance = Vector3.Distance(Camera.main.transform.position, transform.position);
+            transform.localScale = Vector3.one * (0.4f * InitialScale.x * DragPointScale * distance);
+            base.Update();
         }
 
         protected override void GetDragType()

@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
+    using static CustomGizmo;
     internal class DragBody : BaseDrag
     {
         private Vector3 off;
@@ -39,6 +40,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 CurrentDragType = DragType.None;
             }
         }
+
         protected override void InitializeDrag()
         {
             if (CurrentDragType == DragType.Select)

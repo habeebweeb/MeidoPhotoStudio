@@ -50,6 +50,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 CurrentDragType = DragType.None;
             }
         }
+
         protected override void DoubleClick()
         {
             if (CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY)

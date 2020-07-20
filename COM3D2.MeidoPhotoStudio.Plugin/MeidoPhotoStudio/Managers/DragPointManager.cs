@@ -220,6 +220,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             BoneTransform.Clear();
             DragPoint.Clear();
             CubeSmallChange -= OnCubeSmall;
+            CubeActiveChange -= OnCubeSmall;
         }
 
         public void Update()
@@ -277,6 +278,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.Active = true;
             this.SetBoneMode(false);
             CubeSmallChange += OnCubeSmall;
+            CubeActiveChange += OnCubeActive;
         }
 
         private void SetBoneMode(bool active)
@@ -379,7 +381,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void OnCubeSmall(object sender, EventArgs args)
         {
             DragBody dragPoint = (DragBody)DragPoint[Bone.Cube];
-            dragPoint.DragPointScale = dragPoint.BaseScale * (CubeSmall ? 0.4f : 1f);
+            dragPoint.DragPointScale = CubeSmall ? 0.4f : 1f;
+        }
+
+        private void OnCubeActive(object sender, EventArgs args)
+        {
+            DragPoint[Bone.Cube].SetDragProp(CubeActive, CubeActive, CubeActive);
+            DragPoint[Bone.Cube].gameObject.SetActive(CubeActive);
         }
 
         private void OnSelectFace(object sender, EventArgs args)
@@ -408,7 +416,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (kvp.Key == Bone.Cube) continue;
                 BaseDrag dragPoint = kvp.Value;
-                dragPoint.DragPointScale = dragPoint.BaseScale * scale;
+                dragPoint.DragPointScale = scale;
             }
         }
 
@@ -468,7 +476,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.Blue
             ).Initialize(meido,
                 () => maid.transform.position,
-                () => maid.transform.eulerAngles
+                () => Vector3.zero
             );
             DragBody dragCube = (DragBody)DragPoint[Bone.Cube];
             dragCube.Scale += OnSetDragPointScale;

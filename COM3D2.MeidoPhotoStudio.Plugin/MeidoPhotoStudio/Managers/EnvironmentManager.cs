@@ -73,9 +73,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             bgDragPoint = BaseDrag.MakeDragPoint<DragDogu>(
                 PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.LightBlue
-            );
-            bgDragPoint.Initialize(bgObject, true);
+            ).Initialize(bgObject, true);
             bgDragPoint.SetDragProp(false, false, false);
+            bgDragPoint.DragPointScale = CubeSmall ? 0.4f : 1f;
 
             cameraObject = new GameObject("subCamera");
             subCamera = cameraObject.AddComponent<Camera>();
@@ -216,7 +216,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void OnCubeSmall(object sender, EventArgs args)
         {
-            this.bgDragPoint.DragPointScale = this.bgDragPoint.BaseScale * (CubeSmall ? 0.4f : 1f);
+            this.bgDragPoint.DragPointScale = CubeSmall ? 0.4f : 1f;
         }
     }
 

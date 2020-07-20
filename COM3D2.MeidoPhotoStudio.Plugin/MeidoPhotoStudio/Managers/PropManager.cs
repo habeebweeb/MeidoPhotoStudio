@@ -153,7 +153,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     dogu = GameObject.Instantiate(obj);
                     doguPosition = Vector3.zero;
                     doguScale = Vector3.one * 0.1f;
-                    doguName = Translation.Get("bgNames", "assetName");
+                    doguName = Translation.Get("bgNames", assetName);
                 }
 
             }
@@ -278,12 +278,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 DragDogu dragDogu = BaseDrag.MakeDragPoint<DragDogu>(
                     PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.LightBlue
-                );
-                dragDogu.Initialize(finalDogu);
+                ).Initialize(finalDogu);
                 dragDogu.Delete += DeleteDogu;
                 dragDogu.SetDragProp(showGizmos, false, false);
                 doguList.Add(dragDogu);
-                dragDogu.DragPointScale = dragDogu.BaseScale * (CubeSmall ? 0.4f : 1f);
+                dragDogu.DragPointScale = CubeSmall ? 0.4f : 1f;
                 OnDoguListChange();
             }
             else
@@ -381,7 +380,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             foreach (DragDogu dogu in doguList)
             {
-                dogu.DragPointScale = dogu.BaseScale * (CubeSmall ? 0.4f : 1f);
+                dogu.DragPointScale = CubeSmall ? 0.4f : 1f;
             }
         }
 

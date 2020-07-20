@@ -134,8 +134,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             DragLight = BaseDrag.MakeDragPoint<DragDogu>(
                 PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.LightBlue
-            );
-            DragLight.Initialize(this.light.gameObject, this.IsMain, CustomGizmo.GizmoMode.World,
+            ).Initialize(this.light.gameObject, this.IsMain, CustomGizmo.GizmoMode.World,
                 () => this.light.transform.position,
                 () => this.light.transform.eulerAngles
             );
