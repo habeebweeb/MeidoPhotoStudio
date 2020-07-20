@@ -6,23 +6,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     using static CustomGizmo;
     internal class DragDogu : BaseDrag
     {
-        private GameObject dogu;
         private Vector3 off;
         private Vector3 off2;
-        private Vector3 mousePos2;
         private float doguScale;
-        private Vector3 doguRot;
+        private Quaternion doguRotation;
+        public GameObject Dogu { get; private set; }
         public event EventHandler Delete;
         public event EventHandler Rotate;
         public event EventHandler Scale;
         public event EventHandler Select;
         public bool DeleteMe { get; private set; }
+        public string Name => Dogu.name;
         public bool keepDogu = false;
         public float scaleFactor = 1f;
 
         public void Initialize(GameObject dogu, bool keepDogu = false)
         {
             Initialize(dogu, keepDogu, GizmoMode.World,
+                () => this.Dogu.transform.position,
                 () => Vector3.zero
             );
         }
@@ -32,9 +33,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         )
         {
             this.keepDogu = keepDogu;
-            this.dogu = dogu;
+            this.Dogu = dogu;
             base.InitializeDragPoint(position, rotation);
-            InitializeGizmo(this.dogu.transform, 1f, mode);
+            InitializeGizmo(this.Dogu.transform, 1f, mode);
             gizmo.GizmoDrag += (s, a) =>
             {
                 if (CurrentDragType == DragType.RotLocalY || CurrentDragType == DragType.RotLocalXZ)
@@ -97,15 +98,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             base.InitializeDrag();
 
-            doguScale = dogu.transform.localScale.x;
-            doguRot = dogu.transform.localEulerAngles;
+            doguScale = Dogu.transform.localScale.x;
+            doguRotation = Dogu.transform.rotation;
             off = transform.position - Camera.main.ScreenToWorldPoint(
                 new Vector3(Input.mousePosition.x, Input.mousePosition.y, worldPoint.z)
             );
             off2 = new Vector3(
-                transform.position.x - dogu.transform.position.x,
-                transform.position.y - dogu.transform.position.y,
-                transform.position.z - dogu.transform.position.z
+                transform.position.x - Dogu.transform.position.x,
+                transform.position.y - Dogu.transform.position.y,
+                transform.position.z - Dogu.transform.position.z
             );
         }
 
@@ -113,12 +114,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (CurrentDragType == DragType.Scale)
             {
-                dogu.transform.localScale = new Vector3(1f, 1f, 1f);
+                Dogu.transform.localScale = new Vector3(1f, 1f, 1f);
                 OnScale();
             }
             if (CurrentDragType == DragType.RotLocalY || CurrentDragType == DragType.RotLocalXZ)
             {
-                dogu.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                Dogu.transform.rotation = Quaternion.identity;
                 OnRotate();
             }
         }
@@ -131,51 +132,41 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (CurrentDragType == DragType.MoveXZ)
             {
-                dogu.transform.position = new Vector3(pos.x, dogu.transform.position.y, pos.z);
+                Dogu.transform.position = new Vector3(pos.x, Dogu.transform.position.y, pos.z);
             }
 
             if (CurrentDragType == DragType.MoveY)
             {
-                dogu.transform.position = new Vector3(dogu.transform.position.x, pos.y, dogu.transform.position.z);
+                Dogu.transform.position = new Vector3(Dogu.transform.position.x, pos.y, Dogu.transform.position.z);
             }
 
             if (CurrentDragType == DragType.RotY)
             {
-                Vector3 posOther = Input.mousePosition - mousePos;
-                dogu.transform.eulerAngles =
-                    new Vector3(dogu.transform.eulerAngles.x, doguRot.y - posOther.x / 3f, dogu.transform.eulerAngles.z);
+                Vector3 mouseDelta = Input.mousePosition - mousePos;
+
+                Dogu.transform.rotation = doguRotation;
+                Dogu.transform.Rotate(Vector3.up, doguRotation.y - mouseDelta.x / 3f, Space.World);
                 OnRotate();
             }
 
             if (CurrentDragType == DragType.RotLocalXZ)
             {
-                Vector3 posOther = Input.mousePosition - mousePos;
-                Transform transform = Camera.main.transform;
-                Vector3 vector3_3 = transform.TransformDirection(Vector3.right);
-                Vector3 vector3_4 = transform.TransformDirection(Vector3.forward);
-                transform.TransformDirection(Vector3.forward);
-                if (mousePos2 != Input.mousePosition)
-                {
-                    dogu.transform.localEulerAngles = doguRot;
-                    dogu.transform.RotateAround(dogu.transform.position, new Vector3(vector3_3.x, 0.0f, vector3_3.z), posOther.y / 4f);
-                    dogu.transform.RotateAround(dogu.transform.position, new Vector3(vector3_4.x, 0.0f, vector3_4.z), (-posOther.x / 6.0f));
-                }
-                mousePos2 = Input.mousePosition;
+                Vector3 mouseDelta = Input.mousePosition - mousePos;
+                Vector3 cameraDirectionForward = Camera.main.transform.TransformDirection(Vector3.forward);
+                Vector3 cameraDirectionRight = Camera.main.transform.TransformDirection(Vector3.right);
+
+                Dogu.transform.rotation = doguRotation;
+                Dogu.transform.Rotate(cameraDirectionForward, doguRotation.x - mouseDelta.x / 3f, Space.World);
+                Dogu.transform.Rotate(cameraDirectionRight, doguRotation.y + mouseDelta.y / 3f, Space.World);
                 OnRotate();
             }
 
             if (CurrentDragType == DragType.RotLocalY)
             {
-                Vector3 posOther = Input.mousePosition - mousePos;
-                Transform transform = Camera.main.transform;
-                Vector3 vector3_3 = transform.TransformDirection(Vector3.right);
+                Vector3 mouseDelta = Input.mousePosition - mousePos;
 
-                transform.TransformDirection(Vector3.forward);
-                dogu.transform.localEulerAngles = doguRot;
-                dogu.transform.localRotation = Quaternion.Euler(dogu.transform.localEulerAngles)
-                    * Quaternion.AngleAxis((-posOther.x / 2.2f), Vector3.up);
-
-                mousePos2 = Input.mousePosition;
+                Dogu.transform.rotation = doguRotation;
+                Dogu.transform.Rotate(Vector3.up * (-mouseDelta.x / 2.2f));
                 OnRotate();
             }
 
@@ -184,7 +175,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Vector3 posOther = Input.mousePosition - mousePos;
                 float scale = doguScale + (posOther.y / 200f) * scaleFactor;
                 if (scale < 0.1f) scale = 0.1f;
-                dogu.transform.localScale = new Vector3(scale, scale, scale);
+                Dogu.transform.localScale = new Vector3(scale, scale, scale);
                 OnScale();
             }
         }
@@ -201,7 +192,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void OnDestroy()
         {
-            if (!keepDogu) GameObject.Destroy(this.dogu);
+            if (!keepDogu) GameObject.Destroy(this.Dogu);
         }
     }
 }
