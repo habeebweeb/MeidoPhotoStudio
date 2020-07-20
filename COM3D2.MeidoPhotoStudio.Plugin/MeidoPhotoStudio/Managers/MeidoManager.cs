@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
@@ -19,6 +20,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public event EventHandler EndCallMeidos;
         public event EventHandler BeginCallMeidos;
         private int selectedMeido = 0;
+        public string[] ActiveMeidoNameList
+        {
+            get
+            {
+                return ActiveMeidoList.Count == 0
+                    ? new[] { Translation.Get("systemMessage", "noMaids") }
+                    : ActiveMeidoList.Select(meido => $"{meido.FirstName} {meido.LastName}").ToArray();
+            }
+        }
         public int SelectedMeido
         {
             get => selectedMeido;
@@ -99,6 +109,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 if (this.SelectMeidoList.Count == 0) OnEndCallMeidos(this, EventArgs.Empty);
             }, false);
+        }
+
+        public Meido GetMeido(string guid)
+        {
+            foreach (Meido meido in ActiveMeidoList)
+            {
+                if (meido.Maid.status.guid == guid) return meido;
+            }
+
+            return null;
+        }
+
+        public Meido GetMeido(int activeIndex)
+        {
+            if (activeIndex >= 0 && activeIndex < ActiveMeidoList.Count)
+            {
+                return ActiveMeidoList[activeIndex];
+            }
+            return null;
         }
 
         private void UndressAll()

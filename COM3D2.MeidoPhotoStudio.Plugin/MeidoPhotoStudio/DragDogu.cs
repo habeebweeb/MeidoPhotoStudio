@@ -17,6 +17,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public event EventHandler Select;
         public bool DeleteMe { get; private set; }
         public string Name => Dogu.name;
+        public DragPointManager.AttachPointInfo attachPointInfo = DragPointManager.AttachPointInfo.Empty;
         public bool keepDogu = false;
         public float scaleFactor = 1f;
 

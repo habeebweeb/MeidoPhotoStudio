@@ -95,9 +95,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return true;
         }
 
-        public static string Get(string category, string text)
+        public static string Get(string category, string text, bool warn = true)
         {
-            return Has(category, text, true) ? Translations[category][text] : text;
+            return Has(category, text, warn) ? Translations[category][text] : text;
         }
 
         public static string[] GetArray(string category, IEnumerable<string> list)

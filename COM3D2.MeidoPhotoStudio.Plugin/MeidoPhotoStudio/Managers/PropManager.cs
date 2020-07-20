@@ -9,6 +9,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class PropManager
     {
+        private MeidoManager meidoManager;
         private static bool cubeActive = true;
         public static bool CubeActive
         {
@@ -45,6 +46,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             None, Move, Rotate, Scale, Delete, Other
         }
+        public int DoguCount => doguList.Count;
+        public event EventHandler DoguListChange;
+        public string[] PropNameList
+        {
+            get
+            {
+                return doguList.Count == 0
+                    ? new[] { Translation.Get("systemMessage", "noProps") }
+                    : doguList.Select(dogu => dogu.Name).ToArray();
+            }
+        }
+
+        public PropManager(MeidoManager meidoManager)
+        {
+            this.meidoManager = meidoManager;
+            this.meidoManager.BeginCallMeidos += DetachProps;
+            this.meidoManager.EndCallMeidos += ReattachProps;
+        }
 
         public void Activate()
         {
@@ -55,6 +74,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             foreach (DragDogu dogu in doguList)
             {
+                dogu.Delete -= DeleteDogu;
                 GameObject.Destroy(dogu.gameObject);
             }
             doguList.Clear();
@@ -106,13 +126,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             // TODO: Add a couple more things to ignore list
             GameObject dogu = null;
-            string doguName = assetName;
+            string doguName = Translation.Get("propNames", assetName, false);
             Vector3 doguPosition = new Vector3(0f, 0f, 0.5f);
             Vector3 doguScale = Vector3.one;
 
             if (assetName.EndsWith(".menu"))
             {
                 dogu = MenuFileUtility.LoadModel(assetName);
+                string handItem = Utility.HandItemToOdogu(assetName);
+                if (Translation.Has("propNames", handItem))
+                {
+                    doguName = Translation.Get("propNames", handItem);
+                }
             }
             else if (assetName.StartsWith("BG_"))
             {
@@ -128,6 +153,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     dogu = GameObject.Instantiate(obj);
                     doguPosition = Vector3.zero;
                     doguScale = Vector3.one * 0.1f;
+                    doguName = Translation.Get("bgNames", "assetName");
                 }
 
             }
@@ -241,7 +267,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 // TODO: Figure out why some props aren't centred properly
                 // Doesn't happen in MM but even after copy pasting the code, it doesn't work :/
                 GameObject deploymentObject = GetDeploymentObject();
-                GameObject finalDogu = new GameObject();
+                GameObject finalDogu = new GameObject(doguName);
 
                 dogu.transform.localScale = doguScale;
 
@@ -249,7 +275,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 finalDogu.transform.SetParent(deploymentObject.transform, false);
 
                 finalDogu.transform.position = doguPosition;
-                finalDogu.name = doguName;
 
                 GameObject dragPoint = BaseDrag.MakeDragPoint(
                     PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.LightBlue
@@ -257,10 +282,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 DragDogu dragDogu = dragPoint.AddComponent<DragDogu>();
                 dragDogu.Initialize(finalDogu);
-                dragDogu.Delete += (s, a) => DeleteDogu();
+                dragDogu.Delete += DeleteDogu;
                 dragDogu.SetDragProp(showGizmos, false, false);
                 doguList.Add(dragDogu);
                 dragDogu.DragPointScale = dragDogu.BaseScale * (CubeSmall ? 0.4f : 1f);
+                OnDoguListChange();
             }
             else
             {
@@ -268,7 +294,77 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        private void DeleteDogu()
+        public DragDogu GetDogu(int doguIndex)
+        {
+            if (doguList.Count == 0 || doguIndex >= doguList.Count || doguIndex < 0) return null;
+            return doguList[doguIndex];
+        }
+
+        public void AttachProp(
+            int doguIndex, DragPointManager.AttachPoint attachPoint, Meido meido, bool worldPositionStays = true
+        )
+        {
+            if (doguList.Count == 0 || doguIndex >= doguList.Count || doguIndex < 0) return;
+            AttachProp(doguList[doguIndex], attachPoint, meido, worldPositionStays);
+        }
+
+        private void AttachProp(
+            DragDogu dragDogu, DragPointManager.AttachPoint attachPoint, Meido meido, bool worldPositionStays = true
+        )
+        {
+            GameObject dogu = dragDogu.Dogu;
+
+            Transform attachPointTransform = meido?.GetBoneTransform(attachPoint) ?? GetDeploymentObject().transform;
+
+            dragDogu.attachPointInfo = new DragPointManager.AttachPointInfo(
+                attachPoint: meido == null ? DragPointManager.AttachPoint.None : attachPoint,
+                maidGuid: meido == null ? String.Empty : meido.Maid.status.guid,
+                maidIndex: meido == null ? -1 : meido.ActiveSlot
+            );
+
+            worldPositionStays = meido == null ? true : worldPositionStays;
+
+            Vector3 position = dogu.transform.position;
+            Quaternion rotation = dogu.transform.rotation;
+
+            dogu.transform.SetParent(attachPointTransform, worldPositionStays);
+
+            if (worldPositionStays)
+            {
+                dogu.transform.position = position;
+                dogu.transform.rotation = rotation;
+            }
+            else
+            {
+                dogu.transform.localPosition = Vector3.zero;
+                dogu.transform.rotation = Quaternion.identity;
+            }
+
+            if (meido == null) Utility.FixGameObjectScale(dogu);
+        }
+
+        private void DetachProps(object sender, EventArgs args)
+        {
+            foreach (DragDogu dogu in doguList)
+            {
+                if (dogu.attachPointInfo.AttachPoint != DragPointManager.AttachPoint.None)
+                {
+                    dogu.Dogu.transform.SetParent(GetDeploymentObject().transform, true);
+                }
+            }
+        }
+
+        private void ReattachProps(object sender, EventArgs args)
+        {
+            foreach (DragDogu dragDogu in doguList)
+            {
+                Meido meido = this.meidoManager.GetMeido(dragDogu.attachPointInfo.MaidGuid);
+                bool worldPositionStays = meido == null;
+                AttachProp(dragDogu, dragDogu.attachPointInfo.AttachPoint, meido, worldPositionStays);
+            }
+        }
+
+        private void DeleteDogu(object sender, EventArgs args)
         {
             doguList.RemoveAll(dragDogu =>
                 {
@@ -280,6 +376,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     return false;
                 }
             );
+            OnDoguListChange();
         }
 
         private void OnCubeSmall(object sender, EventArgs args)
@@ -288,6 +385,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 dogu.DragPointScale = dogu.BaseScale * (CubeSmall ? 0.4f : 1f);
             }
+        }
+
+        private void OnDoguListChange()
+        {
+            this.DoguListChange?.Invoke(this, EventArgs.Empty);
         }
     }
 }

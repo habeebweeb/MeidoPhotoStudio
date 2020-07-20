@@ -142,7 +142,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             initialized = true;
 
             meidoManager = new MeidoManager();
-            environmentManager = new EnvironmentManager();
+            environmentManager = new EnvironmentManager(meidoManager);
             messageWindowManager = new MessageWindowManager();
 
             MaidSwitcherPane maidSwitcherPane = new MaidSwitcherPane(meidoManager);
@@ -155,7 +155,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     [Constants.Window.Pose] = new PoseWindowPane(meidoManager, maidSwitcherPane),
                     [Constants.Window.Face] = new FaceWindowPane(meidoManager, maidSwitcherPane),
                     [Constants.Window.BG] = new BGWindowPane(environmentManager),
-                    [Constants.Window.BG2] = new BG2WindowPane(environmentManager)
+                    [Constants.Window.BG2] = new BG2WindowPane(meidoManager, environmentManager)
                 },
                 [Constants.Window.Message] = new MessageWindow(messageWindowManager)
             };

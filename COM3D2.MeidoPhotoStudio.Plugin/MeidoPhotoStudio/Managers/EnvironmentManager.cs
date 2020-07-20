@@ -59,9 +59,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             None, Transform
         }
 
-        public EnvironmentManager()
+        public EnvironmentManager(MeidoManager meidoManager)
         {
-            PropManager = new PropManager();
+            PropManager = new PropManager(meidoManager);
             LightManager = new LightManager();
             EffectManager = new EffectManager();
         }

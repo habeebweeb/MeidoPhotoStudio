@@ -103,5 +103,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             menu = $"odogu_{menu}";
             return menu;
         }
+
+        public static void FixGameObjectScale(GameObject go)
+        {
+            Vector3 scale = go.transform.localScale;
+            float largest = Mathf.Max(scale.x, Mathf.Max(scale.y, scale.z));
+            go.transform.localScale = Vector3.one * (float)Math.Round(largest, 3);
+        }
     }
 }

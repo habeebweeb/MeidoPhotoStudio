@@ -321,6 +321,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             body.FixVisibleFlag(false);
         }
 
+        public Transform GetBoneTransform(DragPointManager.AttachPoint point)
+        {
+            return this.dragPointManager?.GetAttachPointTransform(point);
+        }
+
         private void OnBodyLoad()
         {
             BodyLoad?.Invoke(this, EventArgs.Empty);

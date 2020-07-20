@@ -283,12 +283,35 @@
         "tail": "Tail",
         "genitals": "Genitals"
     },
+    "attachPropPane": {
+        "keepWorldPosition": "Keep World Position",
+        "header": "Attach Point",
+        "head": "Head",
+        "neck": "Neck",
+        "upperArmL": "Shoulder L",
+        "upperArmR": "Shoulder R",
+        "forearmL": "Forearm L",
+        "forearmR": "Forearm R",
+        "muneL": "Breast Left",
+        "muneR": "Breast Right",
+        "handL": "Hand Left",
+        "handR": "Hand Right",
+        "pelvis": "Pelvis",
+        "thighL": "Thigh Left",
+        "thighR": "Thigh Right",
+        "calfL": "Calf Left",
+        "calfR": "Calf Right",
+        "footL": "Foot Left",
+        "footR": "Foot Right"
+    },
     "messageWindow": {
         "name": "Name",
         "fontSize": "Font Size",
         "okButton": "OK"
     },
     "systemMessage": {
-        "initializing": "Initializing"
+        "initializing": "Initializing",
+        "noMaids": "No Maids",
+        "noProps": "No Props"
     }
 }
