@@ -6,7 +6,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class PropsPane : BasePane
     {
-        private const string translationPrefix = "doguCategory";
         private PropManager propManager;
         private string currentCategory;
         private string SelectedCategory => Constants.doguCategories[this.doguCategoryDropdown.SelectedItemIndex];
