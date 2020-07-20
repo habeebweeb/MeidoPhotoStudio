@@ -276,11 +276,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 finalDogu.transform.position = doguPosition;
 
-                GameObject dragPoint = BaseDrag.MakeDragPoint(
+                DragDogu dragDogu = BaseDrag.MakeDragPoint<DragDogu>(
                     PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.LightBlue
                 );
-
-                DragDogu dragDogu = dragPoint.AddComponent<DragDogu>();
                 dragDogu.Initialize(finalDogu);
                 dragDogu.Delete += DeleteDogu;
                 dragDogu.SetDragProp(showGizmos, false, false);

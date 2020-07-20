@@ -71,11 +71,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bgObject = GameObject.Find("__GameMain__/BG");
             bg = bgObject.transform;
 
-            GameObject dragPoint = BaseDrag.MakeDragPoint(
+            bgDragPoint = BaseDrag.MakeDragPoint<DragDogu>(
                 PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.LightBlue
             );
-
-            bgDragPoint = dragPoint.AddComponent<DragDogu>();
             bgDragPoint.Initialize(bgObject, true);
             bgDragPoint.SetDragProp(false, false, false);
 

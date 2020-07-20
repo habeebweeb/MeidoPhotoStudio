@@ -132,11 +132,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.light.transform.position = LightProperty.DefaultPosition;
             this.light.transform.rotation = LightProperty.DefaultRotation;
 
-            GameObject dragPoint = BaseDrag.MakeDragPoint(
+            DragLight = BaseDrag.MakeDragPoint<DragDogu>(
                 PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.LightBlue
             );
-
-            DragLight = dragPoint.AddComponent<DragDogu>();
             DragLight.Initialize(this.light.gameObject, this.IsMain, CustomGizmo.GizmoMode.World,
                 () => this.light.transform.position,
                 () => this.light.transform.eulerAngles

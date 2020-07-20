@@ -139,6 +139,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return dragPoint;
         }
 
+        public static T MakeDragPoint<T>(
+            PrimitiveType primitiveType, Vector3 scale, Material material
+        ) where T : BaseDrag
+        {
+            GameObject dragPoint = MakeDragPoint(primitiveType, scale, material);
+            return dragPoint.AddComponent<T>();
+        }
+
         public BaseDrag Initialize(Meido meido, Func<Vector3> position, Func<Vector3> rotation)
         {
             this.InitializeDragPoint(position, rotation);
