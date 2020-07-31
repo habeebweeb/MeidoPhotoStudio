@@ -38,7 +38,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private GameObject bgObject;
         private Transform bg;
         private CameraInfo cameraInfo;
-        private DragDogu bgDragPoint;
+        private DragPointBG bgDragPoint;
         public LightManager LightManager { get; }
         public PropManager PropManager { get; }
         public EffectManager EffectManager { get; }
@@ -52,8 +52,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 bgObject.SetActive(this.bgVisible);
             }
         }
-        private DragType currentDragType = DragType.None;
-        private DragType dragTypeOld = DragType.None;
         private enum DragType
         {
             None, Transform
@@ -71,11 +69,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bgObject = GameObject.Find("__GameMain__/BG");
             bg = bgObject.transform;
 
-            bgDragPoint = BaseDrag.MakeDragPoint<DragDogu>(
-                PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.LightBlue
-            ).Initialize(bgObject, true);
-            bgDragPoint.SetDragProp(false, false, false);
-            bgDragPoint.DragPointScale = CubeSmall ? 0.4f : 1f;
+            bgDragPoint = DragPoint.Make<DragPointBG>(
+                PrimitiveType.Cube, Vector3.one * 0.12f, DragPoint.LightBlue
+            );
+            bgDragPoint.Initialize(() => bg.position, () => Vector3.zero);
+            bgDragPoint.Set(bg);
+            bgDragPoint.AddGizmo();
+            bgDragPoint.ConstantScale = true;
+            bgDragPoint.gameObject.SetActive(CubeActive);
 
             cameraObject = new GameObject("subCamera");
             subCamera = cameraObject.AddComponent<Camera>();
@@ -102,6 +103,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             EffectManager.Activate();
 
             CubeSmallChange += OnCubeSmall;
+            CubeActiveChange += OnCubeActive;
         }
 
         public void Deactivate()
@@ -130,6 +132,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameMain.Instance.MainCamera.SetDistance(1.6f, true);
             GameMain.Instance.MainCamera.SetAroundAngle(new Vector2(245.5691f, 6.273283f), true);
             CubeSmallChange -= OnCubeSmall;
+            CubeActiveChange -= OnCubeActive;
         }
 
         public void Update()
@@ -152,25 +155,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
 
-            if (CubeActive && (Input.GetKey(KeyCode.Z) || Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.C)))
-            {
-                currentDragType = DragType.Transform;
-            }
-            else
-            {
-                currentDragType = DragType.None;
-            }
-
-            if (currentDragType != dragTypeOld)
-            {
-                bool visible = currentDragType == DragType.Transform;
-                this.bgDragPoint.SetDragProp(visible, visible, visible);
-            }
-
-            dragTypeOld = currentDragType;
-
-            PropManager.Update();
-            LightManager.Update();
             EffectManager.Update();
         }
 
@@ -216,7 +200,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void OnCubeSmall(object sender, EventArgs args)
         {
-            this.bgDragPoint.DragPointScale = CubeSmall ? 0.4f : 1f;
+            this.bgDragPoint.DragPointScale = CubeSmall ? DragPointGeneral.smallCube : 1f;
+        }
+
+        private void OnCubeActive(object sender, EventArgs args)
+        {
+            this.bgDragPoint.gameObject.SetActive(CubeActive);
         }
     }
 

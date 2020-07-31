@@ -19,7 +19,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.header = Translation.Get("movementCube", "header");
             this.propsCubeToggle = new Toggle(Translation.Get("movementCube", "props"), PropManager.CubeActive);
             this.smallCubeToggle = new Toggle(Translation.Get("movementCube", "small"));
-            this.maidCubeToggle = new Toggle(Translation.Get("movementCube", "maid"), DragPointManager.CubeActive);
+            this.maidCubeToggle = new Toggle(Translation.Get("movementCube", "maid"), MeidoDragPointManager.CubeActive);
             this.bgCubeToggle = new Toggle(Translation.Get("movementCube", "bg"), EnvironmentManager.CubeActive);
 
             this.propsCubeToggle.ControlEvent += (s, a) =>
@@ -64,10 +64,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     EnvironmentManager.CubeActive = value;
                     break;
                 case DragPointSetting.Maid:
-                    DragPointManager.CubeActive = value;
+                    MeidoDragPointManager.CubeActive = value;
                     break;
                 case DragPointSetting.Size:
-                    DragPointManager.CubeSmall = value;
+                    MeidoDragPointManager.CubeSmall = value;
                     EnvironmentManager.CubeSmall = value;
                     PropManager.CubeSmall = value;
                     break;

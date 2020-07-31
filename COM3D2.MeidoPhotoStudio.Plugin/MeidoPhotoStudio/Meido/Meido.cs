@@ -20,7 +20,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public string NameJP => $"{LastName}\n{FirstName}";
         public string NameEN => $"{FirstName}\n{LastName}";
         public int ActiveSlot { get; private set; }
-        private DragPointManager dragPointManager;
+        private MeidoDragPointManager dragPointManager;
         public event EventHandler<MeidoUpdateEventArgs> UpdateMeido;
         public event EventHandler BodyLoad;
         private bool isLoading = false;
@@ -31,18 +31,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (dragPointManager == null || value == dragPointManager.Active) return;
                 else dragPointManager.Active = value;
-            }
-        }
-        private bool isFreeLook;
-        public bool IsFreeLook
-        {
-            get => isFreeLook;
-            set
-            {
-                if (this.isFreeLook == value) return;
-                this.isFreeLook = value;
-                Maid.body0.trsLookTarget = this.isFreeLook ? null : GameMain.Instance.MainCamera.transform;
-                OnUpdateMeido();
             }
         }
         public bool IsStop
@@ -63,35 +51,31 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
         }
-        private bool isBone = false;
+        // private bool isBone = false;
         public bool IsBone
         {
-            get => isBone;
+            get => dragPointManager?.IsBone ?? false;
             set
             {
-                if (this.isBone == value) return;
-                this.isBone = value;
-                if (this.dragPointManager != null) this.dragPointManager.IsBone = this.isBone;
+                if (dragPointManager == null || value == dragPointManager.IsBone) return;
+                else dragPointManager.IsBone = value;
                 OnUpdateMeido();
             }
         }
-        public bool Visible
+        private bool isFreeLook;
+        public bool IsFreeLook
         {
-            get => Maid.Visible;
-            set => Maid.Visible = value;
+            get => isFreeLook;
+            set
+            {
+                if (this.isFreeLook == value) return;
+                this.isFreeLook = value;
+                Maid.body0.trsLookTarget = this.isFreeLook ? null : GameMain.Instance.MainCamera.transform;
+                OnUpdateMeido();
+            }
         }
-        private PoseInfo cachedPose;
-        public PoseInfo CachedPose
-        {
-            get => cachedPose;
-            private set => cachedPose = value;
-        }
-        private string faceBlendSet = defaultFaceBlendSet;
-        public string FaceBlendSet
-        {
-            get => faceBlendSet;
-            private set => faceBlendSet = value;
-        }
+        public PoseInfo CachedPose { get; private set; }
+        public string FaceBlendSet { get; private set; } = defaultFaceBlendSet;
 
         public Meido(int stockMaidIndex)
         {
@@ -114,10 +98,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     isLoading = false;
                     OnBodyLoad();
                 }
-                return;
             }
-
-            dragPointManager.Update();
         }
 
         public Maid Load(int slot, int activeSlot)
@@ -145,25 +126,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 SetPose(defaultPose);
             }
 
-            if (dragPointManager == null)
-            {
-                dragPointManager = new DragPointManager(this);
-                dragPointManager.SelectMaid += OnMeidoSelect;
-            }
-            else
-            {
-                dragPointManager.Active = true;
-
-                this.IsIK = true;
-                this.IsStop = false;
-                this.IsBone = false;
-            }
+            dragPointManager = new MeidoDragPointManager(this);
+            dragPointManager.SelectMaid += OnMeidoSelect;
 
             this.IsFreeLook = false;
             Maid.body0.boHeadToCam = true;
             Maid.body0.boEyeToCam = true;
             Maid.body0.SetBoneHitHeightY(-1000f);
-
 
             return Maid;
         }
@@ -184,21 +153,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             Maid.Visible = false;
 
-            if (dragPointManager != null) dragPointManager.Active = false;
-
-            this.IsIK = false;
-            this.IsStop = false;
-            this.IsBone = false;
+            if (dragPointManager != null)
+            {
+                dragPointManager.Destroy();
+                dragPointManager.SelectMaid -= OnMeidoSelect;
+                dragPointManager = null;
+            }
         }
 
         public void Deactivate()
         {
             Unload();
-            if (dragPointManager != null)
-            {
-                dragPointManager.Destroy();
-                dragPointManager.SelectMaid -= OnMeidoSelect;
-            }
 
             Maid.SetPos(Vector3.zero);
             Maid.SetRot(Vector3.zero);
@@ -321,10 +286,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             body.FixVisibleFlag(false);
         }
 
-        public Transform GetBoneTransform(DragPointManager.AttachPoint point)
-        {
-            return this.dragPointManager?.GetAttachPointTransform(point);
-        }
+        public Transform GetBoneTransform(AttachPoint point) => this.dragPointManager?.GetAttachPointTransform(point);
 
         private void OnBodyLoad()
         {

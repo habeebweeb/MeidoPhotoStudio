@@ -3,19 +3,30 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MPSLight
+    internal class DragPointLight : DragPointGeneral
     {
-        private static Camera camera = GameMain.Instance.MainCamera.GetComponent<Camera>();
         private Light light;
-        public DragDogu DragLight { get; private set; }
-        public event EventHandler Rotate;
-        public event EventHandler Scale;
-        public event EventHandler Delete;
-        public event EventHandler Select;
-        public bool isActiveLight = false;
-        public bool IsMain { get; private set; } = false;
+        public enum MPSLightType
+        {
+            Normal, Spot, Point, Disabled
+        }
+        public enum LightProp
+        {
+            LightRotX, LightRotY, Intensity, ShadowStrength, SpotAngle, Range, Red, Green, Blue
+        }
+
+        public bool IsActiveLight { get; set; } = false;
+        public string Name { get; private set; } = String.Empty;
+        public bool IsMain { get; set; } = false;
+        public MPSLightType SelectedLightType { get; private set; } = MPSLightType.Normal;
+        public LightProperty CurrentLightProperty => LightProperties[(int)SelectedLightType];
+        private LightProperty[] LightProperties = new LightProperty[]
+        {
+            new LightProperty(),
+            new LightProperty(),
+            new LightProperty()
+        };
         private bool isDisabled = false;
-        public string Name { get; private set; }
         public bool IsDisabled
         {
             get => isDisabled;
@@ -25,12 +36,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.light.gameObject.SetActive(!this.isDisabled);
             }
         }
-        public LightProperty[] LightProperties = new LightProperty[]
-        {
-            new LightProperty(),
-            new LightProperty(),
-            new LightProperty()
-        };
         private bool isColourMode = false;
         public bool IsColourMode
         {
@@ -43,8 +48,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 LightColour = this.isColourMode ? camera.backgroundColor : light.color;
             }
         }
-        public MPSLightType SelectedLightType { get; private set; } = MPSLightType.Normal;
-        public LightProperty CurrentLightProperty => LightProperties[(int)SelectedLightType];
         public Quaternion Rotation
         {
             get => CurrentLightProperty.Rotation;
@@ -111,46 +114,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 else this.light.color = colour;
             }
         }
-        public enum LightProp
-        {
-            LightRotX, LightRotY, Intensity, ShadowStrength, SpotAngle, Range, Red, Green, Blue
-        }
-
-        public enum MPSLightType
-        {
-            Normal, Spot, Point, Disabled
-        }
-
-        public MPSLight(GameObject lightGo = null, bool isMain = false)
-        {
-            this.IsMain = isMain;
-
-            GameObject gameobject = lightGo ?? new GameObject();
-            this.light = gameobject.GetOrAddComponent<Light>();
-
-            float spotAngle = CurrentLightProperty.SpotAngle;
-            this.light.transform.position = LightProperty.DefaultPosition;
-            this.light.transform.rotation = LightProperty.DefaultRotation;
-
-            DragLight = BaseDrag.MakeDragPoint<DragDogu>(
-                PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.LightBlue
-            ).Initialize(this.light.gameObject, this.IsMain, CustomGizmo.GizmoMode.World,
-                () => this.light.transform.position,
-                () => this.light.transform.eulerAngles
-            );
-
-            DragLight.scaleFactor = 50f;
-            DragLight.Select += (s, a) => this.Select?.Invoke(this, EventArgs.Empty);
-
-            if (!isMain)
-            {
-                DragLight.Delete += (s, a) => Delete?.Invoke(this, EventArgs.Empty);
-            }
-
-            DragLight.SetDragProp(false, false, false);
-
-            SetLightType(LightType.Directional);
-        }
 
         public static void SetLightProperties(Light light, LightProperty prop)
         {
@@ -170,18 +133,67 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        public void Destroy()
+        public override void Set(Transform myObject)
         {
-            DragLight.Rotate -= OnRotate;
-            DragLight.Scale -= OnScale;
-            GameObject.Destroy(DragLight.gameObject);
+            base.Set(myObject);
+            this.light = myObject.gameObject.GetOrAddComponent<Light>();
+
+            this.light.transform.position = LightProperty.DefaultPosition;
+            this.light.transform.rotation = LightProperty.DefaultRotation;
+
+            SetLightType(LightType.Directional);
+            this.ScaleFactor = 50f;
+        }
+
+        protected override void OnDestroy()
+        {
             if (!IsMain) GameObject.Destroy(this.light.gameObject);
+            base.OnDestroy();
+        }
+
+        protected override void OnRotate()
+        {
+            CurrentLightProperty.Rotation = light.transform.rotation;
+            base.OnRotate();
+        }
+
+        protected override void OnScale()
+        {
+            float value = light.transform.localScale.x;
+            if (SelectedLightType == MPSLightType.Point) Range = value;
+            else if (SelectedLightType == MPSLightType.Spot) SpotAngle = value;
+            base.OnScale();
+        }
+
+        protected override void ApplyDragType()
+        {
+            DragType current = CurrentDragType;
+            if (current == DragType.Select || current == DragType.MoveXZ || current == DragType.MoveY)
+            {
+                ApplyProperties(true, true, false);
+            }
+            else if (current == DragType.RotY || current == DragType.RotLocalXZ || current == DragType.RotLocalY)
+            {
+                bool canRotate = SelectedLightType != MPSLightType.Point;
+                ApplyProperties(canRotate, canRotate, false);
+            }
+            else if (current == DragType.Scale)
+            {
+                bool canScale = SelectedLightType != MPSLightType.Normal;
+                ApplyProperties(canScale, canScale, false);
+            }
+            else if (current == DragType.Delete)
+            {
+                ApplyProperties(!IsMain, !IsMain, false);
+            }
+            else
+            {
+                ApplyProperties(false, false, false);
+            }
         }
 
         public void SetLightType(LightType type)
         {
-            DragLight.Rotate -= OnRotate;
-            DragLight.Rotate -= OnScale;
             string name = "normal";
 
             if (type == LightType.Directional)
@@ -192,21 +204,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 name = "spot";
                 SelectedLightType = MPSLightType.Spot;
-                DragLight.Scale += OnScale;
-                DragLight.Rotate += OnRotate;
             }
             else
             {
                 name = "point";
                 SelectedLightType = MPSLightType.Point;
-                DragLight.Scale += OnScale;
             }
 
             this.light.type = type;
+            this.Name = IsMain ? "main" : name;
 
             SetProps();
-
-            this.Name = IsMain ? "main" : name;
+            ApplyDragType();
         }
 
         public void SetRotation(float x, float y)
@@ -262,31 +271,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 camera.backgroundColor = CurrentLightProperty.LightColour;
             }
         }
-
-        private void OnRotate(object sender, EventArgs args)
-        {
-            CurrentLightProperty.Rotation = this.light.transform.rotation;
-            OnTransformEvent(Rotate);
-        }
-
-        private void OnScale(object sender, EventArgs args)
-        {
-            float value = this.light.transform.localScale.x;
-            if (SelectedLightType == MPSLightType.Point) Range = value;
-            else if (SelectedLightType == MPSLightType.Spot) SpotAngle = value;
-
-            OnTransformEvent(Scale);
-        }
-
-        private void OnTransformEvent(EventHandler handler)
-        {
-            handler?.Invoke(this, EventArgs.Empty);
-        }
     }
 
     internal class LightProperty
     {
-        public static readonly Vector3 DefaultPosition = new Vector3(0f, 1.5f, 0.4f);
+        public static readonly Vector3 DefaultPosition = new Vector3(0f, 1.9f, 0.4f);
         public static readonly Quaternion DefaultRotation = Quaternion.Euler(40f, 180f, 0f);
         public Quaternion Rotation { get; set; } = DefaultRotation;
         public float Intensity { get; set; } = 0.95f;

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    using static MPSLight;
+    using static DragPointLight;
     internal class LightsPane : BasePane
     {
         private LightManager lightManager;
@@ -186,12 +186,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 lightType = LightType.Point;
             }
 
-            MPSLight currentLight = lightManager.CurrentLight;
+            DragPointLight currentLight = lightManager.CurrentLight;
             currentLight.SetLightType(lightType);
 
             if (lightManager.SelectedLightIndex == 0)
             {
-                this.environmentManager.BGVisible = (currentLight.SelectedLightType != MPSLightType.Normal)
+                this.environmentManager.BGVisible = (currentLight.SelectedLightType != DragPointLight.MPSLightType.Normal)
                     || !currentLight.IsColourMode;
             }
 
@@ -248,7 +248,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void UpdatePane()
         {
             this.updating = true;
-            MPSLight currentLight = this.lightManager.CurrentLight;
+            DragPointLight currentLight = this.lightManager.CurrentLight;
             this.currentLightType = currentLight.SelectedLightType;
             this.lightTypeGrid.SelectedItemIndex = (int)this.currentLightType;
             this.disableToggle.Value = currentLight.IsDisabled;

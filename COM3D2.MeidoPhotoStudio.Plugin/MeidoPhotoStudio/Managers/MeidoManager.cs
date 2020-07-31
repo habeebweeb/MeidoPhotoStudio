@@ -193,7 +193,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         public int SelectedMeido { get; }
         public bool IsBody { get; }
-        public bool FromMeido { get; } = false;
+        public bool FromMeido { get; }
         public MeidoUpdateEventArgs(int meidoIndex, bool fromMaid = false, bool isBody = true)
         {
             this.SelectedMeido = meidoIndex;

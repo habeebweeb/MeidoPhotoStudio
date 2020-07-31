@@ -38,14 +38,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         private static event EventHandler CubeActiveChange;
         private static event EventHandler CubeSmallChange;
-        private List<DragDogu> doguList = new List<DragDogu>();
-        private DragType dragTypeOld = DragType.None;
-        private DragType currentDragType = DragType.None;
-        private bool showGizmos = false;
-        private enum DragType
-        {
-            None, Move, Rotate, Scale, Delete, Other
-        }
+        private List<DragPointDogu> doguList = new List<DragPointDogu>();
         public int DoguCount => doguList.Count;
         public event EventHandler DoguListChange;
         public string[] PropNameList
@@ -72,47 +65,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Deactivate()
         {
-            foreach (DragDogu dogu in doguList)
+            foreach (DragPointDogu dogu in doguList)
             {
                 dogu.Delete -= DeleteDogu;
                 GameObject.Destroy(dogu.gameObject);
             }
             doguList.Clear();
             CubeSmallChange -= OnCubeSmall;
-        }
-
-        public void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                //     showGizmos = !showGizmos;
-                //     currentDragType = dragTypeOld = DragType.None;
-                //     UpdateDragType();
-            }
-
-            if (CubeActive && (Input.GetKey(KeyCode.Z) || Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.C)
-                || Input.GetKey(KeyCode.D))
-            )
-            {
-                currentDragType = DragType.Other;
-            }
-            else
-            {
-                currentDragType = DragType.None;
-            }
-
-            if (currentDragType != dragTypeOld) UpdateDragType();
-
-            dragTypeOld = currentDragType;
-        }
-
-        private void UpdateDragType()
-        {
-            bool dragPointActive = (currentDragType == DragType.Other);
-            foreach (DragDogu dogu in doguList)
-            {
-                dogu.SetDragProp(showGizmos, dragPointActive, dragPointActive);
-            }
         }
 
         private GameObject GetDeploymentObject()
@@ -276,13 +235,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 finalDogu.transform.position = doguPosition;
 
-                DragDogu dragDogu = BaseDrag.MakeDragPoint<DragDogu>(
-                    PrimitiveType.Cube, Vector3.one * 0.12f, BaseDrag.LightBlue
-                ).Initialize(finalDogu);
+                DragPointDogu dragDogu = DragPoint.Make<DragPointDogu>(
+                    PrimitiveType.Cube, Vector3.one * 0.12f, DragPoint.LightBlue
+                );
+                dragDogu.Initialize(() => finalDogu.transform.position, () => Vector3.zero);
+                dragDogu.Set(finalDogu.transform);
+                dragDogu.AddGizmo();
+                dragDogu.ConstantScale = true;
                 dragDogu.Delete += DeleteDogu;
-                dragDogu.SetDragProp(showGizmos, false, false);
+                dragDogu.DragPointScale = CubeSmall ? DragPointGeneral.smallCube : 1f;
+
                 doguList.Add(dragDogu);
-                dragDogu.DragPointScale = CubeSmall ? 0.4f : 1f;
                 OnDoguListChange();
             }
             else
@@ -291,14 +254,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        public DragDogu GetDogu(int doguIndex)
+        public DragPointDogu GetDogu(int doguIndex)
         {
             if (doguList.Count == 0 || doguIndex >= doguList.Count || doguIndex < 0) return null;
             return doguList[doguIndex];
         }
 
         public void AttachProp(
-            int doguIndex, DragPointManager.AttachPoint attachPoint, Meido meido, bool worldPositionStays = true
+            int doguIndex, AttachPoint attachPoint, Meido meido, bool worldPositionStays = true
         )
         {
             if (doguList.Count == 0 || doguIndex >= doguList.Count || doguIndex < 0) return;
@@ -306,15 +269,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
 
         private void AttachProp(
-            DragDogu dragDogu, DragPointManager.AttachPoint attachPoint, Meido meido, bool worldPositionStays = true
+            DragPointDogu dragDogu, AttachPoint attachPoint, Meido meido, bool worldPositionStays = true
         )
         {
-            GameObject dogu = dragDogu.Dogu;
+            GameObject dogu = dragDogu.MyGameObject;
 
             Transform attachPointTransform = meido?.GetBoneTransform(attachPoint) ?? GetDeploymentObject().transform;
 
-            dragDogu.attachPointInfo = new DragPointManager.AttachPointInfo(
-                attachPoint: meido == null ? DragPointManager.AttachPoint.None : attachPoint,
+            dragDogu.attachPointInfo = new AttachPointInfo(
+                attachPoint: meido == null ? AttachPoint.None : attachPoint,
                 maidGuid: meido == null ? String.Empty : meido.Maid.status.guid,
                 maidIndex: meido == null ? -1 : meido.ActiveSlot
             );
@@ -342,18 +305,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void DetachProps(object sender, EventArgs args)
         {
-            foreach (DragDogu dogu in doguList)
+            foreach (DragPointDogu dogu in doguList)
             {
-                if (dogu.attachPointInfo.AttachPoint != DragPointManager.AttachPoint.None)
+                if (dogu.attachPointInfo.AttachPoint != AttachPoint.None)
                 {
-                    dogu.Dogu.transform.SetParent(GetDeploymentObject().transform, true);
+                    dogu.MyObject.SetParent(GetDeploymentObject().transform, true);
                 }
             }
         }
 
         private void ReattachProps(object sender, EventArgs args)
         {
-            foreach (DragDogu dragDogu in doguList)
+            foreach (DragPointDogu dragDogu in doguList)
             {
                 Meido meido = this.meidoManager.GetMeido(dragDogu.attachPointInfo.MaidGuid);
                 bool worldPositionStays = meido == null;
@@ -363,9 +326,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void DeleteDogu(object sender, EventArgs args)
         {
+            DragPointDogu dogu = (DragPointDogu)sender;
             doguList.RemoveAll(dragDogu =>
                 {
-                    if (dragDogu.DeleteMe)
+                    if (dragDogu == dogu)
                     {
                         GameObject.Destroy(dragDogu.gameObject);
                         return true;
@@ -378,9 +342,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void OnCubeSmall(object sender, EventArgs args)
         {
-            foreach (DragDogu dogu in doguList)
+            foreach (DragPointDogu dogu in doguList)
             {
-                dogu.DragPointScale = CubeSmall ? 0.4f : 1f;
+                dogu.DragPointScale = CubeSmall ? DragPointGeneral.smallCube : 1f;
             }
         }
 

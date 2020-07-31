@@ -5,7 +5,6 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    using static DragPointManager;
     internal class AttachPropPane : BasePane
     {
         private PropManager propManager;
@@ -188,7 +187,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (updating || selectedMaid == this.meidoDropdown.SelectedItemIndex) return;
             selectedMaid = this.meidoDropdown.SelectedItemIndex;
-            DragDogu dragDogu = this.propManager.GetDogu(this.doguDropdown.SelectedItemIndex);
+            DragPointDogu dragDogu = this.propManager.GetDogu(this.doguDropdown.SelectedItemIndex);
             if (dragDogu != null)
             {
                 if (dragDogu.attachPointInfo.AttachPoint == AttachPoint.None) return;
@@ -199,7 +198,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void SwitchDogu()
         {
             if (updating) return;
-            DragDogu dragDogu = this.propManager.GetDogu(this.doguDropdown.SelectedItemIndex);
+            DragPointDogu dragDogu = this.propManager.GetDogu(this.doguDropdown.SelectedItemIndex);
             if (dragDogu != null) SetAttachPointToggle(dragDogu.attachPointInfo.AttachPoint, true);
         }
 

@@ -6,6 +6,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class CustomGizmo : GizmoRender
     {
+        private static Camera camera = GameMain.Instance.MainCamera.camera;
         private Transform target;
         private FieldInfo beSelectedType = Utility.GetFieldInfo<GizmoRender>("beSelectedType");
         private int SelectedType => (int)beSelectedType.GetValue(this);
@@ -44,7 +45,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Local, World, Global
         }
 
-        public static GameObject MakeGizmo(Transform target, float scale = 0.25f, GizmoMode mode = GizmoMode.Local)
+        public static CustomGizmo Make(Transform target, float scale = 0.25f, GizmoMode mode = GizmoMode.Local)
         {
             GameObject gizmoGo = new GameObject();
             gizmoGo.transform.SetParent(target);
@@ -56,7 +57,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             gizmo.gizmoMode = mode;
             gizmo.CurrentGizmoType = GizmoType.Rotate;
 
-            return gizmoGo;
+            return gizmo;
         }
 
         public override void Update()
@@ -90,6 +91,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void SetTargetTransform()
         {
+            bool dragged = false;
             switch (gizmoMode)
             {
                 case GizmoMode.Local:
@@ -99,19 +101,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     target.transform.localScale += deltaScale;
                     if (deltaLocalRotation != Quaternion.identity || deltaLocalPosition != Vector3.zero
                         || deltaScale != Vector3.zero
-                    )
-                    {
-                        OnGizmoDrag();
-                    }
+                    ) dragged = true;
                     break;
                 case GizmoMode.World:
                 case GizmoMode.Global:
                     target.transform.position += deltaPosition;
                     target.transform.rotation = deltaRotation * target.transform.rotation;
-                    if (deltaRotation != Quaternion.identity || deltaPosition != Vector3.zero) OnGizmoDrag();
+                    if (deltaRotation != Quaternion.identity || deltaPosition != Vector3.zero) dragged = true;
                     break;
-
             }
+            if (dragged) OnGizmoDrag();
         }
 
         private void SetTransform()
@@ -129,7 +128,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 case GizmoMode.Global:
                     transform.position = target.transform.position;
                     transform.rotation = Quaternion.LookRotation(
-                        transform.position - Camera.main.transform.position, transform.up
+                        transform.position - camera.transform.position, transform.up
                     );
                     break;
             }
