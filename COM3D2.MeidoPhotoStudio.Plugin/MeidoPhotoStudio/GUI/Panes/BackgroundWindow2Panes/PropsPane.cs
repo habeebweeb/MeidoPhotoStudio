@@ -8,7 +8,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private PropManager propManager;
         private string currentCategory;
-        private string SelectedCategory => Constants.doguCategories[this.doguCategoryDropdown.SelectedItemIndex];
+        private string SelectedCategory => Constants.DoguCategories[this.doguCategoryDropdown.SelectedItemIndex];
         private Dropdown doguCategoryDropdown;
         private Dropdown doguDropdown;
         private Button addDoguButton;
@@ -26,10 +26,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.propManager = propManager;
 
-            handItemsReady = MenuFileUtility.MenuFilesReady;
+            handItemsReady = Constants.HandItemsInitialized;
             if (!handItemsReady) Constants.MenuFilesChange += InitializeHandItems;
 
-            this.doguCategoryDropdown = new Dropdown(Translation.GetArray("doguCategories", Constants.doguCategories));
+            this.doguCategoryDropdown = new Dropdown(Translation.GetArray("doguCategories", Constants.DoguCategories));
             this.doguCategoryDropdown.SelectionChange += (s, a) => ChangeDoguCategory(SelectedCategory);
 
             this.doguDropdown = new Dropdown(new[] { string.Empty });
@@ -57,7 +57,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.header = Translation.Get("propsPane", "header");
 
             this.doguCategoryDropdown.SetDropdownItems(
-                Translation.GetArray("doguCategories", Constants.doguCategories)
+                Translation.GetArray("doguCategories", Constants.DoguCategories)
             );
 
             string category = SelectedCategory;

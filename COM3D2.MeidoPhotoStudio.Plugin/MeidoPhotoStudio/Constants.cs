@@ -1,17 +1,19 @@
-﻿using System;
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEngine;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using MyRoomCustom;
+using UnityEngine;
 using wf;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
+    using static MenuFileUtility;
     internal class Constants
     {
+        private static bool beginHandItemInit;
+        private static bool startModItemInit;
         public static readonly string customPosePath;
         public static readonly string scenesPath;
         public static readonly string kankyoPath;
@@ -29,17 +31,26 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             Daily = 3, Edit = 5
         }
-        public static readonly List<string> PoseGroupList;
-        public static readonly Dictionary<string, List<string>> PoseDict;
-        public static readonly Dictionary<string, List<KeyValuePair<string, string>>> CustomPoseDict;
-        public static readonly List<string> FaceBlendList;
-        public static readonly List<string> BGList;
-        public static readonly List<KeyValuePair<string, string>> MyRoomCustomBGList;
-        public static event EventHandler<MenuFilesEventArgs> MenuFilesChange;
+        public static readonly List<string> PoseGroupList = new List<string>();
+        public static readonly Dictionary<string, List<string>> PoseDict = new Dictionary<string, List<string>>();
+        public static readonly Dictionary<string, List<KeyValuePair<string, string>>> CustomPoseDict
+            = new Dictionary<string, List<KeyValuePair<string, string>>>();
+        public static readonly List<string> FaceBlendList = new List<string>();
+        public static readonly List<string> BGList = new List<string>();
+        public static readonly List<KeyValuePair<string, string>> MyRoomCustomBGList
+            = new List<KeyValuePair<string, string>>();
+        public static readonly List<string> DoguCategories = new List<string>();
+        public static readonly Dictionary<string, List<string>> DoguDict = new Dictionary<string, List<string>>();
+        public static readonly List<string> MyRoomPropCategories = new List<string>();
+        public static readonly Dictionary<string, List<MyRoomItem>> MyRoomPropDict
+            = new Dictionary<string, List<MyRoomItem>>();
+        public static readonly Dictionary<string, List<ModItem>> ModPropDict
+            = new Dictionary<string, List<ModItem>>(StringComparer.InvariantCultureIgnoreCase);
         public static int CustomPoseGroupsIndex { get; private set; } = -1;
         public static int MyRoomCustomBGIndex { get; private set; } = -1;
-        public static List<string> doguCategories { get; private set; }
-        public static readonly Dictionary<string, List<string>> DoguDict;
+        public static bool HandItemsInitialized { get; private set; } = false;
+        public static bool MenuFilesInitialized { get; private set; } = false;
+        public static event EventHandler<MenuFilesEventArgs> MenuFilesChange;
         public enum DoguCategory
         {
             Other, Mob, Desk, HandItem, BGSmall
@@ -69,18 +80,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
             }
-
-            PoseDict = new Dictionary<string, List<string>>();
-            PoseGroupList = new List<string>();
-            CustomPoseDict = new Dictionary<string, List<KeyValuePair<string, string>>>();
-
-            FaceBlendList = new List<string>();
-
-            BGList = new List<string>();
-            MyRoomCustomBGList = new List<KeyValuePair<string, string>>();
-            // DoguList = new List<string>();
-            // OtherDoguList = new List<string>();
-            DoguDict = new Dictionary<string, List<string>>();
         }
 
         public static void Initialize()
@@ -249,22 +248,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             InitializeDeskItems();
             InitializePhotoBGItems();
             InitializeOtherDogu();
-
-            if (MenuFileUtility.MenuFilesReady) InitializeHandItems();
-            else MenuFileUtility.MenuFilesReadyChange += (s, a) => InitializeHandItems();
-
-            doguCategories = new List<string>();
+            InitializeHandItems();
 
             foreach (KeyValuePair<string, UnityEngine.Object> keyValuePair in PhotoBGObjectData.popup_category_list)
             {
                 string category = keyValuePair.Key;
                 if (category == "マイオブジェクト") continue;
-                doguCategories.Add(keyValuePair.Key);
+                DoguCategories.Add(keyValuePair.Key);
             }
 
             foreach (DoguCategory category in Enum.GetValues(typeof(DoguCategory)))
             {
-                doguCategories.Add(customDoguCategories[category]);
+                DoguCategories.Add(customDoguCategories[category]);
             }
         }
 
@@ -425,28 +420,34 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private static void InitializeHandItems()
         {
+            if (HandItemsInitialized) return;
+
+            if (!MenuFileUtility.MenuFilesReady)
+            {
+                if (!beginHandItemInit) MenuFileUtility.MenuFilesReadyChange += (s, a) => InitializeHandItems();
+                beginHandItemInit = true;
+                return;
+            }
+
             MenuDataBase menuDataBase = GameMain.Instance.MenuDataBase;
 
-            string ignoreListPath = Path.Combine(configPath, "mm_ignore_list.json");
-            string ignoreListJson = File.ReadAllText(ignoreListPath);
+            string ignoreListJson = File.ReadAllText(Path.Combine(configPath, "mm_ignore_list.json"));
             string[] ignoreList = JsonConvert.DeserializeObject<IEnumerable<string>>(ignoreListJson).ToArray();
 
             HashSet<string> doguHashSet = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
             doguHashSet.UnionWith(BGList);
             doguHashSet.UnionWith(ignoreList);
-            foreach (KeyValuePair<string, List<string>> keyValuePair in DoguDict)
+            foreach (List<string> doguList in DoguDict.Values)
             {
-                doguHashSet.UnionWith(keyValuePair.Value);
+                doguHashSet.UnionWith(doguList);
             }
 
             string category = customDoguCategories[DoguCategory.HandItem];
-
             for (int i = 0; i < menuDataBase.GetDataSize(); i++)
             {
                 menuDataBase.SetIndex(i);
-                MPN mpn = (MPN)menuDataBase.GetCategoryMpn();
-                if (mpn == MPN.handitem)
+                if ((MPN)menuDataBase.GetCategoryMpn() == MPN.handitem)
                 {
                     string menuFileName = menuDataBase.GetMenuFileName();
                     if (menuDataBase.GetBoDelOnly() || menuFileName.EndsWith("_del.menu")) continue;
@@ -469,6 +470,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             OnMenuFilesChange(MenuFilesEventArgs.HandItems);
+            HandItemsInitialized = true;
         }
 
         private static CsvParser OpenCsvParser(string nei, AFileSystemBase fs)
