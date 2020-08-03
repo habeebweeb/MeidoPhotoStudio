@@ -27,7 +27,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 lower.parent,
                 lower
             };
-            if (lower.name.EndsWith("Hand")) ikChain[0] = ikChain[0].parent;
+            if (this.isLower) ikChain[0] = ikChain[0].parent;
         }
 
         private void InitializeRotation()
