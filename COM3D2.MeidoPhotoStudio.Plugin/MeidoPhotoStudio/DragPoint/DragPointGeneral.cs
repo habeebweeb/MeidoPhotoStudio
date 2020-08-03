@@ -19,7 +19,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public event EventHandler Delete;
         public event EventHandler Select;
 
-        public override void AddGizmo(float scale = 1f, GizmoMode mode = GizmoMode.Local)
+        public override void AddGizmo(float scale = 0.35f, GizmoMode mode = GizmoMode.Local)
         {
             base.AddGizmo(scale, mode);
             Gizmo.GizmoDrag += (s, a) =>
@@ -145,8 +145,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (CurrentDragType == DragType.RotLocalXZ)
             {
                 MyObject.rotation = currentRotation;
-                MyObject.Rotate(Vector3.forward, mouseDelta.x / 3f, Space.World);
-                MyObject.Rotate(Vector3.right, -mouseDelta.y / 3f, Space.World);
+                MyObject.Rotate(Vector3.forward, mouseDelta.x / 6f, Space.World);
+                MyObject.Rotate(Vector3.right, -mouseDelta.y / 4f, Space.World);
                 OnRotate();
             }
 
