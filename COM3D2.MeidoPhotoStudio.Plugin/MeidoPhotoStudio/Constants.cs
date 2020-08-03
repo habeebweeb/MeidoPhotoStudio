@@ -88,6 +88,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             InitializeFaceBlends();
             InitializeBGs();
             InitializeDogu();
+            InitializeMyRoomProps();
         }
 
         public static void InitializePoses()
@@ -471,6 +472,35 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             OnMenuFilesChange(MenuFilesEventArgs.HandItems);
             HandItemsInitialized = true;
+        }
+
+        private static void InitializeMyRoomProps()
+        {
+            PlacementData.CreateData();
+            List<PlacementData.Data> myRoomData = PlacementData.GetAllDatas(false);
+            myRoomData.Sort((a, b) =>
+            {
+                int res = a.categoryID.CompareTo(b.categoryID);
+                if (res == 0) res = a.ID.CompareTo(b.ID);
+                return res;
+            });
+
+            foreach (PlacementData.Data data in myRoomData)
+            {
+                string category = PlacementData.GetCategoryName(data.categoryID);
+
+                if (!MyRoomPropDict.ContainsKey(category))
+                {
+                    MyRoomPropCategories.Add(category);
+                    MyRoomPropDict[category] = new List<MyRoomItem>();
+                }
+
+                string asset = !string.IsNullOrEmpty(data.resourceName) ? data.resourceName : data.assetName;
+
+                MyRoomItem item = new MyRoomItem() { PrefabName = asset, ID = data.ID };
+
+                MyRoomPropDict[category].Add(item);
+            }
         }
 
         private static CsvParser OpenCsvParser(string nei, AFileSystemBase fs)

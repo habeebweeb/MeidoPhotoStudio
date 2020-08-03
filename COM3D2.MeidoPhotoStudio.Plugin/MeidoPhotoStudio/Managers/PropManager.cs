@@ -76,9 +76,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private GameObject GetDeploymentObject()
         {
-            GameObject go = GameObject.Find("Deployment Object Parent");
-            if (go == null) go = new GameObject("Deployment Object Parent");
-            return go;
+        public void SpawnMyRoomProp(MenuFileUtility.MyRoomItem item)
+        {
+            MyRoomCustom.PlacementData.Data data = MyRoomCustom.PlacementData.GetData(item.ID);
+            GameObject dogu = GameObject.Instantiate(data.GetPrefab());
+            string name = Translation.Get("myRoomPropNames", item.PrefabName);
+            if (dogu != null) AttachDragPoint(dogu, name, new Vector3(0f, 0f, 0.5f));
+            else Debug.Log($"Could not load MyRoomCreative prop '{item.PrefabName}'");
+        }
         }
 
         public void SpawnObject(string assetName)
@@ -223,35 +228,38 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (dogu != null)
             {
-                // TODO: Figure out why some props aren't centred properly
-                // Doesn't happen in MM but even after copy pasting the code, it doesn't work :/
-                GameObject deploymentObject = GetDeploymentObject();
-                GameObject finalDogu = new GameObject(doguName);
-
-                dogu.transform.localScale = doguScale;
-
-                dogu.transform.SetParent(finalDogu.transform, true);
-                finalDogu.transform.SetParent(deploymentObject.transform, false);
-
-                finalDogu.transform.position = doguPosition;
-
-                DragPointDogu dragDogu = DragPoint.Make<DragPointDogu>(
-                    PrimitiveType.Cube, Vector3.one * 0.12f, DragPoint.LightBlue
-                );
-                dragDogu.Initialize(() => finalDogu.transform.position, () => Vector3.zero);
-                dragDogu.Set(finalDogu.transform);
-                dragDogu.AddGizmo();
-                dragDogu.ConstantScale = true;
-                dragDogu.Delete += DeleteDogu;
-                dragDogu.DragPointScale = CubeSmall ? DragPointGeneral.smallCube : 1f;
-
-                doguList.Add(dragDogu);
-                OnDoguListChange();
+                AttachDragPoint(dogu, doguName, doguPosition);
             }
             else
             {
                 Debug.LogError($"Could not spawn object '{assetName}'");
             }
+        }
+
+        private void AttachDragPoint(GameObject dogu, string name, Vector3 position)
+        {
+            // TODO: Figure out why some props aren't centred properly
+            // Doesn't happen in MM but even after copy pasting the code, it doesn't work :/
+            GameObject deploymentObject = GetDeploymentObject();
+            GameObject finalDogu = new GameObject(name);
+
+            dogu.transform.SetParent(finalDogu.transform, true);
+            finalDogu.transform.SetParent(deploymentObject.transform, false);
+
+            finalDogu.transform.position = position;
+
+            DragPointDogu dragDogu = DragPoint.Make<DragPointDogu>(
+                PrimitiveType.Cube, Vector3.one * 0.12f, DragPoint.LightBlue
+            );
+            dragDogu.Initialize(() => finalDogu.transform.position, () => Vector3.zero);
+            dragDogu.Set(finalDogu.transform);
+            dragDogu.AddGizmo(scale: 0.45f, mode: CustomGizmo.GizmoMode.World);
+            dragDogu.ConstantScale = true;
+            dragDogu.Delete += DeleteDogu;
+            dragDogu.DragPointScale = CubeSmall ? DragPointGeneral.smallCube : 1f;
+
+            doguList.Add(dragDogu);
+            OnDoguListChange();
         }
 
         public DragPointDogu GetDogu(int doguIndex)

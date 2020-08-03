@@ -90,8 +90,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GUILayout.Width(dropdownButtonWidth)
             };
 
-            MiscGUI.Header(this.header);
-            MiscGUI.WhiteLine();
+            // MiscGUI.Header(this.header);
+            // MiscGUI.WhiteLine();
 
             GUILayout.BeginHorizontal();
             this.prevDoguCategoryButton.Draw(arrowLayoutOptions);
