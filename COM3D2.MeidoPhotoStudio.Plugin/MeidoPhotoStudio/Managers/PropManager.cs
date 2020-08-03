@@ -76,6 +76,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private GameObject GetDeploymentObject()
         {
+            return GameObject.Find("Deployment Object Parent")
+                ?? new GameObject("Deployment Object Parent");
+        }
+
         public void SpawnMyRoomProp(MenuFileUtility.MyRoomItem item)
         {
             MyRoomCustom.PlacementData.Data data = MyRoomCustom.PlacementData.GetData(item.ID);
@@ -84,6 +88,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (dogu != null) AttachDragPoint(dogu, name, new Vector3(0f, 0f, 0.5f));
             else Debug.Log($"Could not load MyRoomCreative prop '{item.PrefabName}'");
         }
+
+        public void SpawnBG(string assetName)
+        {
+            GameObject obj = GameMain.Instance.BgMgr.CreateAssetBundle(assetName)
+                ?? Resources.Load<GameObject>("BG/" + assetName)
+                ?? Resources.Load<GameObject>("BG/2_0/" + assetName);
+
+            if (obj != null)
+            {
+                GameObject dogu = GameObject.Instantiate(obj);
+                string name = Translation.Get("bgNames", assetName);
+                dogu.transform.localScale = Vector3.one * 0.1f;
+                AttachDragPoint(dogu, name, Vector3.zero);
+            }
         }
 
         public void SpawnObject(string assetName)
@@ -92,7 +110,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameObject dogu = null;
             string doguName = Translation.Get("propNames", assetName, false);
             Vector3 doguPosition = new Vector3(0f, 0f, 0.5f);
-            Vector3 doguScale = Vector3.one;
 
             if (assetName.EndsWith(".menu"))
             {
@@ -102,24 +119,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     doguName = Translation.Get("propNames", handItem);
                 }
-            }
-            else if (assetName.StartsWith("BG_"))
-            {
-                assetName = assetName.Remove(0, 3);
-                GameObject obj = GameMain.Instance.BgMgr.CreateAssetBundle(assetName);
-                if (obj == null)
-                {
-                    obj = (Resources.Load("BG/" + assetName) ?? Resources.Load("BG/2_0/" + assetName)) as GameObject;
-                }
-
-                if (obj != null)
-                {
-                    dogu = GameObject.Instantiate(obj);
-                    doguPosition = Vector3.zero;
-                    doguScale = Vector3.one * 0.1f;
-                    doguName = Translation.Get("bgNames", assetName);
-                }
-
             }
             else if (assetName.StartsWith("mirror"))
             {
@@ -152,11 +151,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else if (assetName.IndexOf(':') >= 0)
             {
                 string[] assetParts = assetName.Split(':');
-                GameObject obj = GameMain.Instance.BgMgr.CreateAssetBundle(assetParts[0]);
-                if (obj == null)
-                {
-                    obj = Resources.Load("BG/" + assetParts[0]) as GameObject;
-                }
+                GameObject obj = GameMain.Instance.BgMgr.CreateAssetBundle(assetParts[0])
+                    ?? Resources.Load<GameObject>("BG/" + assetParts[0]);
 
                 GameObject bg = GameObject.Instantiate(obj);
                 int num = int.Parse(assetParts[1]);
@@ -167,11 +163,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else
             {
-                GameObject obj = GameMain.Instance.BgMgr.CreateAssetBundle(assetName);
+                GameObject obj = GameMain.Instance.BgMgr.CreateAssetBundle(assetName)
+                    ?? Resources.Load<GameObject>("Prefab/" + assetName);
 
-                if (obj == null) obj = Resources.Load("Prefab/" + assetName) as GameObject;
-
-                dogu = GameObject.Instantiate(obj) as GameObject;
+                dogu = GameObject.Instantiate<GameObject>(obj);
                 dogu.transform.localPosition = Vector3.zero;
 
                 MeshRenderer[] meshRenderers = dogu.GetComponentsInChildren<MeshRenderer>();
