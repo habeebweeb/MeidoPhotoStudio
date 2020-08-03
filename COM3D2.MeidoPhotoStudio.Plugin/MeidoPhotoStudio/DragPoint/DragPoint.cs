@@ -13,7 +13,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Collider collider;
         private Renderer renderer;
         private bool reinitializeDrag;
-        protected bool Transforming => CurrentDragType >= DragType.MoveXZ && CurrentDragType <= DragType.RotLocalY;
+        protected bool Transforming => CurrentDragType >= DragType.MoveXZ;
         protected bool Moving => CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY;
         protected bool Rotating => CurrentDragType >= DragType.RotLocalXZ && CurrentDragType <= DragType.RotLocalY;
         protected bool Special => CurrentDragType == DragType.Select || CurrentDragType == DragType.Delete;
