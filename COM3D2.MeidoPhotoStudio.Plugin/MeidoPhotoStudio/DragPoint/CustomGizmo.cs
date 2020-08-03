@@ -33,7 +33,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 gizmoTypeOld = gizmoType;
             }
         }
-        public bool IsGizmoDrag => IsDrag && SelectedType != 0;
+        public bool IsGizmoDrag => GizmoVisible && IsDrag && SelectedType != 0;
+        public bool GizmoVisible
+        {
+            get => base.Visible;
+            set
+            {
+                if (value && IsDrag) is_drag_.SetValue(null, false);
+                base.Visible = value;
+            }
+        }
         public GizmoMode gizmoMode = GizmoMode.Local;
         public event EventHandler GizmoDrag;
         public enum GizmoType
@@ -165,14 +174,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void OnGizmoDrag()
         {
             GizmoDrag?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void OnEnable()
-        {
-            if (target != null)
-            {
-                SetTransform();
-            }
         }
     }
 }

@@ -103,7 +103,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             Gizmo = CustomGizmo.Make(this.MyObject, scale, mode);
             GizmoGo = Gizmo.gameObject;
-            GizmoGo.SetActive(false);
+            Gizmo.GizmoVisible = false;
             ApplyDragType();
         }
 
@@ -113,7 +113,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.collider.enabled = active;
             this.renderer.enabled = visible;
-            this.GizmoGo?.SetActive(gizmo);
+            if (this.Gizmo != null) this.Gizmo.GizmoVisible = gizmo;
         }
 
         protected Vector3 MouseDelta() => Input.mousePosition - startMousePosition;
@@ -186,12 +186,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 transform.position = position();
                 transform.eulerAngles = rotation();
             }
+            if (GizmoGo != null) GizmoGo.SetActive(true);
             ApplyDragType();
         }
 
         private void OnDisable()
         {
-            if (GizmoGo) GizmoGo.SetActive(false);
+            if (GizmoGo != null) GizmoGo.SetActive(false);
         }
 
         protected virtual void OnDestroy() => GameObject.Destroy(GizmoGo);
