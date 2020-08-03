@@ -82,13 +82,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (!Translations.ContainsKey(category))
             {
-                if (warn) Debug.LogWarning($"Could not find translation category '{category}'");
+                if (warn) Debug.LogWarning($"Could not translate '{text}': category '{category}' was not found");
                 return false;
             }
 
             if (!Translations[category].ContainsKey(text))
             {
-                if (warn) Debug.LogWarning($"Could not find translation for '{text}' in '{category}'");
+                if (warn)
+                {
+                    Debug.LogWarning($"Could not translate '{text}': '{text}' was not found in category '{category}'");
+                }
                 return false;
             }
 
