@@ -3,6 +3,7 @@ using System.Text;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -10,12 +11,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal static class MenuFileUtility
     {
-        private static readonly HashSet<string> accMpn = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
-        {
-            "accashi", "acchana", "acchat", "acchead", "accheso", "acckami", "acckamisub", "acckubi", "acckubiwa",
-            "accmimi", "accnip", "accsenaka", "accshippo", "accude", "accxxx", "bra", "glove", "headset", "megane",
-            "mizugi", "onepiece", "panz", "shoes", "skirt", "stkg", "wear",
+        public const string noCategory = "noCategory";
+        public static string[] MenuCategories = new[] {
+            noCategory, "acchat", "headset", "wear", "skirt", "onepiece", "mizugi", "bra", "panz", "stkg", "shoes",
+            "acckami", "megane", "acchead", "acchana", "accmimi", "glove", "acckubi", "acckubiwa", "acckamisub",
+            "accnip", "accude", "accheso", "accashi", "accsenaka", "accshippo", "accxxx"
         };
+        private static readonly HashSet<string> accMpn = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
         private enum IMode
         {
             None, ItemChange, TexChange
@@ -25,6 +27,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         static MenuFileUtility()
         {
+            accMpn.UnionWith(MenuCategories.Skip(1));
             GameMain.Instance.StartCoroutine(CheckMenuDataBaseJob());
         }
 
@@ -55,7 +58,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 string menuPropString = String.Empty;
                 string menuPropStringTemp = String.Empty;
                 // string tempString3 = String.Empty;
-                string slotName = String.Empty;
+                // string slotName = String.Empty;
 
                 try
                 {
@@ -453,17 +456,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static GameObject LoadModel(string menuFile)
         {
-            return LoadModel(new ItemData { MenuFile = menuFile });
+            return LoadModel(new ModItem { MenuFile = menuFile });
         }
 
-        public static GameObject LoadModel(ItemData menuItem)
+        public static GameObject LoadModel(ModItem modItem)
         {
             byte[] menuBuffer = null;
             byte[] modMenuBuffer = null;
 
-            if (menuItem.IsOfficialMod)
+            if (modItem.IsOfficialMod)
             {
-                using (FileStream fileStream = new FileStream(menuItem.MenuFile, FileMode.Open))
+                using (FileStream fileStream = new FileStream(modItem.MenuFile, FileMode.Open))
                 {
                     if (fileStream == null || fileStream.Length == 0)
                     {
@@ -478,7 +481,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
 
-            string menu = menuItem.IsOfficialMod ? menuItem.BaseMenuFile : menuItem.MenuFile;
+            string menu = modItem.IsOfficialMod ? modItem.BaseMenuFile : modItem.MenuFile;
 
             using (AFileBase afileBase = GameUty.FileOpen(menu))
             {
@@ -510,27 +513,28 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
                 catch
                 {
-                    Debug.LogError($"Could not load mesh for '{menuItem.MenuFile}'");
+                    Debug.LogError($"Could not load mesh for '{modItem.MenuFile}'");
                 }
 
                 if (gameObject != null)
                 {
                     foreach (MaterialChange matChange in modelInfo.MaterialChanges)
                     {
-                        foreach (Transform transform in gameObject.transform.GetComponentInChildren<Transform>(true))
+                        foreach (Transform transform in gameObject.transform.GetComponentsInChildren<Transform>(true))
                         {
                             Renderer renderer = transform.GetComponent<Renderer>();
                             if (renderer != null && renderer.material != null
                                 && matChange.MaterialIndex < renderer.materials.Length
                             )
                             {
-                                renderer.materials[matChange.MaterialIndex] =
-                                    ImportCM.LoadMaterial(matChange.MaterialFile, null);
+                                renderer.materials[matChange.MaterialIndex] = ImportCM.LoadMaterial(
+                                        matChange.MaterialFile, null, renderer.materials[matChange.MaterialIndex]
+                                    );
                             }
                         }
                     }
 
-                    if (menuItem.IsOfficialMod)
+                    if (modItem.IsOfficialMod)
                     {
                         ProcModScriptBin(modMenuBuffer, gameObject);
                     }
@@ -540,27 +544,113 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else
             {
-                Debug.LogWarning($"Could not parse menu file '{menuItem.MenuFile}'");
+                Debug.LogWarning($"Could not parse menu file '{modItem.MenuFile}'");
                 return null;
             }
         }
 
-        public static bool ParseNativeMenuFile(int menuIndex, ItemData menuItem)
+        public static bool ParseNativeMenuFile(int menuIndex, ModItem modItem)
         {
             MenuDataBase menuDataBase = GameMain.Instance.MenuDataBase;
             menuDataBase.SetIndex(menuIndex);
             if (menuDataBase.GetBoDelOnly()) return false;
-            menuItem.Category = menuDataBase.GetCategoryMpnText();
-            if (!accMpn.Contains(menuItem.Category)) return false;
-            menuItem.MenuFile = menuDataBase.GetMenuFileName().ToLower();
-            if (!validBG2MenuFile(menuItem.MenuFile)) return false;
-            menuItem.Name = menuDataBase.GetMenuName();
-            menuItem.IconFile = menuDataBase.GetIconS();
-            menuItem.Priority = (int)menuDataBase.GetPriority();
+            modItem.Category = menuDataBase.GetCategoryMpnText();
+            if (!accMpn.Contains(modItem.Category)) return false;
+            modItem.MenuFile = menuDataBase.GetMenuFileName().ToLower();
+            if (!validBG2MenuFile(modItem.MenuFile)) return false;
+            modItem.Name = menuDataBase.GetMenuName();
+            modItem.IconFile = menuDataBase.GetIconS();
+            modItem.Priority = menuDataBase.GetPriority();
             return true;
         }
 
-        public static bool ParseModMenuFile(string modMenuFile, ItemData menuItem)
+        public static bool ParseMenuFile(string menuFile, ModItem modItem)
+        {
+            if (!validBG2MenuFile(menuFile)) return false;
+
+            byte[] buf = null;
+            try
+            {
+                using (AFileBase afileBase = GameUty.FileOpen(menuFile))
+                {
+                    if (afileBase == null || !afileBase.IsValid() || afileBase.GetSize() == 0) return false;
+                    buf = afileBase.ReadAll();
+                }
+            }
+            catch
+            {
+                Debug.LogError($"Could not read menu file '{menuFile}'");
+                return false;
+            }
+
+            using (BinaryReader binaryReader = new BinaryReader(new MemoryStream(buf), Encoding.UTF8))
+            {
+                string menuHeader = binaryReader.ReadString();
+                NDebug.Assert(
+                    menuHeader == "CM3D2_MENU", "ProcScriptBin 例外 : ヘッダーファイルが不正です。" + menuHeader
+                );
+                binaryReader.ReadInt32(); // file version
+                binaryReader.ReadString(); // txt path
+                modItem.Name = binaryReader.ReadString(); // name
+                modItem.Category = binaryReader.ReadString(); // category
+                if (!accMpn.Contains(modItem.Category)) return false;
+                binaryReader.ReadString(); // description
+                binaryReader.ReadInt32(); // idk (as long)
+
+                string menuPropString = String.Empty;
+                string menuPropStringTemp = String.Empty;
+
+                try
+                {
+                    while (true)
+                    {
+                        int numberOfProps = (int)binaryReader.ReadByte();
+                        menuPropStringTemp = menuPropString;
+                        menuPropString = String.Empty;
+
+                        if (numberOfProps != 0)
+                        {
+                            for (int i = 0; i < numberOfProps; i++)
+                            {
+                                menuPropString = $"{menuPropString}\"{binaryReader.ReadString()}\"";
+                            }
+
+                            if (menuPropString != string.Empty)
+                            {
+                                string header = UTY.GetStringCom(menuPropString);
+                                string[] menuProps = UTY.GetStringList(menuPropString);
+
+                                if (header == "end")
+                                {
+                                    break;
+                                }
+                                else if (header == "icons" || header == "icon")
+                                {
+                                    modItem.IconFile = menuProps[1];
+                                    break;
+                                }
+                                else if (header == "priority")
+                                {
+                                    modItem.Priority = float.Parse(menuProps[1]);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"Could not parse menu file '{menuFile}' because {e.Message}");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static bool ParseModMenuFile(string modMenuFile, ModItem modItem)
         {
             if (!validBG2MenuFile(modMenuFile)) return false;
 
@@ -579,9 +669,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     fileStream.Read(buf, 0, (int)fileStream.Length);
                 }
             }
-            catch
+            catch (Exception e)
             {
-                Debug.LogError($"Could not read mod menu file '{modMenuFile}'");
+                Debug.LogError($"Could not read mod menu file '{modMenuFile} because {e.Message}'");
                 return false;
             }
 
@@ -597,10 +687,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         binaryReader.ReadInt32();
                         string iconName = binaryReader.ReadString();
                         string baseItemPath = binaryReader.ReadString().Replace(":", " ");
-                        menuItem.BaseMenuFile = Path.GetFileName(baseItemPath);
-                        menuItem.Name = binaryReader.ReadString();
-                        menuItem.Category = binaryReader.ReadString();
-                        if (!accMpn.Contains(menuItem.Category)) return false;
+                        modItem.BaseMenuFile = Path.GetFileName(baseItemPath);
+                        modItem.Name = binaryReader.ReadString();
+                        modItem.Category = binaryReader.ReadString();
+                        if (!accMpn.Contains(modItem.Category)) return false;
                         binaryReader.ReadString();
                         string mpnValue = binaryReader.ReadString();
                         MPN mpn = MPN.null_mpn;
@@ -627,15 +717,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                             {
                                 Texture2D tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
                                 tex.LoadImage(data);
-                                menuItem.Icon = tex;
+                                modItem.Icon = tex;
                                 break;
                             }
                         }
                     }
                 }
-                catch
+                catch (Exception e)
                 {
-                    Debug.LogWarning($"Could not parse mod menu file '{modMenuFile}'");
+                    Debug.LogWarning($"Could not parse mod menu file '{modMenuFile}' because {e}");
                     return false;
                 }
             }
@@ -646,7 +736,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             menu = Path.GetFileNameWithoutExtension(menu).ToLower();
             return !(menu.EndsWith("_del") || menu.Contains("zurashi") || menu.Contains("mekure")
-                || menu.Contains("porori") || menu.Contains("moza"));
+                || menu.Contains("porori") || menu.Contains("moza") || menu.Contains("folder"));
         }
 
         public abstract class MenuItem
@@ -655,19 +745,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             public Texture2D Icon { get; set; }
         }
 
-        public class ItemData : MenuItem
+        public class ModItem : MenuItem
         {
             public string MenuFile { get; set; }
             public string BaseMenuFile { get; set; }
             public string Name { get; set; }
             public string Category { get; set; }
-            public int Priority { get; set; }
+            public float Priority { get; set; }
             public bool IsMod { get; set; }
             public bool IsOfficialMod { get; set; }
             public string ModelFile { get; set; }
         }
 
-        public class CreativeItem : MenuItem
+        public class MyRoomItem : MenuItem
         {
             public int ID { get; set; }
             public string PrefabName { get; set; }
