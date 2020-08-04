@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,7 +13,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class Constants
     {
         private static bool beginHandItemInit;
-        private static bool startModItemInit;
         public static readonly string customPosePath;
         public static readonly string scenesPath;
         public static readonly string kankyoPath;
@@ -501,6 +500,132 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 MyRoomPropDict[category].Add(item);
             }
+        }
+
+        private static void InitializeModProps()
+        {
+            // TODO: cache menu files
+            for (int i = 1; i < MenuFileUtility.MenuCategories.Length; i++)
+            {
+                ModPropDict[MenuCategories[i]] = new List<ModItem>();
+            }
+
+            if (!Configuration.ModItemsOnly)
+            {
+                MenuDataBase menuDatabase = GameMain.Instance.MenuDataBase;
+
+                for (int i = 0; i < menuDatabase.GetDataSize(); i++)
+                {
+                    menuDatabase.SetIndex(i);
+                    ModItem modItem = new ModItem();
+                    if (MenuFileUtility.ParseNativeMenuFile(i, modItem))
+                    {
+                        ModPropDict[modItem.Category].Add(modItem);
+                    }
+                }
+            }
+
+            MenuFileCache cache = new MenuFileCache();
+
+            foreach (string modMenuFile in GameUty.ModOnlysMenuFiles)
+            {
+                ModItem modItem;
+                if (cache.Has(modMenuFile))
+                {
+                    modItem = cache[modMenuFile];
+                }
+                else
+                {
+                    modItem = new ModItem() { MenuFile = modMenuFile, IsMod = true };
+                    MenuFileUtility.ParseMenuFile(modMenuFile, modItem);
+                    cache[modMenuFile] = modItem;
+                }
+                if (MenuFileUtility.ValidBG2MenuFile(modItem)) ModPropDict[modItem.Category].Add(modItem);
+            }
+
+            cache.Serialize();
+
+            foreach (string modFile in Menu.GetModFiles())
+            {
+                ModItem modItem = new ModItem()
+                {
+                    MenuFile = modFile,
+                    IsMod = true,
+                    IsOfficialMod = true,
+                    Priority = 1000f
+                };
+                if (ParseModMenuFile(modFile, modItem))
+                {
+                    ModPropDict[modItem.Category].Add(modItem);
+                }
+            }
+            MenuFilesInitialized = true;
+        }
+
+        public static List<ModItem> GetModPropList(string category)
+        {
+            if (!Configuration.ModItemsOnly)
+            {
+                if (!MenuFileUtility.MenuFilesReady)
+                {
+                    Debug.Log("Menu files are not ready yet");
+                    return null;
+                }
+            }
+
+            if (!MenuFilesInitialized) InitializeModProps();
+
+            if (!ModPropDict.ContainsKey(category)) return null;
+
+            List<ModItem> selectedList = ModPropDict[category];
+
+            if (selectedList[0].Icon == null)
+            {
+                selectedList.Sort((a, b) =>
+                {
+                    int res = a.Priority.CompareTo(b.Priority);
+                    if (res == 0) res = string.Compare(a.Name, b.Name);
+                    return res;
+                });
+
+                string previousMenuFile = String.Empty;
+                selectedList.RemoveAll(item =>
+                {
+                    if (item.Icon == null)
+                    {
+                        Texture2D icon;
+                        string iconFile = item.IconFile;
+                        if (string.IsNullOrEmpty(iconFile) || !GameUty.FileSystem.IsExistentFile(iconFile))
+                        {
+                            Debug.LogWarning($"Could not find icon '{iconFile}' for menu '{item.MenuFile}");
+                            return true;
+                        }
+                        else
+                        {
+                            try
+                            {
+                                icon = ImportCM.CreateTexture(iconFile);
+                            }
+                            catch
+                            {
+                                try
+                                {
+                                    icon = ImportCM.CreateTexture($"tex\\{iconFile}");
+                                }
+                                catch
+                                {
+                                    Debug.LogWarning($"Could not load '{iconFile}' for menu '{item.MenuFile}");
+                                    return true;
+                                }
+                            }
+                        }
+                        item.Icon = icon;
+                    }
+                    return false;
+                });
+            }
+
+            return selectedList;
         }
 
         private static CsvParser OpenCsvParser(string nei, AFileSystemBase fs)

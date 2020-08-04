@@ -80,6 +80,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 ?? new GameObject("Deployment Object Parent");
         }
 
+        public void SpawnModItemProp(MenuFileUtility.ModItem modItem)
+        {
+            GameObject dogu = MenuFileUtility.LoadModel(modItem);
+            string name = modItem.Name;
+            if (dogu != null) AttachDragPoint(dogu, name, new Vector3(0f, 0f, 0.5f));
+            // else Debug.Log($"Could not load mod item prop '{modItem.MenuFile}'");
+        }
+
         public void SpawnMyRoomProp(MenuFileUtility.MyRoomItem item)
         {
             MyRoomCustom.PlacementData.Data data = MyRoomCustom.PlacementData.GetData(item.ID);

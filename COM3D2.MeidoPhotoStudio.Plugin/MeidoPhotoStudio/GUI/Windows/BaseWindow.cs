@@ -7,7 +7,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal abstract class BaseWindow : BaseWindowPane
     {
         private static int id = 765;
-        private static int ID { get => id++; }
+        private static int ID => id++;
         public readonly int windowID;
         protected Rect windowRect;
         public abstract Rect WindowRect { get; set; }

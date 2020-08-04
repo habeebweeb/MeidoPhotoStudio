@@ -11,6 +11,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private PropsPane propsPane;
         private AttachPropPane attachPropPane;
         private MyRoomPropsPane myRoomPropsPane;
+        private ModPropsPane modPropsPane;
         private SelectionGrid propTabs;
         private BasePane currentPropsPane;
 
@@ -22,10 +23,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             PropManager propManager = this.environmentManager.PropManager;
             this.propsPane = new PropsPane(propManager);
             this.myRoomPropsPane = new MyRoomPropsPane(propManager);
+            this.modPropsPane = new ModPropsPane(propManager);
             this.attachPropPane = new AttachPropPane(this.meidoManager, propManager);
 
             this.Panes.Add(propsPane);
             this.Panes.Add(myRoomPropsPane);
+            this.Panes.Add(modPropsPane);
 
             this.propTabs = new SelectionGrid(Translation.GetArray("propTabs", new[] { "Props", "MyRoom", "Mod" }));
             this.propTabs.ControlEvent += (s, a) =>
