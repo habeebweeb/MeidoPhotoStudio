@@ -557,7 +557,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             modItem.Category = menuDataBase.GetCategoryMpnText();
             if (!accMpn.Contains(modItem.Category)) return false;
             modItem.MenuFile = menuDataBase.GetMenuFileName().ToLower();
-            if (!validBG2MenuFile(modItem.MenuFile)) return false;
+            if (!ValidBG2MenuFile(modItem.MenuFile)) return false;
             modItem.Name = menuDataBase.GetMenuName();
             modItem.IconFile = menuDataBase.GetIconS();
             modItem.Priority = menuDataBase.GetPriority();
@@ -566,7 +566,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static bool ParseMenuFile(string menuFile, ModItem modItem)
         {
-            if (!validBG2MenuFile(menuFile)) return false;
+            if (!ValidBG2MenuFile(menuFile)) return false;
 
             byte[] buf = null;
             try
@@ -652,7 +652,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static bool ParseModMenuFile(string modMenuFile, ModItem modItem)
         {
-            if (!validBG2MenuFile(modMenuFile)) return false;
+            if (!ValidBG2MenuFile(modMenuFile)) return false;
 
             byte[] buf = null;
             try
@@ -732,7 +732,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return true;
         }
 
-        private static bool validBG2MenuFile(string menu)
+        public static bool ValidBG2MenuFile(ModItem modItem)
+        {
+            return accMpn.Contains(modItem.Category) && ValidBG2MenuFile(modItem.MenuFile);
+        }
+
+        public static bool ValidBG2MenuFile(string menu)
         {
             menu = Path.GetFileNameWithoutExtension(menu).ToLower();
             return !(menu.EndsWith("_del") || menu.Contains("zurashi") || menu.Contains("mekure")
@@ -754,7 +759,34 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             public float Priority { get; set; }
             public bool IsMod { get; set; }
             public bool IsOfficialMod { get; set; }
-            public string ModelFile { get; set; }
+
+            public static ModItem Deserialize(BinaryReader binaryReader)
+            {
+                return new ModItem()
+                {
+                    MenuFile = binaryReader.ReadNullableString(),
+                    BaseMenuFile = binaryReader.ReadNullableString(),
+                    IconFile = binaryReader.ReadNullableString(),
+                    Name = binaryReader.ReadNullableString(),
+                    Category = binaryReader.ReadNullableString(),
+                    Priority = float.Parse(binaryReader.ReadNullableString()),
+                    IsMod = binaryReader.ReadBoolean(),
+                    IsOfficialMod = binaryReader.ReadBoolean()
+                };
+            }
+
+            public void Serialize(BinaryWriter binaryWriter)
+            {
+                if (IsOfficialMod) return;
+                binaryWriter.WriteNullableString(MenuFile);
+                binaryWriter.WriteNullableString(BaseMenuFile);
+                binaryWriter.WriteNullableString(IconFile);
+                binaryWriter.WriteNullableString(Name);
+                binaryWriter.WriteNullableString(Category);
+                binaryWriter.WriteNullableString(Priority.ToString());
+                binaryWriter.Write(IsMod);
+                binaryWriter.Write(IsOfficialMod);
+            }
         }
 
         public class MyRoomItem : MenuItem
