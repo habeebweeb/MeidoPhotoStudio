@@ -64,6 +64,7 @@
         "y": "Look Y"
     },
     "clothing": {
+        "noCategory": " --- ",
         "accHat": "Hat",
         "headset": "Headdress",
         "wear": "Top",
@@ -79,16 +80,20 @@
         "accHead": "Eye Mask",
         "accSenaka": "Back",
         "accShippo": "Tail",
+        "accKami": "Hairpin",
         "accKami_1_": "Pin 1",
         "accKami_2_": "Pin 2",
         "accKami_3_": "Pin 3",
+        "accKamiSub": "Ribbon",
         "accKamiSubL": "Ribbon L",
         "accKamiSubR": "Ribbon R",
+        "accMimi": "Ears",
         "accMiMiL": "Ear L",
         "accMiMiR": "Ear R",
         "accHana": "Nose",
         "accKubiwa": "Choker",
         "accKubi": "Necklace",
+        "accNip": "Nipples",
         "accNipL": "Nip L",
         "accNipR": "Nip R",
         "accUde": "Arms",
@@ -252,7 +257,8 @@
         "itemLabel": "Item",
         "smallBGLabel": "BG (Prop)",
         "propLabel": "Clothes",
-        "modsToggle": "Mods"
+        "modsToggle": "Mods",
+        "baseToggle": "COM3D2"
     },
     "clothingDropdown": {
         "myRoom": "My Room Custom",
