@@ -11,7 +11,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private const int MAX_MAIDS = 12;
         private static CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;
         public readonly int stockNo;
-        public static readonly PoseInfo defaultPose = new PoseInfo(0, 0, "pose_taiki_f");
+        public static readonly PoseInfo defaultPose
+            = new PoseInfo(Constants.PoseGroupList[0], Constants.PoseDict[Constants.PoseGroupList[0]][0]);
         public static readonly string defaultFaceBlendSet = "通常";
         public Maid Maid { get; private set; }
         public Texture2D Image { get; private set; }
@@ -46,7 +47,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 else
                 {
                     if (value) Maid.GetAnimation().Stop();
-                    else this.SetPose(this.CachedPose.PoseName);
+                    else this.SetPose(this.CachedPose.Pose);
                     OnUpdateMeido();
                 }
             }
@@ -178,7 +179,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SetPose(PoseInfo poseInfo)
         {
             this.CachedPose = poseInfo;
-            SetPose(poseInfo.PoseName);
+            SetPose(poseInfo.Pose);
         }
 
         public void SetPose(string pose)
@@ -218,7 +219,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void SetMune(bool drag = false)
         {
-            bool isMomiOrPaizuri = CachedPose.PoseName.Contains("_momi") || CachedPose.PoseName.Contains("paizuri_");
+            bool isMomiOrPaizuri = CachedPose.Pose.Contains("_momi") || CachedPose.Pose.Contains("paizuri_");
             float onL = (drag || isMomiOrPaizuri) ? 0f : 1f;
             Maid.body0.MuneYureL(onL);
             Maid.body0.MuneYureR(onL);
@@ -310,17 +311,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
     public struct PoseInfo
     {
-        public int PoseGroupIndex { get; }
-        public int PoseIndex { get; }
-        public string PoseName { get; }
-        public bool IsCustomPose { get; }
-        public PoseInfo(int poseGroup, int pose, string poseName, bool isCustomPose = false)
+        public string PoseGroup { get; }
+        public string Pose { get; }
+        public bool CustomPose { get; }
+        public PoseInfo(string poseGroup, string pose, bool customPose = false)
         {
-            this.PoseGroupIndex = poseGroup;
-            this.PoseIndex = pose;
-            this.PoseName = poseName;
-            this.IsCustomPose = isCustomPose;
+            this.PoseGroup = poseGroup;
+            this.Pose = pose;
+            this.CustomPose = customPose;
         }
-        public override string ToString() => $"pose group: {PoseGroupIndex}, pose index: {PoseIndex}, pose name: {PoseName}, is custom: {IsCustomPose}";
     }
 }

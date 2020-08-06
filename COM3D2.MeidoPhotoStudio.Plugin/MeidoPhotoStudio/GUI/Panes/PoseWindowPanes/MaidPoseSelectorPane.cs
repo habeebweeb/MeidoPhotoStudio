@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,29 +15,35 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Button poseGroupRightButton;
         private Dropdown poseGroupDropdown;
         private Dropdown poseDropdown;
-        private string selectedPoseGroup;
-        private int selectedPose;
+        private SelectionGrid poseModeGrid;
+        private bool customPoseMode = false;
+        private Dictionary<string, List<string>> CurrentPoseDict
+        {
+            get => customPoseMode ? Constants.CustomPoseDict : Constants.PoseDict;
+        }
+        private List<string> CurrentPoseGroupList
+        {
+            get => customPoseMode ? Constants.CustomPoseGroupList : Constants.PoseGroupList;
+        }
+        private string SelectedPoseGroup => CurrentPoseGroupList[poseGroupDropdown.SelectedItemIndex];
+        private List<string> CurrentPoseList => CurrentPoseDict[SelectedPoseGroup];
+        private int SelectedPoseIndex => poseDropdown.SelectedItemIndex;
+        private string SelectedPose => CurrentPoseList[SelectedPoseIndex];
+        private PoseInfo CurrentPoseInfo => new PoseInfo(SelectedPoseGroup, SelectedPose, customPoseMode);
+        private string previousPoseGroup;
 
         public MaidPoseSelectorPane(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
 
-            List<string> poseGroups = new List<string>(Constants.PoseGroupList.Count);
+            this.poseModeGrid = new SelectionGrid(new[] { "Base", "Custom" });
+            this.poseModeGrid.ControlEvent += (s, a) => SetPoseMode();
 
-            for (int i = 0; i < Constants.PoseGroupList.Count; i++)
-            {
-                string poseGroup = Constants.PoseGroupList[i];
-                poseGroups.Add(i < Constants.CustomPoseGroupsIndex
-                    ? Translation.Get("poseGroupDropdown", poseGroup)
-                    : poseGroup
-                );
-            }
+            this.poseGroupDropdown = new Dropdown(Translation.GetArray("poseGroupDropdown", Constants.PoseGroupList));
+            this.poseGroupDropdown.SelectionChange += (s, a) => ChangePoseGroup();
 
-            this.poseGroupDropdown = new Dropdown(poseGroups.ToArray());
-            this.poseGroupDropdown.SelectionChange += ChangePoseGroup;
-
-            this.poseDropdown = new Dropdown(MakePoseList(Constants.PoseDict[Constants.PoseGroupList[0]]));
-            this.poseDropdown.SelectionChange += ChangePose;
+            this.poseDropdown = new Dropdown(UIPoseList(Constants.PoseDict[Constants.PoseGroupList[0]]));
+            this.poseDropdown.SelectionChange += (s, a) => ChangePose();
 
             this.poseGroupLeftButton = new Button("<");
             this.poseGroupLeftButton.ControlEvent += (s, a) => poseGroupDropdown.Step(-1);
@@ -50,93 +57,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.poseRightButton = new Button(">");
             this.poseRightButton.ControlEvent += (s, a) => poseDropdown.Step(1);
 
-            selectedPoseGroup = Constants.PoseGroupList[this.poseGroupDropdown.SelectedItemIndex];
+            previousPoseGroup = SelectedPoseGroup;
         }
 
         protected override void ReloadTranslation()
         {
-            List<string> poseGroups = new List<string>(Constants.PoseGroupList.Count);
-
-            for (int i = 0; i < Constants.PoseGroupList.Count; i++)
+            if (!customPoseMode)
             {
-                string poseGroup = Constants.PoseGroupList[i];
-                poseGroups.Add(i < Constants.CustomPoseGroupsIndex
-                    ? Translation.Get("poseGroupDropdown", poseGroup)
-                    : poseGroup
+                this.poseGroupDropdown.SetDropdownItems(
+                    Translation.GetArray("poseGroupDropdown", Constants.PoseGroupList)
                 );
             }
-
-            updating = true;
-            this.poseGroupDropdown.SetDropdownItems(poseGroups.ToArray());
-            updating = false;
-        }
-
-        private void ChangePoseGroup(object sender, EventArgs args)
-        {
-            string newPoseGroup = Constants.PoseGroupList[this.poseGroupDropdown.SelectedItemIndex];
-            if (selectedPoseGroup == newPoseGroup)
-            {
-                this.poseDropdown.SelectedItemIndex = 0;
-            }
-            else
-            {
-                selectedPoseGroup = newPoseGroup;
-                if (this.poseGroupDropdown.SelectedItemIndex >= Constants.CustomPoseGroupsIndex)
-                {
-                    this.poseDropdown.SetDropdownItems(MakePoseList(Constants.CustomPoseDict[selectedPoseGroup]), 0);
-                }
-                else
-                {
-                    this.poseDropdown.SetDropdownItems(MakePoseList(Constants.PoseDict[selectedPoseGroup]), 0);
-                }
-            }
-        }
-
-        private void ChangePose(object sender, EventArgs args)
-        {
-            selectedPose = poseDropdown.SelectedItemIndex;
-
-            if (updating) return;
-            PoseInfo poseInfo = MakePoseInfo();
-            meidoManager.ActiveMeido.SetPose(poseInfo);
-        }
-
-        private PoseInfo MakePoseInfo()
-        {
-            int poseGroup = this.poseGroupDropdown.SelectedItemIndex;
-            int pose = this.poseDropdown.SelectedItemIndex;
-
-            string poseName;
-            if (this.poseGroupDropdown.SelectedItemIndex >= Constants.CustomPoseGroupsIndex)
-                poseName = Constants.CustomPoseDict[selectedPoseGroup][selectedPose].Value;
-            else
-                poseName = Constants.PoseDict[selectedPoseGroup][selectedPose];
-
-            return new PoseInfo(poseGroup, pose, poseName);
-        }
-
-        private string[] MakePoseList(IEnumerable<string> poseList)
-        {
-            return poseList.Select((pose, i) => $"{i + 1}:{pose}").ToArray();
-        }
-
-        private string[] MakePoseList(List<KeyValuePair<string, string>> poseList)
-        {
-            return poseList.Select((kvp, i) => $"{i + 1}:{kvp.Key}").ToArray();
-        }
-
-        public override void UpdatePane()
-        {
-            this.updating = true;
-            PoseInfo poseInfo = this.meidoManager.ActiveMeido.CachedPose;
-            this.poseGroupDropdown.SelectedItemIndex = poseInfo.PoseGroupIndex;
-            this.poseDropdown.SelectedItemIndex = poseInfo.PoseIndex;
-            this.updating = false;
         }
 
         public override void Draw()
         {
-            float arrowButtonSize = 30;
+            float arrowButtonSize = 30f;
             GUILayoutOption[] arrowLayoutOptions = {
                 GUILayout.Width(arrowButtonSize),
                 GUILayout.Height(arrowButtonSize)
@@ -151,6 +87,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             GUI.enabled = meidoManager.HasActiveMeido && !meidoManager.ActiveMeido.IsStop;
 
+            this.poseModeGrid.Draw();
+            MiscGUI.WhiteLine();
+
             GUILayout.BeginHorizontal();
             this.poseGroupLeftButton.Draw(arrowLayoutOptions);
             this.poseGroupDropdown.Draw(dropdownLayoutOptions);
@@ -162,6 +101,80 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.poseDropdown.Draw(dropdownLayoutOptions);
             this.poseRightButton.Draw(arrowLayoutOptions);
             GUILayout.EndHorizontal();
+
+            GUI.enabled = true;
+        }
+
+        public override void UpdatePane()
+        {
+            this.updating = true;
+
+            PoseInfo poseInfo = this.meidoManager.ActiveMeido.CachedPose;
+
+            bool oldPoseMode = customPoseMode;
+
+            poseModeGrid.SelectedItemIndex = poseInfo.CustomPose ? 1 : 0;
+
+            int poseGroupIndex = CurrentPoseGroupList.IndexOf(poseInfo.PoseGroup);
+
+            if (poseGroupIndex < 0) poseGroupIndex = 0;
+
+            int poseIndex = CurrentPoseDict[poseInfo.PoseGroup].IndexOf(poseInfo.Pose);
+
+            if (poseIndex < 0) poseIndex = 0;
+
+            if (oldPoseMode != customPoseMode)
+            {
+                string[] list = customPoseMode
+                    ? CurrentPoseGroupList.ToArray()
+                    : Translation.GetArray("poseGroupDropdown", CurrentPoseGroupList);
+
+                this.poseGroupDropdown.SetDropdownItems(list);
+            }
+
+            this.poseGroupDropdown.SelectedItemIndex = poseGroupIndex;
+            this.poseDropdown.SelectedItemIndex = poseIndex;
+
+            this.updating = false;
+        }
+
+        private void SetPoseMode()
+        {
+            customPoseMode = poseModeGrid.SelectedItemIndex == 1;
+
+            if (this.updating) return;
+
+            string[] list = customPoseMode
+                ? CurrentPoseGroupList.ToArray()
+                : Translation.GetArray("poseGroupDropdown", CurrentPoseGroupList);
+            this.poseGroupDropdown.SetDropdownItems(list, 0);
+        }
+
+        private void ChangePoseGroup()
+        {
+            if (previousPoseGroup == SelectedPoseGroup)
+            {
+                this.poseDropdown.SelectedItemIndex = 0;
+            }
+            else
+            {
+                previousPoseGroup = SelectedPoseGroup;
+                this.poseDropdown.SetDropdownItems(UIPoseList(CurrentPoseList), 0);
+            }
+        }
+
+        private void ChangePose()
+        {
+            if (updating) return;
+            meidoManager.ActiveMeido.SetPose(CurrentPoseInfo);
+        }
+
+        private string[] UIPoseList(IEnumerable<string> poseList)
+        {
+            return poseList.Select((pose, i) =>
+            {
+                return $"{i + 1}:{(customPoseMode ? Path.GetFileNameWithoutExtension(pose) : pose)}";
+            }).ToArray();
         }
     }
 }

@@ -32,8 +32,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         public static readonly List<string> PoseGroupList = new List<string>();
         public static readonly Dictionary<string, List<string>> PoseDict = new Dictionary<string, List<string>>();
-        public static readonly Dictionary<string, List<KeyValuePair<string, string>>> CustomPoseDict
-            = new Dictionary<string, List<KeyValuePair<string, string>>>();
+        public static readonly List<string> CustomPoseGroupList = new List<string>();
+        public static readonly Dictionary<string, List<string>> CustomPoseDict = new Dictionary<string, List<string>>();
+        // public static readonly Dictionary<string, List<KeyValuePair<string, string>>> CustomPoseDict
+        //     = new Dictionary<string, List<KeyValuePair<string, string>>>();
         public static readonly List<string> FaceBlendList = new List<string>();
         public static readonly List<string> BGList = new List<string>();
         public static readonly List<KeyValuePair<string, string>> MyRoomCustomBGList
@@ -108,12 +110,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (com3d2MotionList != null && com3d2MotionList.Length > 0)
             {
                 HashSet<string> poseSet = new HashSet<string>();
-                foreach (KeyValuePair<string, List<string>> poses in PoseDict)
+                foreach (List<string> poses in PoseDict.Values)
                 {
-                    foreach (string pose in poses.Value)
-                    {
-                        poseSet.Add(pose);
-                    }
+                    poseSet.UnionWith(poses);
                 }
 
                 List<string> editPoseList = new List<string>();
@@ -140,8 +139,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                                 && !file.Contains("_man_")
                             )
                             {
-                                if (!path.Contains(@"\sex\")) otherPoseList.Add(file);
-                                else eroPoseList.Add(file);
+                                if (path.Contains(@"\sex\")) eroPoseList.Add(file);
+                                else otherPoseList.Add(file);
                             }
                         }
                     }
@@ -153,23 +152,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 PoseGroupList.AddRange(new[] { "normal2", "ero2" });
             }
 
-            CustomPoseGroupsIndex = PoseGroupList.Count;
-
             Action<string> GetPoses = directory =>
             {
-                List<KeyValuePair<string, string>> poseList = new List<KeyValuePair<string, string>>();
-                foreach (string file in Directory.GetFiles(directory))
-                {
-                    if (Path.GetExtension(file) == ".anm")
-                    {
-                        string fileName = Path.GetFileNameWithoutExtension(file);
-                        poseList.Add(new KeyValuePair<string, string>(fileName, file));
-                    }
-                }
+                List<string> poseList = Directory.GetFiles(directory)
+                    .Where(file => Path.GetExtension(file) == ".anm").ToList();
+
                 if (poseList.Count > 0)
                 {
                     string poseGroupName = new DirectoryInfo(directory).Name;
-                    PoseGroupList.Add(poseGroupName);
+                    CustomPoseGroupList.Add(poseGroupName);
                     CustomPoseDict[poseGroupName] = poseList;
                 }
             };
