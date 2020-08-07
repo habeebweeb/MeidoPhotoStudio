@@ -59,12 +59,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 ChangePropCategory();
             };
 
-            this.modFilterToggle = new Toggle(Translation.Get("background2Window", "modsToggle"));
-            this.modFilterToggle.ControlEvent += (s, a) => ChangeFilter(FilterType.Mod);
+            if (!isModsOnly)
+            {
+                this.modFilterToggle = new Toggle(Translation.Get("background2Window", "modsToggle"));
+                this.modFilterToggle.ControlEvent += (s, a) => ChangeFilter(FilterType.Mod);
 
-
-            this.baseFilterToggle = new Toggle(Translation.Get("background2Window", "baseToggle"));
-            this.baseFilterToggle.ControlEvent += (s, a) => ChangeFilter(FilterType.Base);
+                this.baseFilterToggle = new Toggle(Translation.Get("background2Window", "baseToggle"));
+                this.baseFilterToggle.ControlEvent += (s, a) => ChangeFilter(FilterType.Base);
+            }
         }
 
         protected override void ReloadTranslation()
@@ -184,7 +186,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void SetListCount()
         {
-            if (modFilter || isModsOnly) currentListCount = modPropList.Count(mod => mod.IsMod);
+            if (modFilter) currentListCount = modPropList.Count(mod => mod.IsMod);
             else if (baseFilter) currentListCount = modPropList.Count(mod => !mod.IsMod);
             else currentListCount = modPropList.Count;
         }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
@@ -19,10 +20,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             List<string> bgList = new List<string>(Translation.GetList("bgNames", Constants.BGList));
             if (Constants.MyRoomCustomBGIndex >= 0)
             {
-                foreach (KeyValuePair<string, string> kvp in Constants.MyRoomCustomBGList)
-                {
-                    bgList.Add(kvp.Value);
-                }
+                bgList.AddRange(Constants.MyRoomCustomBGList.Select(kvp => kvp.Value));
             }
 
             this.bgDropdown = new Dropdown(bgList.ToArray(), theaterIndex);
@@ -50,10 +48,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             List<string> bgList = new List<string>(Translation.GetList("bgNames", Constants.BGList));
             if (Constants.MyRoomCustomBGIndex >= 0)
             {
-                foreach (KeyValuePair<string, string> kvp in Constants.MyRoomCustomBGList)
-                {
-                    bgList.Add(kvp.Value);
-                }
+                bgList.AddRange(Constants.MyRoomCustomBGList.Select(kvp => kvp.Value));
             }
 
             updating = true;

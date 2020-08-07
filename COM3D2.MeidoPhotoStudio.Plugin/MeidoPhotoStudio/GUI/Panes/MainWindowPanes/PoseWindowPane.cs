@@ -18,9 +18,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.meidoManager = meidoManager;
             this.maidSwitcherPane = maidSwitcherPane;
 
-            // this.meidoManager.UpdateMeido += UpdateMeido;
-            // this.meidoManager.FreeLookChange += UpdateMeido;
-
             this.maidPosePane = new MaidPoseSelectorPane(meidoManager);
             this.maidFaceLookPane = new MaidFaceLookPane(meidoManager);
             this.maidFaceLookPane.Enabled = false;

@@ -237,11 +237,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             InitializeOtherDogu();
             InitializeHandItems();
 
-            foreach (KeyValuePair<string, UnityEngine.Object> keyValuePair in PhotoBGObjectData.popup_category_list)
+            foreach (string category in PhotoBGObjectData.popup_category_list.Select(kvp => kvp.Key))
             {
-                string category = keyValuePair.Key;
                 if (category == "マイオブジェクト") continue;
-                DoguCategories.Add(keyValuePair.Key);
+                DoguCategories.Add(category);
             }
 
             foreach (DoguCategory category in Enum.GetValues(typeof(DoguCategory)))
@@ -271,9 +270,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             doguHashSet.UnionWith(BGList);
             doguHashSet.UnionWith(ignoreList);
-            foreach (KeyValuePair<string, List<string>> keyValuePair in DoguDict)
+            foreach (List<string> doguList in DoguDict.Values)
             {
-                doguHashSet.UnionWith(keyValuePair.Value);
+                doguHashSet.UnionWith(doguList);
             }
 
             string[] com3d2BgList = GameUty.FileSystem.GetList("bg", AFileSystemBase.ListType.AllFile);

@@ -155,9 +155,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void SetAttachPointToggle(AttachPoint point, bool value)
         {
             this.updating = true;
-            foreach (KeyValuePair<AttachPoint, Toggle> kvp in Toggles)
+            foreach (Toggle toggle in Toggles.Values)
             {
-                Toggle toggle = kvp.Value;
                 toggle.Value = false;
             }
             if (point != AttachPoint.None) Toggles[point].Value = value;

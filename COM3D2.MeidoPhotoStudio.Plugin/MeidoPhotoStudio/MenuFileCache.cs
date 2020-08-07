@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 
 /*
-    All of this is pretty much stolen from COM3D2.CacheEditMenu. Thanks Mr. Hosrington.
+    All of this is pretty much stolen from COM3D2.CacheEditMenu. Thanks Mr. Horsington.
     https://git.coder.horse/ghorsington/COM3D2.CacheEditMenu
 */
 namespace COM3D2.MeidoPhotoStudio.Plugin
