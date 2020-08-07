@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -126,11 +125,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
         {
             currentScene = (Constants.Scene)scene.buildIndex;
-
-            if (currentScene == Constants.Scene.Daily)
-            {
-                if (!initialized) Initialize();
-            }
         }
 
         private void Initialize()
@@ -163,6 +157,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void Activate()
         {
+            if (!initialized) Initialize();
             uiActive = true;
             isActive = true;
 
