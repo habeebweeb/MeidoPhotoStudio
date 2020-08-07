@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin

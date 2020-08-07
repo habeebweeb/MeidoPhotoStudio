@@ -52,10 +52,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 bgObject.SetActive(this.bgVisible);
             }
         }
-        private enum DragType
-        {
-            None, Transform
-        }
 
         public EnvironmentManager(MeidoManager meidoManager)
         {

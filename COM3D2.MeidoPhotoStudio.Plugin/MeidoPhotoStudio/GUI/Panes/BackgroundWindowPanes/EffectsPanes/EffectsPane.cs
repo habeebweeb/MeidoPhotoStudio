@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -24,7 +22,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public EffectsPane()
         {
-            effectToggles = new SelectionGrid(new[] { "dummy" });
+            effectToggles = new SelectionGrid(new[] { "dummy" /* thicc */ });
             effectToggles.ControlEvent += (s, a) => SetEffectPane(effectList[effectToggles.SelectedItemIndex]);
         }
 

@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.PostProcessing;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {

@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class VignetteEffectManager : IEffectManager

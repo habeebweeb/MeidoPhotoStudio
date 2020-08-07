@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class BG2WindowPane : BaseWindowPane
