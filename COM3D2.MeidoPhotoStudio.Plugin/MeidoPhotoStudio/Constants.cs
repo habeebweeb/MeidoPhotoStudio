@@ -554,7 +554,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (!MenuFileUtility.MenuFilesReady)
                 {
-                    Debug.Log("Menu files are not ready yet");
+                    Utility.Logger.LogInfo("Menu files are not ready yet");
                     return null;
                 }
             }
@@ -583,7 +583,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         string iconFile = item.IconFile;
                         if (string.IsNullOrEmpty(iconFile) || !GameUty.FileSystem.IsExistentFile(iconFile))
                         {
-                            Debug.LogWarning($"Could not find icon '{iconFile}' for menu '{item.MenuFile}");
+                            Utility.Logger.LogWarning($"Could not find icon '{iconFile}' for menu '{item.MenuFile}");
                             return true;
                         }
                         else
@@ -600,7 +600,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                                 }
                                 catch
                                 {
-                                    Debug.LogWarning($"Could not load '{iconFile}' for menu '{item.MenuFile}");
+                                    Utility.Logger.LogWarning($"Could not load '{iconFile}' for menu '{item.MenuFile}");
                                     return true;
                                 }
                             }

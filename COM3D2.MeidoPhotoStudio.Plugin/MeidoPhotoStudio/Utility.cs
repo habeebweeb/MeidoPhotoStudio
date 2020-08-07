@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -8,6 +7,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal static class Utility
     {
+        public static readonly BepInEx.Logging.ManualLogSource Logger
+            = BepInEx.Logging.Logger.CreateLogSource(MeidoPhotoStudio.pluginName);
         public enum ModKey
         {
             Control, Shift, Alt

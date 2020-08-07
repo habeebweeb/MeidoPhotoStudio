@@ -3,7 +3,6 @@ using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
-using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -28,8 +27,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (!Directory.Exists(currentTranslationPath))
             {
-                // Directory.CreateDirectory(currentTranslationPath);
-                Debug.LogWarning(
+                Utility.Logger.LogWarning(
                     $"No translations found for '{CurrentLanguage}' in '{currentTranslationPath}'"
                 );
                 return;
@@ -56,7 +54,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
                 catch
                 {
-                    Debug.LogError($"Could not find translation file '{translationFile}'");
+                    Utility.Logger.LogError($"Could not find translation file '{translationFile}'");
                 }
             }
         }
@@ -82,7 +80,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (!Translations.ContainsKey(category))
             {
-                if (warn) Debug.LogWarning($"Could not translate '{text}': category '{category}' was not found");
+                if (warn)
+                {
+                    Utility.Logger.LogWarning($"Could not translate '{text}': category '{category}' was not found");
+                }
                 return false;
             }
 
@@ -90,7 +91,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (warn)
                 {
-                    Debug.LogWarning($"Could not translate '{text}': '{text}' was not found in category '{category}'");
+                    Utility.Logger.LogWarning(
+                        $"Could not translate '{text}': '{text}' was not found in category '{category}'"
+                    );
                 }
                 return false;
             }

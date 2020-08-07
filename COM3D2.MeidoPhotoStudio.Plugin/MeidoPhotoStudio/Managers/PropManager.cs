@@ -85,7 +85,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameObject dogu = MenuFileUtility.LoadModel(modItem);
             string name = modItem.Name;
             if (dogu != null) AttachDragPoint(dogu, name, new Vector3(0f, 0f, 0.5f));
-            // else Debug.Log($"Could not load mod item prop '{modItem.MenuFile}'");
         }
 
         public void SpawnMyRoomProp(MenuFileUtility.MyRoomItem item)
@@ -94,7 +93,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameObject dogu = GameObject.Instantiate(data.GetPrefab());
             string name = Translation.Get("myRoomPropNames", item.PrefabName);
             if (dogu != null) AttachDragPoint(dogu, name, new Vector3(0f, 0f, 0.5f));
-            else Debug.Log($"Could not load MyRoomCreative prop '{item.PrefabName}'");
+            else Utility.Logger.LogInfo($"Could not load MyRoomCreative prop '{item.PrefabName}'");
         }
 
         public void SpawnBG(string assetName)
@@ -235,7 +234,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else
             {
-                Debug.LogError($"Could not spawn object '{assetName}'");
+                Utility.Logger.LogError($"Could not spawn object '{assetName}'");
             }
         }
 

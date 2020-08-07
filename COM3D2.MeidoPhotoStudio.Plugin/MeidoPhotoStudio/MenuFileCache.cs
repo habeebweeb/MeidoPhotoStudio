@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Collections.Generic;
 
@@ -59,7 +58,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (binaryReader.ReadInt32() != cacheVersion)
                 {
-                    UnityEngine.Debug.Log($"Cache version out of date. Rebuilding");
+                    Utility.Logger.LogInfo($"Cache version out of date. Rebuilding");
                     return;
                 }
                 while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
