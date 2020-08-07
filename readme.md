@@ -13,5 +13,4 @@ Place these in a folder called `lib`
 * `Assembly-UnityScript-firstpass.dll`
 * `Newtonsoft.json.dll`
 * `UnityEngine.dll`
-* `Exini.dll`
-* `UnityInjector.dll`
+* `BepInEx.dll`
