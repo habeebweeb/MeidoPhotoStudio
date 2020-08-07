@@ -1,19 +1,19 @@
-﻿using System.Linq;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityInjector;
-using UnityInjector.Attributes;
+using BepInEx;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    [PluginName("COM3D2.MeidoPhotoStudio.Plugin"), PluginVersion("0.0.0")]
-    public class MeidoPhotoStudio : PluginBase
+    [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
+    public class MeidoPhotoStudio : BaseUnityPlugin
     {
-        private static MonoBehaviour instance;
+        private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
+        public const string pluginName = "MeidoPhotoStudio";
+        public const string pluginVersion = "0.0.0";
+        public static string pluginString;
         private WindowManager windowManager;
         private MeidoManager meidoManager;
         private EnvironmentManager environmentManager;
@@ -22,18 +22,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private bool initialized = false;
         private bool isActive = false;
         private bool uiActive = false;
-        private MeidoPhotoStudio()
-        {
-            MeidoPhotoStudio.instance = this;
-        }
-        private void Awake()
-        {
-            DontDestroyOnLoad(this);
-            Translation.Initialize("en");
-            Constants.Initialize();
-        }
+
+        static MeidoPhotoStudio() => pluginString = $"{pluginName} {pluginVersion}";
+
+        private void Awake() => DontDestroyOnLoad(this);
+
         private void Start()
         {
+            Constants.Initialize();
+            Translation.Initialize("en");
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 

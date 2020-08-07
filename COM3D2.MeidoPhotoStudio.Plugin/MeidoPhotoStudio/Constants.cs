@@ -34,8 +34,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static readonly Dictionary<string, List<string>> PoseDict = new Dictionary<string, List<string>>();
         public static readonly List<string> CustomPoseGroupList = new List<string>();
         public static readonly Dictionary<string, List<string>> CustomPoseDict = new Dictionary<string, List<string>>();
-        // public static readonly Dictionary<string, List<KeyValuePair<string, string>>> CustomPoseDict
-        //     = new Dictionary<string, List<KeyValuePair<string, string>>>();
         public static readonly List<string> FaceBlendList = new List<string>();
         public static readonly List<string> BGList = new List<string>();
         public static readonly List<KeyValuePair<string, string>> MyRoomCustomBGList
@@ -68,14 +66,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         static Constants()
         {
-            string modsPath = Path.Combine(Path.GetFullPath(".\\"), @"Mod\MeidoPhotoStudio");
+            string modsPath = Path.Combine(BepInEx.Paths.GameRootPath, @"Mod\MeidoPhotoStudio");
+
             customPosePath = Path.Combine(modsPath, "Custom Poses");
             scenesPath = Path.Combine(modsPath, "Scenes");
             kankyoPath = Path.Combine(modsPath, "Environments");
-            configPath = Path.Combine(
-                Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
-                @"Config\MeidoPhotoStudio"
-            );
+            configPath = Path.Combine(BepInEx.Paths.ConfigPath, "MeidoPhotoStudio");
 
             foreach (string directory in new[] { customPosePath, scenesPath, kankyoPath, configPath })
             {
@@ -667,10 +663,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         public static MenuFilesEventArgs HandItems => new MenuFilesEventArgs(EventType.HandItems);
         public static MenuFilesEventArgs MenuFiles => new MenuFilesEventArgs(EventType.MenuFiles);
-
-        public MenuFilesEventArgs(EventType type)
-        {
-            this.Type = type;
-        }
+        public MenuFilesEventArgs(EventType type) => this.Type = type;
     }
 }

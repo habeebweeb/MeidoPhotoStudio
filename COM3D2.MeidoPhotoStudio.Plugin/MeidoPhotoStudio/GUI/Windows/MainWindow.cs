@@ -106,7 +106,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             labelStyle.fontSize = 10;
             labelStyle.alignment = TextAnchor.LowerLeft;
 
-            GUILayout.Label("MeidoPhotoStudio 1.0.0", labelStyle);
+            GUILayout.Label(MeidoPhotoStudio.pluginString, labelStyle);
             GUI.DragWindow();
         }
 
