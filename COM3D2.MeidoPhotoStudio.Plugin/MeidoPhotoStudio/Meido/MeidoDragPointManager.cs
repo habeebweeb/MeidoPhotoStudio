@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -144,6 +145,57 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (point == AttachPoint.None) return null;
             return BoneTransform[PointToBone[point]];
+        }
+
+        public byte[] SerializeHand(bool right)
+        {
+            Bone start = right ? Bone.Finger0R : Bone.Finger0L;
+            Bone end = right ? Bone.Finger4R : Bone.Finger4L;
+
+            byte[] buf;
+            using (MemoryStream memoryStream = new MemoryStream())
+            using (BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
+            {
+                for (Bone bone = start; bone <= end; bone += 4)
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        Quaternion localRotation = BoneTransform[bone + i].localRotation;
+                        binaryWriter.Write(localRotation.x);
+                        binaryWriter.Write(localRotation.y);
+                        binaryWriter.Write(localRotation.z);
+                        binaryWriter.Write(localRotation.w);
+                    }
+                }
+                buf = memoryStream.ToArray();
+            }
+            return buf;
+        }
+
+        public void DeserializeHand(byte[] handBinary, bool right, bool mirroring = false)
+        {
+            Bone start = right ? Bone.Finger0R : Bone.Finger0L;
+            Bone end = right ? Bone.Finger4R : Bone.Finger4L;
+
+            int mirror = mirroring ? -1 : 1;
+
+            using (MemoryStream memoryStream = new MemoryStream(handBinary))
+            using (BinaryReader binaryReader = new BinaryReader(memoryStream))
+            {
+                for (Bone bone = start; bone <= end; bone += 4)
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        Vector4 vec4;
+                        vec4.x = binaryReader.ReadSingle() * mirror;
+                        vec4.y = binaryReader.ReadSingle() * mirror;
+                        vec4.z = binaryReader.ReadSingle();
+                        vec4.w = binaryReader.ReadSingle();
+
+                        BoneTransform[bone + i].localRotation = new Quaternion(vec4.x, vec4.y, vec4.z, vec4.w);
+                    }
+                }
+            }
         }
 
         public void Destroy()

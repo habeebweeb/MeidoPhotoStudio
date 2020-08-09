@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using Newtonsoft.Json;
 using MyRoomCustom;
 using UnityEngine;
@@ -14,11 +15,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private static bool beginHandItemInit;
         public const string customPoseDirectory = "Custom Poses";
+        public const string customHandDirectory = "Hand Presets";
         public const string sceneDirectory = "Scenes";
         public const string kankyoDirectory = "Environments";
         public const string configDirectory = "MeidoPhotoStudio";
         public const string translationDirectory = "Translations";
         public static readonly string customPosePath;
+        public static readonly string customHandPath;
         public static readonly string scenesPath;
         public static readonly string kankyoPath;
         public static readonly string configPath;
@@ -39,6 +42,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static readonly Dictionary<string, List<string>> PoseDict = new Dictionary<string, List<string>>();
         public static readonly List<string> CustomPoseGroupList = new List<string>();
         public static readonly Dictionary<string, List<string>> CustomPoseDict = new Dictionary<string, List<string>>();
+        public static readonly List<string> CustomHandGroupList = new List<string>();
+        public static readonly Dictionary<string, List<string>> CustomHandDict = new Dictionary<string, List<string>>();
         public static readonly List<string> FaceBlendList = new List<string>();
         public static readonly List<string> BGList = new List<string>();
         public static readonly List<KeyValuePair<string, string>> MyRoomCustomBGList
@@ -56,6 +61,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static bool MenuFilesInitialized { get; private set; } = false;
         public static event EventHandler<MenuFilesEventArgs> MenuFilesChange;
         public static event EventHandler<CustomPoseEventArgs> customPoseChange;
+        public static event EventHandler<CustomPoseEventArgs> customHandChange;
         public enum DoguCategory
         {
             Other, Mob, Desk, HandItem, BGSmall
@@ -75,11 +81,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             string modsPath = Path.Combine(BepInEx.Paths.GameRootPath, @"Mod\MeidoPhotoStudio");
 
             customPosePath = Path.Combine(modsPath, customPoseDirectory);
+            customHandPath = Path.Combine(modsPath, customHandDirectory);
             scenesPath = Path.Combine(modsPath, sceneDirectory);
             kankyoPath = Path.Combine(modsPath, kankyoDirectory);
             configPath = Path.Combine(BepInEx.Paths.ConfigPath, configDirectory);
 
-            foreach (string directory in new[] { customPosePath, scenesPath, kankyoPath, configPath })
+            string[] directories = new[] { customPosePath, customHandPath, scenesPath, kankyoPath, configPath };
+
+            foreach (string directory in directories)
             {
                 if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
             }
@@ -88,6 +97,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static void Initialize()
         {
             InitializePoses();
+            InitializeHandPresets();
             InitializeFaceBlends();
             InitializeBGs();
             InitializeDogu();
@@ -141,6 +151,62 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Constants.CustomPoseDict[category].Sort();
 
             customPoseChange?.Invoke(null, new CustomPoseEventArgs(fullPath, category));
+        }
+
+        public static void AddHand(byte[] handBinary, bool right, string filename, string directory)
+        {
+            filename = Utility.SanitizePathPortion(filename);
+            directory = Utility.SanitizePathPortion(directory);
+            if (string.IsNullOrEmpty(filename)) filename = "custom_hand";
+            if (directory.Equals(Constants.customHandDirectory, StringComparison.InvariantCultureIgnoreCase))
+            {
+                directory = String.Empty;
+            }
+            directory = Path.Combine(Constants.customHandPath, directory);
+
+            if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
+
+            string fullPath = Path.Combine(directory, filename);
+
+            if (File.Exists($"{fullPath}.xml")) fullPath += $"_{DateTime.Now:yyyyMMddHHmmss}";
+
+            fullPath += ".xml";
+
+            if (!fullPath.StartsWith(Constants.customHandPath))
+            {
+                Utility.Logger.LogError($"Could not save hand! Path is invalid: '{fullPath}'");
+                return;
+            }
+
+            XDocument finalXml = new XDocument(new XDeclaration("1.0", "utf-8", "true"),
+                new XComment("CM3D2 FingerData"),
+                new XElement("FingerData",
+                    new XElement("GameVersion", Misc.GAME_VERSION),
+                    new XElement("RightData", right),
+                    new XElement("BinaryData", Convert.ToBase64String(handBinary))
+                )
+            );
+
+            finalXml.Save(fullPath);
+
+            FileInfo fileInfo = new FileInfo(fullPath);
+
+            string category = fileInfo.Directory.Name;
+            string handGroup = Constants.CustomHandGroupList.Find(
+                group => string.Equals(category, group, StringComparison.InvariantCultureIgnoreCase)
+            );
+
+            if (string.IsNullOrEmpty(handGroup))
+            {
+                Constants.CustomHandGroupList.Add(category);
+                Constants.CustomHandDict[category] = new List<string>();
+            }
+            else category = handGroup;
+
+            Constants.CustomHandDict[category].Add(fullPath);
+            Constants.CustomHandDict[category].Sort();
+
+            customHandChange?.Invoke(null, new CustomPoseEventArgs(fullPath, category));
         }
 
         public static void InitializePoses()
@@ -224,6 +290,32 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (string directory in Directory.GetDirectories(customPosePath))
             {
                 GetPoses(directory);
+            }
+        }
+
+        public static void InitializeHandPresets()
+        {
+            Action<string> GetPresets = directory =>
+            {
+                IEnumerable<string> presetList = Directory.GetFiles(directory)
+                    .Where(file => Path.GetExtension(file) == ".xml");
+
+                if (presetList.Count() > 0)
+                {
+                    string presetCategory = new DirectoryInfo(directory).Name;
+                    if (presetCategory != customHandDirectory) CustomHandGroupList.Add(presetCategory);
+                    CustomHandDict[presetCategory] = new List<string>(presetList);
+                }
+            };
+
+            CustomHandGroupList.Add(customHandDirectory);
+            CustomHandDict[customHandDirectory] = new List<string>();
+
+            GetPresets(customHandPath);
+
+            foreach (string directory in Directory.GetDirectories(customHandPath))
+            {
+                GetPresets(directory);
             }
         }
 

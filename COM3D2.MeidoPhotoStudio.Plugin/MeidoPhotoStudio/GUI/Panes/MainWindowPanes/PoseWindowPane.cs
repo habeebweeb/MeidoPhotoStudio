@@ -15,20 +15,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private MaidFaceLookPane maidFaceLookPane;
         private MaidDressingPane maidDressingPane;
         private CopyPosePane copyPosePane;
+        private HandPresetPane handPresetPane;
+        private SaveHandPane saveHandPane;
         private MaidIKPane maidIKPane;
         private Toggle freeLookToggle;
         private Toggle savePoseToggle;
-
+        private Toggle saveHandToggle;
         private bool savePoseMode = false;
+        private bool saveHandMode = false;
 
         public PoseWindowPane(MeidoManager meidoManager, MaidSwitcherPane maidSwitcherPane)
         {
             this.meidoManager = meidoManager;
             this.maidSwitcherPane = maidSwitcherPane;
 
-            this.savePosePane = new SavePosePane(meidoManager);
-            this.maidPosePane = new MaidPoseSelectorPane(meidoManager);
-            this.maidFaceLookPane = new MaidFaceLookPane(meidoManager);
+            this.maidPosePane = AddPane(new MaidPoseSelectorPane(meidoManager));
+            this.savePosePane = AddPane(new SavePosePane(meidoManager));
+
+            this.maidFaceLookPane = AddPane(new MaidFaceLookPane(meidoManager));
             this.maidFaceLookPane.Enabled = false;
 
             this.freeLookToggle = new Toggle(Translation.Get("freeLook", "freeLookToggle"), false);
@@ -37,17 +41,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.savePoseToggle = new Toggle(Translation.Get("posePane", "saveToggle"));
             this.savePoseToggle.ControlEvent += (s, a) => savePoseMode = !savePoseMode;
 
-            this.maidDressingPane = new MaidDressingPane(meidoManager);
+            this.maidDressingPane = AddPane(new MaidDressingPane(meidoManager));
 
-            this.maidIKPane = new MaidIKPane(meidoManager);
+            this.maidIKPane = AddPane(new MaidIKPane(meidoManager));
 
-            this.copyPosePane = new CopyPosePane(meidoManager);
+            this.copyPosePane = AddPane(new CopyPosePane(meidoManager));
+
+            this.saveHandToggle = new Toggle(Translation.Get("handPane", "saveToggle"));
+            this.saveHandToggle.ControlEvent += (s, a) => saveHandMode = !saveHandMode;
+
+            this.handPresetPane = AddPane(new HandPresetPane(meidoManager));
+            this.saveHandPane = AddPane(new SaveHandPane(meidoManager));
         }
 
         protected override void ReloadTranslation()
         {
             this.freeLookToggle.Label = Translation.Get("freeLook", "freeLookToggle");
             this.savePoseToggle.Label = Translation.Get("posePane", "saveToggle");
+            this.saveHandToggle.Label = Translation.Get("handPane", "saveToggle");
         }
 
         public override void Draw()
@@ -57,11 +68,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.scrollPos = GUILayout.BeginScrollView(this.scrollPos);
 
-            GUILayout.BeginHorizontal();
             GUI.enabled = this.meidoManager.HasActiveMeido;
+            GUILayout.BeginHorizontal();
             freeLookToggle.Draw();
             savePoseToggle.Draw();
             GUILayout.EndHorizontal();
+            GUI.enabled = true;
 
             if (savePoseMode) savePosePane.Draw();
             else maidFaceLookPane.Draw();
@@ -71,6 +83,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             MiscGUI.WhiteLine();
 
             maidIKPane.Draw();
+
+            GUI.enabled = this.meidoManager.HasActiveMeido;
+            saveHandToggle.Draw();
+            GUI.enabled = true;
+
+            if (saveHandMode) saveHandPane.Draw();
+            else handPresetPane.Draw();
 
             copyPosePane.Draw();
 
@@ -92,11 +111,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.updating = true;
                 this.freeLookToggle.Value = this.meidoManager.ActiveMeido?.IsFreeLook ?? false;
                 this.updating = false;
-                maidPosePane.UpdatePane();
-                maidFaceLookPane.UpdatePane();
-                maidDressingPane.UpdatePane();
-                maidIKPane.UpdatePane();
-                copyPosePane.UpdatePane();
+                base.UpdatePanes();
             }
         }
 

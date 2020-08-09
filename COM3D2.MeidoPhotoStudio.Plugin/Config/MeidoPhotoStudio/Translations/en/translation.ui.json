@@ -111,9 +111,14 @@
         "shiftPanties": "Shift",
         "detail": "Detailed Clothing"
     },
-    "hands": {
-        "rightHand": "R Hand",
-        "leftHand": "L Hand"
+    "handPane": {
+        "saveToggle": "Save Hand",
+        "categoryHeader": "Category",
+        "nameHeader": "Name",
+        "saveLeftButton": "Left",
+        "saveRightButton": "Right",
+        "rightHand": "Right",
+        "leftHand": "Left"
     },
     "copyPosePane": {
         "copyButton": "Copy"

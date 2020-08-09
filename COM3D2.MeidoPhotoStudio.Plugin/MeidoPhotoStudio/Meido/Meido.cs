@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Xml.Linq;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
@@ -113,6 +114,30 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             return cache.GetAnmBinary(true, true);
         }
+
+        public void SetHandPreset(string filename, bool right)
+        {
+            if (this.dragPointManager == null) return;
+
+            XDocument handDocument = XDocument.Load(filename);
+            XElement handElement = handDocument.Element("FingerData");
+            if (handElement.IsEmpty || handElement.Element("GameVersion").IsEmpty
+                || handElement.Element("RightData").IsEmpty || handElement.Element("BinaryData").IsEmpty)
+            {
+                return;
+            }
+
+            IsStop = true;
+
+            bool rightData = bool.Parse(handElement.Element("RightData").Value);
+            string base64Data = handElement.Element("BinaryData").Value;
+
+            byte[] handData = Convert.FromBase64String(base64Data);
+
+            this.dragPointManager.DeserializeHand(handData, right, rightData != right);
+        }
+
+        public byte[] SerializeHand(bool right) => this.dragPointManager?.SerializeHand(right);
 
         public Maid Load(int activeSlot, int maidSlot)
         {
