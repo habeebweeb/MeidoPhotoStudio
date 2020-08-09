@@ -45,11 +45,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void Draw()
         {
             MiscGUI.Header(categoryHeader);
-            this.categoryComboBox.Draw();
+            this.categoryComboBox.Draw(GUILayout.Width(160f));
 
             MiscGUI.Header(nameHeader);
             GUILayout.BeginHorizontal();
-            this.poseNameTextField.Draw();
+            this.poseNameTextField.Draw(GUILayout.Width(160f));
             this.savePoseButton.Draw(GUILayout.ExpandWidth(false));
             GUILayout.EndHorizontal();
         }

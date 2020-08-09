@@ -14,6 +14,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private MaidSwitcherPane maidSwitcherPane;
         private MaidFaceLookPane maidFaceLookPane;
         private MaidDressingPane maidDressingPane;
+        private CopyPosePane copyPosePane;
         private MaidIKPane maidIKPane;
         private Toggle freeLookToggle;
         private Toggle savePoseToggle;
@@ -30,15 +31,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.maidFaceLookPane = new MaidFaceLookPane(meidoManager);
             this.maidFaceLookPane.Enabled = false;
 
-            this.maidDressingPane = new MaidDressingPane(meidoManager);
-
-            this.maidIKPane = new MaidIKPane(meidoManager);
-
             this.freeLookToggle = new Toggle(Translation.Get("freeLook", "freeLookToggle"), false);
             this.freeLookToggle.ControlEvent += (s, a) => SetMaidFreeLook();
 
             this.savePoseToggle = new Toggle(Translation.Get("posePane", "saveToggle"));
             this.savePoseToggle.ControlEvent += (s, a) => savePoseMode = !savePoseMode;
+
+            this.maidDressingPane = new MaidDressingPane(meidoManager);
+
+            this.maidIKPane = new MaidIKPane(meidoManager);
+
+            this.copyPosePane = new CopyPosePane(meidoManager);
         }
 
         protected override void ReloadTranslation()
@@ -69,6 +72,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             maidIKPane.Draw();
 
+            copyPosePane.Draw();
+
             GUILayout.EndScrollView();
         }
 
@@ -91,6 +96,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 maidFaceLookPane.UpdatePane();
                 maidDressingPane.UpdatePane();
                 maidIKPane.UpdatePane();
+                copyPosePane.UpdatePane();
             }
         }
 

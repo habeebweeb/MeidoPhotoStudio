@@ -109,7 +109,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUI.DragWindow();
         }
 
-
         private void UpdateMeido(object sender, MeidoUpdateEventArgs args)
         {
             if (args.FromMeido)

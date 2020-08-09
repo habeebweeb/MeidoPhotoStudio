@@ -114,24 +114,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return cache.GetAnmBinary(true, true);
         }
 
-        public Maid Load(int slot, int activeSlot)
+        public Maid Load(int activeSlot, int maidSlot)
         {
             isLoading = true;
-            this.ActiveSlot = slot;
+            this.ActiveSlot = activeSlot;
 
             Maid.Visible = true;
 
             if (!Maid.body0.isLoadedBody)
             {
-                if (activeSlot >= MAX_MAIDS)
+                if (maidSlot >= MAX_MAIDS)
                 {
                     Maid.DutPropAll();
                     Maid.AllProcPropSeqStart();
                 }
                 else
                 {
-                    GameMain.Instance.CharacterMgr.Activate(activeSlot, activeSlot, false, false);
-                    GameMain.Instance.CharacterMgr.CharaVisible(activeSlot, true, false);
+                    GameMain.Instance.CharacterMgr.Activate(maidSlot, maidSlot, false, false);
+                    GameMain.Instance.CharacterMgr.CharaVisible(maidSlot, true, false);
                 }
             }
             else
@@ -216,6 +216,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Maid.GetAnimation()[pose].speed = 0f;
             }
 
+            SetMune();
+        }
+
+        public void CopyPose(Meido fromMeido)
+        {
+            byte[] poseBinary = fromMeido.SerializePose();
+            string tag = $"copy_{fromMeido.Maid.status.guid}";
+            Maid.body0.CrossFade(tag, poseBinary, false, true, false, 0f);
+            Maid.SetAutoTwistAll(true);
+            Maid.transform.rotation = fromMeido.Maid.transform.rotation;
             SetMune();
         }
 
