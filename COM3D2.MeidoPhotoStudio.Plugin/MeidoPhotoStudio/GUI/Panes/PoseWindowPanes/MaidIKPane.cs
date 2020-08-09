@@ -65,6 +65,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUI.enabled = active ? this.ikToggle.Value : false;
             this.boneIKToggle.Draw();
             GUILayout.EndHorizontal();
+            GUI.enabled = true;
         }
     }
 }

@@ -287,6 +287,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             pantsuShiftToggle.Draw();
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
+
+            GUI.enabled = true;
         }
     }
 }

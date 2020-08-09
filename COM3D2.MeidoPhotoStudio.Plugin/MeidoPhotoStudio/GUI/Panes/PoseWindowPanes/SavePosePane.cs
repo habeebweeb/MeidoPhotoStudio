@@ -7,7 +7,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private MeidoManager meidoManager;
         private Button savePoseButton;
-        private Button deletePoseButton;
         private TextField poseNameTextField;
         private ComboBox categoryComboBox;
         private string categoryHeader;
@@ -28,7 +27,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.savePoseButton = new Button(Translation.Get("posePane", "saveButton"));
             this.savePoseButton.ControlEvent += OnSavePose;
 
-            this.deletePoseButton = new Button(Translation.Get("posePane", "deleteButton"));
             this.categoryComboBox = new ComboBox(Constants.CustomPoseGroupList.ToArray());
             this.poseNameTextField = new TextField();
             this.poseNameTextField.ControlEvent += OnSavePose;
@@ -39,11 +37,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.categoryHeader = Translation.Get("posePane", "categoryHeader");
             this.nameHeader = Translation.Get("posePane", "nameHeader");
             this.savePoseButton.Label = Translation.Get("posePane", "saveButton");
-            this.deletePoseButton.Label = Translation.Get("posePane", "deleteButton");
         }
 
         public override void Draw()
         {
+            GUI.enabled = this.meidoManager.HasActiveMeido;
+
             MiscGUI.Header(categoryHeader);
             this.categoryComboBox.Draw(GUILayout.Width(160f));
 
@@ -52,6 +51,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.poseNameTextField.Draw(GUILayout.Width(160f));
             this.savePoseButton.Draw(GUILayout.ExpandWidth(false));
             GUILayout.EndHorizontal();
+
+            GUI.enabled = true;
         }
 
         private void OnSavePose(object sender, EventArgs args)

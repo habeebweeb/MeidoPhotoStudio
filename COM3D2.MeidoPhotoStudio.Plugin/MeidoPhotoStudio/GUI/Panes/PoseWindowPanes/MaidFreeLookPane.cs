@@ -64,6 +64,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             lookXSlider.Draw();
             lookYSlider.Draw();
             GUILayout.EndHorizontal();
+
+            GUI.enabled = true;
         }
     }
 }
