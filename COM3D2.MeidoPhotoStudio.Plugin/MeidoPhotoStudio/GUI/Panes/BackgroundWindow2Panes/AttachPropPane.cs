@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -221,8 +222,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             int index = Mathf.Clamp(this.meidoDropdown.SelectedItemIndex, 0, this.meidoManager.ActiveMeidoList.Count);
 
+            string[] dropdownList = this.meidoManager.ActiveMeidoList.Count == 0
+                ? new[] { Translation.Get("systemMessage", "noMaids") }
+                : this.meidoManager.ActiveMeidoList.Select(
+                    meido => $"{meido.ActiveSlot + 1}: {meido.FirstName} {meido.LastName}"
+                ).ToArray();
             this.updating = true;
-            this.meidoDropdown.SetDropdownItems(this.meidoManager.ActiveMeidoNameList, index);
+            this.meidoDropdown.SetDropdownItems(dropdownList, index);
             this.updating = false;
 
             meidoDropdownActive = this.meidoManager.HasActiveMeido;

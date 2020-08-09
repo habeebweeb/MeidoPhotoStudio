@@ -9,25 +9,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private static CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;
         private int undress = 0;
+        private int numberOfMeidos;
         public Meido[] meidos { get; private set; }
         public List<int> SelectMeidoList { get; private set; } = new List<int>();
         public List<Meido> ActiveMeidoList { get; private set; } = new List<Meido>();
         public Meido ActiveMeido => ActiveMeidoList.Count > 0 ? ActiveMeidoList[SelectedMeido] : null;
         public bool HasActiveMeido => ActiveMeido != null;
-        public int numberOfMeidos;
         public event EventHandler<MeidoUpdateEventArgs> UpdateMeido;
         public event EventHandler EndCallMeidos;
         public event EventHandler BeginCallMeidos;
         private int selectedMeido = 0;
-        public string[] ActiveMeidoNameList
-        {
-            get
-            {
-                return ActiveMeidoList.Count == 0
-                    ? new[] { Translation.Get("systemMessage", "noMaids") }
-                    : ActiveMeidoList.Select(meido => $"{meido.FirstName} {meido.LastName}").ToArray();
-            }
-        }
         public int SelectedMeido
         {
             get => selectedMeido;
