@@ -9,6 +9,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected Vector2 scrollPos;
         public bool ActiveWindow { get; set; }
 
+        public T AddPane<T>(T pane) where T : BasePane
+        {
+            this.Panes.Add(pane);
+            return pane;
+        }
+
         public virtual void UpdatePanes()
         {
             foreach (BasePane pane in Panes) pane.UpdatePane();

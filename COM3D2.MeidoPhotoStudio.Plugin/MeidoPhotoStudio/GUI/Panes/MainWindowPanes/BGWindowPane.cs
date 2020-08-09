@@ -11,19 +11,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public BGWindowPane(EnvironmentManager environmentManager)
         {
-            this.backgroundSelectorPane = new BackgroundSelectorPane(environmentManager);
-            this.dragPointPane = new DragPointPane();
-            this.lightsPane = new LightsPane(environmentManager);
+            this.backgroundSelectorPane = AddPane(new BackgroundSelectorPane(environmentManager));
+            this.dragPointPane = AddPane(new DragPointPane());
+            this.lightsPane = AddPane(new LightsPane(environmentManager));
 
             EffectManager effectManager = environmentManager.EffectManager;
 
-            this.effectsPane = new EffectsPane()
+            this.effectsPane = AddPane(new EffectsPane()
             {
                 ["bloom"] = new BloomPane(effectManager),
                 ["dof"] = new DepthOfFieldPane(effectManager),
                 ["vignette"] = new VignettePane(effectManager),
                 ["fog"] = new FogPane(effectManager)
-            };
+            });
         }
 
         public override void Draw()
@@ -40,8 +40,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (ActiveWindow)
             {
-                this.lightsPane.UpdatePane();
-                this.effectsPane.UpdatePane();
+                base.UpdatePanes();
             }
         }
     }

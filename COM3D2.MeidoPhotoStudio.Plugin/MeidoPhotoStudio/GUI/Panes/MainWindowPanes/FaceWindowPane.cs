@@ -15,8 +15,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.maidSwitcherPane = maidSwitcherPane;
 
-            this.maidFaceSliderPane = new MaidFaceSliderPane(this.meidoManager);
-            this.maidFaceBlendPane = new MaidFaceBlendPane(this.meidoManager);
+            this.maidFaceSliderPane = AddPane(new MaidFaceSliderPane(this.meidoManager));
+            this.maidFaceBlendPane = AddPane(new MaidFaceBlendPane(this.meidoManager));
         }
 
         public override void Draw()
@@ -39,8 +39,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 this.meidoManager.ActiveMeido.Maid.boMabataki = false;
                 this.meidoManager.ActiveMeido.Maid.body0.Face.morph.EyeMabataki = 0f;
-                this.maidFaceSliderPane.UpdatePane();
-                this.maidFaceBlendPane.UpdatePane();
+                base.UpdatePanes();
             }
         }
     }

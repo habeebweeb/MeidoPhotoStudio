@@ -20,7 +20,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             placementOKButton.ControlEvent += (o, a) => Debug.Log("Placement changed");
             Controls.Add(placementOKButton);
 
-            maidSelectorPane = new MaidSelectorPane(meidoManager);
+            maidSelectorPane = AddPane(new MaidSelectorPane(meidoManager));
         }
 
         protected override void ReloadTranslation()
@@ -31,7 +31,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void UpdatePanes()
         {
-            maidSelectorPane.UpdatePane();
+            base.UpdatePanes();
         }
 
         public override void Draw()
