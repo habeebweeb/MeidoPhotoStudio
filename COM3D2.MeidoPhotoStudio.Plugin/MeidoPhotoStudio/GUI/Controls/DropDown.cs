@@ -11,6 +11,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public event EventHandler DropdownClose;
         private bool clickedYou = false;
         private bool showDropdown = false;
+        private string label;
+        private bool isMenu = false;
         public string[] DropdownList { get; private set; }
         public int DropdownID { get; private set; }
         private Vector2 scrollPos;
@@ -40,6 +42,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.selectedItemIndex = Mathf.Clamp(value, 0, DropdownList.Length - 1);
                 OnDropdownEvent(SelectionChange);
             }
+        }
+        public string SelectedItem => DropdownList[SelectedItemIndex];
+
+        public Dropdown(string label, string[] itemList, int selectedItemIndex = 0)
+            : this(itemList, selectedItemIndex)
+        {
+            isMenu = true;
+            this.label = label;
         }
 
         public Dropdown(string[] itemList, int selectedItemIndex = 0)
@@ -95,7 +105,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Draw(GUIStyle buttonStyle, params GUILayoutOption[] layoutOptions)
         {
-            bool clicked = GUILayout.Button(DropdownList[selectedItemIndex], buttonStyle, layoutOptions);
+            bool clicked = GUILayout.Button(
+                isMenu ? label : DropdownList[selectedItemIndex], buttonStyle, layoutOptions
+            );
 
             if (clicked)
             {
