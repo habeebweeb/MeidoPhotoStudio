@@ -21,7 +21,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 StringComparer.InvariantCultureIgnoreCase
             );
 
-            string rootTranslationPath = Path.Combine(Constants.configPath, "Translations");
+            string rootTranslationPath = Path.Combine(Constants.configPath, Constants.translationDirectory);
 
             string currentTranslationPath = Path.Combine(rootTranslationPath, CurrentLanguage);
 

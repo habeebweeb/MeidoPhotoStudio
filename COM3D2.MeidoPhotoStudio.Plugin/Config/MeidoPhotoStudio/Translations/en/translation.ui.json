@@ -53,10 +53,14 @@
         "normal2": "Normal 2",
         "ero2": "Ero 2"
     },
-    "poseSave": {
+    "posePane": {
+        "categoryHeader": "Category",
+        "nameHeader": "Name",
         "saveToggle": "Save Pose",
         "saveButton": "Add",
-        "deleteButton": "D"
+        "deleteButton": "D",
+        "baseTab": "Base",
+        "customTab": "Custom"
     },
     "freeLook": {
         "freeLookToggle": "F-Look",

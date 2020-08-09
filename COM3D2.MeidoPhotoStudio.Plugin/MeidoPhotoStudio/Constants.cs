@@ -13,6 +13,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class Constants
     {
         private static bool beginHandItemInit;
+        public const string customPoseDirectory = "Custom Poses";
+        public const string sceneDirectory = "Scenes";
+        public const string kankyoDirectory = "Environments";
+        public const string configDirectory = "MeidoPhotoStudio";
+        public const string translationDirectory = "Translations";
         public static readonly string customPosePath;
         public static readonly string scenesPath;
         public static readonly string kankyoPath;
@@ -50,6 +55,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static bool HandItemsInitialized { get; private set; } = false;
         public static bool MenuFilesInitialized { get; private set; } = false;
         public static event EventHandler<MenuFilesEventArgs> MenuFilesChange;
+        public static event EventHandler<CustomPoseEventArgs> customPoseChange;
         public enum DoguCategory
         {
             Other, Mob, Desk, HandItem, BGSmall
@@ -68,10 +74,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             string modsPath = Path.Combine(BepInEx.Paths.GameRootPath, @"Mod\MeidoPhotoStudio");
 
-            customPosePath = Path.Combine(modsPath, "Custom Poses");
-            scenesPath = Path.Combine(modsPath, "Scenes");
-            kankyoPath = Path.Combine(modsPath, "Environments");
-            configPath = Path.Combine(BepInEx.Paths.ConfigPath, "MeidoPhotoStudio");
+            customPosePath = Path.Combine(modsPath, customPoseDirectory);
+            scenesPath = Path.Combine(modsPath, sceneDirectory);
+            kankyoPath = Path.Combine(modsPath, kankyoDirectory);
+            configPath = Path.Combine(BepInEx.Paths.ConfigPath, configDirectory);
 
             foreach (string directory in new[] { customPosePath, scenesPath, kankyoPath, configPath })
             {
@@ -86,6 +92,55 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             InitializeBGs();
             InitializeDogu();
             InitializeMyRoomProps();
+        }
+
+        public static void AddPose(byte[] anmBinary, string filename, string directory)
+        {
+            // TODO: Consider writing a file system monitor
+
+            filename = Utility.SanitizePathPortion(filename);
+            directory = Utility.SanitizePathPortion(directory);
+            if (string.IsNullOrEmpty(filename)) filename = "custom_pose";
+            if (directory.Equals(Constants.customPoseDirectory, StringComparison.InvariantCultureIgnoreCase))
+            {
+                directory = String.Empty;
+            }
+            directory = Path.Combine(Constants.customPosePath, directory);
+
+            if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
+
+            string fullPath = Path.Combine(directory, filename);
+
+            if (File.Exists($"{fullPath}.anm")) fullPath += $"_{DateTime.Now:yyyyMMddHHmmss}";
+
+            fullPath += ".anm";
+
+            if (!fullPath.StartsWith(Constants.customPosePath))
+            {
+                Utility.Logger.LogError($"Could not save pose! Path is invalid: '{fullPath}'");
+                return;
+            }
+
+            File.WriteAllBytes(fullPath, anmBinary);
+
+            FileInfo fileInfo = new FileInfo(fullPath);
+
+            string category = fileInfo.Directory.Name;
+            string poseGroup = Constants.CustomPoseGroupList.Find(
+                group => string.Equals(category, group, StringComparison.InvariantCultureIgnoreCase)
+            );
+
+            if (string.IsNullOrEmpty(poseGroup))
+            {
+                Constants.CustomPoseGroupList.Add(category);
+                Constants.CustomPoseDict[category] = new List<string>();
+            }
+            else category = poseGroup;
+
+            Constants.CustomPoseDict[category].Add(fullPath);
+            Constants.CustomPoseDict[category].Sort();
+
+            customPoseChange?.Invoke(null, new CustomPoseEventArgs(fullPath, category));
         }
 
         public static void InitializePoses()
@@ -156,10 +211,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (poseList.Count > 0)
                 {
                     string poseGroupName = new DirectoryInfo(directory).Name;
-                    CustomPoseGroupList.Add(poseGroupName);
+                    if (poseGroupName != customPoseDirectory) CustomPoseGroupList.Add(poseGroupName);
                     CustomPoseDict[poseGroupName] = poseList;
                 }
             };
+
+            CustomPoseGroupList.Add(customPoseDirectory);
+            CustomPoseDict[customPoseDirectory] = new List<string>();
 
             GetPoses(customPosePath);
 
@@ -663,5 +721,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static MenuFilesEventArgs HandItems => new MenuFilesEventArgs(EventType.HandItems);
         public static MenuFilesEventArgs MenuFiles => new MenuFilesEventArgs(EventType.MenuFiles);
         public MenuFilesEventArgs(EventType type) => this.Type = type;
+    }
+
+    public class CustomPoseEventArgs : EventArgs
+    {
+        public string Category { get; }
+        public string Path { get; }
+        public CustomPoseEventArgs(string path, string category)
+        {
+            this.Path = path;
+            this.Category = category;
+        }
     }
 }

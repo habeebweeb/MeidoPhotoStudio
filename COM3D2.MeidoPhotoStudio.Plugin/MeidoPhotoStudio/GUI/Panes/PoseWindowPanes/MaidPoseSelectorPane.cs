@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Dropdown poseDropdown;
         private SelectionGrid poseModeGrid;
         private bool customPoseMode = false;
+        private bool poseListEnabled = true;
         private Dictionary<string, List<string>> CurrentPoseDict
         {
             get => customPoseMode ? Constants.CustomPoseDict : Constants.PoseDict;
@@ -30,12 +32,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private string SelectedPose => CurrentPoseList[SelectedPoseIndex];
         private PoseInfo CurrentPoseInfo => new PoseInfo(SelectedPoseGroup, SelectedPose, customPoseMode);
         private string previousPoseGroup;
+        private static readonly string[] tabTranslations = new[] { "baseTab", "customTab" };
 
         public MaidPoseSelectorPane(MeidoManager meidoManager)
         {
+            Constants.customPoseChange += SavePoseEnd;
             this.meidoManager = meidoManager;
 
-            this.poseModeGrid = new SelectionGrid(new[] { "Base", "Custom" });
+            this.poseModeGrid = new SelectionGrid(Translation.GetArray("posePane", tabTranslations));
             this.poseModeGrid.ControlEvent += (s, a) => SetPoseMode();
 
             this.poseGroupDropdown = new Dropdown(Translation.GetArray("poseGroupDropdown", Constants.PoseGroupList));
@@ -61,6 +65,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void ReloadTranslation()
         {
+            this.poseModeGrid.SetItems(Translation.GetArray("posePane", tabTranslations));
             if (!customPoseMode)
             {
                 this.poseGroupDropdown.SetDropdownItems(
@@ -96,6 +101,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
+            GUI.enabled = GUI.enabled && poseListEnabled;
             this.poseLeftButton.Draw(arrowLayoutOptions);
             this.poseDropdown.Draw(dropdownLayoutOptions);
             this.poseRightButton.Draw(arrowLayoutOptions);
@@ -137,6 +143,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.updating = false;
         }
 
+        private void SavePoseEnd(object sender, CustomPoseEventArgs args)
+        {
+            this.updating = true;
+            this.poseModeGrid.SelectedItemIndex = 1;
+            this.poseGroupDropdown.SetDropdownItems(
+                CurrentPoseGroupList.ToArray(), CurrentPoseGroupList.IndexOf(args.Category)
+            );
+            this.updating = false;
+
+            this.poseDropdown.SetDropdownItems(
+                UIPoseList(CurrentPoseList), CurrentPoseDict[args.Category].IndexOf(args.Path)
+            );
+        }
+
         private void SetPoseMode()
         {
             customPoseMode = poseModeGrid.SelectedItemIndex == 1;
@@ -146,6 +166,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             string[] list = customPoseMode
                 ? CurrentPoseGroupList.ToArray()
                 : Translation.GetArray("poseGroupDropdown", CurrentPoseGroupList);
+
             this.poseGroupDropdown.SetDropdownItems(list, 0);
         }
 
@@ -158,13 +179,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else
             {
                 previousPoseGroup = SelectedPoseGroup;
-                this.poseDropdown.SetDropdownItems(UIPoseList(CurrentPoseList), 0);
+                List<string> poseList = CurrentPoseList;
+
+                poseListEnabled = true;
+                if (poseList.Count == 0)
+                {
+                    poseListEnabled = false;
+                    this.poseDropdown.SetDropdownItems(new[] { "No Poses" }, 0);
+                }
+                else
+                {
+                    this.poseDropdown.SetDropdownItems(UIPoseList(CurrentPoseList), 0);
+                }
             }
         }
 
         private void ChangePose()
         {
-            if (updating) return;
+            if (!poseListEnabled || updating) return;
             meidoManager.ActiveMeido.SetPose(CurrentPoseInfo);
         }
 

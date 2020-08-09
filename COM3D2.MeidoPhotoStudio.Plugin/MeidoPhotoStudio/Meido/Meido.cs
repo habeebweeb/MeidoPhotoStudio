@@ -101,6 +101,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
+        public byte[] SerializePose()
+        {
+            CacheBoneDataArray cache = this.Maid.gameObject.GetComponent<CacheBoneDataArray>();
+
+            if (cache == null)
+            {
+                cache = this.Maid.gameObject.AddComponent<CacheBoneDataArray>();
+                cache.CreateCache(this.Maid.body0.GetBone("Bip01"));
+            }
+
+            return cache.GetAnmBinary(true, true);
+        }
+
         public Maid Load(int slot, int activeSlot)
         {
             isLoading = true;

@@ -111,5 +111,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             float largest = Mathf.Max(scale.x, Mathf.Max(scale.y, scale.z));
             go.transform.localScale = Vector3.one * (float)Math.Round(largest, 3);
         }
+
+        public static string SanitizePathPortion(string path)
+        {
+            char[] invalid = Path.GetInvalidFileNameChars();
+            path = path.Trim();
+            path = string.Join("_", path.Split(invalid)).Replace(".", "").Trim('_');
+            return path;
+        }
     }
 }
