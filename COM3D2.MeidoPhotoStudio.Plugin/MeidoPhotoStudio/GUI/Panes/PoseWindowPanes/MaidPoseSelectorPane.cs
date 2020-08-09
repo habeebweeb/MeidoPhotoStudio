@@ -16,8 +16,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Dropdown poseGroupDropdown;
         private Dropdown poseDropdown;
         private SelectionGrid poseModeGrid;
-        private bool customPoseMode = false;
-        private bool poseListEnabled = true;
+        private bool customPoseMode;
+        private bool poseListEnabled;
         private Dictionary<string, List<string>> CurrentPoseDict
         {
             get => customPoseMode ? Constants.CustomPoseDict : Constants.PoseDict;
@@ -45,7 +45,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.poseGroupDropdown = new Dropdown(Translation.GetArray("poseGroupDropdown", Constants.PoseGroupList));
             this.poseGroupDropdown.SelectionChange += (s, a) => ChangePoseGroup();
 
-            this.poseDropdown = new Dropdown(UIPoseList(Constants.PoseDict[Constants.PoseGroupList[0]]));
+            this.poseDropdown = new Dropdown(UIPoseList());
             this.poseDropdown.SelectionChange += (s, a) => ChangePose();
 
             this.poseGroupLeftButton = new Button("<");
@@ -60,7 +60,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.poseRightButton = new Button(">");
             this.poseRightButton.ControlEvent += (s, a) => poseDropdown.Step(1);
 
-            previousPoseGroup = SelectedPoseGroup;
+            this.customPoseMode = poseModeGrid.SelectedItemIndex == 1;
+            this.previousPoseGroup = SelectedPoseGroup;
+            this.poseListEnabled = CurrentPoseList.Count > 0;
         }
 
         protected override void ReloadTranslation()
@@ -152,9 +154,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             );
             this.updating = false;
 
-            this.poseDropdown.SetDropdownItems(
-                UIPoseList(CurrentPoseList), CurrentPoseDict[args.Category].IndexOf(args.Path)
-            );
+            this.poseDropdown.SetDropdownItems(UIPoseList(), CurrentPoseDict[args.Category].IndexOf(args.Path));
+            poseListEnabled = true;
         }
 
         private void SetPoseMode()
@@ -179,18 +180,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else
             {
                 previousPoseGroup = SelectedPoseGroup;
-                List<string> poseList = CurrentPoseList;
-
-                poseListEnabled = true;
-                if (poseList.Count == 0)
-                {
-                    poseListEnabled = false;
-                    this.poseDropdown.SetDropdownItems(new[] { "No Poses" }, 0);
-                }
-                else
-                {
-                    this.poseDropdown.SetDropdownItems(UIPoseList(CurrentPoseList), 0);
-                }
+                this.poseDropdown.SetDropdownItems(UIPoseList(), 0);
             }
         }
 
@@ -200,12 +190,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             meidoManager.ActiveMeido.SetPose(CurrentPoseInfo);
         }
 
-        private string[] UIPoseList(IEnumerable<string> poseList)
+        private string[] UIPoseList()
         {
-            return poseList.Select((pose, i) =>
+            if (CurrentPoseList.Count == 0) return new[] { "No Poses" };
+            else
             {
-                return $"{i + 1}:{(customPoseMode ? Path.GetFileNameWithoutExtension(pose) : pose)}";
-            }).ToArray();
+                return CurrentPoseList.Select((pose, i) =>
+                {
+                    return $"{i + 1}:{(customPoseMode ? Path.GetFileNameWithoutExtension(pose) : pose)}";
+                }).ToArray();
+            }
         }
     }
 }
