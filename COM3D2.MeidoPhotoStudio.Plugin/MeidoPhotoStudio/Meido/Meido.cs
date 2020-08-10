@@ -102,6 +102,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
+        public void Flip()
+        {
+            if (this.dragPointManager == null) return;
+            IsStop = true;
+            this.dragPointManager.Flip();
+        }
+
         public byte[] SerializePose()
         {
             CacheBoneDataArray cache = this.Maid.gameObject.GetComponent<CacheBoneDataArray>();

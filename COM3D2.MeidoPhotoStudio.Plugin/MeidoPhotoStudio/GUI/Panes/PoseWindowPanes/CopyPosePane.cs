@@ -17,6 +17,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 ? this.meidoManager.ActiveMeidoList[this.copyMeidoSlot[this.meidoDropdown.SelectedItemIndex]]
                 : null;
         }
+        private string copyIKHeader;
 
         public CopyPosePane(MeidoManager meidoManager)
         {
@@ -26,6 +27,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.copyButton = new Button(Translation.Get("copyPosePane", "copyButton"));
             this.copyButton.ControlEvent += (s, a) => CopyPose();
+
+            this.copyIKHeader = Translation.Get("copyPosePane", "header");
         }
 
         protected override void ReloadTranslation()
@@ -35,16 +38,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.meidoDropdown.SetDropdownItem(0, Translation.Get("systemMessage", "noMaids"));
             }
             this.copyButton.Label = Translation.Get("copyPosePane", "copyButton");
+            this.copyIKHeader = Translation.Get("copyPosePane", "header");
         }
 
         public override void Draw()
         {
             GUI.enabled = PlentyOfMaids;
+            MiscGUI.Header(copyIKHeader);
+            MiscGUI.WhiteLine();
             GUILayout.BeginHorizontal();
             this.meidoDropdown.Draw(GUILayout.Width(160f));
             this.copyButton.Draw(GUILayout.ExpandWidth(false));
             GUILayout.EndHorizontal();
-            GUI.enabled = false;
+            GUI.enabled = true;
         }
 
         public override void UpdatePane()

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
@@ -147,18 +148,103 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return BoneTransform[PointToBone[point]];
         }
 
+        public void Flip()
+        {
+            Bone[] single = new[] { Bone.Pelvis, Bone.Spine, Bone.Spine0a, Bone.Spine1, Bone.Spine1a, Bone.Neck };
+            Bone[] pair = new[] {
+                Bone.ClavicleL, Bone.ClavicleR, Bone.UpperArmL, Bone.UpperArmR, Bone.ForearmL, Bone.ForearmR,
+                Bone.ForearmL, Bone.ForearmR, Bone.ThighL, Bone.ThighR, Bone.CalfL, Bone.CalfR,
+                Bone.HandL, Bone.HandR, Bone.FootL, Bone.FootR
+            };
+
+            List<Vector3> singleRotations = single.Select(bone => BoneTransform[bone].eulerAngles).ToList();
+            List<Vector3> pairRotations = pair.Select(bone => BoneTransform[bone].eulerAngles).ToList();
+
+            Transform hip = BoneTransform[Bone.Hip];
+            Vector3 vecHip = hip.eulerAngles;
+
+            Transform hipL = maid.body0.GetBone("Hip_L");
+            Vector3 vecHipL = hipL.eulerAngles;
+
+            Transform hipR = maid.body0.GetBone("Hip_R");
+            Vector3 vecHipR = hipR.eulerAngles;
+
+            hip.rotation = Quaternion.Euler(
+                360f - (vecHip.x + 270f) - 270f, 360f - (vecHip.y + 90f) - 90f, 360f - vecHip.z
+            );
+
+            hipL.rotation = FlipRotation(vecHipR);
+            hipR.rotation = FlipRotation(vecHipL);
+
+            for (int i = 0; i < single.Length; i++)
+            {
+                Bone bone = single[i];
+                BoneTransform[bone].rotation = FlipRotation(singleRotations[i]);
+            }
+
+            for (int i = 0; i < pair.Length; i += 2)
+            {
+                Bone boneA = pair[i];
+                Bone boneB = pair[i + 1];
+                BoneTransform[boneA].rotation = FlipRotation(pairRotations[i + 1]);
+                BoneTransform[boneB].rotation = FlipRotation(pairRotations[i]);
+            }
+
+            byte[] leftHand = SerializeHand(right: false);
+            byte[] rightHand = SerializeHand(right: true);
+            DeserializeHand(leftHand, right: true, true);
+            DeserializeHand(rightHand, right: false, true);
+            leftHand = SerializeFoot(right: false);
+            rightHand = SerializeFoot(right: true);
+            DeserializeFoot(leftHand, right: true, true);
+            DeserializeFoot(rightHand, right: false, true);
+        }
+
+        private Quaternion FlipRotation(Vector3 rotation)
+        {
+            return Quaternion.Euler(360f - rotation.x, 360f - (rotation.y + 90f) - 90f, rotation.z);
+        }
+
         public byte[] SerializeHand(bool right)
         {
             Bone start = right ? Bone.Finger0R : Bone.Finger0L;
             Bone end = right ? Bone.Finger4R : Bone.Finger4L;
+            return SerializeFinger(start, end, right);
+        }
+
+        public void DeserializeHand(byte[] handBinary, bool right, bool mirroring = false)
+        {
+            Bone start = right ? Bone.Finger0R : Bone.Finger0L;
+            Bone end = right ? Bone.Finger4R : Bone.Finger4L;
+            DeserializeFinger(start, end, handBinary, right, mirroring);
+        }
+
+        public byte[] SerializeFoot(bool right)
+        {
+            Bone start = right ? Bone.Toe0R : Bone.Toe0L;
+            Bone end = right ? Bone.Toe2R : Bone.Toe2L;
+            return SerializeFinger(start, end, right);
+        }
+
+        public void DeserializeFoot(byte[] footBinary, bool right, bool mirroring = false)
+        {
+            Bone start = right ? Bone.Toe0R : Bone.Toe0L;
+            Bone end = right ? Bone.Toe2R : Bone.Toe2L;
+            DeserializeFinger(start, end, footBinary, right, mirroring);
+        }
+
+        private byte[] SerializeFinger(Bone start, Bone end, bool right)
+        {
+            int joints = BoneTransform[start].name.Split(' ')[2].StartsWith("Finger") ? 4 : 3;
 
             byte[] buf;
+
             using (MemoryStream memoryStream = new MemoryStream())
             using (BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
             {
-                for (Bone bone = start; bone <= end; bone += 4)
+                for (Bone bone = start; bone <= end; bone += joints)
                 {
-                    for (int i = 0; i < 3; i++)
+                    for (int i = 0; i < joints - 1; i++)
                     {
                         Quaternion localRotation = BoneTransform[bone + i].localRotation;
                         binaryWriter.Write(localRotation.x);
@@ -169,22 +255,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
                 buf = memoryStream.ToArray();
             }
+
             return buf;
         }
 
-        public void DeserializeHand(byte[] handBinary, bool right, bool mirroring = false)
+        private void DeserializeFinger(Bone start, Bone end, byte[] fingerBinary, bool right, bool mirroring = false)
         {
-            Bone start = right ? Bone.Finger0R : Bone.Finger0L;
-            Bone end = right ? Bone.Finger4R : Bone.Finger4L;
+            int joints = BoneTransform[start].name.Split(' ')[2].StartsWith("Finger") ? 4 : 3;
 
             int mirror = mirroring ? -1 : 1;
 
-            using (MemoryStream memoryStream = new MemoryStream(handBinary))
+            using (MemoryStream memoryStream = new MemoryStream(fingerBinary))
             using (BinaryReader binaryReader = new BinaryReader(memoryStream))
             {
-                for (Bone bone = start; bone <= end; bone += 4)
+                for (Bone bone = start; bone <= end; bone += joints)
                 {
-                    for (int i = 0; i < 3; i++)
+                    for (int i = 0; i < joints - 1; i++)
                     {
                         Vector4 vec4;
                         vec4.x = binaryReader.ReadSingle() * mirror;

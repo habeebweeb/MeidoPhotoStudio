@@ -112,6 +112,7 @@
         "detail": "Detailed Clothing"
     },
     "handPane": {
+        "header": "Hand Preset",
         "saveToggle": "Save Hand",
         "categoryHeader": "Category",
         "nameHeader": "Name",
@@ -121,7 +122,12 @@
         "leftHand": "Left"
     },
     "copyPosePane": {
+        "header": "Copy IK",
         "copyButton": "Copy"
+    },
+    "flipIK": {
+        "header": "Flip IK",
+        "flipButton": "Flip"
     },
     "voiceLines": {
         "speak": "Speak",
@@ -190,7 +196,7 @@
         "header": "My Room"
     },
     "modPropsPane": {
-        "header": "Mod Props",
+        "header": "Mod Props"
     },
     "movementCube": {
         "header": "Movement Cube",

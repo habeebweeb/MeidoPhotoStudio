@@ -21,8 +21,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Toggle freeLookToggle;
         private Toggle savePoseToggle;
         private Toggle saveHandToggle;
+        private Button flipButton;
         private bool savePoseMode = false;
         private bool saveHandMode = false;
+        private string handPresetHeader;
+        private string flipIKHeader;
 
         public PoseWindowPane(MeidoManager meidoManager, MaidSwitcherPane maidSwitcherPane)
         {
@@ -52,6 +55,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.handPresetPane = AddPane(new HandPresetPane(meidoManager));
             this.saveHandPane = AddPane(new SaveHandPane(meidoManager));
+
+            this.flipButton = new Button(Translation.Get("flipIK", "flipButton"));
+            this.flipButton.ControlEvent += (s, a) => this.meidoManager.ActiveMeido.Flip();
+
+            this.handPresetHeader = Translation.Get("handPane", "header");
+            this.flipIKHeader = Translation.Get("flipIK", "header");
         }
 
         protected override void ReloadTranslation()
@@ -59,6 +68,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.freeLookToggle.Label = Translation.Get("freeLook", "freeLookToggle");
             this.savePoseToggle.Label = Translation.Get("posePane", "saveToggle");
             this.saveHandToggle.Label = Translation.Get("handPane", "saveToggle");
+            this.flipButton.Label = Translation.Get("flipIK", "flipButton");
+            this.handPresetHeader = Translation.Get("handPane", "header");
         }
 
         public override void Draw()
@@ -85,6 +96,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             maidIKPane.Draw();
 
             GUI.enabled = this.meidoManager.HasActiveMeido;
+            MiscGUI.Header(this.handPresetHeader);
+            MiscGUI.WhiteLine();
             saveHandToggle.Draw();
             GUI.enabled = true;
 
@@ -92,6 +105,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else handPresetPane.Draw();
 
             copyPosePane.Draw();
+
+            GUILayout.BeginHorizontal();
+            GUI.enabled = this.meidoManager.HasActiveMeido;
+            GUILayout.Label(this.flipIKHeader, GUILayout.ExpandWidth(false));
+            flipButton.Draw(GUILayout.ExpandWidth(false));
+            GUI.enabled = true;
+            GUILayout.EndHorizontal();
 
             GUILayout.EndScrollView();
         }
