@@ -119,5 +119,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             path = string.Join("_", path.Split(invalid)).Replace(".", "").Trim('_');
             return path;
         }
+
+        public static string GP01FbFaceHash(TMorph face, string hash)
+        {
+            if ((face.bodyskin.PartsVersion >= 120) && (hash != "eyeclose3") && hash.StartsWith("eyeclose"))
+            {
+                if (hash == "eyeclose") hash += '1';
+                hash += TMorph.crcFaceTypesStr[(int)face.GetFaceTypeGP01FB()];
+            }
+            return hash;
+        }
     }
 }

@@ -11,9 +11,26 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private const int MAX_MAIDS = 12;
         private static CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;
         public readonly int stockNo;
+        public static readonly string[] faceKeys = new string[24]
+        {
+            "eyeclose", "eyeclose2", "eyeclose3", "eyebig", "eyeclose6", "eyeclose5", "hitomih",
+            "hitomis", "mayuha", "mayuw", "mayuup", "mayuv", "mayuvhalf", "moutha", "mouths",
+            "mouthc", "mouthi", "mouthup", "mouthdw", "mouthhe", "mouthuphalf", "tangout",
+            "tangup", "tangopen"
+        };
+
+        public static readonly string[] faceToggleKeys = new string[12]
+        {
+            // blush, shade, nose up, tears, drool, teeth
+            "hoho2", "shock", "nosefook", "namida", "yodare", "toothoff",
+            // cry 1, cry 2, cry 3, blush 1, blush 2, blush 3
+            "tear1", "tear2", "tear3", "hohos", "hoho", "hohol"
+        };
         public static readonly PoseInfo defaultPose
             = new PoseInfo(Constants.PoseGroupList[0], Constants.PoseDict[Constants.PoseGroupList[0]][0]);
         public static readonly string defaultFaceBlendSet = "通常";
+        private MeidoDragPointManager dragPointManager;
+        private bool initialized = false;
         public Maid Maid { get; private set; }
         public Texture2D Image { get; private set; }
         public string FirstName { get; private set; }
@@ -21,10 +38,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public string NameJP => $"{LastName}\n{FirstName}";
         public string NameEN => $"{FirstName}\n{LastName}";
         public int ActiveSlot { get; private set; }
-        private MeidoDragPointManager dragPointManager;
         public event EventHandler<MeidoUpdateEventArgs> UpdateMeido;
         public event EventHandler BodyLoad;
         private bool isLoading = false;
+        public float[] BlendValuesBackup { get; private set; }
+        public float[] BlendValues { get; private set; }
         public bool IsIK
         {
             get => dragPointManager?.Active ?? false;
@@ -302,9 +320,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else
             {
-                float[] blendValues = hash.StartsWith("eyeclose")
-                    ? Utility.GetFieldValue<TMorph, float[]>(morph, "BlendValuesBackup")
-                    : Utility.GetFieldValue<TMorph, float[]>(morph, "BlendValues");
+                bool gp01FBFace = morph.bodyskin.PartsVersion >= 120;
+                float[] blendValues = hash.StartsWith("eyeclose") && !(gp01FBFace && (hash == "eyeclose3"))
+                    ? this.BlendValuesBackup
+                    : this.BlendValues;
+
+                hash = Utility.GP01FbFaceHash(morph, hash);
 
                 try
                 {
@@ -346,6 +367,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void OnBodyLoad()
         {
             BodyLoad?.Invoke(this, EventArgs.Empty);
+
+            if (!initialized)
+            {
+                TMorph morph = Maid.body0.Face.morph;
+                this.BlendValuesBackup = Utility.GetFieldValue<TMorph, float[]>(morph, "BlendValuesBackup");
+                this.BlendValues = Utility.GetFieldValue<TMorph, float[]>(morph, "BlendValues");
+
+                initialized = true;
+            }
 
             this.IsIK = true;
             this.IsStop = false;

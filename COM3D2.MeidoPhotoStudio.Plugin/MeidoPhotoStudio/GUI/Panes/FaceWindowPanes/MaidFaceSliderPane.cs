@@ -3,10 +3,9 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
+    using static Meido;
     internal class MaidFaceSliderPane : BasePane
     {
-        private MeidoManager meidoManager;
-
         // TODO: Consider placing in external file to be user editable
         private static readonly Dictionary<string, float[]> SliderRange = new Dictionary<string, float[]>()
         {
@@ -59,44 +58,30 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             // Tongue Base
             ["tangopen"] = new[] { 0f, 1f }
         };
-
-        public static readonly string[] faceKeys = new string[24]
-        {
-            "eyeclose", "eyeclose2", "eyeclose3", "eyebig", "eyeclose6", "eyeclose5", "hitomih",
-            "hitomis", "mayuha", "mayuw", "mayuup", "mayuv", "mayuvhalf", "moutha", "mouths",
-            "mouthc", "mouthi", "mouthup", "mouthdw", "mouthhe", "mouthuphalf", "tangout",
-            "tangup", "tangopen"
-        };
-
-        public static readonly string[] faceToggleKeys = new string[12]
-        {
-            // blush, shade, nose up, tears, drool, teeth
-            "hoho2", "shock", "nosefook", "namida", "yodare", "toothoff",
-            // cry 1, cry 2, cry 3, blush 1, blush 2, blush 3
-            "tear1", "tear2", "tear3", "hohos", "hoho", "hohol"
-        };
+        private MeidoManager meidoManager;
+        private Dictionary<string, BaseControl> faceControls;
 
         public MaidFaceSliderPane(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
+            this.faceControls = new Dictionary<string, BaseControl>();
 
-            for (int i = 0; i < faceKeys.Length; i++)
+            foreach (string key in faceKeys)
             {
-                string key = faceKeys[i];
                 string uiName = Translation.Get("faceBlendValues", key);
                 Slider slider = new Slider(uiName, SliderRange[key][0], SliderRange[key][1]);
-                int myIndex = i;
-                slider.ControlEvent += (s, a) => this.SetFaceValue(faceKeys[myIndex], slider.Value);
-                this.Controls.Add(slider);
+                string myKey = key;
+                slider.ControlEvent += (s, a) => this.SetFaceValue(myKey, slider.Value);
+                faceControls[key] = slider;
             }
 
-            for (int i = 0; i < faceToggleKeys.Length; i++)
+            foreach (string key in faceToggleKeys)
             {
-                string uiName = Translation.Get("faceBlendValues", faceToggleKeys[i]);
+                string uiName = Translation.Get("faceBlendValues", key);
                 Toggle toggle = new Toggle(uiName);
-                int myIndex = i;
-                toggle.ControlEvent += (s, a) => this.SetFaceValue(faceToggleKeys[myIndex], toggle.Value);
-                this.Controls.Add(toggle);
+                string myKey = key;
+                toggle.ControlEvent += (s, a) => this.SetFaceValue(myKey, toggle.Value);
+                faceControls[key] = toggle;
             }
         }
 
@@ -104,43 +89,32 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             for (int i = 0; i < faceKeys.Length; i++)
             {
-                Slider slider = (Slider)Controls[i];
+                Slider slider = (Slider)faceControls[faceKeys[i]];
                 slider.Label = Translation.Get("faceBlendValues", faceKeys[i]);
             }
 
-            for (int i = faceKeys.Length; i < faceKeys.Length + faceToggleKeys.Length; i++)
+            for (int i = 0; i < faceToggleKeys.Length; i++)
             {
-                Toggle toggle = (Toggle)Controls[i];
-                toggle.Label = Translation.Get("faceBlendValues", faceToggleKeys[i - faceKeys.Length]);
+                Toggle toggle = (Toggle)faceControls[faceToggleKeys[i]];
+                toggle.Label = Translation.Get("faceBlendValues", faceToggleKeys[i]);
             }
-        }
-
-        public void SetFaceValue(string key, float value)
-        {
-            if (updating) return;
-            this.meidoManager.ActiveMeido.SetFaceBlendValue(key, value);
-        }
-
-        public void SetFaceValue(string key, bool value)
-        {
-            float max = (key == "hoho" || key == "hoho2") ? 0.5f : 1f;
-            if (key == "toothoff") value = !value;
-            SetFaceValue(key, value ? max : 0f);
         }
 
         public override void UpdatePane()
         {
             this.updating = true;
             TMorph morph = this.meidoManager.ActiveMeido.Maid.body0.Face.morph;
-            float[] blendValues = Utility.GetFieldValue<TMorph, float[]>(morph, "BlendValues");
-            float[] blendValuesBackup = Utility.GetFieldValue<TMorph, float[]>(morph, "BlendValuesBackup");
+            bool gp01FBFace = morph.bodyskin.PartsVersion >= 120;
+            float[] blendValues = this.meidoManager.ActiveMeido.BlendValues;
+            float[] blendValuesBackup = this.meidoManager.ActiveMeido.BlendValuesBackup;
             for (int i = 0; i < faceKeys.Length; i++)
             {
                 string hash = faceKeys[i];
-                Slider slider = this.Controls[i] as Slider;
+                Slider slider = (Slider)faceControls[hash];
                 try
                 {
-                    if (hash.StartsWith("eyeclose"))
+                    hash = Utility.GP01FbFaceHash(morph, hash);
+                    if (hash.StartsWith("eyeclose") && !(gp01FBFace && (hash == "eyeclose3")))
                         slider.Value = blendValuesBackup[(int)morph.hash[hash]];
                     else
                         slider.Value = blendValues[(int)morph.hash[hash]];
@@ -151,7 +125,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             for (int i = 0; i < faceToggleKeys.Length; i++)
             {
                 string hash = faceToggleKeys[i];
-                Toggle toggle = this.Controls[24 + i] as Toggle;
+                Toggle toggle = (Toggle)faceControls[hash];
                 if (hash == "nosefook") toggle.Value = morph.boNoseFook;
                 else toggle.Value = blendValues[(int)morph.hash[hash]] > 0f;
                 if (hash == "toothoff") toggle.Value = !toggle.Value;
@@ -162,36 +136,58 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void Draw()
         {
             GUI.enabled = this.meidoManager.HasActiveMeido;
-            GUILayoutOption sliderWidth = MiscGUI.HalfSlider;
-            for (int i = 0; i < faceKeys.Length; i += 2)
-            {
-                GUILayout.BeginHorizontal();
-                for (int j = 0; j < 2; j++)
-                {
-                    Controls[i + j].Draw(sliderWidth);
-                    if (i + j == 12 || i + j == 23)
-                    {
-                        i--;
-                        break;
-                    }
-
-                }
-                GUILayout.EndHorizontal();
-            }
-
+            DrawSliders("eyeclose", "eyeclose2");
+            DrawSliders("eyeclose3", "eyebig");
+            DrawSliders("eyeclose6", "eyeclose5");
+            DrawSliders("hitomih", "hitomis");
+            DrawSliders("mayuha", "mayuw");
+            DrawSliders("mayuup", "mayuv");
+            DrawSliders("mayuvhalf");
+            DrawSliders("moutha", "mouths");
+            DrawSliders("mouthc", "mouthi");
+            DrawSliders("mouthup", "mouthdw");
+            DrawSliders("mouthhe", "mouthuphalf");
+            DrawSliders("tangout", "tangup");
+            DrawSliders("tangopen");
             MiscGUI.WhiteLine();
-
-            for (int i = 0; i < faceToggleKeys.Length; i += 3)
-            {
-                GUILayout.BeginHorizontal();
-                for (int j = 0; j < 3; j++)
-                {
-                    Controls[24 + i + j].Draw();
-                }
-                GUILayout.EndHorizontal();
-            }
-
+            DrawToggles("hoho2", "shock", "nosefook");
+            DrawToggles("namida", "yodare", "toothoff");
+            DrawToggles("tear1", "tear2", "tear3");
+            DrawToggles("hohos", "hoho", "hohol");
             GUI.enabled = true;
+        }
+
+        private void DrawSliders(params string[] keys)
+        {
+            GUILayout.BeginHorizontal();
+            foreach (string key in keys)
+            {
+                ((Slider)faceControls[key]).Draw(MiscGUI.HalfSlider);
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        private void DrawToggles(params string[] keys)
+        {
+            GUILayout.BeginHorizontal();
+            foreach (string key in keys)
+            {
+                ((Toggle)faceControls[key]).Draw();
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        private void SetFaceValue(string key, float value)
+        {
+            if (updating) return;
+            this.meidoManager.ActiveMeido.SetFaceBlendValue(key, value);
+        }
+
+        private void SetFaceValue(string key, bool value)
+        {
+            float max = (key == "hoho" || key == "hoho2") ? 0.5f : 1f;
+            if (key == "toothoff") value = !value;
+            SetFaceValue(key, value ? max : 0f);
         }
     }
 }
