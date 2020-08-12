@@ -37,6 +37,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public string LastName { get; private set; }
         public string NameJP => $"{LastName}\n{FirstName}";
         public string NameEN => $"{FirstName}\n{LastName}";
+        public Quaternion DefaultEyeRotL { get; private set; }
+        public Quaternion DefaultEyeRotR { get; private set; }
         public int ActiveSlot { get; private set; }
         public event EventHandler<MeidoUpdateEventArgs> UpdateMeido;
         public event EventHandler BodyLoad;
@@ -208,6 +210,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Maid.body0.MuneYureR(1f);
                 Maid.body0.jbMuneL.enabled = true;
                 Maid.body0.jbMuneR.enabled = true;
+                Maid.body0.quaDefEyeL = DefaultEyeRotL;
+                Maid.body0.quaDefEyeR = DefaultEyeRotR;
             }
 
             Maid.body0.SetMaskMode(TBody.MaskMode.None);
@@ -374,6 +378,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.BlendValuesBackup = Utility.GetFieldValue<TMorph, float[]>(morph, "BlendValuesBackup");
                 this.BlendValues = Utility.GetFieldValue<TMorph, float[]>(morph, "BlendValues");
 
+                this.DefaultEyeRotL = this.Maid.body0.quaDefEyeL;
+                this.DefaultEyeRotR = this.Maid.body0.quaDefEyeR;
                 initialized = true;
             }
 

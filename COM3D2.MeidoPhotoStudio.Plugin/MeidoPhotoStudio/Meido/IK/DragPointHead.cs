@@ -9,8 +9,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Quaternion headRotation;
         private Vector3 eyeRotationL;
         private Vector3 eyeRotationR;
-        private Quaternion defEyeRotL;
-        private Quaternion defEyeRotR;
         public event EventHandler Select;
         public bool IsIK { get; set; }
 
@@ -18,8 +16,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             base.Set(myObject);
             this.body = this.maid.body0;
-            this.defEyeRotL = this.maid.body0.quaDefEyeL;
-            this.defEyeRotR = this.maid.body0.quaDefEyeR;
         }
 
         protected override void ApplyDragType()
@@ -72,8 +68,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY)
             {
-                body.quaDefEyeL = defEyeRotL;
-                body.quaDefEyeR = defEyeRotR;
+                body.quaDefEyeL = this.meido.DefaultEyeRotL;
+                body.quaDefEyeR = this.meido.DefaultEyeRotR;
             }
             else if (CurrentDragType == DragType.RotLocalY || CurrentDragType == DragType.RotLocalXZ)
             {
