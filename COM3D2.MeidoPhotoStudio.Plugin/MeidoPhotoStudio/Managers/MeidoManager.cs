@@ -22,19 +22,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public int SelectedMeido
         {
             get => selectedMeido;
-            private set => selectedMeido = Mathf.Clamp(value, 0, ActiveMeidoList.Count - 1);
+            private set => selectedMeido = Utility.Bound(value, 0, ActiveMeidoList.Count - 1);
         }
-        public bool IsBusy
-        {
-            get
-            {
-                foreach (Meido meido in ActiveMeidoList)
-                {
-                    if (meido.Maid.IsBusy) return true;
-                }
-                return false;
-            }
-        }
+        public bool Busy => ActiveMeidoList.Any(meido => meido.Busy);
 
         public void ChangeMaid(int index)
         {
@@ -67,57 +57,70 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Update()
         {
             if (Input.GetKeyDown(KeyCode.H)) UndressAll();
+        }
 
-            foreach (Meido activeMeido in ActiveMeidoList)
+        private void UnloadMeidos()
+        {
+            SelectedMeido = 0;
+            foreach (Meido meido in ActiveMeidoList)
             {
-                activeMeido.Update();
+                meido.UpdateMeido -= OnUpdateMeido;
+                meido.Unload();
             }
+            ActiveMeidoList.Clear();
         }
 
         public void CallMeidos()
         {
             this.BeginCallMeidos?.Invoke(this, EventArgs.Empty);
-            GameMain.Instance.MainCamera.FadeOut(0.01f, false, () =>
+
+            bool hadActiveMeidos = HasActiveMeido;
+
+            UnloadMeidos();
+
+            if (SelectMeidoList.Count == 0)
             {
-                UnloadMeidos();
+                if (hadActiveMeidos) OnEndCallMeidos(this, EventArgs.Empty);
+                return;
+            }
 
-                foreach (int slot in this.SelectMeidoList)
-                {
-                    Meido meido = meidos[slot];
-                    ActiveMeidoList.Add(meido);
-                    meido.BodyLoad += OnEndCallMeidos;
-                    meido.UpdateMeido += OnUpdateMeido;
-                }
+            GameMain.Instance.MainCamera.FadeOut(0.01f, f_bSkipable: false, f_dg: () =>
+            {
+                GameMain.Instance.StartCoroutine(LoadMeidos());
+            });
+        }
 
-                for (int i = 0; i < ActiveMeidoList.Count; i++)
-                {
-                    Meido meido = ActiveMeidoList[i];
-                    meido.Load(i, this.SelectMeidoList[i]);
-                }
+        private System.Collections.IEnumerator LoadMeidos()
+        {
+            foreach (int slot in this.SelectMeidoList)
+            {
+                Meido meido = meidos[slot];
+                ActiveMeidoList.Add(meido);
+                meido.BeginLoad();
+            }
 
-                SelectedMeido = 0;
+            for (int i = 0; i < ActiveMeidoList.Count; i++)
+            {
+                ActiveMeidoList[i].Load(i);
+            }
 
-                if (this.SelectMeidoList.Count == 0) OnEndCallMeidos(this, EventArgs.Empty);
-            }, false);
+            while (Busy) yield return null;
+
+            yield return new WaitForEndOfFrame();
+
+            OnEndCallMeidos(this, EventArgs.Empty);
         }
 
         public Meido GetMeido(string guid)
         {
-            foreach (Meido meido in ActiveMeidoList)
-            {
-                if (meido.Maid.status.guid == guid) return meido;
-            }
-
-            return null;
+            if (string.IsNullOrEmpty(guid)) return null;
+            else return ActiveMeidoList.FirstOrDefault(meido => meido.Maid.status.guid == guid);
         }
 
         public Meido GetMeido(int activeIndex)
         {
-            if (activeIndex >= 0 && activeIndex < ActiveMeidoList.Count)
-            {
-                return ActiveMeidoList[activeIndex];
-            }
-            return null;
+            if (activeIndex >= 0 && activeIndex < ActiveMeidoList.Count) return ActiveMeidoList[activeIndex];
+            else return null;
         }
 
         private void UndressAll()
@@ -140,16 +143,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.UpdateMeido?.Invoke(ActiveMeido, new MeidoUpdateEventArgs(SelectedMeido));
         }
 
-        private void UnloadMeidos()
-        {
-            foreach (Meido meido in ActiveMeidoList)
-            {
-                meido.UpdateMeido -= OnUpdateMeido;
-                meido.Unload();
-            }
-            ActiveMeidoList.Clear();
-        }
-
         private void OnUpdateMeido(object sender, MeidoUpdateEventArgs args)
         {
             if (!args.IsEmpty) this.SelectedMeido = args.SelectedMeido;
@@ -158,14 +151,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void OnEndCallMeidos(object sender, EventArgs args)
         {
-            if (!IsBusy)
+            GameMain.Instance.MainCamera.FadeIn(1f);
+            EndCallMeidos?.Invoke(this, EventArgs.Empty);
+            foreach (Meido meido in ActiveMeidoList)
             {
-                GameMain.Instance.MainCamera.FadeIn(1f);
-                EndCallMeidos?.Invoke(this, EventArgs.Empty);
-                foreach (Meido meido in ActiveMeidoList)
-                {
-                    meido.BodyLoad -= OnEndCallMeidos;
-                }
+                meido.UpdateMeido += OnUpdateMeido;
             }
         }
     }

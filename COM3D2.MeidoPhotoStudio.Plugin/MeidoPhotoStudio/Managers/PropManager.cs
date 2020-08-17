@@ -283,12 +283,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GameObject dogu = dragDogu.MyGameObject;
 
-            Transform attachPointTransform = meido?.GetBoneTransform(attachPoint) ?? GetDeploymentObject().transform;
+            Transform attachPointTransform = meido?.IKManager.GetAttachPointTransform(attachPoint)
+                ?? GetDeploymentObject().transform;
 
             dragDogu.attachPointInfo = new AttachPointInfo(
                 attachPoint: meido == null ? AttachPoint.None : attachPoint,
                 maidGuid: meido == null ? String.Empty : meido.Maid.status.guid,
-                maidIndex: meido == null ? -1 : meido.ActiveSlot
+                maidIndex: meido == null ? -1 : meido.Slot
             );
 
             worldPositionStays = meido == null ? true : worldPositionStays;

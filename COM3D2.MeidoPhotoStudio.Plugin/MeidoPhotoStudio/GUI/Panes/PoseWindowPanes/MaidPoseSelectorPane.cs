@@ -91,7 +91,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GUILayout.Width(dropdownButtonWidth)
             };
 
-            GUI.enabled = meidoManager.HasActiveMeido && !meidoManager.ActiveMeido.IsStop;
+            GUI.enabled = meidoManager.HasActiveMeido && !meidoManager.ActiveMeido.Stop;
 
             this.poseModeGrid.Draw();
             MiscGUI.WhiteLine();

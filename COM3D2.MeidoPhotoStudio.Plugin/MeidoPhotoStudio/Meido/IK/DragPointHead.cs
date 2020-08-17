@@ -73,7 +73,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else if (CurrentDragType == DragType.RotLocalY || CurrentDragType == DragType.RotLocalXZ)
             {
-                meido.IsFreeLook = !meido.IsFreeLook;
+                meido.FreeLook = !meido.FreeLook;
             }
         }
 
@@ -83,7 +83,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (!(CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY))
             {
-                if (isPlaying) meido.IsStop = true;
+                if (isPlaying) meido.Stop = true;
             }
 
             Vector3 mouseDelta = MouseDelta();

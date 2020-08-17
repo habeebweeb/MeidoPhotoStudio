@@ -18,7 +18,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             Head, HeadNub, ClavicleL, ClavicleR,
             UpperArmL, UpperArmR, ForearmL, ForearmR,
-            HandL, HandR, IKHandL, IKHandR,
+            HandL, HandR, /*IKHandL, IKHandR,*/
             MuneL, MuneSubL, MuneR, MuneSubR,
             Neck, Spine, Spine0a, Spine1, Spine1a, ThighL, ThighR,
             Pelvis, Hip,
@@ -92,10 +92,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         private static EventHandler CubeActiveChange;
         private static EventHandler CubeSmallChange;
+        private bool initialized = false;
         private Meido meido;
-        private Maid maid;
-        private Dictionary<Bone, Transform> BoneTransform;
-        private Dictionary<Bone, DragPointMeido> DragPoints;
+        private Dictionary<Bone, Transform> BoneTransform = new Dictionary<Bone, Transform>();
+        private Dictionary<Bone, DragPointMeido> DragPoints = new Dictionary<Bone, DragPointMeido>();
         private DragPointBody dragBody;
         private DragPointBody dragCube;
         public event EventHandler<MeidoUpdateEventArgs> SelectMaid;
@@ -135,12 +135,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        public MeidoDragPointManager(Meido meido)
-        {
-            this.meido = meido;
-            this.maid = meido.Maid;
-            this.meido.BodyLoad += Initialize;
-        }
+        public MeidoDragPointManager(Meido meido) => this.meido = meido;
 
         public Transform GetAttachPointTransform(AttachPoint point)
         {
@@ -163,10 +158,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Transform hip = BoneTransform[Bone.Hip];
             Vector3 vecHip = hip.eulerAngles;
 
-            Transform hipL = maid.body0.GetBone("Hip_L");
+            Transform hipL = meido.Maid.body0.GetBone("Hip_L");
             Vector3 vecHipL = hipL.eulerAngles;
 
-            Transform hipR = maid.body0.GetBone("Hip_R");
+            Transform hipR = meido.Maid.body0.GetBone("Hip_R");
             Vector3 vecHipR = hipR.eulerAngles;
 
             hip.rotation = Quaternion.Euler(
@@ -288,19 +283,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             foreach (DragPointMeido dragPoint in DragPoints.Values)
             {
-                GameObject.Destroy(dragPoint.gameObject);
+                if (dragPoint != null)
+                {
+                    GameObject.Destroy(dragPoint.gameObject);
+                }
             }
-            GameObject.Destroy(dragCube.gameObject);
-            GameObject.Destroy(dragBody.gameObject);
+            if (dragCube != null) GameObject.Destroy(dragCube.gameObject);
+            if (dragBody != null) GameObject.Destroy(dragBody.gameObject);
             BoneTransform.Clear();
             DragPoints.Clear();
             CubeActiveChange -= OnCubeActive;
             CubeSmallChange -= OnCubeSmall;
+            initialized = false;
         }
 
-        private void Initialize(object sender, EventArgs args)
+        public void Initialize()
         {
-            meido.BodyLoad -= Initialize;
+            if (initialized) return;
+            initialized = true;
             CubeActiveChange += OnCubeActive;
             CubeSmallChange += OnCubeSmall;
             InitializeBones();
@@ -309,13 +309,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void InitializeDragPoints()
         {
-            DragPoints = new Dictionary<Bone, DragPointMeido>();
-
             dragCube = DragPoint.Make<DragPointBody>(
                 PrimitiveType.Cube, Vector3.one * 0.12f, DragPoint.Blue
             );
-            dragCube.Initialize(() => maid.transform.position, () => Vector3.zero);
-            dragCube.Set(maid.transform);
+            dragCube.Initialize(() => meido.Maid.transform.position, () => Vector3.zero);
+            dragCube.Set(meido.Maid.transform);
 
             dragCube.IsCube = true;
             dragCube.ConstantScale = true;
@@ -338,7 +336,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     BoneTransform[Bone.Spine0a].eulerAngles.z + 90f
                 )
             );
-            dragBody.Set(maid.transform);
+            dragBody.Set(meido.Maid.transform);
             dragBody.Select += OnSelectBody;
             dragBody.EndScale += OnSetDragPointScale;
 
@@ -525,17 +523,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void OnSetDragPointScale(object sender, EventArgs args)
         {
-            this.SetDragPointScale(maid.transform.localScale.x);
+            this.SetDragPointScale(meido.Maid.transform.localScale.x);
         }
 
         private void OnSelectBody(object sender, EventArgs args)
         {
-            SelectMaid?.Invoke(this, new MeidoUpdateEventArgs(meido.ActiveSlot, fromMaid: true, isBody: true));
+            SelectMaid?.Invoke(this, new MeidoUpdateEventArgs(meido.Slot, fromMaid: true, isBody: true));
         }
 
         private void OnSelectFace(object sender, EventArgs args)
         {
-            SelectMaid?.Invoke(this, new MeidoUpdateEventArgs(meido.ActiveSlot, fromMaid: true, isBody: false));
+            SelectMaid?.Invoke(this, new MeidoUpdateEventArgs(meido.Slot, fromMaid: true, isBody: false));
         }
 
         private void SetDragPointScale(float scale)
@@ -550,14 +548,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void InitializeBones()
         {
             // TODO: Move to external file somehow
-            Transform transform = maid.body0.m_Bones.transform;
+            Transform transform = meido.Body.m_Bones.transform;
             BoneTransform = new Dictionary<Bone, Transform>()
             {
                 [Bone.Head] = CMT.SearchObjName(transform, "Bip01 Head"),
                 [Bone.Neck] = CMT.SearchObjName(transform, "Bip01 Neck"),
                 [Bone.HeadNub] = CMT.SearchObjName(transform, "Bip01 HeadNub"),
-                [Bone.IKHandL] = CMT.SearchObjName(transform, "_IK_handL"),
-                [Bone.IKHandR] = CMT.SearchObjName(transform, "_IK_handR"),
+                /*[Bone.IKHandL] = CMT.SearchObjName(transform, "_IK_handL"),
+                [Bone.IKHandR] = CMT.SearchObjName(transform, "_IK_handR"),*/
                 [Bone.MuneL] = CMT.SearchObjName(transform, "Mune_L"),
                 [Bone.MuneSubL] = CMT.SearchObjName(transform, "Mune_L_sub"),
                 [Bone.MuneR] = CMT.SearchObjName(transform, "Mune_R"),
@@ -651,10 +649,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public AttachPoint AttachPoint { get; }
         public string MaidGuid { get; }
         public int MaidIndex { get; }
-        public static AttachPointInfo Empty
-        {
-            get => new AttachPointInfo(AttachPoint.None, String.Empty, -1);
-        }
+        public static AttachPointInfo Empty => new AttachPointInfo(AttachPoint.None, String.Empty, -1);
 
         public AttachPointInfo(AttachPoint attachPoint, string maidGuid, int maidIndex)
         {

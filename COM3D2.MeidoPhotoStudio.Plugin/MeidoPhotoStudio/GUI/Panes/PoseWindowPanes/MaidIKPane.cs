@@ -37,17 +37,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void SetIK(IKToggle toggle, bool value)
         {
             if (updating) return;
-            if (toggle == IKToggle.IK) this.meidoManager.ActiveMeido.IsIK = value;
-            else if (toggle == IKToggle.Release) this.meidoManager.ActiveMeido.IsStop = false;
-            else if (toggle == IKToggle.Bone) this.meidoManager.ActiveMeido.IsBone = value;
+            if (toggle == IKToggle.IK) this.meidoManager.ActiveMeido.IK = value;
+            else if (toggle == IKToggle.Release) this.meidoManager.ActiveMeido.Stop = false;
+            else if (toggle == IKToggle.Bone) this.meidoManager.ActiveMeido.Bone = value;
         }
 
         public override void UpdatePane()
         {
             this.updating = true;
-            this.ikToggle.Value = this.meidoManager.ActiveMeido.IsIK;
-            this.releaseIKToggle.Value = this.meidoManager.ActiveMeido.IsStop;
-            this.boneIKToggle.Value = this.meidoManager.ActiveMeido.IsBone;
+            this.ikToggle.Value = this.meidoManager.ActiveMeido.IK;
+            this.releaseIKToggle.Value = this.meidoManager.ActiveMeido.Stop;
+            this.boneIKToggle.Value = this.meidoManager.ActiveMeido.Bone;
             this.updating = false;
         }
 
@@ -59,7 +59,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUI.enabled = active;
             this.ikToggle.Draw();
 
-            GUI.enabled = active ? this.meidoManager.ActiveMeido.IsStop : false;
+            GUI.enabled = active ? this.meidoManager.ActiveMeido.Stop : false;
             this.releaseIKToggle.Draw();
 
             GUI.enabled = active ? this.ikToggle.Value : false;

@@ -83,8 +83,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             for (int i = 0; i < activeMeidoList.Count; i++)
             {
                 Meido meido = activeMeidoList[i];
-                isIK[i] = meido.IsIK;
-                if (meido.IsIK) meido.IsIK = false;
+                isIK[i] = meido.IK;
+                if (meido.IK) meido.IK = false;
             }
 
             GizmoRender.UIVisible = false;
@@ -110,7 +110,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             for (int i = 0; i < activeMeidoList.Count; i++)
             {
                 Meido meido = activeMeidoList[i];
-                if (isIK[i]) meido.IsIK = true;
+                if (isIK[i]) meido.IK = true;
             }
 
             GizmoRender.UIVisible = true;
@@ -182,7 +182,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void Deactivate()
         {
-            if (meidoManager.IsBusy) return;
+            if (meidoManager.Busy) return;
 
             uiActive = false;
             isActive = false;

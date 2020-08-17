@@ -71,9 +71,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (this.meidoManager.ActiveMeidoList.Count >= 2)
             {
                 IEnumerable<Meido> copyMeidoList = this.meidoManager.ActiveMeidoList
-                    .Where(meido => meido.ActiveSlot != this.meidoManager.ActiveMeido.ActiveSlot);
+                    .Where(meido => meido.Slot != this.meidoManager.ActiveMeido.Slot);
 
-                copyMeidoSlot = copyMeidoList.Select(meido => meido.ActiveSlot).ToArray();
+                copyMeidoSlot = copyMeidoList.Select(meido => meido.Slot).ToArray();
 
                 string[] dropdownList = copyMeidoList
                     .Select((meido, i) => $"{copyMeidoSlot[i] + 1}: {meido.LastName} {meido.FirstName}").ToArray();

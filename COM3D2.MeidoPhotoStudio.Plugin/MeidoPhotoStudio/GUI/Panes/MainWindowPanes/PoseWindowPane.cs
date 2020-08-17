@@ -57,7 +57,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.saveHandPane = AddPane(new SaveHandPane(meidoManager));
 
             this.flipButton = new Button(Translation.Get("flipIK", "flipButton"));
-            this.flipButton.ControlEvent += (s, a) => this.meidoManager.ActiveMeido.Flip();
+            this.flipButton.ControlEvent += (s, a) => this.meidoManager.ActiveMeido.IKManager.Flip();
 
             this.handPresetHeader = Translation.Get("handPane", "header");
             this.flipIKHeader = Translation.Get("flipIK", "header");
@@ -119,7 +119,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void SetMaidFreeLook()
         {
             if (this.updating) return;
-            this.meidoManager.ActiveMeido.IsFreeLook = this.freeLookToggle.Value;
+            this.meidoManager.ActiveMeido.FreeLook = this.freeLookToggle.Value;
         }
 
         public override void UpdatePanes()
@@ -129,15 +129,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (ActiveWindow)
             {
                 this.updating = true;
-                this.freeLookToggle.Value = this.meidoManager.ActiveMeido?.IsFreeLook ?? false;
+                this.freeLookToggle.Value = this.meidoManager.ActiveMeido?.FreeLook ?? false;
                 this.updating = false;
                 base.UpdatePanes();
             }
-        }
-
-        private void UpdateMeido(object sender, EventArgs args)
-        {
-            this.UpdatePanes();
         }
     }
 }

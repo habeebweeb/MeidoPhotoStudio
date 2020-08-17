@@ -225,7 +225,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             string[] dropdownList = this.meidoManager.ActiveMeidoList.Count == 0
                 ? new[] { Translation.Get("systemMessage", "noMaids") }
                 : this.meidoManager.ActiveMeidoList.Select(
-                    meido => $"{meido.ActiveSlot + 1}: {meido.FirstName} {meido.LastName}"
+                    meido => $"{meido.Slot + 1}: {meido.FirstName} {meido.LastName}"
                 ).ToArray();
             this.updating = true;
             this.meidoDropdown.SetDropdownItems(dropdownList, index);

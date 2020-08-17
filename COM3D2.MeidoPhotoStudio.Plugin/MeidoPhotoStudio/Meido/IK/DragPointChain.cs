@@ -115,7 +115,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void Drag()
         {
-            if (isPlaying) meido.IsStop = true;
+            if (isPlaying) meido.Stop = true;
 
             bool altRotation = CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.RotY;
 

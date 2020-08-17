@@ -64,7 +64,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void SaveHand(bool right)
         {
-            byte[] handBinary = this.meidoManager.ActiveMeido.SerializeHand(right);
+            byte[] handBinary = this.meidoManager.ActiveMeido.IKManager.SerializeHand(right);
             Constants.AddHand(handBinary, right, this.handNameTextField.Value, this.categoryComboBox.Value);
             this.handNameTextField.Value = string.Empty;
         }

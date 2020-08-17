@@ -34,18 +34,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             PreviousButton.Draw(buttonStyle, GUILayout.Height(40), GUILayout.ExpandWidth(false));
 
             if (meidoManager.HasActiveMeido)
-                MiscGUI.DrawTexture(meidoManager.ActiveMeido.Image, GUILayout.Width(70), GUILayout.Height(70));
+                MiscGUI.DrawTexture(meidoManager.ActiveMeido.Portrait, GUILayout.Width(70), GUILayout.Height(70));
             else
                 GUILayout.Box("", boxStyle, GUILayout.Height(70), GUILayout.Width(70));
 
             GUILayout.BeginVertical();
             GUILayout.Space(30);
-            GUILayout.Label(
-                meidoManager.HasActiveMeido
-                    ? meidoManager.ActiveMeido.NameJP
-                    : "",
-                labelStyle, GUILayout.ExpandWidth(false)
-            );
+            string label = "";
+            if (meidoManager.HasActiveMeido)
+            {
+                Meido meido = meidoManager.ActiveMeido;
+                label = $"{meido.LastName}\n{meido.FirstName}";
+            }
+            GUILayout.Label(label, labelStyle, GUILayout.ExpandWidth(false));
             GUILayout.EndVertical();
 
             NextButton.Draw(buttonStyle, GUILayout.Height(40), GUILayout.ExpandWidth(false));

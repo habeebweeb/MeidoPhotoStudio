@@ -70,10 +70,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     );
                 }
 
-                GUI.DrawTexture(new Rect(5, y, buttonHeight, buttonHeight), meido.Image);
+                GUI.DrawTexture(new Rect(5, y, buttonHeight, buttonHeight), meido.Portrait);
                 GUI.Label(
                     new Rect(95, y + 30, buttonWidth - 80, buttonHeight),
-                    meido.NameJP, selectedMaid ? labelSelectedStyle : labelStyle
+                    $"{meido.LastName}\n{meido.FirstName}", selectedMaid ? labelSelectedStyle : labelStyle
                 );
 
             }

@@ -31,7 +31,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             base.Initialize(position, rotation);
             this.meido = meido;
             this.maid = meido.Maid;
-            this.isPlaying = !meido.IsStop;
+            this.isPlaying = !meido.Stop;
         }
 
         public override void AddGizmo(float scale = 0.25f, GizmoMode mode = GizmoMode.Local)
@@ -39,7 +39,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             base.AddGizmo(scale, mode);
             Gizmo.GizmoDrag += (s, a) =>
             {
-                meido.IsStop = true;
+                meido.Stop = true;
                 isPlaying = false;
             };
         }
@@ -47,7 +47,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected override void OnMouseDown()
         {
             base.OnMouseDown();
-            isPlaying = !meido.IsStop;
+            isPlaying = !meido.Stop;
         }
 
         protected void InitializeIK(TBody.IKCMO iKCmo, Transform upper, Transform middle, Transform lower)
