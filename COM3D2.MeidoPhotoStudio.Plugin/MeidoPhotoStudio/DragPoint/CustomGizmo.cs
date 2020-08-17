@@ -11,7 +11,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private FieldInfo beSelectedType = Utility.GetFieldInfo<GizmoRender>("beSelectedType");
         private int SelectedType => (int)beSelectedType.GetValue(this);
         private static FieldInfo is_drag_ = Utility.GetFieldInfo<GizmoRender>("is_drag_");
-        private static bool IsDrag => (bool)is_drag_.GetValue(null);
+        public static bool IsDrag
+        {
+            get => (bool)is_drag_.GetValue(null);
+            private set => is_drag_.SetValue(null, value);
+        }
         private Vector3 positionOld = Vector3.zero;
         private Vector3 deltaPosition = Vector3.zero;
         private Vector3 localPositionOld = Vector3.zero;
@@ -39,7 +43,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => base.Visible;
             set
             {
-                if (value && IsDrag) is_drag_.SetValue(null, false);
+                if (value && IsDrag) IsDrag = false;
                 base.Visible = value;
             }
         }
