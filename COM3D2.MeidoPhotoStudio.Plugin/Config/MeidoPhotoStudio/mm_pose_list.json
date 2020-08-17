@@ -1,3 +1,22 @@
+/*
+    This file contains pose categories and their corresponding pose lists.
+
+    This file will initially have all the poses that MultipleMaids has but can be modified.
+    
+    You probably won't ever need to modify this file unless you're some kind of power user.
+
+    The structure of a pose list object is:
+    
+    {
+        "uiName": "poseCategoryName",
+        "poseList": [ "the_list", "of_poses" ] 
+    }
+
+    'uiName' does not need to adhere to camelCase. 
+    Since poses in 'poseList' are actual files in the game, they should be in snake_case and all lower case.
+
+    Do not add custom poses here. They should be placed in the 'Custom Poses' folder.
+*/
 [
     {
         "uiName": "normal",
