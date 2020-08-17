@@ -764,6 +764,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             public bool IsMod { get; set; }
             public bool IsOfficialMod { get; set; }
 
+            public override string ToString()
+            {
+                return IsOfficialMod ? $"{Path.GetFileName(MenuFile)}#{BaseMenuFile}" : MenuFile;
+            }
+
             public static ModItem Deserialize(BinaryReader binaryReader)
             {
                 return new ModItem()
@@ -797,6 +802,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             public int ID { get; set; }
             public string PrefabName { get; set; }
+
+            public override string ToString() => $"MYR_{ID}#{PrefabName}";
         }
 
         private class ModelInfo

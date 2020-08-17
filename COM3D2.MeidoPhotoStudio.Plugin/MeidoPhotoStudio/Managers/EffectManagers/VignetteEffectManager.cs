@@ -2,6 +2,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class VignetteEffectManager : IEffectManager
     {
+        public const string header = "EFFECT_VIGNETTE";
         private Vignetting Vignette { get; set; }
         private float initialIntensity;
         private float initialBlur;
@@ -32,6 +33,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             get => chromaticAberration;
             set => chromaticAberration = Vignette.chromaticAberration = value;
+        }
+
+        public void Serialize(System.IO.BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write(header);
+            binaryWriter.Write(Intensity);
+            binaryWriter.Write(Blur);
+            binaryWriter.Write(BlurSpread);
+            binaryWriter.Write(ChromaticAberration);
+            binaryWriter.Write(Active);
+        }
+
+        public void Deserialize(System.IO.BinaryReader binaryReader)
+        {
+            Intensity = binaryReader.ReadSingle();
+            Blur = binaryReader.ReadSingle();
+            BlurSpread = binaryReader.ReadSingle();
+            ChromaticAberration = binaryReader.ReadSingle();
+            SetEffectActive(binaryReader.ReadBoolean());
         }
 
         public void Activate()

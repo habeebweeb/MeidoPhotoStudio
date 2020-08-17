@@ -4,6 +4,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class BloomEffectManager : IEffectManager
     {
+        public const string header = "EFFECT_BLOOM";
         private Bloom Bloom { get; set; }
         private float initialIntensity;
         private int initialBlurIterations;
@@ -65,6 +66,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Bloom.hdr = value ? Bloom.HDRBloomMode.On : Bloom.HDRBloomMode.Auto;
                 HDRBloomMode = value;
             }
+        }
+
+        public void Serialize(System.IO.BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write(header);
+            binaryWriter.Write(Intensity);
+            binaryWriter.Write(BlurIterations);
+            binaryWriter.WriteColour(BloomThresholdColour);
+            binaryWriter.Write(BloomHDR);
+            binaryWriter.Write(Active);
+        }
+
+        public void Deserialize(System.IO.BinaryReader binaryReader)
+        {
+            Intensity = binaryReader.ReadSingle();
+            BlurIterations = binaryReader.ReadInt32();
+            BloomThresholdColour = binaryReader.ReadColour();
+            BloomHDR = binaryReader.ReadBoolean();
+            SetEffectActive(binaryReader.ReadBoolean());
         }
 
         public void Activate()

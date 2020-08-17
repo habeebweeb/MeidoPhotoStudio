@@ -4,6 +4,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class FogEffectManager : IEffectManager
     {
+        public const string header = "EFFECT_FOG";
         private GlobalFog Fog { get; set; }
         public bool Ready { get; private set; }
         public bool Active { get; private set; }
@@ -68,6 +69,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             get => fogColour;
             set => fogColour = Fog.globalFogColor = value;
+        }
+
+        public void Serialize(System.IO.BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write(header);
+            binaryWriter.Write(Distance);
+            binaryWriter.Write(Density);
+            binaryWriter.Write(HeightScale);
+            binaryWriter.Write(Height);
+            binaryWriter.WriteColour(FogColour);
+            binaryWriter.Write(Active);
+        }
+
+        public void Deserialize(System.IO.BinaryReader binaryReader)
+        {
+            Distance = binaryReader.ReadSingle();
+            Density = binaryReader.ReadSingle();
+            HeightScale = binaryReader.ReadSingle();
+            Height = binaryReader.ReadSingle();
+            FogColour = binaryReader.ReadColour();
+            SetEffectActive(binaryReader.ReadBoolean());
         }
 
         public void Activate()

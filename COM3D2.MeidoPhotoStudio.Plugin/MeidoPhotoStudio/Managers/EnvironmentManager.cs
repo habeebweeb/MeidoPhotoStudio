@@ -3,8 +3,9 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class EnvironmentManager
+    internal class EnvironmentManager : IManager
     {
+        public const string header = "ENVIRONMENT";
         private static bool cubeActive;
         public static bool CubeActive
         {
@@ -39,6 +40,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Transform bg;
         private CameraInfo cameraInfo;
         private DragPointBG bgDragPoint;
+        private string currentBGAsset = "Theater";
         private bool bgVisible = true;
         public bool BGVisible
         {
@@ -53,6 +55,37 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public EnvironmentManager(MeidoManager meidoManager)
         {
             DragPointLight.environmentManager = this;
+        }
+
+        public void Serialize(System.IO.BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write(header);
+            binaryWriter.Write(currentBGAsset);
+            binaryWriter.WriteVector3(this.bg.position);
+            binaryWriter.WriteQuaternion(this.bg.rotation);
+            binaryWriter.WriteVector3(this.bg.localScale);
+
+            CameraMain camera = GameMain.Instance.MainCamera;
+            binaryWriter.WriteVector3(camera.GetTargetPos());
+            binaryWriter.Write(camera.GetDistance());
+            binaryWriter.WriteQuaternion(camera.transform.rotation);
+            StopCameraSpin();
+        }
+
+        public void Deserialize(System.IO.BinaryReader binaryReader)
+        {
+            string bgAsset = binaryReader.ReadString();
+            int assetIndex = Constants.BGList.FindIndex(bg => bg == bgAsset);
+            ChangeBackground(bgAsset, assetIndex > Constants.MyRoomCustomBGIndex);
+            this.bg.position = binaryReader.ReadVector3();
+            this.bg.rotation = binaryReader.ReadQuaternion();
+            this.bg.localScale = binaryReader.ReadVector3();
+
+            CameraMain camera = GameMain.Instance.MainCamera;
+            camera.SetTargetPos(binaryReader.ReadVector3());
+            camera.SetDistance(binaryReader.ReadSingle());
+            camera.transform.rotation = binaryReader.ReadQuaternion();
+            StopCameraSpin();
         }
 
         public void Activate()
@@ -146,6 +179,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void ChangeBackground(string assetName, bool creative = false)
         {
+            currentBGAsset = assetName;
             if (creative)
             {
                 GameMain.Instance.BgMgr.ChangeBgMyRoom(assetName);

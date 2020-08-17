@@ -4,6 +4,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class DepthOfFieldEffectManager : IEffectManager
     {
+        public const string header = "EFFECT_DOF";
         private DepthOfFieldScatter DepthOfField { get; set; }
         public bool Ready { get; private set; }
         public bool Active { get; private set; }
@@ -38,6 +39,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             get => visualizeFocus;
             set => visualizeFocus = DepthOfField.visualizeFocus = value;
+        }
+
+        public void Serialize(System.IO.BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write(header);
+            binaryWriter.Write(FocalLength);
+            binaryWriter.Write(FocalSize);
+            binaryWriter.Write(Aperture);
+            binaryWriter.Write(MaxBlurSize);
+            binaryWriter.Write(VisualizeFocus);
+            binaryWriter.Write(Active);
+        }
+
+        public void Deserialize(System.IO.BinaryReader binaryReader)
+        {
+            FocalLength = binaryReader.ReadSingle();
+            FocalSize = binaryReader.ReadSingle();
+            Aperture = binaryReader.ReadSingle();
+            MaxBlurSize = binaryReader.ReadSingle();
+            VisualizeFocus = binaryReader.ReadBoolean();
+            SetEffectActive(binaryReader.ReadBoolean());
         }
 
         public void Activate()

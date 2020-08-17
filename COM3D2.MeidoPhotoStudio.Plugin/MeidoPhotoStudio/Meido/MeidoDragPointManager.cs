@@ -137,6 +137,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public MeidoDragPointManager(Meido meido) => this.meido = meido;
 
+        public void Deserialize(BinaryReader binaryReader)
+        {
+            Bone[] bones = {
+                Bone.Hip, Bone.Pelvis, Bone.Spine, Bone.Spine0a, Bone.Spine1, Bone.Spine1a, Bone.Neck,
+                Bone.ClavicleL, Bone.ClavicleR, Bone.UpperArmL, Bone.UpperArmR, Bone.ForearmL, Bone.ForearmR,
+                Bone.ForearmL, Bone.ForearmR, Bone.ThighL, Bone.ThighR, Bone.CalfL, Bone.CalfR,
+                Bone.HandL, Bone.HandR, Bone.FootL, Bone.FootR
+            };
+            for (Bone bone = Bone.Finger0L; bone <= Bone.Toe2NubR; ++bone)
+            {
+                BoneTransform[bone].localRotation = binaryReader.ReadQuaternion();
+            }
+            foreach (Bone bone in bones)
+            {
+                BoneTransform[bone].rotation = binaryReader.ReadQuaternion();
+            }
+            BoneTransform[Bone.Hip].position = binaryReader.ReadVector3();
+        }
+
         public Transform GetAttachPointTransform(AttachPoint point)
         {
             if (point == AttachPoint.None) return null;
@@ -652,6 +671,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.AttachPoint = attachPoint;
             this.MaidGuid = maidGuid;
             this.MaidIndex = maidIndex;
+        }
+
+        public void Serialize(BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write((int)AttachPoint);
+            binaryWriter.Write(MaidIndex);
+        }
+
+        public static AttachPointInfo Deserialize(BinaryReader binaryReader)
+        {
+            return new AttachPointInfo(
+                (AttachPoint)binaryReader.ReadInt32(),
+                String.Empty,
+                binaryReader.ReadInt32()
+            );
         }
     }
 }

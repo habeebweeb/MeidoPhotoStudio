@@ -5,8 +5,9 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class LightManager
+    internal class LightManager : IManager
     {
+        public const string header = "LIGHT";
         private List<DragPointLight> lightList = new List<DragPointLight>();
         private int selectedLightIndex = 0;
         public int SelectedLightIndex
@@ -33,6 +34,28 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public event EventHandler Select;
         // TODO: enabling and disabling gizmos for a variety of dragpoints
 
+        public void Serialize(System.IO.BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write(header);
+            binaryWriter.Write(lightList.Count);
+            foreach (DragPointLight light in lightList)
+            {
+                light.Serialize(binaryWriter);
+            }
+        }
+
+        public void Deserialize(System.IO.BinaryReader binaryReader)
+        {
+            ClearLights();
+            int numberOfLights = binaryReader.ReadInt32();
+            lightList[0].Deserialize(binaryReader);
+            for (int i = 1; i < numberOfLights; i++)
+            {
+                AddLight();
+                lightList[i].Deserialize(binaryReader);
+            }
+        }
+
         public void Activate()
         {
             GameMain.Instance.MainCamera.GetComponent<Camera>().backgroundColor = Color.black;
@@ -54,6 +77,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             mainLight.type = LightType.Directional;
             DragPointLight.SetLightProperties(mainLight, new LightProperty());
         }
+
+        public void Update() { }
 
         public void AddLight(GameObject lightGo = null, bool isMain = false)
         {

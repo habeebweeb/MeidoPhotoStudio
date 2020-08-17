@@ -5,8 +5,9 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MeidoManager
+    internal class MeidoManager : IManager
     {
+        public const string header = "MEIDO";
         private static CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;
         private int undress = 0;
         private int numberOfMeidos;
@@ -57,6 +58,35 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Update()
         {
             if (Input.GetKeyDown(KeyCode.H)) UndressAll();
+        }
+
+        public void Serialize(System.IO.BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write(header);
+            // Only true for MM scenes converted to MPS scenes
+            binaryWriter.Write(false);
+            binaryWriter.Write(ActiveMeidoList.Count);
+            foreach (Meido meido in ActiveMeidoList)
+            {
+                meido.Serialize(binaryWriter);
+            }
+        }
+
+        public void Deserialize(System.IO.BinaryReader binaryReader)
+        {
+            bool isMMScene = binaryReader.ReadBoolean();
+            int numberOfMaids = binaryReader.ReadInt32();
+            for (int i = 0; i < numberOfMaids; i++)
+            {
+                if (i >= ActiveMeidoList.Count)
+                {
+                    Int64 skip = binaryReader.ReadInt64(); // meido buffer length
+                    binaryReader.BaseStream.Seek(skip, System.IO.SeekOrigin.Current);
+                    continue;
+                }
+                Meido meido = ActiveMeidoList[i];
+                meido.Deserialize(binaryReader, isMMScene);
+            }
         }
 
         private void UnloadMeidos()

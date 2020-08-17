@@ -376,6 +376,188 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.UpdateMeido?.Invoke(this, args ?? MeidoUpdateEventArgs.Empty);
         }
+
+        public void Serialize(BinaryWriter binaryWriter)
+        {
+            using (MemoryStream memoryStream = new MemoryStream())
+            using (BinaryWriter tempWriter = new BinaryWriter(memoryStream))
+            {
+                // transform
+                tempWriter.WriteVector3(Maid.transform.position);
+                tempWriter.WriteQuaternion(Maid.transform.rotation);
+                tempWriter.WriteVector3(Maid.transform.localScale);
+                // pose
+                byte[] poseBuffer = SerializePose(true);
+                tempWriter.Write(poseBuffer.Length);
+                tempWriter.Write(poseBuffer);
+                CachedPose.Serialize(tempWriter);
+                // eye direction
+                tempWriter.WriteQuaternion(Body.quaDefEyeL * Quaternion.Inverse(DefaultEyeRotL));
+                tempWriter.WriteQuaternion(Body.quaDefEyeR * Quaternion.Inverse(DefaultEyeRotR));
+                // free look
+                tempWriter.Write(FreeLook);
+                tempWriter.WriteVector3(Body.offsetLookTarget);
+                // face
+                SerializeFace(tempWriter);
+                // body visible
+                tempWriter.Write(Body.GetMask(SlotID.body));
+                // clothing
+                foreach (SlotID clothingSlot in MaidDressingPane.clothingSlots)
+                {
+                    bool value = true;
+                    if (clothingSlot == SlotID.wear)
+                    {
+                        if (MaidDressingPane.wearSlots.Any(slot => Body.GetSlotLoaded(slot)))
+                        {
+                            value = MaidDressingPane.wearSlots.Any(slot => Body.GetMask(slot));
+                        }
+                    }
+                    else if (clothingSlot == SlotID.megane)
+                    {
+                        SlotID[] slots = new[] { SlotID.megane, SlotID.accHead };
+                        if (slots.Any(slot => Body.GetSlotLoaded(slot)))
+                        {
+                            value = slots.Any(slot => Body.GetMask(slot));
+                        }
+                    }
+                    else if (Body.GetSlotLoaded(clothingSlot))
+                    {
+                        value = Body.GetMask(clothingSlot);
+                    }
+                    tempWriter.Write(value);
+                }
+                // zurashi and mekure
+                tempWriter.Write(CurlingFront);
+                tempWriter.Write(CurlingBack);
+                tempWriter.Write(PantsuShift);
+
+                binaryWriter.Write(memoryStream.Length);
+                binaryWriter.Write(memoryStream.ToArray());
+            }
+        }
+
+        private void SerializeFace(BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write("MPS_FACE");
+            TMorph morph = Maid.body0.Face.morph;
+            bool gp01FBFace = morph.bodyskin.PartsVersion >= 120;
+            foreach (string hash in faceKeys)
+            {
+                float[] blendValues = hash.StartsWith("eyeclose") && !(gp01FBFace && (hash == "eyeclose3"))
+                    ? this.BlendValuesBackup
+                    : this.BlendValues;
+
+                string faceKey = Utility.GP01FbFaceHash(morph, hash);
+                try
+                {
+                    float value = blendValues[(int)morph.hash[hash]];
+                    binaryWriter.Write(hash);
+                    binaryWriter.Write(value);
+                }
+                catch { }
+            }
+
+            foreach (string hash in faceToggleKeys)
+            {
+                bool value = this.BlendValues[(int)morph.hash[hash]] > 0f;
+                if (hash == "nosefook") value = morph.boNoseFook;
+
+                binaryWriter.Write(hash);
+                binaryWriter.Write(value);
+            }
+            binaryWriter.Write("END_FACE");
+        }
+
+        public void Deserialize(BinaryReader binaryReader, bool mmScene = false)
+        {
+            Maid.GetAnimation().Stop();
+            binaryReader.ReadInt64(); // meido buffer length
+            // transform
+            Maid.transform.position = binaryReader.ReadVector3();
+            Maid.transform.rotation = binaryReader.ReadQuaternion();
+            Maid.transform.localScale = binaryReader.ReadVector3();
+            // pose
+            if (mmScene) IKManager.Deserialize(binaryReader);
+            else
+            {
+                int poseBufferLength = binaryReader.ReadInt32();
+                byte[] poseBuffer = binaryReader.ReadBytes(poseBufferLength);
+                GetCacheBoneData().SetFrameBinary(poseBuffer);
+            }
+            CachedPose = PoseInfo.Deserialize(binaryReader);
+            // eye direction
+            Body.quaDefEyeL = DefaultEyeRotL * binaryReader.ReadQuaternion();
+            Body.quaDefEyeR = DefaultEyeRotR * binaryReader.ReadQuaternion();
+            // free look
+            FreeLook = binaryReader.ReadBoolean();
+            Vector3 lookTarget = binaryReader.ReadVector3();
+            if (FreeLook) Body.offsetLookTarget = lookTarget;
+            // face
+            DeserializeFace(binaryReader);
+            // body visible
+            SetBodyMask(binaryReader.ReadBoolean());
+            // clothing
+            foreach (SlotID clothingSlot in MaidDressingPane.clothingSlots)
+            {
+                bool value = binaryReader.ReadBoolean();
+                if (clothingSlot == SlotID.wear)
+                {
+                    Body.SetMask(SlotID.wear, value);
+                    Body.SetMask(SlotID.mizugi, value);
+                    Body.SetMask(SlotID.onepiece, value);
+                }
+                else if (clothingSlot == SlotID.megane)
+                {
+                    Body.SetMask(SlotID.megane, value);
+                    Body.SetMask(SlotID.accHead, value);
+                }
+                else if (Body.GetSlotLoaded(clothingSlot))
+                {
+                    Body.SetMask(clothingSlot, value);
+                }
+            }
+            // zurashi and mekure
+            bool curlingFront = binaryReader.ReadBoolean();
+            bool curlingBack = binaryReader.ReadBoolean();
+            if (CurlingFront != curlingFront) SetCurling(Curl.front, curlingFront);
+            if (CurlingBack != curlingBack) SetCurling(Curl.back, curlingBack);
+            SetCurling(Curl.shift, binaryReader.ReadBoolean());
+            // OnUpdateMeido();
+        }
+
+        private void DeserializeFace(BinaryReader binaryReader)
+        {
+            binaryReader.ReadString(); // read face header
+            TMorph morph = Maid.body0.Face.morph;
+            bool gp01FBFace = morph.bodyskin.PartsVersion >= 120;
+            HashSet<string> faceKeys = new HashSet<string>(Meido.faceKeys);
+            string header;
+            while ((header = binaryReader.ReadString()) != "END_FACE")
+            {
+                if (faceKeys.Contains(header))
+                {
+                    float[] blendValues = header.StartsWith("eyeclose") && !(gp01FBFace && (header == "eyeclose3"))
+                        ? this.BlendValuesBackup
+                        : this.BlendValues;
+                    string hash = Utility.GP01FbFaceHash(morph, header);
+                    try
+                    {
+                        float value = binaryReader.ReadSingle();
+                        blendValues[(int)morph.hash[hash]] = value;
+                    }
+                    catch { }
+                }
+                else
+                {
+                    bool value = binaryReader.ReadBoolean();
+                    if (header == "nosefook") this.Maid.boNoseFook = value;
+                    else this.BlendValues[(int)morph.hash[header]] = value ? 1f : 0f;
+                }
+            }
+            Maid.boMabataki = false;
+            morph.EyeMabataki = 0f;
+            morph.FixBlendValues_Face();
+        }
     }
 
     public struct PoseInfo
@@ -388,6 +570,23 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.PoseGroup = poseGroup;
             this.Pose = pose;
             this.CustomPose = customPose;
+        }
+
+        public void Serialize(BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write(PoseGroup);
+            binaryWriter.Write(Pose);
+            binaryWriter.Write(CustomPose);
+        }
+
+        public static PoseInfo Deserialize(BinaryReader binaryReader)
+        {
+            return new PoseInfo
+            (
+                binaryReader.ReadString(),
+                binaryReader.ReadString(),
+                binaryReader.ReadBoolean()
+            );
         }
     }
 }

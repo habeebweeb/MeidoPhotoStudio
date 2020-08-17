@@ -1,7 +1,9 @@
+﻿using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Ionic.Zlib;
 using BepInEx;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
@@ -13,6 +15,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
         public const string pluginName = "MeidoPhotoStudio";
         public const string pluginVersion = "0.0.0";
+        public const int sceneVersion = 1000;
         public static string pluginString = $"{pluginName} {pluginVersion}";
         private WindowManager windowManager;
         private MeidoManager meidoManager;
@@ -35,6 +38,104 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
+        public void Serialize(bool quickSave)
+        {
+            string sceneName = quickSave ? "mpstempscene" : $"mpsscene{System.DateTime.Now:yyyyMMddHHmmss}.scene";
+            string scenePath = Path.Combine(Constants.scenesPath, sceneName);
+            File.WriteAllBytes(scenePath, Serialize());
+        }
+
+        public byte[] Serialize()
+        {
+            if (meidoManager.Busy) return null;
+
+            MemoryStream memoryStream;
+
+            using (memoryStream = new MemoryStream())
+            using (DeflateStream deflateStream = new DeflateStream(memoryStream, CompressionMode.Compress))
+            using (BinaryWriter binaryWriter = new BinaryWriter(deflateStream, System.Text.Encoding.UTF8))
+            {
+                binaryWriter.Write("MPS_SCENE");
+                binaryWriter.Write(sceneVersion);
+
+                messageWindowManager.Serialize(binaryWriter);
+                effectManager.Serialize(binaryWriter);
+                environmentManager.Serialize(binaryWriter);
+                lightManager.Serialize(binaryWriter);
+                // meidomanager has to be serialized before propmanager because reattached props will be in the wrong
+                // place after a maid's pose is deserialized.
+                meidoManager.Serialize(binaryWriter);
+                propManager.Serialize(binaryWriter);
+
+                binaryWriter.Write("END");
+            }
+
+            return memoryStream.ToArray();
+        }
+
+        public void Deserialize()
+        {
+            string path = Path.Combine(Constants.scenesPath, "mpstempscene");
+            Deserialize(path);
+        }
+
+        public void Deserialize(string filePath)
+        {
+            if (meidoManager.Busy) return;
+
+            byte[] data = DeflateStream.UncompressBuffer(File.ReadAllBytes(filePath));
+
+            using (MemoryStream memoryStream = new MemoryStream(data))
+            using (BinaryReader binaryReader = new BinaryReader(memoryStream, System.Text.Encoding.UTF8))
+            {
+                try
+                {
+                    if (binaryReader.ReadString() != "MPS_SCENE") return;
+
+                    if (binaryReader.ReadInt32() > sceneVersion)
+                    {
+                        Utility.LogWarning($"'{filePath}' is made in a newer version of {pluginName}");
+                        return;
+                    }
+
+                    string previousHeader = string.Empty;
+                    string header;
+
+                    while ((header = binaryReader.ReadString()) != "END")
+                    {
+                        switch (header)
+                        {
+                            case MessageWindowManager.header:
+                                messageWindowManager.Deserialize(binaryReader);
+                                break;
+                            case EnvironmentManager.header:
+                                environmentManager.Deserialize(binaryReader);
+                                break;
+                            case MeidoManager.header:
+                                meidoManager.Deserialize(binaryReader);
+                                break;
+                            case PropManager.header:
+                                propManager.Deserialize(binaryReader);
+                                break;
+                            case LightManager.header:
+                                lightManager.Deserialize(binaryReader);
+                                break;
+                            case EffectManager.header:
+                                effectManager.Deserialize(binaryReader);
+                                break;
+                            default: throw new System.Exception($"Unknown header '{header}'. Last {previousHeader}");
+                        }
+                        previousHeader = header;
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Utility.LogError($"Failed to deserialize scene '{filePath}' because {e.Message}");
+                    return;
+                }
+            }
+        }
+
         private void Update()
         {
             if (currentScene == Constants.Scene.Daily)
@@ -46,8 +147,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
 
                 if (active)
-                    bool qFlag = Input.GetKey(KeyCode.Q);
-                    if (!qFlag && Input.GetKeyDown(KeyCode.S))
+                {
+                    if (Utility.GetModKey(Utility.ModKey.Control))
+                    {
+                        if (Input.GetKeyDown(KeyCode.S)) Serialize(true);
+                        else if (Input.GetKeyDown(KeyCode.A)) Deserialize();
+                    }
+                    else if (!Input.GetKey(KeyCode.Q) && Input.GetKeyDown(KeyCode.S))
                     {
                         StartCoroutine(TakeScreenShot());
                     }
@@ -127,6 +233,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
         {
             currentScene = (Constants.Scene)scene.buildIndex;
+            if (active) Deactivate();
             ResetCalcNearClip();
         }
 

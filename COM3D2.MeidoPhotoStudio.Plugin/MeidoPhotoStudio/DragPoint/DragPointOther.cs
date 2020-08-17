@@ -25,6 +25,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         public AttachPointInfo attachPointInfo = AttachPointInfo.Empty;
         public string Name => MyGameObject.name;
+        public string assetName = string.Empty;
 
         protected override void ApplyDragType()
         {

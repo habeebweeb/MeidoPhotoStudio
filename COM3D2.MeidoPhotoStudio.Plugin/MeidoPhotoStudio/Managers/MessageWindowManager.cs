@@ -1,9 +1,11 @@
+using System.Reflection;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MessageWindowManager
+    internal class MessageWindowManager : IManager
     {
+        public const string header = "TEXTBOX";
         public static readonly SliderProp fontBounds = new SliderProp(25f, 60f);
         private static GameObject sysRoot;
         private MessageClass msgClass;
@@ -12,6 +14,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private UILabel nameLabel;
         private GameObject msgGameObject;
         public bool ShowingMessage { get; private set; }
+        private string messageName;
+        private string messageText;
 
         public MessageWindowManager()
         {
@@ -37,6 +41,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.msgWnd.CloseMessageWindowPanel();
             SetPhotoMessageWindowActive(false);
         }
+
+        public void Serialize(System.IO.BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write(header);
+            binaryWriter.Write(ShowingMessage);
+            binaryWriter.Write(this.msgLabel.fontSize);
+            binaryWriter.WriteNullableString(messageName);
+            binaryWriter.WriteNullableString(messageText);
+        }
+
+        public void Deserialize(System.IO.BinaryReader binaryReader)
+        {
+            CloseMessagePanel();
+            bool showingMessage = binaryReader.ReadBoolean();
+            this.msgLabel.fontSize = binaryReader.ReadInt32();
+            messageName = binaryReader.ReadNullableString();
+            messageText = binaryReader.ReadNullableString();
+            if (showingMessage) ShowMessage(messageName, messageText);
+        }
+
+        public void Update() { }
 
         private void SetPhotoMessageWindowActive(bool active)
         {
@@ -69,6 +94,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void ShowMessage(string name, string message)
         {
+            messageName = name;
+            messageText = message;
             ShowingMessage = true;
             this.msgWnd.OpenMessageWindowPanel();
             this.msgLabel.ProcessText();

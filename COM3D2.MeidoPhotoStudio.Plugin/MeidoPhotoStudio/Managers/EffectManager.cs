@@ -3,8 +3,10 @@ using System.Collections.Generic;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class EffectManager
+    internal class EffectManager : IManager
     {
+        public const string header = "EFFECT";
+        public const string footer = "END_EFFECT";
         private Dictionary<Type, IEffectManager> EffectManagers = new Dictionary<Type, IEffectManager>();
         private BloomEffectManager bloomEffectManager;
 
@@ -28,6 +30,39 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             T manager = new T();
             EffectManagers[typeof(T)] = manager;
             return manager;
+        }
+
+        public void Serialize(System.IO.BinaryWriter binaryWriter)
+        {
+            binaryWriter.Write(header);
+            foreach (IEffectManager effectManager in EffectManagers.Values)
+            {
+                effectManager.Serialize(binaryWriter);
+            }
+            binaryWriter.Write(footer);
+        }
+
+        public void Deserialize(System.IO.BinaryReader binaryReader)
+        {
+            string header;
+            while ((header = binaryReader.ReadString()) != footer)
+            {
+                switch (header)
+                {
+                    case BloomEffectManager.header:
+                        Get<BloomEffectManager>().Deserialize(binaryReader);
+                        break;
+                    case DepthOfFieldEffectManager.header:
+                        Get<DepthOfFieldEffectManager>().Deserialize(binaryReader);
+                        break;
+                    case VignetteEffectManager.header:
+                        Get<VignetteEffectManager>().Deserialize(binaryReader);
+                        break;
+                    case FogEffectManager.header:
+                        Get<FogEffectManager>().Deserialize(binaryReader);
+                        break;
+                }
+            }
         }
 
         public void Activate()
