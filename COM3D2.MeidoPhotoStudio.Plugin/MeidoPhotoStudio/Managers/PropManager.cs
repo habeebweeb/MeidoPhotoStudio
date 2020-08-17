@@ -92,8 +92,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             MyRoomCustom.PlacementData.Data data = MyRoomCustom.PlacementData.GetData(item.ID);
             GameObject dogu = GameObject.Instantiate(data.GetPrefab());
             string name = Translation.Get("myRoomPropNames", item.PrefabName);
-            if (dogu != null) AttachDragPoint(dogu, name, new Vector3(0f, 0f, 0.5f));
-            else Utility.Logger.LogInfo($"Could not load MyRoomCreative prop '{item.PrefabName}'");
+            else Utility.LogInfo($"Could not load MyRoomCreative prop '{item.PrefabName}'");
         }
 
         public void SpawnBG(string assetName)
@@ -234,7 +233,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else
             {
-                Utility.Logger.LogError($"Could not spawn object '{assetName}'");
+                Utility.LogInfo($"Could not spawn object '{assetName}'");
             }
         }
 

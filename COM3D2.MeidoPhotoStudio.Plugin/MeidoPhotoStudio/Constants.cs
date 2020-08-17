@@ -127,7 +127,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (!fullPath.StartsWith(Constants.customPosePath))
             {
-                Utility.Logger.LogError($"Could not save pose! Path is invalid: '{fullPath}'");
+                Utility.LogError($"Could not save pose! Path is invalid: '{fullPath}'");
                 return;
             }
 
@@ -174,7 +174,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (!fullPath.StartsWith(Constants.customHandPath))
             {
-                Utility.Logger.LogError($"Could not save hand! Path is invalid: '{fullPath}'");
+                Utility.LogError($"Could not save hand! Path is invalid: '{fullPath}'");
                 return;
             }
 
@@ -640,7 +640,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private static void InitializeModProps()
         {
-            // TODO: cache menu files
             for (int i = 1; i < MenuFileUtility.MenuCategories.Length; i++)
             {
                 ModPropDict[MenuCategories[i]] = new List<ModItem>();
@@ -704,7 +703,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (!MenuFileUtility.MenuFilesReady)
                 {
-                    Utility.Logger.LogInfo("Menu files are not ready yet");
+                    Utility.LogMessage("Menu files are not ready yet");
                     return null;
                 }
             }
@@ -733,7 +732,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         string iconFile = item.IconFile;
                         if (string.IsNullOrEmpty(iconFile) || !GameUty.FileSystem.IsExistentFile(iconFile))
                         {
-                            Utility.Logger.LogWarning($"Could not find icon '{iconFile}' for menu '{item.MenuFile}");
+                            Utility.LogWarning($"Could not find icon '{iconFile}' for menu '{item.MenuFile}");
                             return true;
                         }
                         else
@@ -750,7 +749,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                                 }
                                 catch
                                 {
-                                    Utility.Logger.LogWarning($"Could not load '{iconFile}' for menu '{item.MenuFile}");
+                                    Utility.LogWarning($"Could not load '{iconFile}' for menu '{item.MenuFile}");
                                     return true;
                                 }
                             }

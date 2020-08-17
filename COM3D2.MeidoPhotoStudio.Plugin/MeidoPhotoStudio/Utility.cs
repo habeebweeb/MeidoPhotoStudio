@@ -14,6 +14,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Control, Shift, Alt
         }
 
+        public static void LogInfo(object data) => Logger.LogInfo(data);
+
+        public static void LogMessage(object data) => Logger.LogInfo(data);
+
+        public static void LogWarning(object data) => Logger.LogWarning(data);
+
+        public static void LogError(object data) => Logger.LogError(data);
+
+        public static void LogDebug(object data) => Logger.LogDebug(data);
+
         public static int Wrap(int value, int min, int max)
         {
             max -= 1;

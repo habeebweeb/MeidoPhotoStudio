@@ -261,7 +261,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
                 else
                 {
-                    Utility.Logger.LogError("invalid model");
+                    Utility.LogError("invalid model");
                     return null;
                 }
             }
@@ -353,7 +353,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     string text2 = binaryReader.ReadString();
                     if (!hashtable.ContainsKey(text2))
                     {
-                        Utility.Logger.LogError("nullbone= " + text2);
+                        Utility.LogError("nullbone= " + text2);
                     }
                     else
                     {
@@ -470,7 +470,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     if (fileStream == null || fileStream.Length == 0)
                     {
-                        Utility.Logger.LogError("Could not open mod menu");
+                        Utility.LogWarning($"Could not open mod menu file '{modItem.MenuFile}'");
                         return null;
                     }
                     else
@@ -487,12 +487,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (afileBase == null || !afileBase.IsValid())
                 {
-                    Utility.Logger.LogError("Could not open menu");
+                    Utility.LogWarning($"Could not open menu file '{menu}'");
                     return null;
                 }
                 else if (afileBase.GetSize() == 0)
                 {
-                    Utility.Logger.LogError("Mod menu is empty");
+                    Utility.LogWarning($"Mod menu is empty '{menu}'");
                     return null;
                 }
                 else
@@ -513,7 +513,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
                 catch
                 {
-                    Utility.Logger.LogError($"Could not load mesh for '{modItem.MenuFile}'");
+                    Utility.LogWarning($"Could not load mesh for '{modItem.MenuFile}'");
                 }
 
                 if (gameObject != null)
@@ -528,8 +528,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                             )
                             {
                                 renderer.materials[matChange.MaterialIndex] = ImportCM.LoadMaterial(
-                                        matChange.MaterialFile, null, renderer.materials[matChange.MaterialIndex]
-                                    );
+                                    matChange.MaterialFile, null, renderer.materials[matChange.MaterialIndex]
+                                );
                             }
                         }
                     }
@@ -544,7 +544,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else
             {
-                Utility.Logger.LogWarning($"Could not parse menu file '{modItem.MenuFile}'");
+                Utility.LogMessage($"Could not parse menu file '{modItem.MenuFile}'");
                 return null;
             }
         }
@@ -579,7 +579,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             catch
             {
-                Utility.Logger.LogError($"Could not read menu file '{menuFile}'");
+                Utility.LogError($"Could not read menu file '{menuFile}'");
                 return false;
             }
 
@@ -643,7 +643,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
                 catch (Exception e)
                 {
-                    Utility.Logger.LogWarning($"Could not parse menu file '{menuFile}' because {e.Message}");
+                    Utility.LogWarning($"Could not parse menu file '{menuFile}' because {e.Message}");
                     return false;
                 }
             }
@@ -662,7 +662,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     if (fileStream == null) return false;
                     if (fileStream.Length == 0L)
                     {
-                        Utility.Logger.LogError($"Mod menu file '{modMenuFile}' is empty");
+                        Utility.LogError($"Mod menu file '{modMenuFile}' is empty");
                         return false;
                     }
                     buf = new byte[fileStream.Length];
@@ -671,7 +671,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             catch (Exception e)
             {
-                Utility.Logger.LogError($"Could not read mod menu file '{modMenuFile} because {e.Message}'");
+                Utility.LogError($"Could not read mod menu file '{modMenuFile} because {e.Message}'");
                 return false;
             }
 
@@ -725,7 +725,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
                 catch (Exception e)
                 {
-                    Utility.Logger.LogWarning($"Could not parse mod menu file '{modMenuFile}' because {e}");
+                    Utility.LogWarning($"Could not parse mod menu file '{modMenuFile}' because {e}");
                     return false;
                 }
             }

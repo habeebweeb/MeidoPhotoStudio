@@ -27,7 +27,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (!Directory.Exists(currentTranslationPath))
             {
-                Utility.Logger.LogWarning(
+                Utility.LogWarning(
                     $"No translations found for '{CurrentLanguage}' in '{currentTranslationPath}'"
                 );
                 return;
@@ -54,7 +54,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
                 catch
                 {
-                    Utility.Logger.LogError($"Could not find translation file '{translationFile}'");
+                    Utility.LogError($"Could not find translation file '{translationFile}'");
                 }
             }
         }
@@ -82,7 +82,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (warn)
                 {
-                    Utility.Logger.LogWarning($"Could not translate '{text}': category '{category}' was not found");
+                    Utility.LogWarning($"Could not translate '{text}': category '{category}' was not found");
                 }
                 return false;
             }
@@ -91,7 +91,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (warn)
                 {
-                    Utility.Logger.LogWarning(
+                    Utility.LogWarning(
                         $"Could not translate '{text}': '{text}' was not found in category '{category}'"
                     );
                 }
