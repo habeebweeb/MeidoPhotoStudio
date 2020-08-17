@@ -9,6 +9,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class MeidoPhotoStudio : BaseUnityPlugin
     {
+        private static CameraMain mainCamera = GameMain.Instance.MainCamera;
         private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
         public const string pluginName = "MeidoPhotoStudio";
         public const string pluginVersion = "0.0.0";
@@ -126,6 +127,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
         {
             currentScene = (Constants.Scene)scene.buildIndex;
+            ResetCalcNearClip();
         }
 
         private void Initialize()
@@ -162,8 +164,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void Activate()
         {
             if (!initialized) Initialize();
+
+            SetNearClipPlane();
+
             uiActive = true;
-            isActive = true;
+            active = true;
 
             meidoManager.Activate();
             environmentManager.Activate();
@@ -181,8 +186,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (meidoManager.Busy) return;
 
+            ResetCalcNearClip();
+
             uiActive = false;
-            isActive = false;
+            active = false;
 
             meidoManager.Deactivate();
             environmentManager.Deactivate();
@@ -194,6 +201,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
             dailyPanel?.SetActive(true);
+        }
+
+        private void SetNearClipPlane()
+        {
+            mainCamera.StopAllCoroutines();
+            mainCamera.m_bCalcNearClip = false;
+            mainCamera.camera.nearClipPlane = 0.01f;
+        }
+
+        private void ResetCalcNearClip()
+        {
+            if (mainCamera.m_bCalcNearClip) return;
+            mainCamera.StopAllCoroutines();
+            mainCamera.m_bCalcNearClip = true;
+            mainCamera.Start();
         }
     }
 }
