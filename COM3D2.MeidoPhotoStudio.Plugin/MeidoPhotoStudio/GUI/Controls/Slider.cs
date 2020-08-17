@@ -55,7 +55,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.value = Utility.Bound(value, left, right);
         }
 
-        public Slider(float min, float max, float value = 0) : this(String.Empty, min, max, value) { }
+        public Slider(float min, float max, float value = 0f) : this(String.Empty, min, max, value) { }
 
         public Slider(string label, SliderProp prop) : this(label, prop.Left, prop.Right, prop.Initial) { }
 
@@ -102,7 +102,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.Left = left;
             this.Right = right;
-            this.Initial = initial;
+            this.Initial = Utility.Bound(initial, left, right);
         }
     }
 }

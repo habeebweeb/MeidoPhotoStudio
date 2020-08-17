@@ -40,7 +40,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             nameTextField = new TextField();
             Controls.Add(nameTextField);
 
-            fontSizeSlider = new Slider(25, 60);
+            fontSizeSlider = new Slider(MessageWindowManager.fontBounds);
             fontSizeSlider.ControlEvent += ChangeFontSize;
             Controls.Add(fontSizeSlider);
 

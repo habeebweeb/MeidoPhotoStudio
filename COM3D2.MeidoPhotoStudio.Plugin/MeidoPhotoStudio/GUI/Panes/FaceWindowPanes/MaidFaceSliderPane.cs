@@ -7,56 +7,56 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class MaidFaceSliderPane : BasePane
     {
         // TODO: Consider placing in external file to be user editable
-        private static readonly Dictionary<string, float[]> SliderRange = new Dictionary<string, float[]>()
+        private static readonly Dictionary<string, SliderProp> SliderRange = new Dictionary<string, SliderProp>()
         {
             // Eye Shut
-            ["eyeclose"] = new[] { 0f, 1f },
+            ["eyeclose"] = new SliderProp(0f, 1f),
             // Eye Smile
-            ["eyeclose2"] = new[] { 0f, 1f },
+            ["eyeclose2"] = new SliderProp(0f, 1f),
             // Glare
-            ["eyeclose3"] = new[] { 0f, 1f },
+            ["eyeclose3"] = new SliderProp(0f, 1f),
             // Wide Eyes
-            ["eyebig"] = new[] { 0f, 1f },
+            ["eyebig"] = new SliderProp(0f, 1f),
             // Wink 1
-            ["eyeclose6"] = new[] { 0f, 1f },
+            ["eyeclose6"] = new SliderProp(0f, 1f),
             // Wink 2
-            ["eyeclose5"] = new[] { 0f, 1f },
+            ["eyeclose5"] = new SliderProp(0f, 1f),
             // Highlight
-            ["hitomih"] = new[] { 0f, 2f },
+            ["hitomih"] = new SliderProp(0f, 2f),
             // Pupil Size
-            ["hitomis"] = new[] { 0f, 3f },
+            ["hitomis"] = new SliderProp(0f, 3f),
             // Brow 1
-            ["mayuha"] = new[] { 0f, 1f },
+            ["mayuha"] = new SliderProp(0f, 1f),
             // Brow 2
-            ["mayuw"] = new[] { 0f, 1f },
+            ["mayuw"] = new SliderProp(0f, 1f),
             // Brow Up
-            ["mayuup"] = new[] { 0f, 0.8f },
+            ["mayuup"] = new SliderProp(0f, 0.8f),
             // Brow Down 1
-            ["mayuv"] = new[] { 0f, 0.8f },
+            ["mayuv"] = new SliderProp(0f, 0.8f),
             // Brow Down 2
-            ["mayuvhalf"] = new[] { 0f, 0.9f },
+            ["mayuvhalf"] = new SliderProp(0f, 0.9f),
             // Mouth Open 1
-            ["moutha"] = new[] { 0f, 1f },
+            ["moutha"] = new SliderProp(0f, 1f),
             // Mouth Open 2
-            ["mouths"] = new[] { 0f, 0.9f },
+            ["mouths"] = new SliderProp(0f, 0.9f),
             // Mouth Narrow
-            ["mouthc"] = new[] { 0f, 1f },
+            ["mouthc"] = new SliderProp(0f, 1f),
             // Mouth Widen
-            ["mouthi"] = new[] { 0f, 1f },
+            ["mouthi"] = new SliderProp(0f, 1f),
             // Smile
-            ["mouthup"] = new[] { 0f, 1.4f },
+            ["mouthup"] = new SliderProp(0f, 1.4f),
             // Frown
-            ["mouthdw"] = new[] { 0f, 1f },
+            ["mouthdw"] = new SliderProp(0f, 1f),
             // Mouth Pucker
-            ["mouthhe"] = new[] { 0f, 1f },
+            ["mouthhe"] = new SliderProp(0f, 1f),
             // Grin
-            ["mouthuphalf"] = new[] { 0f, 2f },
+            ["mouthuphalf"] = new SliderProp(0f, 2f),
             // Tongue Out
-            ["tangout"] = new[] { 0f, 1f },
+            ["tangout"] = new SliderProp(0f, 1f),
             // Tongue Up
-            ["tangup"] = new[] { 0f, 0.7f },
+            ["tangup"] = new SliderProp(0f, 0.7f),
             // Tongue Base
-            ["tangopen"] = new[] { 0f, 1f }
+            ["tangopen"] = new SliderProp(0f, 1f)
         };
         private MeidoManager meidoManager;
         private Dictionary<string, BaseControl> faceControls;
@@ -69,7 +69,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (string key in faceKeys)
             {
                 string uiName = Translation.Get("faceBlendValues", key);
-                Slider slider = new Slider(uiName, SliderRange[key][0], SliderRange[key][1]);
+                Slider slider = new Slider(uiName, SliderRange[key]);
                 string myKey = key;
                 slider.ControlEvent += (s, a) => this.SetFaceValue(myKey, slider.Value);
                 faceControls[key] = slider;

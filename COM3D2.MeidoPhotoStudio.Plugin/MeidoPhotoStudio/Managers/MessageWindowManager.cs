@@ -4,6 +4,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class MessageWindowManager
     {
+        public static readonly SliderProp fontBounds = new SliderProp(25f, 60f);
         private static GameObject sysRoot;
         private MessageClass msgClass;
         private MessageWindowMgr msgWnd;
@@ -77,7 +78,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void SetFontSize(int fontSize)
         {
-            Utility.SetFieldValue<UILabel, int>(this.msgLabel, "mFontSize", fontSize);
+            this.msgLabel.fontSize = fontSize;
         }
 
         public void CloseMessagePanel()

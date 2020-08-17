@@ -113,6 +113,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void DestroyLight(DragPointLight light)
         {
+            if (light == null) return;
             light.Rotate -= OnRotate;
             light.Scale -= OnScale;
             light.Delete -= OnDelete;

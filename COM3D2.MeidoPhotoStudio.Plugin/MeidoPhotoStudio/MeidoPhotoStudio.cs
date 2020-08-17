@@ -12,7 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
         public const string pluginName = "MeidoPhotoStudio";
         public const string pluginVersion = "0.0.0";
-        public static string pluginString;
+        public static string pluginString = $"{pluginName} {pluginVersion}";
         private WindowManager windowManager;
         private MeidoManager meidoManager;
         private EnvironmentManager environmentManager;
@@ -22,10 +22,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private EffectManager effectManager;
         private Constants.Scene currentScene;
         private bool initialized = false;
-        private bool isActive = false;
+        private bool active = false;
         private bool uiActive = false;
-
-        static MeidoPhotoStudio() => pluginString = $"{pluginName} {pluginVersion}";
 
         private void Awake() => DontDestroyOnLoad(this);
 
@@ -42,12 +40,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (Input.GetKeyDown(KeyCode.F6))
                 {
-                    if (isActive) Deactivate();
+                    if (active) Deactivate();
                     else Activate();
                 }
 
-                if (isActive)
-                {
+                if (active)
                     bool qFlag = Input.GetKey(KeyCode.Q);
                     if (!qFlag && Input.GetKeyDown(KeyCode.S))
                     {
