@@ -241,11 +241,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     for (int i = 0; i < joints - 1; i++)
                     {
-                        Quaternion localRotation = BoneTransform[bone + i].localRotation;
-                        binaryWriter.Write(localRotation.x);
-                        binaryWriter.Write(localRotation.y);
-                        binaryWriter.Write(localRotation.z);
-                        binaryWriter.Write(localRotation.w);
+                        binaryWriter.WriteQuaternion(BoneTransform[bone + i].localRotation);
                     }
                 }
                 buf = memoryStream.ToArray();
@@ -267,13 +263,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     for (int i = 0; i < joints - 1; i++)
                     {
-                        Vector4 vec4;
-                        vec4.x = binaryReader.ReadSingle() * mirror;
-                        vec4.y = binaryReader.ReadSingle() * mirror;
-                        vec4.z = binaryReader.ReadSingle();
-                        vec4.w = binaryReader.ReadSingle();
-
-                        BoneTransform[bone + i].localRotation = new Quaternion(vec4.x, vec4.y, vec4.z, vec4.w);
+                        BoneTransform[bone + i].localRotation = new Quaternion
+                        (
+                            binaryReader.ReadSingle() * mirror,
+                            binaryReader.ReadSingle() * mirror,
+                            binaryReader.ReadSingle(),
+                            binaryReader.ReadSingle()
+                        );
                     }
                 }
             }

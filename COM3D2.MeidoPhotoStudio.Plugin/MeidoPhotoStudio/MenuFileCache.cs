@@ -8,19 +8,6 @@ using System.Collections.Generic;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static MenuFileUtility;
-    internal static class BinaryExtensions
-    {
-        public static string ReadNullableString(this BinaryReader binaryReader)
-        {
-            return binaryReader.ReadBoolean() ? binaryReader.ReadString() : null;
-        }
-
-        public static void WriteNullableString(this BinaryWriter binaryWriter, string str)
-        {
-            binaryWriter.Write(str != null);
-            if (str != null) binaryWriter.Write(str);
-        }
-    }
 
     internal class MenuFileCache
     {

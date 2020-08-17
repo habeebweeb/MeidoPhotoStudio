@@ -146,4 +146,67 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return hash;
         }
     }
+
+    internal static class BinaryExtensions
+    {
+        public static string ReadNullableString(this BinaryReader binaryReader)
+        {
+            return binaryReader.ReadBoolean() ? binaryReader.ReadString() : null;
+        }
+
+        public static void WriteNullableString(this BinaryWriter binaryWriter, string str)
+        {
+            binaryWriter.Write(str != null);
+            if (str != null) binaryWriter.Write(str);
+        }
+
+        public static void WriteVector3(this BinaryWriter binaryWriter, UnityEngine.Vector3 vector3)
+        {
+            binaryWriter.Write(vector3.x);
+            binaryWriter.Write(vector3.y);
+            binaryWriter.Write(vector3.z);
+        }
+
+        public static UnityEngine.Vector3 ReadVector3(this BinaryReader binaryReader)
+        {
+            return new UnityEngine.Vector3(
+                binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle()
+            );
+        }
+
+        public static void WriteQuaternion(this BinaryWriter binaryWriter, UnityEngine.Quaternion quaternion)
+        {
+            binaryWriter.Write(quaternion.x);
+            binaryWriter.Write(quaternion.y);
+            binaryWriter.Write(quaternion.z);
+            binaryWriter.Write(quaternion.w);
+        }
+
+        public static UnityEngine.Quaternion ReadQuaternion(this BinaryReader binaryReader)
+        {
+            return new UnityEngine.Quaternion
+            (
+                binaryReader.ReadSingle(), binaryReader.ReadSingle(),
+                binaryReader.ReadSingle(), binaryReader.ReadSingle()
+            );
+        }
+
+        public static void WriteColour(this BinaryWriter binaryWriter, UnityEngine.Color colour)
+        {
+            binaryWriter.Write(colour.r);
+            binaryWriter.Write(colour.g);
+            binaryWriter.Write(colour.b);
+            binaryWriter.Write(colour.a);
+        }
+
+        public static UnityEngine.Color ReadColour(this BinaryReader binaryReader)
+        {
+            return new Color(
+                binaryReader.ReadSingle(),
+                binaryReader.ReadSingle(),
+                binaryReader.ReadSingle(),
+                binaryReader.ReadSingle()
+            );
+        }
+    }
 }
