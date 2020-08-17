@@ -39,9 +39,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Transform bg;
         private CameraInfo cameraInfo;
         private DragPointBG bgDragPoint;
-        public LightManager LightManager { get; }
-        public PropManager PropManager { get; }
-        public EffectManager EffectManager { get; }
         private bool bgVisible = true;
         public bool BGVisible
         {
@@ -55,9 +52,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public EnvironmentManager(MeidoManager meidoManager)
         {
-            PropManager = new PropManager(meidoManager);
-            LightManager = new LightManager();
-            EffectManager = new EffectManager();
+            DragPointLight.environmentManager = this;
         }
 
         public void Activate()
@@ -87,16 +82,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bgObject.SetActive(true);
             GameMain.Instance.BgMgr.ChangeBg("Theater");
 
-            UltimateOrbitCamera UOCamera =
+            UltimateOrbitCamera uoCamera =
                 Utility.GetFieldValue<CameraMain, UltimateOrbitCamera>(GameMain.Instance.MainCamera, "m_UOCamera");
-            UOCamera.enabled = true;
+            uoCamera.enabled = true;
 
             ResetCamera();
             SaveCameraInfo();
-
-            PropManager.Activate();
-            LightManager.Activate();
-            EffectManager.Activate();
 
             CubeSmallChange += OnCubeSmall;
             CubeActiveChange += OnCubeActive;
@@ -108,9 +99,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameObject.Destroy(cameraObject);
             GameObject.Destroy(subCamera);
 
-            PropManager.Deactivate();
-            LightManager.Deactivate();
-            EffectManager.Deactivate();
+            BGVisible = true;
+            Camera mainCamera = GameMain.Instance.MainCamera.camera;
+            mainCamera.backgroundColor = Color.black;
 
             bool isNight = GameMain.Instance.CharacterMgr.status.GetFlag("時間帯") == 3;
 
@@ -127,6 +118,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameMain.Instance.MainCamera.SetTargetPos(new Vector3(0.5609447f, 1.380762f, -1.382336f), true);
             GameMain.Instance.MainCamera.SetDistance(1.6f, true);
             GameMain.Instance.MainCamera.SetAroundAngle(new Vector2(245.5691f, 6.273283f), true);
+            bg.localScale = Vector3.one;
             CubeSmallChange -= OnCubeSmall;
             CubeActiveChange -= OnCubeActive;
         }
@@ -150,8 +142,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     ResetCamera();
                 }
             }
-
-            EffectManager.Update();
         }
 
         public void ChangeBackground(string assetName, bool creative = false)

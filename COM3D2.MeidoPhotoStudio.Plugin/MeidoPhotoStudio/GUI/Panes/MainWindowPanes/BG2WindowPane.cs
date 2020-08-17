@@ -2,7 +2,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class BG2WindowPane : BaseWindowPane
     {
-        private EnvironmentManager environmentManager;
         private MeidoManager meidoManager;
         private PropsPane propsPane;
         private AttachPropPane attachPropPane;
@@ -11,12 +10,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private SelectionGrid propTabs;
         private BasePane currentPropsPane;
 
-        public BG2WindowPane(MeidoManager meidoManager, EnvironmentManager environmentManager)
+        public BG2WindowPane(MeidoManager meidoManager, PropManager propManager)
         {
-            this.environmentManager = environmentManager;
             this.meidoManager = meidoManager;
 
-            PropManager propManager = this.environmentManager.PropManager;
             this.propsPane = AddPane(new PropsPane(propManager));
             this.myRoomPropsPane = AddPane(new MyRoomPropsPane(propManager));
             this.modPropsPane = AddPane(new ModPropsPane(propManager));

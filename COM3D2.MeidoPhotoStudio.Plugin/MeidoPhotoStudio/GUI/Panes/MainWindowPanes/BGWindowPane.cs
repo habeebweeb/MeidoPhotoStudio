@@ -9,13 +9,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private EffectsPane effectsPane;
         private DragPointPane dragPointPane;
 
-        public BGWindowPane(EnvironmentManager environmentManager)
+        public BGWindowPane(
+            EnvironmentManager environmentManager, LightManager lightManager, EffectManager effectManager
+        )
         {
             this.backgroundSelectorPane = AddPane(new BackgroundSelectorPane(environmentManager));
             this.dragPointPane = AddPane(new DragPointPane());
-            this.lightsPane = AddPane(new LightsPane(environmentManager));
-
-            EffectManager effectManager = environmentManager.EffectManager;
+            this.lightsPane = AddPane(new LightsPane(lightManager));
 
             this.effectsPane = AddPane(new EffectsPane()
             {

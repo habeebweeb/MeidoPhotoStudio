@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -17,6 +17,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private MeidoManager meidoManager;
         private EnvironmentManager environmentManager;
         private MessageWindowManager messageWindowManager;
+        private LightManager lightManager;
+        private PropManager propManager;
+        private EffectManager effectManager;
         private Constants.Scene currentScene;
         private bool initialized = false;
         private bool isActive = false;
@@ -54,6 +57,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     meidoManager.Update();
                     environmentManager.Update();
                     windowManager.Update();
+                    effectManager.Update();
                 }
             }
         }
@@ -135,6 +139,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             meidoManager = new MeidoManager();
             environmentManager = new EnvironmentManager(meidoManager);
             messageWindowManager = new MessageWindowManager();
+            lightManager = new LightManager();
+            propManager = new PropManager(meidoManager);
+            effectManager = new EffectManager();
 
             MaidSwitcherPane maidSwitcherPane = new MaidSwitcherPane(meidoManager);
 
@@ -145,8 +152,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     [Constants.Window.Call] = new CallWindowPane(meidoManager),
                     [Constants.Window.Pose] = new PoseWindowPane(meidoManager, maidSwitcherPane),
                     [Constants.Window.Face] = new FaceWindowPane(meidoManager, maidSwitcherPane),
-                    [Constants.Window.BG] = new BGWindowPane(environmentManager),
-                    [Constants.Window.BG2] = new BG2WindowPane(meidoManager, environmentManager)
+                    [Constants.Window.BG] = new BGWindowPane(environmentManager, lightManager, effectManager),
+                    [Constants.Window.BG2] = new BG2WindowPane(meidoManager, propManager)
                 },
                 [Constants.Window.Message] = new MessageWindow(messageWindowManager)
             };
@@ -163,6 +170,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             meidoManager.Activate();
             environmentManager.Activate();
+            propManager.Activate();
+            lightManager.Activate();
+            effectManager.Activate();
             windowManager.Activate();
             messageWindowManager.Activate();
 
@@ -179,12 +189,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             meidoManager.Deactivate();
             environmentManager.Deactivate();
+            propManager.Deactivate();
+            lightManager.Deactivate();
+            effectManager.Deactivate();
             messageWindowManager.Deactivate();
             windowManager.Deactivate();
 
-            // GameMain.Instance.SoundMgr.PlayBGM("bgm009.ogg", 1f, true);
-            GameObject dailyPanel = GameObject.Find("UI Root").transform.Find("DailyPanel").gameObject;
-            dailyPanel.SetActive(true);
+            GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
+            dailyPanel?.SetActive(true);
         }
     }
 }

@@ -8,7 +8,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class LightsPane : BasePane
     {
         private LightManager lightManager;
-        private EnvironmentManager environmentManager;
         private static readonly string[] lightTypes = { "normal", "spot", "point" };
         private Dictionary<LightProp, Slider> LightSlider;
         private Dropdown lightDropdown;
@@ -41,13 +40,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             { "backgroundWindow", "blue" }
         };
 
-        public LightsPane(EnvironmentManager environmentManager)
+        public LightsPane(LightManager lightManager)
         {
             this.lightHeader = Translation.Get("lightsPane", "header");
 
-            this.environmentManager = environmentManager;
-
-            this.lightManager = this.environmentManager.LightManager;
+            this.lightManager = lightManager;
             this.lightManager.Rotate += (s, a) => UpdateRotation();
             this.lightManager.Scale += (s, a) => UpdateScale();
             this.lightManager.Select += (s, a) => UpdateCurrentLight();
@@ -123,7 +120,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void SetColourMode()
         {
             this.lightManager.SetColourModeActive(this.colorToggle.Value);
-            this.environmentManager.BGVisible = !this.colorToggle.Value;
             this.UpdatePane();
         }
 
@@ -172,28 +168,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             currentLightType = (MPSLightType)this.lightTypeGrid.SelectedItemIndex;
 
-            LightType lightType;
-            if (currentLightType == MPSLightType.Normal)
-            {
-                lightType = LightType.Directional;
-            }
-            else if (currentLightType == MPSLightType.Spot)
-            {
-                lightType = LightType.Spot;
-            }
-            else
-            {
-                lightType = LightType.Point;
-            }
-
             DragPointLight currentLight = lightManager.CurrentLight;
-            currentLight.SetLightType(lightType);
 
-            if (lightManager.SelectedLightIndex == 0)
-            {
-                this.environmentManager.BGVisible = (currentLight.SelectedLightType != DragPointLight.MPSLightType.Normal)
-                    || !currentLight.IsColourMode;
-            }
+            currentLight.SetLightType(currentLightType);
 
             this.lightDropdown.SetDropdownItem(lightManager.ActiveLightName);
             this.UpdatePane();

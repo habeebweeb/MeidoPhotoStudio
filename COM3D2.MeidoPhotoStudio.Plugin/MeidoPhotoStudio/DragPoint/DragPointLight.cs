@@ -5,6 +5,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class DragPointLight : DragPointGeneral
     {
+        public static EnvironmentManager environmentManager { private get; set; }
         private Light light;
         public enum MPSLightType
         {
@@ -39,13 +40,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private bool isColourMode = false;
         public bool IsColourMode
         {
-            get => isColourMode && SelectedLightType == MPSLightType.Normal;
+            get => IsMain && isColourMode && SelectedLightType == MPSLightType.Normal;
             set
             {
+                if (!IsMain) return;
                 this.light.color = value ? Color.white : LightColour;
                 camera.backgroundColor = value ? LightColour : Color.black;
                 this.isColourMode = value;
                 LightColour = this.isColourMode ? camera.backgroundColor : light.color;
+                environmentManager.BGVisible = !IsColourMode;
             }
         }
         public Quaternion Rotation
@@ -141,7 +144,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.light.transform.position = LightProperty.DefaultPosition;
             this.light.transform.rotation = LightProperty.DefaultRotation;
 
-            SetLightType(LightType.Directional);
+            SetLightType(MPSLightType.Normal);
             this.ScaleFactor = 50f;
         }
 
@@ -192,27 +195,31 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        public void SetLightType(LightType type)
+        public void SetLightType(MPSLightType type)
         {
+            LightType lightType = LightType.Directional;
+
             string name = "normal";
+            SelectedLightType = type;
 
-            if (type == LightType.Directional)
+            if (type == MPSLightType.Spot)
             {
-                SelectedLightType = MPSLightType.Normal;
-            }
-            else if (type == LightType.Spot)
-            {
+                lightType = LightType.Spot;
                 name = "spot";
-                SelectedLightType = MPSLightType.Spot;
             }
-            else
+            else if (type == MPSLightType.Point)
             {
+                lightType = LightType.Point;
                 name = "point";
-                SelectedLightType = MPSLightType.Point;
             }
 
-            this.light.type = type;
+            this.light.type = lightType;
             this.Name = IsMain ? "main" : name;
+
+            if (IsMain)
+            {
+                environmentManager.BGVisible = !(IsColourMode && SelectedLightType == MPSLightType.Normal);
+            }
 
             SetProps();
             ApplyDragType();
