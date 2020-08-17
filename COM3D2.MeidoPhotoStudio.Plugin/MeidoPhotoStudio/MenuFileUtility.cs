@@ -592,8 +592,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 binaryReader.ReadInt32(); // file version
                 binaryReader.ReadString(); // txt path
                 modItem.Name = binaryReader.ReadString(); // name
-                modItem.Category = binaryReader.ReadString(); // category
-                if (!accMpn.Contains(modItem.Category)) return false;
+                binaryReader.ReadString(); // category
                 binaryReader.ReadString(); // description
                 binaryReader.ReadInt32(); // idk (as long)
 
@@ -623,6 +622,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                                 if (header == "end")
                                 {
                                     break;
+                                }
+                                else if (header == "category")
+                                {
+                                    modItem.Category = menuProps[1];
+                                    if (!accMpn.Contains(modItem.Category)) return false;
                                 }
                                 else if (header == "icons" || header == "icon")
                                 {
