@@ -41,6 +41,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else return Mathf.Clamp(value, left, right);
         }
 
+        public static int Bound(int value, int left, int right)
+        {
+            if (left > right) return Mathf.Clamp(value, right, left);
+            else return Mathf.Clamp(value, left, right);
+        }
+
         public static Texture2D MakeTex(int width, int height, Color color)
         {
             Color[] colors = new Color[width * height];
