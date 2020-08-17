@@ -165,6 +165,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void SaveCameraInfo()
         {
             this.cameraInfo = new CameraInfo(GameMain.Instance.MainCamera);
+            StopCameraSpin();
         }
 
         public void LoadCameraInfo(CameraInfo cameraInfo)
@@ -174,6 +175,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             camera.SetPos(cameraInfo.Pos);
             camera.SetDistance(cameraInfo.Distance);
             camera.transform.eulerAngles = cameraInfo.Angle;
+            StopCameraSpin();
+        }
+
+        private void StopCameraSpin()
+        {
+            UltimateOrbitCamera uoCamera = Utility.GetFieldValue<CameraMain, UltimateOrbitCamera>(
+                GameMain.Instance.MainCamera, "m_UOCamera"
+            );
+            Utility.SetFieldValue<UltimateOrbitCamera, float>(uoCamera, "xVelocity", 0f);
+            Utility.SetFieldValue<UltimateOrbitCamera, float>(uoCamera, "yVelocity", 0f);
         }
 
         private void ResetCamera()
