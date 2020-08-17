@@ -129,13 +129,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             keepWorldPositionToggle.Draw();
 
             DrawToggleGroup(AttachPoint.Head, AttachPoint.Neck);
-            DrawToggleGroup(AttachPoint.UpperArmL, AttachPoint.UpperArmR);
-            DrawToggleGroup(AttachPoint.ForearmL, AttachPoint.ForearmR);
-            DrawToggleGroup(AttachPoint.MuneL, AttachPoint.MuneR);
-            DrawToggleGroup(AttachPoint.HandL, AttachPoint.Pelvis, AttachPoint.HandR);
-            DrawToggleGroup(AttachPoint.ThighL, AttachPoint.ThighR);
-            DrawToggleGroup(AttachPoint.CalfL, AttachPoint.CalfR);
-            DrawToggleGroup(AttachPoint.FootL, AttachPoint.FootR);
+            DrawToggleGroup(AttachPoint.UpperArmR, AttachPoint.UpperArmL);
+            DrawToggleGroup(AttachPoint.ForearmR, AttachPoint.ForearmL);
+            DrawToggleGroup(AttachPoint.MuneR, AttachPoint.MuneL);
+            DrawToggleGroup(AttachPoint.HandR, AttachPoint.Pelvis, AttachPoint.HandL);
+            DrawToggleGroup(AttachPoint.ThighR, AttachPoint.ThighL);
+            DrawToggleGroup(AttachPoint.CalfR, AttachPoint.CalfL);
+            DrawToggleGroup(AttachPoint.FootR, AttachPoint.FootL);
 
             GUI.enabled = true;
         }
