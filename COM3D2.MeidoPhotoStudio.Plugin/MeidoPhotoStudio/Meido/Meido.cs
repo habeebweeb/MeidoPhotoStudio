@@ -9,7 +9,7 @@ using static TBody;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class Meido
+    internal class Meido : ISerializable
     {
         private const int maxMaids = 12;
         public static readonly PoseInfo DefaultPose =
@@ -468,7 +468,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             binaryWriter.Write("END_FACE");
         }
 
-        public void Deserialize(BinaryReader binaryReader, bool mmScene = false)
+        public void Deserialize(BinaryReader binaryReader) => Deserialize(binaryReader, false);
+
+        public void Deserialize(BinaryReader binaryReader, bool mmScene)
         {
             Maid.GetAnimation().Stop();
             binaryReader.ReadInt64(); // meido buffer length

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MeidoManager : IManager
+    internal class MeidoManager : IManager, ISerializable
     {
         public const string header = "MEIDO";
         private static CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;

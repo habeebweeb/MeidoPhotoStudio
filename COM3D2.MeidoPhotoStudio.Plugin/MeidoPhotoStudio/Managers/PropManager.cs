@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static MenuFileUtility;
-    internal class PropManager : IManager
+    internal class PropManager : IManager, ISerializable
     {
         public const string header = "PROP";
         private MeidoManager meidoManager;
