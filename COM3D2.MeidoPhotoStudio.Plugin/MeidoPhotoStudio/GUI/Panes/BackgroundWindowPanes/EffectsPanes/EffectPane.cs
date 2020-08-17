@@ -40,9 +40,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void UpdatePane()
         {
-            if (!EffectManager.IsReady) return;
+            if (!EffectManager.Ready) return;
             this.updating = true;
-            this.effectToggle.Value = this.EffectManager.IsActive;
+            this.effectToggle.Value = this.EffectManager.Active;
             this.UpdateControls();
             this.updating = false;
         }

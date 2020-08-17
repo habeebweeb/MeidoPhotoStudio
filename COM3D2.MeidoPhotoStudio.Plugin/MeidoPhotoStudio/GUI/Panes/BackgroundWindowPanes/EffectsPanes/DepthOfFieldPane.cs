@@ -11,7 +11,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Slider blurSlider;
         private Toggle thicknessToggle;
 
-        public DepthOfFieldPane(EffectManager effectManager) : base(effectManager.DepthOfFieldEffectManager)
+        public DepthOfFieldPane(EffectManager effectManager) : base(effectManager.Get<DepthOfFieldEffectManager>())
         {
             this.focalLengthSlider = new Slider(Translation.Get("effectDof", "focalLength"), 0f, 10f);
             this.focalSizeSlider = new Slider(Translation.Get("effectDof", "focalArea"), 0f, 2f);

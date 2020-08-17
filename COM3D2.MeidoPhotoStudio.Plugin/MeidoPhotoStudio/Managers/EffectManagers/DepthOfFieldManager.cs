@@ -5,8 +5,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class DepthOfFieldEffectManager : IEffectManager
     {
         private DepthOfFieldScatter DepthOfField { get; set; }
-        public bool IsReady { get; private set; }
-        public bool IsActive { get; private set; }
+        public bool Ready { get; private set; }
+        public bool Active { get; private set; }
         private readonly float initialValue = 0f;
         private float focalLength;
         public float FocalLength
@@ -44,7 +44,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (DepthOfField == null)
             {
-                IsReady = true;
+                Ready = true;
                 DepthOfField = GameMain.Instance.MainCamera.GetOrAddComponent<DepthOfFieldScatter>();
                 if (DepthOfField.dofHdrShader == null)
                 {
@@ -69,7 +69,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             MaxBlurSize = initialValue;
             VisualizeFocus = false;
             DepthOfField.enabled = false;
-            IsActive = false;
+            Active = false;
         }
 
         public void Reset()
@@ -83,8 +83,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SetEffectActive(bool active)
         {
             DepthOfField.enabled = active;
-            this.IsActive = active;
-            if (this.IsActive)
+            this.Active = active;
+            if (this.Active)
             {
                 DepthOfField.focalLength = FocalLength;
                 DepthOfField.focalSize = FocalSize;

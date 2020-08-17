@@ -12,7 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Slider blueSlider;
         private Toggle hdrToggle;
 
-        public BloomPane(EffectManager effectManager) : base(effectManager.BloomEffectManager)
+        public BloomPane(EffectManager effectManager) : base(effectManager.Get<BloomEffectManager>())
         {
             Bloom bloom = GameMain.Instance.MainCamera.GetComponent<Bloom>();
 

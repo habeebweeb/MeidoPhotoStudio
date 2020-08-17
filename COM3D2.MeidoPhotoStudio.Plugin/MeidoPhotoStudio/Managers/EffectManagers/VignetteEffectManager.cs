@@ -7,8 +7,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private float initialBlur;
         private float initialBlurSpread;
         private float initialChromaticAberration;
-        public bool IsReady { get; private set; }
-        public bool IsActive { get; private set; }
+        public bool Ready { get; private set; }
+        public bool Active { get; private set; }
         private float intensity;
         public float Intensity
         {
@@ -38,7 +38,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (Vignette == null)
             {
-                IsReady = true;
+                Ready = true;
                 Vignette = GameMain.Instance.MainCamera.GetOrAddComponent<Vignetting>();
                 Vignette.mode = Vignetting.AberrationMode.Simple;
 
@@ -56,7 +56,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             BlurSpread = initialBlurSpread;
             ChromaticAberration = initialChromaticAberration;
             Vignette.enabled = false;
-            IsActive = false;
+            Active = false;
         }
 
         public void Reset()
@@ -70,8 +70,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SetEffectActive(bool active)
         {
             Vignette.enabled = active;
-            IsActive = active;
-            if (this.IsActive)
+            Active = active;
+            if (this.Active)
             {
                 Vignette.intensity = Intensity;
                 Vignette.blur = Blur;

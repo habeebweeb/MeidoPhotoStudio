@@ -13,7 +13,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Slider greenSlider;
         private Slider blueSlider;
 
-        public FogPane(EffectManager effectManager) : base(effectManager.FogEffectManager)
+        public FogPane(EffectManager effectManager) : base(effectManager.Get<FogEffectManager>())
         {
             this.distanceSlider = new Slider(
                 Translation.Get("effectFog", "distance"), 0f, 30f, FogEffectManager.InitialDistance

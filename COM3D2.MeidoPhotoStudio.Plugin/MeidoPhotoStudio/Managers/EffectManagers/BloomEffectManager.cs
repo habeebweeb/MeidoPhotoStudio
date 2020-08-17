@@ -9,8 +9,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private int initialBlurIterations;
         private Color initialThresholdColour;
         private Bloom.HDRBloomMode initialHDRBloomMode;
-        public bool IsReady { get; private set; }
-        public bool IsActive { get; private set; }
+        public bool Ready { get; private set; }
+        public bool Active { get; private set; }
         private float intensity;
         public float Intensity
         {
@@ -71,7 +71,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (Bloom == null)
             {
-                IsReady = true;
+                Ready = true;
                 Bloom = GameMain.Instance.MainCamera.GetOrAddComponent<Bloom>();
                 initialIntensity = Intensity = Bloom.bloomIntensity;
                 initialBlurIterations = BlurIterations = Bloom.bloomBlurIterations;
@@ -89,7 +89,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             BloomHDR = initialHDRBloomMode == Bloom.HDRBloomMode.On;
             BloomHDR = false;
             Bloom.enabled = true;
-            IsActive = false;
+            Active = false;
         }
 
         public void Reset()
@@ -103,8 +103,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SetEffectActive(bool active)
         {
             Bloom.enabled = active;
-            IsActive = active;
-            if (this.IsActive)
+            Active = active;
+            if (this.Active)
             {
                 Bloom.bloomIntensity = Intensity;
                 Bloom.bloomBlurIterations = BlurIterations;
@@ -116,9 +116,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Update()
         {
-            if (IsActive)
+            if (Active)
             {
                 // Fuck this stupid shit
+                // 2020/08/15 this stupid shit doesn't even work anymore
+                // TODO: Fix this stupid shit
                 Bloom.enabled = true;
                 Bloom.bloomIntensity = intensity;
             }

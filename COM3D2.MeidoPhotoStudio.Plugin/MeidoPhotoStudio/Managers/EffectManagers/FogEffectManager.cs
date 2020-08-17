@@ -5,8 +5,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class FogEffectManager : IEffectManager
     {
         private GlobalFog Fog { get; set; }
-        public bool IsReady { get; private set; }
-        public bool IsActive { get; private set; }
+        public bool Ready { get; private set; }
+        public bool Active { get; private set; }
         public static float InitialDistance { get; private set; } = 4f;
         public static float InitialDensity { get; private set; } = 1f;
         public static float InitialHeightScale { get; private set; } = 1f;
@@ -92,7 +92,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Height = InitialHeight;
             FogColour = InitialColour;
             Fog.enabled = false;
-            IsActive = false;
+            Active = false;
         }
 
         public void Reset()
@@ -107,8 +107,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SetEffectActive(bool active)
         {
             Fog.enabled = active;
-            this.IsActive = active;
-            if (this.IsActive)
+            this.Active = active;
+            if (this.Active)
             {
                 Fog.startDistance = Distance;
                 Fog.globalDensity = Density;

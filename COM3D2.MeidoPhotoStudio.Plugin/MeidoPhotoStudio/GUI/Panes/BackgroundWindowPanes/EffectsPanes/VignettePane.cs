@@ -10,7 +10,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Slider blurSpreadSlider;
         private Slider aberrationSlider;
 
-        public VignettePane(EffectManager effectManager) : base(effectManager.VignetteEffectManager)
+        public VignettePane(EffectManager effectManager) : base(effectManager.Get<VignetteEffectManager>())
         {
             this.intensitySlider = new Slider(Translation.Get("effectVignette", "intensity"), -40f, 70f);
             this.intensitySlider.ControlEvent += (s, a) =>
