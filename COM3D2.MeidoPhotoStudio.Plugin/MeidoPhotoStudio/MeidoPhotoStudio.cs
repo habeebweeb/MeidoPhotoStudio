@@ -31,7 +31,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void Start()
         {
             Constants.Initialize();
-            Translation.Initialize("en");
+            Translation.Initialize(Configuration.CurrentLanguage);
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
