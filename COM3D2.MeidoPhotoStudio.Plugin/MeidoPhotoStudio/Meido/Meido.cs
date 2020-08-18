@@ -145,6 +145,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             while (Maid.IsBusy) yield return null;
 
+            yield return new WaitForEndOfFrame();
+
             OnBodyLoad();
         }
 
