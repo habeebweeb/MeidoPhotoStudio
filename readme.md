@@ -6,7 +6,7 @@ A rewrite of MultipleMaids
 
 ### Required Libraries
 
-These libraries are all found in COM3D2's Managed folder
+These libraries (aside from BepInEx) are all found in COM3D2's Managed folder
 
 Place these in a folder called `lib`
 
@@ -16,4 +16,4 @@ Place these in a folder called `lib`
 * `Newtonsoft.json.dll`
 * `UnityEngine.dll`
 * `Ionic.Zlib.dll`
-* `BepInEx.dll`
+* [`BepInEx.dll`](https://github.com/BepInEx/BepInEx/releases) from `BepInEx\core`
