@@ -164,6 +164,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Flip()
         {
+            meido.Stop = true;
             Bone[] single = new[] { Bone.Pelvis, Bone.Spine, Bone.Spine0a, Bone.Spine1, Bone.Spine1a, Bone.Neck };
             Bone[] pair = new[] {
                 Bone.ClavicleL, Bone.ClavicleR, Bone.UpperArmL, Bone.UpperArmR, Bone.ForearmL, Bone.ForearmR,
