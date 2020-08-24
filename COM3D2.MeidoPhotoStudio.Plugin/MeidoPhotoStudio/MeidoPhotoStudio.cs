@@ -16,7 +16,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
         public const string pluginName = "MeidoPhotoStudio";
         public const string pluginVersion = "0.0.0";
-        public const int sceneVersion = 1000;
+        public const int sceneVersion = 1100;
+        public const int kankyoMagic = -765;
         public static string pluginString = $"{pluginName} {pluginVersion}";
         private WindowManager windowManager;
         private MeidoManager meidoManager;
@@ -43,65 +44,113 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
-        public void Serialize(bool quickSave)
-        {
-            string sceneName = quickSave ? "mpstempscene" : $"mpsscene{System.DateTime.Now:yyyyMMddHHmmss}.scene";
-            string scenePath = Path.Combine(Constants.scenesPath, sceneName);
-            File.WriteAllBytes(scenePath, Serialize());
-        }
-
-        public byte[] Serialize()
+        public byte[] SerializeScene(bool kankyo = false)
         {
             if (meidoManager.Busy) return null;
 
-            MemoryStream memoryStream;
+            byte[] compressedData;
 
-            using (memoryStream = new MemoryStream())
+            using (MemoryStream memoryStream = new MemoryStream())
             using (DeflateStream deflateStream = new DeflateStream(memoryStream, CompressionMode.Compress))
             using (BinaryWriter binaryWriter = new BinaryWriter(deflateStream, System.Text.Encoding.UTF8))
             {
                 binaryWriter.Write("MPS_SCENE");
                 binaryWriter.Write(sceneVersion);
 
-                messageWindowManager.Serialize(binaryWriter);
+                binaryWriter.Write(kankyo ? kankyoMagic : meidoManager.ActiveMeidoList.Count);
+
                 effectManager.Serialize(binaryWriter);
-                environmentManager.Serialize(binaryWriter);
+                environmentManager.Serialize(binaryWriter, kankyo);
                 lightManager.Serialize(binaryWriter);
-                // meidomanager has to be serialized before propmanager because reattached props will be in the wrong
-                // place after a maid's pose is deserialized.
-                meidoManager.Serialize(binaryWriter);
+
+                if (!kankyo)
+                {
+                    messageWindowManager.Serialize(binaryWriter);
+                    // meidomanager has to be serialized before propmanager because reattached props will be in the 
+                    // wrong place after a maid's pose is deserialized.
+                    meidoManager.Serialize(binaryWriter);
+                }
+
                 propManager.Serialize(binaryWriter);
 
                 binaryWriter.Write("END");
+
+                deflateStream.Close();
+
+                compressedData = memoryStream.ToArray();
             }
 
-            return memoryStream.ToArray();
+            return compressedData;
         }
 
-        public void Deserialize()
+        public static byte[] DecompressScene(string filePath)
         {
-            string path = Path.Combine(Constants.scenesPath, "mpstempscene");
-            Deserialize(path);
+            if (!File.Exists(filePath))
+            {
+                Utility.LogWarning($"Scene file '{filePath}' does not exist.");
+                return null;
+            }
+
+            byte[] compressedData;
+
+            using (FileStream fileStream = File.OpenRead(filePath))
+            {
+                if (Utility.IsPngFile(fileStream))
+                {
+                    if (!Utility.SeekPngEnd(fileStream))
+                    {
+                        Utility.LogWarning($"'{filePath}' is not a PNG file");
+                        return null;
+                    }
+
+                    if (fileStream.Position == fileStream.Length)
+                    {
+                        Utility.LogWarning($"'{filePath}' contains no scene data");
+                        return null;
+                    }
+
+                    int dataLength = (int)(fileStream.Length - fileStream.Position);
+
+                    compressedData = new byte[dataLength];
+
+                    fileStream.Read(compressedData, 0, dataLength);
+                }
+                else
+                {
+                    compressedData = new byte[fileStream.Length];
+                    fileStream.Read(compressedData, 0, compressedData.Length);
+                }
+            }
+
+            return DeflateStream.UncompressBuffer(compressedData);
         }
 
-        public void Deserialize(string filePath)
+        public void ApplyScene(string filePath)
         {
             if (meidoManager.Busy) return;
 
-            byte[] data = DeflateStream.UncompressBuffer(File.ReadAllBytes(filePath));
+            byte[] sceneBinary = DecompressScene(filePath);
 
-            using (MemoryStream memoryStream = new MemoryStream(data))
+            if (sceneBinary == null) return;
+
+            using (MemoryStream memoryStream = new MemoryStream(sceneBinary))
             using (BinaryReader binaryReader = new BinaryReader(memoryStream, System.Text.Encoding.UTF8))
             {
                 try
                 {
-                    if (binaryReader.ReadString() != "MPS_SCENE") return;
+                    if (binaryReader.ReadString() != "MPS_SCENE")
+                    {
+                        Utility.LogWarning($"'{filePath}' is not a {pluginName} scene");
+                        return;
+                    }
 
                     if (binaryReader.ReadInt32() > sceneVersion)
                     {
                         Utility.LogWarning($"'{filePath}' is made in a newer version of {pluginName}");
                         return;
                     }
+
+                    binaryReader.ReadInt32(); // Number of Maids
 
                     string previousHeader = string.Empty;
                     string header;
@@ -128,12 +177,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                             case EffectManager.header:
                                 effectManager.Deserialize(binaryReader);
                                 break;
-                            default: throw new System.Exception($"Unknown header '{header}'. Last {previousHeader}");
+                            default: throw new Exception($"Unknown header '{header}'. Last {previousHeader}");
                         }
                         previousHeader = header;
                     }
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     Utility.LogError($"Failed to deserialize scene '{filePath}' because {e.Message}");
                     return;
@@ -165,15 +214,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 if (active)
                 {
-                    if (Utility.GetModKey(Utility.ModKey.Control))
-                    {
-                        if (Input.GetKeyDown(KeyCode.S)) Serialize(true);
-                        else if (Input.GetKeyDown(KeyCode.A)) Deserialize();
-                    }
-                    else if (!Input.GetKey(KeyCode.Q) && Input.GetKeyDown(KeyCode.S))
-                    {
-                        TakeScreenshot();
-                    }
+                    if (!Input.GetKey(KeyCode.Q) && !Utility.GetModKey(Utility.ModKey.Control)
+                        && Input.GetKeyDown(KeyCode.S)
+                    ) TakeScreenshot();
 
                     meidoManager.Update();
                     environmentManager.Update();

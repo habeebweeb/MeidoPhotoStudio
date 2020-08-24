@@ -57,13 +57,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DragPointLight.environmentManager = this;
         }
 
-        public void Serialize(System.IO.BinaryWriter binaryWriter)
+        public void Serialize(System.IO.BinaryWriter binaryWriter) => Serialize(binaryWriter, false);
+
+        public void Serialize(System.IO.BinaryWriter binaryWriter, bool kankyo)
         {
             binaryWriter.Write(header);
             binaryWriter.Write(currentBGAsset);
             binaryWriter.WriteVector3(this.bg.position);
             binaryWriter.WriteQuaternion(this.bg.rotation);
             binaryWriter.WriteVector3(this.bg.localScale);
+
+            binaryWriter.Write(kankyo);
 
             CameraMain camera = GameMain.Instance.MainCamera;
             binaryWriter.WriteVector3(camera.GetTargetPos());
@@ -81,11 +85,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.bg.rotation = binaryReader.ReadQuaternion();
             this.bg.localScale = binaryReader.ReadVector3();
 
-            CameraMain camera = GameMain.Instance.MainCamera;
-            camera.SetTargetPos(binaryReader.ReadVector3());
-            camera.SetDistance(binaryReader.ReadSingle());
-            camera.transform.rotation = binaryReader.ReadQuaternion();
-            StopCameraSpin();
+            bool kankyo = binaryReader.ReadBoolean();
+
+            Vector3 cameraPosition = binaryReader.ReadVector3();
+            float cameraDistance = binaryReader.ReadSingle();
+            Quaternion cameraRotation = binaryReader.ReadQuaternion();
+
+            if (!kankyo)
+            {
+                CameraMain camera = GameMain.Instance.MainCamera;
+                camera.SetTargetPos(cameraPosition);
+                camera.SetDistance(cameraDistance);
+                camera.transform.rotation = cameraRotation;
+                StopCameraSpin();
+            }
         }
 
         public void Activate()
