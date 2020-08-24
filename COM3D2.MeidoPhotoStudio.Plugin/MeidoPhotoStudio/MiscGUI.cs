@@ -5,9 +5,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal static class MiscGUI
     {
         public static readonly GUILayoutOption HalfSlider = GUILayout.Width(98);
+        public static readonly Texture2D white = Utility.MakeTex(2, 2, Color.white);
+        public static readonly Texture2D transparentBlack = Utility.MakeTex(2, 2, new Color(0f, 0f, 0f, 0.8f));
         private static GUIStyle lineStyleWhite;
         private static GUIStyle lineStyleBlack;
         private static GUIStyle textureBoxStyle;
+
         static MiscGUI()
         {
             lineStyleWhite = new GUIStyle(GUI.skin.box);
@@ -20,6 +23,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             textureBoxStyle = new GUIStyle(GUI.skin.box);
             textureBoxStyle.normal.background = Utility.MakeTex(2, 2, new Color(0f, 0f, 0f, 0f));
+            textureBoxStyle.padding = textureBoxStyle.margin = new RectOffset(0, 0, 0, 0);
         }
 
         private static void Line(GUIStyle style) => GUILayout.Box(GUIContent.none, style, GUILayout.Height(1));
@@ -31,6 +35,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static void DrawTexture(Texture texture, params GUILayoutOption[] layoutOptions)
         {
             GUILayout.Box(texture, textureBoxStyle, layoutOptions);
+        }
+
+        public static int ClampFont(int size, int min, int max)
+        {
+            return Mathf.Clamp(Utility.GetPix(size), min, max);
         }
 
         public static void Header(string text, params GUILayoutOption[] layoutOptions)
