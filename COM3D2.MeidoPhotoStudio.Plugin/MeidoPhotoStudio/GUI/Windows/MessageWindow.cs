@@ -12,30 +12,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Button okButton;
         public override Rect WindowRect
         {
-            get
+            set
             {
-                windowRect.width = Mathf.Clamp(Screen.width * 0.4f, 440, Mathf.Infinity);
-                windowRect.height = Mathf.Clamp(Screen.height * 0.15f, 150, Mathf.Infinity);
-                windowRect.x = Mathf.Clamp(
-                    windowRect.x,
-                    -windowRect.width + Utility.GetPix(20),
-                    Screen.width - Utility.GetPix(20)
-                );
-                windowRect.y = Mathf.Clamp(
-                    windowRect.y,
-                    -windowRect.height + Utility.GetPix(20),
-                    Screen.height - Utility.GetPix(20)
-                );
-                return windowRect;
+                value.width = Mathf.Clamp(Screen.width * 0.4f, 440, Mathf.Infinity);
+                value.height = Mathf.Clamp(Screen.height * 0.15f, 150, Mathf.Infinity);
+                base.WindowRect = value;
             }
-            set => windowRect = value;
         }
         private int fontSize = 25;
         private bool showingMessage = false;
 
         public MessageWindow(MessageWindowManager messageWindowManager) : base()
         {
-            windowRect = new Rect(Screen.width / 2f - 220f, Screen.height - 150f, 440f, 150f);
+            WindowRect = WindowRect;
+            windowRect.x = MiddlePosition.x;
+            windowRect.y = Screen.height - WindowRect.height;
             this.messageWindowManager = messageWindowManager;
             nameTextField = new TextField();
             Controls.Add(nameTextField);

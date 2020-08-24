@@ -12,15 +12,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private BaseWindowPane currentWindowPane;
         public override Rect WindowRect
         {
-            get
+            set
             {
-                windowRect.width = 240f;
-                windowRect.height = Screen.height * 0.9f;
-                windowRect.x = Mathf.Clamp(windowRect.x, 0, Screen.width - windowRect.width);
-                windowRect.y = Mathf.Clamp(windowRect.y, -windowRect.height + 30, Screen.height - 50);
-                return windowRect;
+                value.width = 240f;
+                value.height = Screen.height * 0.9f;
+                value.x = Mathf.Clamp(value.x, 0, Screen.width - value.width);
+                value.y = Mathf.Clamp(value.y, -value.height + 30, Screen.height - 50);
+                windowRect = value;
             }
-            set => windowRect = value;
         }
         private Constants.Window selectedWindow = Constants.Window.Call;
 
@@ -46,6 +45,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Translation.ReloadTranslation();
             };
+            windowRect.width = 240f;
+            windowRect.height = Screen.height * 0.9f;
         }
 
         public override void Activate()
