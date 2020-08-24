@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,6 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     public class MeidoPhotoStudio : BaseUnityPlugin
     {
         private static CameraMain mainCamera = GameMain.Instance.MainCamera;
+        private static event EventHandler<ScreenshotEventArgs> ScreenshotEvent;
         private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
         public const string pluginName = "MeidoPhotoStudio";
         public const string pluginVersion = "0.0.0";
@@ -29,7 +30,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private bool active = false;
         private bool uiActive = false;
 
-        private void Awake() => DontDestroyOnLoad(this);
+        private void Awake()
+        {
+            ScreenshotEvent += OnScreenshotEvent;
+            DontDestroyOnLoad(this);
+        }
 
         private void Start()
         {
@@ -136,6 +141,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
+        public static void TakeScreenshot(ScreenshotEventArgs args) => ScreenshotEvent?.Invoke(null, args);
+
+        public static void TakeScreenshot(string path = "", int superSize = -1, bool hideMaids = false)
+        {
+            TakeScreenshot(new ScreenshotEventArgs() { Path = path, SuperSize = superSize, HideMaids = hideMaids });
+        }
+
+        private void OnScreenshotEvent(object sender, ScreenshotEventArgs args)
+        {
+            StartCoroutine(Screenshot(args));
+        }
+
         private void Update()
         {
             if (currentScene == Constants.Scene.Daily)
@@ -155,7 +172,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     }
                     else if (!Input.GetKey(KeyCode.Q) && Input.GetKeyDown(KeyCode.S))
                     {
-                        StartCoroutine(TakeScreenShot());
+                        TakeScreenshot();
                     }
 
                     meidoManager.Update();
@@ -166,7 +183,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        private IEnumerator TakeScreenShot()
+        private IEnumerator Screenshot(ScreenshotEventArgs args)
         {
             // Hide UI and dragpoints
             GameObject editUI = GameObject.Find("/UI Root/Camera");
@@ -182,13 +199,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             sysShortcut.SetActive(false);
             uiActive = false;
 
+            // TODO: Hide cubes for bg, maid, lights etc.
+
             List<Meido> activeMeidoList = this.meidoManager.ActiveMeidoList;
             bool[] isIK = new bool[activeMeidoList.Count];
+            bool[] isVisible = new bool[activeMeidoList.Count];
             for (int i = 0; i < activeMeidoList.Count; i++)
             {
                 Meido meido = activeMeidoList[i];
                 isIK[i] = meido.IK;
+                isVisible[i] = meido.Maid.Visible;
                 if (meido.IK) meido.IK = false;
+                if (args.HideMaids) meido.Maid.Visible = false;
             }
 
             GizmoRender.UIVisible = false;
@@ -196,10 +218,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             yield return new WaitForEndOfFrame();
 
             // Take Screenshot
-            int[] superSize = new[] { 1, 2, 4 };
-            int selectedSuperSize = superSize[(int)GameMain.Instance.CMSystem.ScreenShotSuperSize];
+            int[] defaultSuperSize = new[] { 1, 2, 4 };
+            int selectedSuperSize = args.SuperSize < 1
+                ? defaultSuperSize[(int)GameMain.Instance.CMSystem.ScreenShotSuperSize]
+                : args.SuperSize;
 
-            Application.CaptureScreenshot(Utility.ScreenshotFilename(), selectedSuperSize);
+            string path = string.IsNullOrEmpty(args.Path)
+                ? Utility.ScreenshotFilename()
+                : args.Path;
+
+            Application.CaptureScreenshot(path, selectedSuperSize);
             GameMain.Instance.SoundMgr.PlaySe("se022.ogg", false);
 
             yield return new WaitForEndOfFrame();
@@ -215,6 +243,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Meido meido = activeMeidoList[i];
                 if (isIK[i]) meido.IK = true;
+                if (args.HideMaids && isVisible[i]) meido.Maid.Visible = true;
             }
 
             GizmoRender.UIVisible = true;
@@ -324,5 +353,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             mainCamera.m_bCalcNearClip = true;
             mainCamera.Start();
         }
+    }
+
+    public class ScreenshotEventArgs : EventArgs
+    {
+        public string Path { get; set; } = string.Empty;
+        public int SuperSize { get; set; } = -1;
+        public bool HideMaids { get; set; } = false;
     }
 }
