@@ -5,6 +5,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal abstract class BasePane
     {
+        protected BaseWindow parent;
         protected List<BaseControl> Controls { get; set; }
         protected bool updating = false;
         public virtual bool Visible { get; set; }
@@ -25,6 +26,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             ReloadTranslation();
         }
+
+        public void SetParent(BaseWindow window) => this.parent = window;
 
         protected virtual void ReloadTranslation() { }
 

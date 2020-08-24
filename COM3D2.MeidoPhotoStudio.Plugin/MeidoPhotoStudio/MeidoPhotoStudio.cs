@@ -1,3 +1,4 @@
+﻿using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public const int kankyoMagic = -765;
         public static string pluginString = $"{pluginName} {pluginVersion}";
         private WindowManager windowManager;
+        private SceneManager sceneManager;
         private MeidoManager meidoManager;
         private EnvironmentManager environmentManager;
         private MessageWindowManager messageWindowManager;
@@ -41,7 +43,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             Constants.Initialize();
             Translation.Initialize(Configuration.CurrentLanguage);
-            SceneManager.sceneLoaded += OnSceneLoaded;
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
         public byte[] SerializeScene(bool kankyo = false)
@@ -222,6 +224,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     environmentManager.Update();
                     windowManager.Update();
                     effectManager.Update();
+                    sceneManager.Update();
                 }
             }
         }
@@ -321,8 +324,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             lightManager = new LightManager();
             propManager = new PropManager(meidoManager);
             effectManager = new EffectManager();
+            sceneManager = new SceneManager(this);
 
             MaidSwitcherPane maidSwitcherPane = new MaidSwitcherPane(meidoManager);
+
+            SceneWindow sceneWindow = new SceneWindow(sceneManager);
 
             windowManager = new WindowManager()
             {
@@ -331,10 +337,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     [Constants.Window.Call] = new CallWindowPane(meidoManager),
                     [Constants.Window.Pose] = new PoseWindowPane(meidoManager, maidSwitcherPane),
                     [Constants.Window.Face] = new FaceWindowPane(meidoManager, maidSwitcherPane),
-                    [Constants.Window.BG] = new BGWindowPane(environmentManager, lightManager, effectManager),
+                    [Constants.Window.BG] = new BGWindowPane(
+                        environmentManager, lightManager, effectManager, sceneWindow
+                    ),
                     [Constants.Window.BG2] = new BG2WindowPane(meidoManager, propManager)
                 },
-                [Constants.Window.Message] = new MessageWindow(messageWindowManager)
+                [Constants.Window.Message] = new MessageWindow(messageWindowManager),
+                [Constants.Window.Save] = sceneWindow
             };
 
             meidoManager.BeginCallMeidos += (s, a) => uiActive = false;
@@ -364,7 +373,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void Deactivate()
         {
-            if (meidoManager.Busy) return;
+            if (meidoManager.Busy || SceneManager.Busy) return;
 
             ResetCalcNearClip();
 

@@ -55,6 +55,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             = new Dictionary<string, List<MyRoomItem>>();
         public static readonly Dictionary<string, List<ModItem>> ModPropDict
             = new Dictionary<string, List<ModItem>>(StringComparer.InvariantCultureIgnoreCase);
+        public static readonly List<string> SceneDirectoryList = new List<string>();
+        public static readonly List<string> KankyoDirectoryList = new List<string>();
         public static int CustomPoseGroupsIndex { get; private set; } = -1;
         public static int MyRoomCustomBGIndex { get; private set; } = -1;
         public static bool HandItemsInitialized { get; private set; } = false;
@@ -96,6 +98,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static void Initialize()
         {
+            InitializeScenes();
             InitializePoses();
             InitializeHandPresets();
             InitializeFaceBlends();
@@ -207,6 +210,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Constants.CustomHandDict[category].Sort();
 
             customHandChange?.Invoke(null, new CustomPoseEventArgs(fullPath, category));
+        }
+
+        public static void InitializeScenes()
+        {
+            SceneDirectoryList.Clear();
+            KankyoDirectoryList.Clear();
+
+            SceneDirectoryList.Add(sceneDirectory);
+            foreach (string directory in Directory.GetDirectories(scenesPath))
+            {
+                SceneDirectoryList.Add(new DirectoryInfo(directory).Name);
+            }
+
+            KankyoDirectoryList.Add(kankyoDirectory);
+            foreach (string directory in Directory.GetDirectories(kankyoPath))
+            {
+                KankyoDirectoryList.Add(new DirectoryInfo(directory).Name);
+            }
         }
 
         public static void InitializePoses()
