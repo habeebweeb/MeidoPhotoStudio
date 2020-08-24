@@ -299,6 +299,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 windowManager.DrawWindows();
 
                 if (DropdownHelper.Visible) DropdownHelper.HandleDropdown();
+                if (Modal.Visible) Modal.Draw();
             }
         }
 
@@ -377,6 +378,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             effectManager.Deactivate();
             messageWindowManager.Deactivate();
             windowManager.Deactivate();
+
+            Modal.Close();
 
             GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
             dailyPanel?.SetActive(true);
