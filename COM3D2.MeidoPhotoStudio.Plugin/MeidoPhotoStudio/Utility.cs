@@ -7,6 +7,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal static class Utility
     {
+        internal static readonly byte[] pngHeader = { 137, 80, 78, 71, 13, 10, 26, 10 };
+        internal static readonly byte[] pngEnd = System.Text.Encoding.ASCII.GetBytes("IEND");
         public static readonly BepInEx.Logging.ManualLogSource Logger
             = BepInEx.Logging.Logger.CreateLogSource(MeidoPhotoStudio.pluginName);
         public enum ModKey
@@ -107,6 +109,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return Path.Combine(screenShotDir, $"img{DateTime.Now:yyyyMMddHHmmss}.png");
         }
 
+        public static string TempScreenshotFilename()
+        {
+            return Path.Combine(Path.GetTempPath(), $"cm3d2_{System.Guid.NewGuid().ToString()}.png");
+        }
+
         public static void ShowMouseExposition(string text, float time = 2f)
         {
             MouseExposition mouseExposition = MouseExposition.GetObject();
@@ -144,6 +151,54 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 hash += TMorph.crcFaceTypesStr[(int)face.GetFaceTypeGP01FB()];
             }
             return hash;
+        }
+
+        public static void ResizeToFit(Texture2D texture, int maxWidth, int maxHeight)
+        {
+            int width = texture.width;
+            int height = texture.height;
+            if (width != maxWidth || height != maxHeight)
+            {
+                float scale = Mathf.Min((float)maxWidth / (float)width, (float)maxHeight / (float)height);
+                width = Mathf.RoundToInt((float)width * scale);
+                height = Mathf.RoundToInt((float)height * scale);
+                TextureScale.Bilinear(texture, width, height);
+            }
+        }
+
+        public static bool BytesEqual(byte[] buffer, byte[] other)
+        {
+            if (buffer.Length != other.Length) return false;
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                if (buffer[i] != other[i]) return false;
+            }
+            return true;
+        }
+
+        public static bool IsPngFile(Stream stream)
+        {
+            byte[] buffer = new byte[8];
+            stream.Read(buffer, 0, 8);
+            stream.Position = 0L;
+            return BytesEqual(buffer, pngHeader);
+        }
+
+        public static bool SeekPngEnd(Stream stream)
+        {
+            byte[] buffer = new byte[8];
+            stream.Read(buffer, 0, 8);
+            if (!BytesEqual(buffer, pngHeader)) return false;
+            buffer = new byte[4];
+            do
+            {
+                stream.Read(buffer, 0, 4);
+                if (BitConverter.IsLittleEndian) Array.Reverse(buffer);
+                uint length = System.BitConverter.ToUInt32(buffer, 0);
+                stream.Read(buffer, 0, 4);
+                stream.Seek(length + 4L, SeekOrigin.Current);
+            } while (!BytesEqual(buffer, pngEnd));
+            return true;
         }
     }
 
