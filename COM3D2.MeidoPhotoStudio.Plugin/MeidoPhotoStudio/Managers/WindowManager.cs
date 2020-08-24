@@ -7,42 +7,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class WindowManager : IManager
     {
         private Dictionary<Window, BaseWindow> Windows = new Dictionary<Window, BaseWindow>();
-        private List<BaseWindow> WindowList = new List<BaseWindow>();
         public BaseWindow this[Window id]
         {
             get => Windows[id];
-            set
-            {
-                Windows[id] = value;
-                WindowList.Add(Windows[id]);
-            }
-        }
-
-        public bool AddWindow(Window id, BaseWindow window)
-        {
-            if (!this.Windows.ContainsKey(id))
-            {
-                this.Windows[id] = window;
-                this.WindowList.Add(window);
-                return true;
-            }
-            return false;
-        }
-
-        public bool RemoveWindow(Window id)
-        {
-            if (Windows.ContainsKey(id))
-            {
-                WindowList.Remove(Windows[id]);
-                Windows.Remove(id);
-                return true;
-            }
-            return false;
-        }
-
-        public void DrawWindow(Window id)
-        {
-            DrawWindow(Windows[id]);
+            set => Windows[id] = value;
         }
 
         public void DrawWindow(BaseWindow window)
@@ -56,7 +24,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void DrawWindows()
         {
-            foreach (BaseWindow window in WindowList)
+            foreach (BaseWindow window in Windows.Values)
             {
                 DrawWindow(window);
             }
@@ -64,7 +32,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Update()
         {
-            foreach (BaseWindow window in WindowList)
+            foreach (BaseWindow window in Windows.Values)
             {
                 window.Update();
             }
@@ -72,7 +40,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Activate()
         {
-            foreach (BaseWindow window in WindowList)
+            foreach (BaseWindow window in Windows.Values)
             {
                 window.Activate();
             }
@@ -80,7 +48,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Deactivate()
         {
-            foreach (BaseWindow window in WindowList)
+            foreach (BaseWindow window in Windows.Values)
             {
                 window.Deactivate();
             }
