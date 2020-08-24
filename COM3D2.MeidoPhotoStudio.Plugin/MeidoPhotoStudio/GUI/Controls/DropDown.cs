@@ -31,7 +31,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public Vector2 ElementSize
         {
             get => elementSize;
-            set => elementSize = value;
+            private set => elementSize = value;
         }
         private int selectedItemIndex = 0;
         public int SelectedItemIndex
@@ -105,6 +105,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Draw(GUIStyle buttonStyle, params GUILayoutOption[] layoutOptions)
         {
+            Draw(buttonStyle, null, layoutOptions);
+        }
+
+        public void Draw(GUIStyle buttonStyle, GUIStyle dropdownStyle = null, params GUILayoutOption[] layoutOptions)
+        {
             bool clicked = GUILayout.Button(
                 isMenu ? label : DropdownList[selectedItemIndex], buttonStyle, layoutOptions
             );
@@ -117,7 +122,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (showDropdown)
             {
-                if (Event.current.type == EventType.Repaint) InitializeDropdown();
+                if (Event.current.type == EventType.Repaint) InitializeDropdown(dropdownStyle);
             }
         }
 
@@ -149,7 +154,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        private void InitializeDropdown()
+        private void InitializeDropdown(GUIStyle dropdownStyle)
         {
             showDropdown = false;
 
@@ -159,9 +164,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             buttonRect.y = rectPos.y;
             if (this.elementSize == Vector2.zero)
             {
-                this.elementSize = DropdownHelper.CalculateElementSize(this.DropdownList);
+                this.elementSize = DropdownHelper.CalculateElementSize(this.DropdownList, dropdownStyle);
             }
-            DropdownHelper.Set(this);
+            DropdownHelper.Set(this, dropdownStyle);
 
             OnDropdownEvent(DropdownOpen);
         }
@@ -178,6 +183,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static event EventHandler<DropdownCloseArgs> DropdownClose;
         private static int dropdownID = 100;
         public static int DropdownID => dropdownID++;
+        private static GUIStyle defaultDropdownStyle;
+        public static GUIStyle DefaultDropdownStyle
+        {
+            get
+            {
+                if (!initialized) InitializeStyle();
+                return defaultDropdownStyle;
+            }
+        }
         private static GUIStyle dropdownStyle;
         private static GUIStyle windowStyle;
         private static Rect buttonRect;
@@ -193,32 +207,37 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private static Rect dropdownScrollRect;
         private static Rect dropdownRect;
 
-        public static Vector2 CalculateElementSize(string item)
+        public static Vector2 CalculateElementSize(string item, GUIStyle style = null)
         {
             if (!initialized) InitializeStyle();
 
-            return dropdownStyle.CalcSize(new GUIContent(item));
+            style = style ?? DefaultDropdownStyle;
+
+            return DefaultDropdownStyle.CalcSize(new GUIContent(item));
         }
 
-        public static Vector2 CalculateElementSize(string[] list)
+        public static Vector2 CalculateElementSize(string[] list, GUIStyle style = null)
         {
             if (!initialized) InitializeStyle();
 
+            style = style ?? DefaultDropdownStyle;
+
             GUIContent content = new GUIContent(list[0]);
-            Vector2 calculatedSize = dropdownStyle.CalcSize(content);
+            Vector2 calculatedSize = style.CalcSize(content);
             for (int i = 1; i < list.Length; i++)
             {
                 string word = list[i];
                 content.text = word;
-                Vector2 calcSize = dropdownStyle.CalcSize(content);
+                Vector2 calcSize = style.CalcSize(content);
                 if (calcSize.x > calculatedSize.x) calculatedSize = calcSize;
             }
 
             return calculatedSize;
         }
 
-        public static void Set(Dropdown dropdown)
+        public static void Set(Dropdown dropdown, GUIStyle style = null)
         {
+            dropdownStyle = style ?? DefaultDropdownStyle;
             currentDropdownID = dropdown.DropdownID;
             dropdownList = dropdown.DropdownList;
             scrollPos = dropdown.ScrollPos;
@@ -304,19 +323,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private static void InitializeStyle()
         {
-            dropdownStyle = new GUIStyle(GUI.skin.button);
-            dropdownStyle.alignment = TextAnchor.MiddleLeft;
-            dropdownStyle.margin = new RectOffset(0, 0, 0, 0);
-            dropdownStyle.padding.top = dropdownStyle.padding.bottom = 2;
-            dropdownStyle.normal.background = Utility.MakeTex(2, 2, new Color(0f, 0f, 0f, 0.5f));
+            defaultDropdownStyle = new GUIStyle(GUI.skin.button);
+            defaultDropdownStyle.alignment = TextAnchor.MiddleLeft;
+            defaultDropdownStyle.margin = new RectOffset(0, 0, 0, 0);
+            defaultDropdownStyle.padding.top = defaultDropdownStyle.padding.bottom = 2;
+            defaultDropdownStyle.normal.background = Utility.MakeTex(2, 2, new Color(0f, 0f, 0f, 0.5f));
             Texture2D whiteBackground = new Texture2D(2, 2);
-            dropdownStyle.onHover.background
-                = dropdownStyle.hover.background
-                = dropdownStyle.onNormal.background
+            defaultDropdownStyle.onHover.background
+                = defaultDropdownStyle.hover.background
+                = defaultDropdownStyle.onNormal.background
                 = whiteBackground;
-            dropdownStyle.onHover.textColor
-                = dropdownStyle.onNormal.textColor
-                = dropdownStyle.hover.textColor
+            defaultDropdownStyle.onHover.textColor
+                = defaultDropdownStyle.onNormal.textColor
+                = defaultDropdownStyle.hover.textColor
                 = Color.black;
 
             windowStyle = new GUIStyle(GUI.skin.box);

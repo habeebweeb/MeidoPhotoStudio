@@ -28,8 +28,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw(params GUILayoutOption[] layoutOptions)
         {
+            Draw(new GUIStyle(GUI.skin.toggle), layoutOptions);
+        }
+
+        public void Draw(GUIStyle toggleStyle, params GUILayoutOption[] layoutOptions)
+        {
             if (!Visible) return;
-            GUIStyle toggleStyle = new GUIStyle(GUI.skin.toggle);
             bool value = GUILayout.Toggle(Value, Label, toggleStyle);
             if (value != Value) Value = value;
         }
