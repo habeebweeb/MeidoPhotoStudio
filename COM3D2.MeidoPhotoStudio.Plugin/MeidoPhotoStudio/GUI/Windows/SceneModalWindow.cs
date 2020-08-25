@@ -36,17 +36,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Button cancelButton;
         private Button deleteButton;
         private Button overwriteButton;
-        private string deleteDirectoryMessage
-            = "Are you sure you want to permanently delete '{0}' and all of its files?";
-        private string deleteSceneMessage = "Are you sure you want to permanently delete '{0}'?";
-        private string directoryDeleteCommit = "Delete Folder";
-        private string sceneDeleteCommit = "Delete Scene";
-        private string sceneLoadCommit = "Load Scene";
+        private string deleteDirectoryMessage;
+        private string deleteSceneMessage;
+        private string directoryDeleteCommit;
+        private string sceneDeleteCommit;
+        private string sceneLoadCommit;
+        private string infoKankyo;
+        private string infoMaidSingular;
+        private string infoMaidPlural;
         private bool directoryMode = false;
         private bool deleteScene = false;
 
         public SceneModalWindow(SceneManager sceneManager)
         {
+            ReloadTranslation();
+
             this.sceneManager = sceneManager;
 
             windowRect.x = MiddlePosition.x;
@@ -70,6 +74,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 sceneManager.OverwriteScene();
                 Visible = false;
             };
+        }
+
+        protected override void ReloadTranslation()
+        {
+            deleteDirectoryMessage = Translation.Get("sceneManagerModal", "deleteDirectoryConfirm");
+            deleteSceneMessage = Translation.Get("sceneManagerModal", "deleteFileConfirm");
+            directoryDeleteCommit = Translation.Get("sceneManagerModal", "deleteDirectoryButton");
+            sceneDeleteCommit = Translation.Get("sceneManagerModal", "deleteFileCommit");
+            sceneLoadCommit = Translation.Get("sceneManagerModal", "fileLoadCommit"); ;
+            infoKankyo = Translation.Get("sceneManagerModal", "infoKankyo");
+            infoMaidSingular = Translation.Get("sceneManagerModal", "infoMaidSingular"); ;
+            infoMaidPlural = Translation.Get("sceneManagerModal", "infoMaidPlural"); ;
         }
 
         public override void Draw()
@@ -102,9 +118,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 if (scene.NumberOfMaids != SceneManager.Scene.initialNumberOfMaids)
                 {
-                    string infoString = scene.NumberOfMaids == MeidoPhotoStudio.kankyoMagic
-                        ? "Kankyo"
-                        : $"{scene.NumberOfMaids} Maids";
+                    int numberOfMaids = scene.NumberOfMaids;
+                    string infoString = numberOfMaids == MeidoPhotoStudio.kankyoMagic
+                        ? infoKankyo
+                        : string.Format(numberOfMaids == 1 ? infoMaidSingular : infoMaidPlural, numberOfMaids);
 
                     Vector2 labelSize = labelStyle.CalcSize(new GUIContent(infoString));
 

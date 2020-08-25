@@ -12,17 +12,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Toggle descendingToggle;
         private Button closeButton;
         private string sortLabel;
+        private static readonly string[] sortModes = new[] { "sortName", "sortCreated", "sortModified" };
 
         public SceneManagerTitleBarPane(SceneManager sceneManager)
         {
             this.sceneManager = sceneManager;
-            kankyoToggle = new Button("Backgrounds");
+            kankyoToggle = new Button(Translation.Get("sceneManager", "kankyoToggle"));
             kankyoToggle.ControlEvent += (s, a) => sceneManager.ToggleKankyoMode();
 
-            refreshButton = new Button("Refresh");
+            refreshButton = new Button(Translation.Get("sceneManager", "refreshButton"));
             refreshButton.ControlEvent += (s, a) => sceneManager.Refresh();
 
-            sortDropdown = new Dropdown(new[] { "Name", "Date Created", "Date Modified" });
+            sortDropdown = new Dropdown(Translation.GetArray("sceneManager", sortModes));
             sortDropdown.SelectionChange += (s, a) =>
             {
                 SceneManager.SortMode sortMode = (SceneManager.SortMode)sortDropdown.SelectedItemIndex;
@@ -30,7 +31,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 sceneManager.SortScenes(sortMode);
             };
 
-            descendingToggle = new Toggle("Descending", sceneManager.SortDescending);
+            descendingToggle = new Toggle(
+                Translation.Get("sceneManager", "descendingToggle"), sceneManager.SortDescending
+            );
             descendingToggle.ControlEvent += (s, a) =>
             {
                 sceneManager.SortDescending = descendingToggle.Value;
@@ -40,7 +43,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             closeButton = new Button("X");
             closeButton.ControlEvent += (s, a) => closeChange?.Invoke(this, System.EventArgs.Empty);
 
-            sortLabel = "Sort";
+            sortLabel = Translation.Get("sceneManager", "sortLabel");
+        }
+
+        protected override void ReloadTranslation()
+        {
+            kankyoToggle.Label = Translation.Get("sceneManager", "kankyoToggle");
+            refreshButton.Label = Translation.Get("sceneManager", "refreshButton");
+            sortDropdown.SetDropdownItems(Translation.GetArray("sceneManager", sortModes));
+            descendingToggle.Label = Translation.Get("sceneManager", "descendingToggle");
+            sortLabel = Translation.Get("sceneManager", "sortLabel");
         }
 
         public override void Draw()

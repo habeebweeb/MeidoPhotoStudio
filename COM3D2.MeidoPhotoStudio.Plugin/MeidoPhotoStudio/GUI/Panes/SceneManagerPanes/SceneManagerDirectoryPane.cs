@@ -20,10 +20,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.sceneManager = sceneManager;
             this.sceneModalWindow = sceneModalWindow;
 
-            this.createDirectoryButton = new Button("New Folder");
+            this.createDirectoryButton = new Button(Translation.Get("sceneManager", "createDirectoryButton"));
             this.createDirectoryButton.ControlEvent += (s, a) => createDirectoryMode = true;
 
-            this.deleteDirectoryButton = new Button("Delete");
+            this.deleteDirectoryButton = new Button(Translation.Get("sceneManager", "deleteDirectoryButton"));
             this.deleteDirectoryButton.ControlEvent += (s, a) => sceneModalWindow.ShowDirectoryDialogue();
 
             this.directoryTextField = new TextField();
@@ -36,6 +36,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.cancelButton = new Button("X");
             this.cancelButton.ControlEvent += (s, a) => createDirectoryMode = false;
+        }
+
+        protected override void ReloadTranslation()
+        {
+            this.createDirectoryButton.Label = Translation.Get("sceneManager", "createDirectoryButton");
+            this.deleteDirectoryButton.Label = Translation.Get("sceneManager", "deleteDirectoryButton");
         }
 
         public override void Draw()

@@ -15,7 +15,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SceneWindow sceneWindow
         )
         {
-            this.sceneManagerButton = new Button("Manage Scenes");
+            this.sceneManagerButton = new Button(Translation.Get("backgroundWindow", "manageScenesButton"));
             this.sceneManagerButton.ControlEvent += (s, a) => sceneWindow.Visible = !sceneWindow.Visible;
 
             this.backgroundSelectorPane = AddPane(new BackgroundSelectorPane(environmentManager));
@@ -29,6 +29,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 ["vignette"] = new VignettePane(effectManager),
                 ["fog"] = new FogPane(effectManager)
             });
+        }
+
+        protected override void ReloadTranslation()
+        {
+            this.sceneManagerButton.Label = Translation.Get("backgroundWindow", "manageScenesButton");
         }
 
         public override void Draw()

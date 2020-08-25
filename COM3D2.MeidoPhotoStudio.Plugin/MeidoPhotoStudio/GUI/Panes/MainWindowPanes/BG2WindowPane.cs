@@ -9,6 +9,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private ModPropsPane modPropsPane;
         private SelectionGrid propTabs;
         private BasePane currentPropsPane;
+        private static readonly string[] tabNames = { "props", "myRoom", "mod" };
 
         public BG2WindowPane(MeidoManager meidoManager, PropManager propManager)
         {
@@ -19,12 +20,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.modPropsPane = AddPane(new ModPropsPane(propManager));
             this.attachPropPane = AddPane(new AttachPropPane(this.meidoManager, propManager));
 
-            this.propTabs = new SelectionGrid(Translation.GetArray("propTabs", new[] { "Props", "MyRoom", "Mod" }));
+            this.propTabs = new SelectionGrid(Translation.GetArray("propsPaneTabs", tabNames));
             this.propTabs.ControlEvent += (s, a) =>
             {
                 currentPropsPane = this.Panes[this.propTabs.SelectedItemIndex];
             };
             this.currentPropsPane = this.Panes[0];
+        }
+
+        protected override void ReloadTranslation()
+        {
+            this.propTabs.SetItems(Translation.GetArray("propsPaneTabs", tabNames));
         }
 
         public override void Draw()

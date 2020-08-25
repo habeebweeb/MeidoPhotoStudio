@@ -48,14 +48,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.previousPresetButton = new Button("<");
             this.previousPresetButton.ControlEvent += (s, a) => this.presetDropdown.Step(-1);
 
-            this.leftHandButton = new Button("Left");
+            this.leftHandButton = new Button(Translation.Get("handPane", "leftHand"));
             this.leftHandButton.ControlEvent += (s, a) => SetHandPreset(right: false);
 
-            this.rightHandButton = new Button("Right");
+            this.rightHandButton = new Button(Translation.Get("handPane", "rightHand"));
             this.rightHandButton.ControlEvent += (s, a) => SetHandPreset(right: true);
 
             this.previousCategory = SelectedCategory;
             this.presetListEnabled = CurrentPresetList.Count > 0;
+        }
+
+        protected override void ReloadTranslation()
+        {
+            this.leftHandButton.Label = Translation.Get("handPane", "leftHand");
+            this.rightHandButton.Label = Translation.Get("handPane", "rightHand");
+            if (CurrentPresetList.Count == 0) this.presetDropdown.SetDropdownItems(UIPresetList());
         }
 
         public override void Draw()
@@ -118,7 +125,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private string[] UIPresetList()
         {
-            if (CurrentPresetList.Count == 0) return new[] { "No Hand Presets" };
+            if (CurrentPresetList.Count == 0) return new[] { Translation.Get("handPane", "noPresetsMessage") };
             else return CurrentPresetList.Select(file => Path.GetFileNameWithoutExtension(file)).ToArray();
         }
     }
