@@ -375,23 +375,40 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (meidoManager.Busy || SceneManager.Busy) return;
 
-            ResetCalcNearClip();
+            SystemDialog sysDialog = GameMain.Instance.SysDlg;
 
-            uiActive = false;
-            active = false;
+            if (sysDialog.IsDecided)
+            {
+                uiActive = false;
+                active = false;
+                string exitMessage = string.Format(Translation.Get("systemMessage", "exitConfirm"), pluginName);
+                sysDialog.Show(exitMessage, SystemDialog.TYPE.OK_CANCEL,
+                    f_dgOk: () =>
+                    {
+                        sysDialog.Close();
+                        ResetCalcNearClip();
 
-            meidoManager.Deactivate();
-            environmentManager.Deactivate();
-            propManager.Deactivate();
-            lightManager.Deactivate();
-            effectManager.Deactivate();
-            messageWindowManager.Deactivate();
-            windowManager.Deactivate();
+                        meidoManager.Deactivate();
+                        environmentManager.Deactivate();
+                        propManager.Deactivate();
+                        lightManager.Deactivate();
+                        effectManager.Deactivate();
+                        messageWindowManager.Deactivate();
+                        windowManager.Deactivate();
 
-            Modal.Close();
+                        Modal.Close();
 
-            GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
-            dailyPanel?.SetActive(true);
+                        GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
+                        dailyPanel?.SetActive(true);
+                    },
+                    f_dgCancel: () =>
+                    {
+                        sysDialog.Close();
+                        uiActive = true;
+                        active = true;
+                    }
+                );
+            }
         }
 
         private void SetNearClipPlane()

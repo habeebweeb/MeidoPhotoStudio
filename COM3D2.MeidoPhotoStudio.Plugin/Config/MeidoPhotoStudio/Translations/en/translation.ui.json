@@ -330,6 +330,7 @@
         "okButton": "OK"
     },
     "systemMessage": {
+        "exitConfirm": "Are you sure you want to quit {0}?\nAny unsaved data will be lost.",
         "initializing": "Initializing",
         "noMaids": "No Maids",
         "noProps": "No Props"
