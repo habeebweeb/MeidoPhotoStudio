@@ -14,14 +14,17 @@
     "placementDropdown": {
         "normal": "Normal",
         "horizontalRow": "Horizontal Row",
-        "diagonal": "Diagonal",
-        "circleOut": "Circle (outer)",
-        "circleIn": "Circle (Inner)",
-        "fan": "Fan",
+        "verticalRow": "Vertical Row",
+        "diagonalRow": "Diagonal",
+        "diagonalRowInverse": "Diagonal (Inverse)",
+        "circleOuter": "Circle (Outer)",
+        "circleInner": "Circle (Inner)",
+        "fanInner": "Fan (Inner)",
+        "fanOuter": "Fan (Outer)",
         "v": "V",
-        "^": "^",
-        "m": "M",
-        "w": "W"
+        "vInverse": "^",
+        "wave": "M",
+        "waveInverse": "W"
     },
     "maidPoseWindow": {
         "ikToggle": "IK",

@@ -153,6 +153,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else return null;
         }
 
+        public void PlaceMeidos(string placementType)
+        {
+            MaidPlacementUtility.ApplyPlacement(placementType, ActiveMeidoList);
+        }
+
         private void UndressAll()
         {
             if (!HasActiveMeido) return;
