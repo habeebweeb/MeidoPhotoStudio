@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MaidPlacementUtility
+    internal static class MaidPlacementUtility
     {
         private static readonly float pi = Mathf.PI;
         private static readonly float tau = Mathf.PI * 2f;
