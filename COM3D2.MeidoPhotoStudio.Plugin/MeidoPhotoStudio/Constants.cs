@@ -126,7 +126,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (File.Exists($"{fullPath}.anm")) fullPath += $"_{DateTime.Now:yyyyMMddHHmmss}";
 
-            fullPath += ".anm";
+            fullPath = Path.GetFullPath($"{fullPath}.anm");
 
             if (!fullPath.StartsWith(Constants.customPosePath))
             {
@@ -173,7 +173,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (File.Exists($"{fullPath}.xml")) fullPath += $"_{DateTime.Now:yyyyMMddHHmmss}";
 
-            fullPath += ".xml";
+            fullPath = Path.GetFullPath($"{fullPath}.xml");
 
             if (!fullPath.StartsWith(Constants.customHandPath))
             {
