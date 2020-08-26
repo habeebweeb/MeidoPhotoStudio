@@ -77,7 +77,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Directory.Delete(CurrentScenesDirectory, true);
             }
+
             CurrentDirectoryList.RemoveAt(CurrentDirectoryIndex);
+            CurrentDirectoryIndex = Mathf.Clamp(CurrentDirectoryIndex, 0, CurrentDirectoryList.Count - 1);
+            UpdateSceneList();
         }
 
         public void OverwriteScene() => SaveScene(overwrite: true);
@@ -98,6 +101,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void SelectDirectory(int directoryIndex)
         {
+            directoryIndex = Mathf.Clamp(directoryIndex, 0, CurrentDirectoryList.Count - 1);
+
             if (directoryIndex == CurrentDirectoryIndex) return;
 
             CurrentDirectoryIndex = directoryIndex;
@@ -107,22 +112,40 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void SelectScene(int sceneIndex)
         {
-            CurrentSceneIndex = sceneIndex;
+            CurrentSceneIndex = Mathf.Clamp(sceneIndex, 0, SceneList.Count - 1);
             CurrentScene.GetNumberOfMaids();
         }
 
         public void AddDirectory(string directoryName)
         {
+            directoryName = Utility.SanitizePathPortion(directoryName);
+
             if (!CurrentDirectoryList.Contains(directoryName, StringComparer.InvariantCultureIgnoreCase))
             {
+                string finalPath = Path.Combine(CurrentBasePath, directoryName);
+                string fullPath = Path.GetFullPath(finalPath);
+
+                if (!fullPath.StartsWith(CurrentBasePath))
+                {
+                    string baseDirectoryName = KankyoMode ? Constants.kankyoDirectory : Constants.sceneDirectory;
+                    Utility.LogError($"Could not add directory to {baseDirectoryName}. Path is invalid: '{fullPath}'");
+                    return;
+                }
+
                 CurrentDirectoryList.Add(directoryName);
-                Directory.CreateDirectory(Path.Combine(CurrentBasePath, directoryName));
+                Directory.CreateDirectory(finalPath);
+
                 UpdateDirectoryList();
+                CurrentDirectoryIndex = CurrentDirectoryList.IndexOf(directoryName);
+
+                UpdateSceneList();
             }
         }
 
         public void Refresh()
         {
+            if (!Directory.Exists(CurrentScenesDirectory)) CurrentDirectoryIndex = 0;
+
             Constants.InitializeScenes();
             UpdateSceneList();
         }
@@ -147,6 +170,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 CurrentScene.FileInfo.Delete();
             }
             SceneList.RemoveAt(CurrentSceneIndex);
+            CurrentSceneIndex = Mathf.Clamp(CurrentSceneIndex, 0, SceneList.Count - 1);
         }
 
         public void LoadScene()
@@ -184,6 +208,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             SortScenes(CurrentSortMode);
+
+            CurrentSceneIndex = Mathf.Clamp(CurrentSceneIndex, 0, SceneList.Count - 1);
         }
 
         private void UpdateDirectoryList()
