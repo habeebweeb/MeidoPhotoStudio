@@ -110,7 +110,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (SelectMeidoList.Count == 0)
             {
-                if (hadActiveMeidos) OnEndCallMeidos(this, EventArgs.Empty);
+                OnEndCallMeidos(this, EventArgs.Empty);
                 return;
             }
 
