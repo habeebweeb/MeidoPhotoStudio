@@ -352,6 +352,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void Activate()
         {
+            if (!GameMain.Instance.SysDlg.IsDecided) return;
+
             if (!initialized) Initialize();
 
             SetNearClipPlane();
