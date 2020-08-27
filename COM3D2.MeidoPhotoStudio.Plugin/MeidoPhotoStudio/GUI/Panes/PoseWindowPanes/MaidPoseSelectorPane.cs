@@ -67,6 +67,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void ReloadTranslation()
         {
+            this.updating = true;
             this.poseModeGrid.SetItems(Translation.GetArray("posePane", tabTranslations));
             if (!customPoseMode)
             {
@@ -74,6 +75,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     Translation.GetArray("poseGroupDropdown", Constants.PoseGroupList)
                 );
             }
+            this.updating = false;
         }
 
         public override void Draw()
