@@ -10,6 +10,9 @@
         "BigSight": "Cosplay Convention",
         "BigSight_Night": "Cosplay Convention (Night)",
         "boutique": "Boutique",
+        "campsite_day": "Campsite (Day)",
+        "campsite_dust": "Campsite (Dusk)",
+        "campsite_night": "Campsite (Night)",
         "Casino": "Casino",
         "CasinoMini": "Mini Casino",
         "cathedral": "Cathedral",
@@ -20,6 +23,7 @@
         "com3d2pool_night": "Pool (Night)",
         "DanceRoom": "Training",
         "DressRoom_NoMirror": "Dressing Room",
+        "dubiousbar": "Dubious Bar",
         "empireclub_elevator": "Empire Club Elevator",
         "EmpireClub_Entrance": "Empire Club Entrance",
         "empireclub_hallway": "Empire Club Hallway",
@@ -204,5 +208,5 @@
         "Yashiki": "Inn (Night)",
         "Yashiki_Day": "Inn",
         "Yashiki_Pillow": "Inn (Night with Pillow)"
-    },
+    }
 }
