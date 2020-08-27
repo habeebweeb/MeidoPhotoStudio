@@ -589,7 +589,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             MenuDataBase menuDataBase = GameMain.Instance.MenuDataBase;
 
-            string ignoreListJson = File.ReadAllText(Path.Combine(configPath, "mm_ignore_list.json"));
+            string ignoreListJson = File.ReadAllText(Path.Combine(configPath, "bg_ignore_list.json"));
             string[] ignoreList = JsonConvert.DeserializeObject<IEnumerable<string>>(ignoreListJson).ToArray();
 
             HashSet<string> doguHashSet = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
