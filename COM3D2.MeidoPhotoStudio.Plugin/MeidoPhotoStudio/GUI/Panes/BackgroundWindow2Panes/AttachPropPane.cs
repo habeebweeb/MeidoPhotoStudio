@@ -50,8 +50,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.propManager = propManager;
             this.meidoManager = meidoManager;
 
-            this.propManager.DoguListChange += (s, a) => SetDoguDropdown();
             this.meidoManager.EndCallMeidos += (s, a) => SetMeidoDropdown();
+            this.propManager.DoguListChange += (s, a) => SetDoguDropdown();
+            this.propManager.DoguSelectChange += (s, a) =>
+            {
+                this.doguDropdown.SelectedItemIndex = this.propManager.CurrentDoguIndex;
+            };
 
             this.meidoDropdown = new Dropdown(new[] { Translation.Get("systemMessage", "noMaids") });
             this.meidoDropdown.SelectionChange += (s, a) => SwitchMaid();

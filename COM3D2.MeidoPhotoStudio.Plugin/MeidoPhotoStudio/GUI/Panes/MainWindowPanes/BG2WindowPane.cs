@@ -3,6 +3,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class BG2WindowPane : BaseWindowPane
     {
         private MeidoManager meidoManager;
+        private PropManager propManager;
         private PropsPane propsPane;
         private AttachPropPane attachPropPane;
         private MyRoomPropsPane myRoomPropsPane;
@@ -14,6 +15,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public BG2WindowPane(MeidoManager meidoManager, PropManager propManager)
         {
             this.meidoManager = meidoManager;
+            this.propManager = propManager;
+            this.propManager.DoguSelectChange += (s, a) => this.propTabs.SelectedItemIndex = 0;
 
             this.propsPane = AddPane(new PropsPane(propManager));
             this.myRoomPropsPane = AddPane(new MyRoomPropsPane(propManager));

@@ -332,7 +332,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             windowManager = new WindowManager()
             {
-                [Constants.Window.Main] = new MainWindow(meidoManager)
+                [Constants.Window.Main] = new MainWindow(meidoManager, propManager, lightManager)
                 {
                     [Constants.Window.Call] = new CallWindowPane(meidoManager),
                     [Constants.Window.Pose] = new PoseWindowPane(meidoManager, maidSwitcherPane),

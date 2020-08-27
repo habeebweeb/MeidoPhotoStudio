@@ -6,6 +6,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class MainWindow : BaseWindow
     {
         private MeidoManager meidoManager;
+        private PropManager propManager;
+        private LightManager lightManager;
         private Dictionary<Constants.Window, BaseWindowPane> windowPanes;
         private TabsPane tabsPane;
         private Button ReloadTranslationButton;
@@ -29,10 +31,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             set => AddWindow(id, value);
         }
 
-        public MainWindow(MeidoManager meidoManager) : base()
+        // TODO: Find a better way of doing this
+        public MainWindow(MeidoManager meidoManager, PropManager propManager, LightManager lightManager) : base()
         {
             this.meidoManager = meidoManager;
             this.meidoManager.UpdateMeido += UpdateMeido;
+
+            this.propManager = propManager;
+            this.propManager.DoguSelectChange += (s, a) => ChangeWindow(Constants.Window.BG2);
+
+            this.lightManager = lightManager;
+            this.lightManager.Select += (s, a) => ChangeWindow(Constants.Window.BG);
 
             windowPanes = new Dictionary<Constants.Window, BaseWindowPane>();
             windowRect = new Rect(Screen.width, Screen.height * 0.08f, 230f, Screen.height * 0.9f);
@@ -115,10 +124,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (args.FromMeido)
             {
                 Constants.Window newWindow = args.IsBody ? Constants.Window.Pose : Constants.Window.Face;
-                if (this.selectedWindow == newWindow) currentWindowPane.UpdatePanes();
-                else tabsPane.SelectedTab = newWindow;
+                ChangeWindow(newWindow);
             }
             else currentWindowPane.UpdatePanes();
+        }
+
+        private void ChangeWindow(Constants.Window window)
+        {
+            if (this.selectedWindow == window) currentWindowPane.UpdatePanes();
+            else tabsPane.SelectedTab = window;
         }
     }
 }

@@ -42,6 +42,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private List<DragPointDogu> doguList = new List<DragPointDogu>();
         public int DoguCount => doguList.Count;
         public event EventHandler DoguListChange;
+        public event EventHandler DoguSelectChange;
         public string[] PropNameList
         {
             get
@@ -51,6 +52,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     : doguList.Select(dogu => dogu.Name).ToArray();
             }
         }
+        public int CurrentDoguIndex { get; private set; }
 
         public PropManager(MeidoManager meidoManager)
         {
@@ -200,6 +202,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (dogu != null)
                 {
                     dogu.Delete -= DeleteDogu;
+                    dogu.Select -= DeleteDogu;
                     GameObject.Destroy(dogu.gameObject);
                 }
             }
@@ -395,6 +398,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             dragDogu.AddGizmo(scale: 0.45f, mode: CustomGizmo.GizmoMode.World);
             dragDogu.ConstantScale = true;
             dragDogu.Delete += DeleteDogu;
+            dragDogu.Select += SelectDogu;
             dragDogu.DragPointScale = CubeSmall ? DragPointGeneral.smallCube : 1f;
             dragDogu.assetName = assetName;
 
@@ -486,6 +490,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     if (dragDogu == dogu)
                     {
+                        dogu.Delete -= DeleteDogu;
+                        dogu.Select -= SelectDogu;
                         GameObject.Destroy(dragDogu.gameObject);
                         return true;
                     }
@@ -493,6 +499,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             );
             OnDoguListChange();
+        }
+
+        private void SelectDogu(object sender, EventArgs args)
+        {
+            DragPointDogu dogu = (DragPointDogu)sender;
+            int doguIndex = doguList.IndexOf(dogu);
+            if (doguIndex != -1)
+            {
+                CurrentDoguIndex = doguIndex;
+                DoguSelectChange?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         private void OnCubeSmall(object sender, EventArgs args)
