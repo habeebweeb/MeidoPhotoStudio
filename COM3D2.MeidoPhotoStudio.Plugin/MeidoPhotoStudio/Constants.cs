@@ -80,13 +80,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         static Constants()
         {
-            string modsPath = Path.Combine(BepInEx.Paths.GameRootPath, @"Mod\MeidoPhotoStudio");
-
-            customPosePath = Path.Combine(modsPath, customPoseDirectory);
-            customHandPath = Path.Combine(modsPath, customHandDirectory);
-            scenesPath = Path.Combine(modsPath, sceneDirectory);
-            kankyoPath = Path.Combine(modsPath, kankyoDirectory);
             configPath = Path.Combine(BepInEx.Paths.ConfigPath, configDirectory);
+
+            string presetPath = Path.Combine(configPath, "Presets");
+
+            customPosePath = Path.Combine(presetPath, customPoseDirectory);
+            customHandPath = Path.Combine(presetPath, customHandDirectory);
+            scenesPath = Path.Combine(configPath, sceneDirectory);
+            kankyoPath = Path.Combine(configPath, kankyoDirectory);
 
             string[] directories = new[] { customPosePath, customHandPath, scenesPath, kankyoPath, configPath };
 
@@ -432,7 +433,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             List<string> DoguList = DoguDict[customDoguCategories[DoguCategory.Other]];
 
-            string ignoreListPath = Path.Combine(configPath, "mm_ignore_list.json");
+            string ignoreListPath = Path.Combine(configPath, "bg_ignore_list.json");
             string ignoreListJson = File.ReadAllText(ignoreListPath);
             string[] ignoreList = JsonConvert.DeserializeObject<IEnumerable<string>>(ignoreListJson).ToArray();
 
@@ -461,7 +462,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             // Get cherry picked dogu that I can't find in the game files
-            string doguExtendPath = Path.Combine(configPath, "mm_dogu_extend.json");
+            string doguExtendPath = Path.Combine(configPath, "extra_dogu.json");
             string doguExtendJson = File.ReadAllText(doguExtendPath);
 
             DoguList.AddRange(JsonConvert.DeserializeObject<IEnumerable<string>>(doguExtendJson));
