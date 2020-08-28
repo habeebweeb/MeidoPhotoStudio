@@ -163,12 +163,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Activate()
         {
             CubeSmallChange += OnCubeSmall;
+            CubeActiveChange += OnCubeActive;
         }
 
         public void Deactivate()
         {
             ClearDogu();
             CubeSmallChange -= OnCubeSmall;
+            CubeActiveChange -= OnCubeActive;
         }
 
         public void Update() { }
@@ -545,14 +547,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
+        private void OnCubeActive(object sender, EventArgs args)
+        {
+            foreach (DragPointDogu dragPoint in doguList)
+            {
+                dragPoint.gameObject.SetActive(CubeActive);
+            }
+        }
+
         private void OnDoguListChange()
         {
             this.DoguListChange?.Invoke(this, EventArgs.Empty);
-        }
-
-        public void SaveConfiguration()
-        {
-
         }
     }
 }

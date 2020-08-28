@@ -245,8 +245,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             sysShortcut.SetActive(false);
             uiActive = false;
 
-            // TODO: Hide cubes for bg, maid, lights etc.
-
             List<Meido> activeMeidoList = this.meidoManager.ActiveMeidoList;
             bool[] isIK = new bool[activeMeidoList.Count];
             bool[] isVisible = new bool[activeMeidoList.Count];
@@ -258,6 +256,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (meido.IK) meido.IK = false;
                 if (args.HideMaids) meido.Maid.Visible = false;
             }
+
+            bool[] isCubeActive = {
+                MeidoDragPointManager.CubeActive,
+                PropManager.CubeActive,
+                LightManager.CubeActive,
+                EnvironmentManager.CubeActive
+            };
+
+            MeidoDragPointManager.CubeActive = false;
+            PropManager.CubeActive = false;
+            LightManager.CubeActive = false;
+            EnvironmentManager.CubeActive = false;
 
             GizmoRender.UIVisible = false;
 
@@ -291,6 +301,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (isIK[i]) meido.IK = true;
                 if (args.HideMaids && isVisible[i]) meido.Maid.Visible = true;
             }
+
+            MeidoDragPointManager.CubeActive = isCubeActive[0];
+            PropManager.CubeActive = isCubeActive[1];
+            LightManager.CubeActive = isCubeActive[2];
+            EnvironmentManager.CubeActive = isCubeActive[3];
 
             GizmoRender.UIVisible = true;
         }

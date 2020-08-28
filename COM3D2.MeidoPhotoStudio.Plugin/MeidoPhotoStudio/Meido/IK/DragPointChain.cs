@@ -39,7 +39,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void ApplyDragType()
         {
-            // TODO: All the dragpoints
             DragType current = CurrentDragType;
             bool isBone = IsBone;
             if (CurrentDragType == DragType.Ignore) ApplyProperties();

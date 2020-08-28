@@ -8,6 +8,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class LightManager : IManager, ISerializable
     {
         public const string header = "LIGHT";
+        private static bool cubeActive = true;
+        public static bool CubeActive
+        {
+            get => cubeActive;
+            set
+            {
+                if (value != cubeActive)
+                {
+                    cubeActive = value;
+                    CubeActiveChange?.Invoke(null, EventArgs.Empty);
+                }
+            }
+        }
+        private static event EventHandler CubeActiveChange;
         private List<DragPointLight> lightList = new List<DragPointLight>();
         private int selectedLightIndex = 0;
         public int SelectedLightIndex
@@ -32,7 +46,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public event EventHandler Scale;
         public event EventHandler ListModified;
         public event EventHandler Select;
-        // TODO: enabling and disabling gizmos for a variety of dragpoints
 
         public void Serialize(System.IO.BinaryWriter binaryWriter)
         {
@@ -60,6 +73,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GameMain.Instance.MainCamera.GetComponent<Camera>().backgroundColor = Color.black;
             AddLight(GameMain.Instance.MainLight.gameObject, true);
+            CubeActiveChange += OnCubeActive;
         }
 
         public void Deactivate()
@@ -76,6 +90,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Light mainLight = GameMain.Instance.MainLight.GetComponent<Light>();
             mainLight.type = LightType.Directional;
             DragPointLight.SetLightProperties(mainLight, new LightProperty());
+            CubeActiveChange -= OnCubeActive;
         }
 
         public void Update() { }
@@ -197,6 +212,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void OnListModified()
         {
             ListModified?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnCubeActive(object sender, EventArgs args)
+        {
+            foreach (DragPointLight dragPoint in lightList)
+            {
+                dragPoint.gameObject.SetActive(CubeActive);
+            }
         }
     }
 }
