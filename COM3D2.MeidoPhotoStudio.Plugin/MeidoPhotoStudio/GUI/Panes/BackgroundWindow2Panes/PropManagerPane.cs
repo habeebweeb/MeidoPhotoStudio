@@ -45,25 +45,33 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.nextPropButton = new Button(">");
             this.nextPropButton.ControlEvent += (s, a) => this.propDropdown.Step(1);
 
-            this.dragPointToggle = new Toggle("Cube");
+            this.dragPointToggle = new Toggle(Translation.Get("propManagerPane", "dragPointToggle"));
             this.dragPointToggle.ControlEvent += (s, a) =>
             {
                 if (this.updating || this.propManager.DoguCount == 0) return;
                 this.propManager.CurrentDogu.DragPointEnabled = dragPointToggle.Value;
             };
 
-            this.gizmoToggle = new Toggle("Gizmo");
+            this.gizmoToggle = new Toggle(Translation.Get("propManagerPane", "gizmoToggle"));
             this.gizmoToggle.ControlEvent += (s, a) =>
             {
                 if (this.updating || this.propManager.DoguCount == 0) return;
                 this.propManager.CurrentDogu.GizmoEnabled = gizmoToggle.Value;
             };
 
-            this.copyPropButton = new Button("Copy");
+            this.copyPropButton = new Button(Translation.Get("propManagerPane", "copyButton"));
             this.copyPropButton.ControlEvent += (s, a) => this.propManager.CopyDogu(CurrentDoguIndex);
 
-            this.deletePropButton = new Button("Delete");
+            this.deletePropButton = new Button(Translation.Get("propManagerPane", "deleteButton"));
             this.deletePropButton.ControlEvent += (s, a) => this.propManager.RemoveDogu(CurrentDoguIndex);
+        }
+
+        protected override void ReloadTranslation()
+        {
+            this.dragPointToggle.Label = Translation.Get("propManagerPane", "dragPointToggle");
+            this.gizmoToggle.Label = Translation.Get("propManagerPane", "gizmoToggle");
+            this.copyPropButton.Label = Translation.Get("propManagerPane", "copyButton");
+            this.deletePropButton.Label = Translation.Get("propManagerPane", "deleteButton");
         }
 
         public override void Draw()

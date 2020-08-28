@@ -208,6 +208,12 @@
     "modPropsPane": {
         "header": "Mod Props"
     },
+    "propManagerPane": {
+        "dragPointToggle": "Cube",
+        "gizmoToggle": "Gizmo",
+        "copyButton": "Copy",
+        "deleteButton": "Delete"
+    },
     "movementCube": {
         "header": "Movement Cube",
         "props": "Props",
