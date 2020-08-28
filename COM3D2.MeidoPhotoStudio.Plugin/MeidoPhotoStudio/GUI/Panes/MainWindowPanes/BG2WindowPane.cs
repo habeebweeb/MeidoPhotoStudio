@@ -8,6 +8,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private AttachPropPane attachPropPane;
         private MyRoomPropsPane myRoomPropsPane;
         private ModPropsPane modPropsPane;
+        private PropManagerPane propManagerPane;
         private SelectionGrid propTabs;
         private BasePane currentPropsPane;
         private static readonly string[] tabNames = { "props", "myRoom", "mod" };
@@ -22,6 +23,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.myRoomPropsPane = AddPane(new MyRoomPropsPane(propManager));
             this.modPropsPane = AddPane(new ModPropsPane(propManager));
             this.attachPropPane = AddPane(new AttachPropPane(this.meidoManager, propManager));
+            this.propManagerPane = AddPane(new PropManagerPane(propManager));
 
             this.propTabs = new SelectionGrid(Translation.GetArray("propsPaneTabs", tabNames));
             this.propTabs.ControlEvent += (s, a) =>
@@ -41,7 +43,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.propTabs.Draw();
             MiscGUI.WhiteLine();
             this.currentPropsPane.Draw();
-            if (this.propTabs.SelectedItemIndex == 0) this.attachPropPane.Draw();
+            if (this.propTabs.SelectedItemIndex == 0)
+            {
+                this.propManagerPane.Draw();
+                this.attachPropPane.Draw();
+            }
         }
 
         public override void UpdatePanes()

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -52,7 +53,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     : doguList.Select(dogu => dogu.Name).ToArray();
             }
         }
-        public int CurrentDoguIndex { get; private set; }
+        public int CurrentDoguIndex { get; private set; } = 0;
+        public DragPointDogu CurrentDogu => DoguCount == 0 ? null : doguList[CurrentDoguIndex];
 
         public PropManager(MeidoManager meidoManager)
         {
@@ -61,7 +63,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.meidoManager.EndCallMeidos += OnEndCall;
         }
 
-        public void Serialize(System.IO.BinaryWriter binaryWriter)
+        public void Serialize(BinaryWriter binaryWriter)
         {
             binaryWriter.Write(header);
             binaryWriter.Write(doguList.Count);
@@ -76,7 +78,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        public void Deserialize(System.IO.BinaryReader binaryReader)
+        public void Deserialize(BinaryReader binaryReader)
         {
             Dictionary<string, string> modToModPath = null;
             ClearDogu();
@@ -85,51 +87,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 string assetName = binaryReader.ReadString();
                 bool result = false;
-                if (assetName.EndsWith(".menu"))
-                {
-                    if (assetName.Contains('#'))
-                    {
-                        if (modToModPath == null)
-                        {
-                            modToModPath = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
-                            foreach (string mod in Menu.GetModFiles())
-                            {
-                                modToModPath.Add(System.IO.Path.GetFileName(mod), mod);
-                            }
-                        }
 
-                        string[] assetParts = assetName.Split('#');
-                        ModItem item = new ModItem()
-                        {
-                            MenuFile = modToModPath[assetParts[0]],
-                            BaseMenuFile = assetParts[1],
-                            IsMod = true,
-                            IsOfficialMod = true
-                        };
-                        result = SpawnModItemProp(item);
-                    }
-                    else
-                    {
-                        if (assetName.StartsWith("handitem")) result = SpawnObject(assetName);
-                        else result = SpawnModItemProp(new ModItem() { MenuFile = assetName });
-                    }
-                }
-                else if (assetName.StartsWith("MYR_"))
+                if (assetName.EndsWith(".menu") && assetName.Contains('#') && modToModPath == null)
                 {
-                    string[] assetParts = assetName.Split('#');
-                    int id = int.Parse(assetParts[0].Substring(4));
-                    string prefabName;
-                    if (assetParts.Length == 2 && !string.IsNullOrEmpty(assetParts[1])) prefabName = assetParts[1];
-                    else
-                    {
-                        // deserialize modifiedMM and maybe MM 23.0+.
-                        MyRoomCustom.PlacementData.Data data = MyRoomCustom.PlacementData.GetData(id);
-                        prefabName = !string.IsNullOrEmpty(data.resourceName) ? data.resourceName : data.assetName;
-                    }
-                    result = SpawnMyRoomProp(new MyRoomItem() { ID = id, PrefabName = prefabName });
+                    modToModPath = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+                    foreach (string mod in Menu.GetModFiles()) modToModPath.Add(Path.GetFileName(mod), mod);
                 }
-                else if (assetName.StartsWith("BG_")) result = SpawnBG(assetName);
-                else result = SpawnObject(assetName);
+
+                result = SpawnFromAssetString(assetName, modToModPath);
 
                 AttachPointInfo info = AttachPointInfo.Deserialize(binaryReader);
 
@@ -146,6 +111,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     dogu.attachPointInfo = info;
                 }
             }
+            CurrentDoguIndex = 0;
             GameMain.Instance.StartCoroutine(DeserializeAttach());
         }
 
@@ -195,20 +161,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Update() { }
 
-        private void ClearDogu()
-        {
-            foreach (DragPointDogu dogu in doguList)
-            {
-                if (dogu != null)
-                {
-                    dogu.Delete -= DeleteDogu;
-                    dogu.Select -= DeleteDogu;
-                    GameObject.Destroy(dogu.gameObject);
-                }
-            }
-            doguList.Clear();
-        }
-
         private GameObject GetDeploymentObject()
         {
             return GameObject.Find("Deployment Object Parent")
@@ -219,6 +171,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GameObject dogu = MenuFileUtility.LoadModel(modItem);
             string name = modItem.MenuFile;
+            if (modItem.IsOfficialMod) name = Path.GetFileNameWithoutExtension(name);
             if (dogu != null) AttachDragPoint(dogu, modItem.ToString(), name, new Vector3(0f, 0f, 0.5f));
             return dogu != null;
         }
@@ -378,6 +331,43 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return false;
         }
 
+        private bool SpawnFromAssetString(string assetName, Dictionary<string, string> modDict = null)
+        {
+            bool result = false;
+            if (assetName.EndsWith(".menu"))
+            {
+                if (assetName.Contains('#'))
+                {
+                    string[] assetParts = assetName.Split('#');
+                    string menuFile = modDict == null ? Menu.GetModPathFileName(assetParts[0]) : modDict[assetParts[0]];
+
+                    ModItem item = ModItem.OfficialMod(menuFile);
+                    item.BaseMenuFile = assetParts[1];
+                    result = SpawnModItemProp(item);
+                }
+                else if (assetName.StartsWith("handitem")) result = SpawnObject(assetName);
+                else result = SpawnModItemProp(ModItem.Mod(assetName));
+            }
+            else if (assetName.StartsWith("MYR_"))
+            {
+                string[] assetParts = assetName.Split('#');
+                int id = int.Parse(assetParts[0].Substring(4));
+                string prefabName;
+                if (assetParts.Length == 2 && !string.IsNullOrEmpty(assetParts[1])) prefabName = assetParts[1];
+                else
+                {
+                    // deserialize modifiedMM and maybe MM 23.0+.
+                    MyRoomCustom.PlacementData.Data data = MyRoomCustom.PlacementData.GetData(id);
+                    prefabName = !string.IsNullOrEmpty(data.resourceName) ? data.resourceName : data.assetName;
+                }
+                result = SpawnMyRoomProp(new MyRoomItem() { ID = id, PrefabName = prefabName });
+            }
+            else if (assetName.StartsWith("BG_")) result = SpawnBG(assetName);
+            else result = SpawnObject(assetName);
+
+            return result;
+        }
+
         private void AttachDragPoint(GameObject dogu, string assetName, string name, Vector3 position)
         {
             // TODO: Figure out why some props aren't centred properly
@@ -406,10 +396,32 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             OnDoguListChange();
         }
 
-        public DragPointDogu GetDogu(int doguIndex)
+        public void SetCurrentDogu(int doguIndex)
         {
-            if (doguList.Count == 0 || doguIndex >= doguList.Count || doguIndex < 0) return null;
-            return doguList[doguIndex];
+            if (doguIndex >= 0 && doguIndex < DoguCount)
+            {
+                this.CurrentDoguIndex = doguIndex;
+                this.DoguSelectChange?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public void RemoveDogu(int doguIndex)
+        {
+            if (doguIndex >= 0 && doguIndex < DoguCount)
+            {
+                DestroyDogu(doguList[doguIndex]);
+                doguList.RemoveAt(doguIndex);
+                CurrentDoguIndex = Utility.Bound(CurrentDoguIndex, 0, DoguCount - 1);
+                OnDoguListChange();
+            }
+        }
+
+        public void CopyDogu(int doguIndex)
+        {
+            if (doguIndex >= 0 && doguIndex < DoguCount)
+            {
+                SpawnFromAssetString(doguList[doguIndex].assetName);
+            }
         }
 
         public void AttachProp(
@@ -468,6 +480,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
+        private void ClearDogu()
+        {
+            for (int i = DoguCount - 1; i >= 0; i--)
+            {
+                DestroyDogu(doguList[i]);
+            }
+            doguList.Clear();
+            CurrentDoguIndex = 0;
+        }
+
         private void OnEndCall(object sender, EventArgs args) => ReattachProps(useGuid: true);
 
         private void ReattachProps(bool useGuid, bool forceStay = false)
@@ -486,30 +508,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void DeleteDogu(object sender, EventArgs args)
         {
             DragPointDogu dogu = (DragPointDogu)sender;
-            doguList.RemoveAll(dragDogu =>
-                {
-                    if (dragDogu == dogu)
-                    {
-                        dogu.Delete -= DeleteDogu;
-                        dogu.Select -= SelectDogu;
-                        GameObject.Destroy(dragDogu.gameObject);
-                        return true;
-                    }
-                    return false;
-                }
-            );
-            OnDoguListChange();
+            RemoveDogu(doguList.FindIndex(dragDogu => dragDogu == dogu));
+        }
+
+        private void DestroyDogu(DragPointDogu dogu)
+        {
+            if (dogu == null) return;
+            dogu.Delete -= DeleteDogu;
+            dogu.Select -= SelectDogu;
+            GameObject.Destroy(dogu.gameObject);
         }
 
         private void SelectDogu(object sender, EventArgs args)
         {
             DragPointDogu dogu = (DragPointDogu)sender;
-            int doguIndex = doguList.IndexOf(dogu);
-            if (doguIndex != -1)
-            {
-                CurrentDoguIndex = doguIndex;
-                DoguSelectChange?.Invoke(this, EventArgs.Empty);
-            }
+            SetCurrentDogu(doguList.IndexOf(dogu));
         }
 
         private void OnCubeSmall(object sender, EventArgs args)

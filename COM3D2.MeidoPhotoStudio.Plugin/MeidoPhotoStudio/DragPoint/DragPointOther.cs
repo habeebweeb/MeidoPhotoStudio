@@ -30,8 +30,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected override void ApplyDragType()
         {
             DragType current = CurrentDragType;
-            bool active = Transforming || Special;
-            ApplyProperties(active, active, Rotating);
+            bool active = (DragPointEnabled && Transforming) || Special;
+            ApplyProperties(active, active, GizmoEnabled && Rotating);
         }
 
         protected override void OnDestroy()

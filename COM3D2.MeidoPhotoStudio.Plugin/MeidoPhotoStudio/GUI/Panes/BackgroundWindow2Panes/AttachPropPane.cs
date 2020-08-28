@@ -35,9 +35,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Button previousMaidButton;
         private Button nextMaidButton;
         private Dropdown meidoDropdown;
-        private Button previousDoguButton;
-        private Button nextDoguButton;
-        private Dropdown doguDropdown;
         private bool meidoDropdownActive = false;
         private bool doguDropdownActive = false;
         private bool PaneActive => meidoDropdownActive && doguDropdownActive;
@@ -51,11 +48,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.meidoManager = meidoManager;
 
             this.meidoManager.EndCallMeidos += (s, a) => SetMeidoDropdown();
-            this.propManager.DoguListChange += (s, a) => SetDoguDropdown();
-            this.propManager.DoguSelectChange += (s, a) =>
-            {
-                this.doguDropdown.SelectedItemIndex = this.propManager.CurrentDoguIndex;
-            };
+            this.propManager.DoguSelectChange += (s, a) => SwitchDogu();
+            this.propManager.DoguListChange += (s, a) => doguDropdownActive = this.propManager.DoguCount > 0;
 
             this.meidoDropdown = new Dropdown(new[] { Translation.Get("systemMessage", "noMaids") });
             this.meidoDropdown.SelectionChange += (s, a) => SwitchMaid();
@@ -65,15 +59,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.nextMaidButton = new Button(">");
             this.nextMaidButton.ControlEvent += (s, a) => this.meidoDropdown.Step(1);
-
-            this.doguDropdown = new Dropdown(new[] { Translation.Get("systemMessage", "noProps") });
-            this.doguDropdown.SelectionChange += (s, a) => SwitchDogu();
-
-            this.previousDoguButton = new Button("<");
-            this.previousDoguButton.ControlEvent += (s, a) => this.doguDropdown.Step(-1);
-
-            this.nextDoguButton = new Button(">");
-            this.nextDoguButton.ControlEvent += (s, a) => this.doguDropdown.Step(1);
 
             this.keepWorldPositionToggle = new Toggle(Translation.Get("attachPropPane", "keepWorldPosition"));
 
@@ -123,12 +108,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUI.enabled = PaneActive;
 
             meidoDropdown.Draw(dropdownLayoutOptions);
-
-            GUILayout.BeginHorizontal();
-            doguDropdown.Draw(dropdownLayoutOptions);
-            previousDoguButton.Draw(arrowLayoutOptions);
-            nextDoguButton.Draw(arrowLayoutOptions);
-            GUILayout.EndHorizontal();
 
             keepWorldPositionToggle.Draw();
 
@@ -182,7 +161,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             this.propManager.AttachProp(
-                this.doguDropdown.SelectedItemIndex, point, meido, this.keepWorldPositionToggle.Value
+                this.propManager.CurrentDoguIndex, point, meido, this.keepWorldPositionToggle.Value
             );
         }
 
@@ -190,7 +169,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (updating || selectedMaid == this.meidoDropdown.SelectedItemIndex) return;
             selectedMaid = this.meidoDropdown.SelectedItemIndex;
-            DragPointDogu dragDogu = this.propManager.GetDogu(this.doguDropdown.SelectedItemIndex);
+            DragPointDogu dragDogu = this.propManager.CurrentDogu;
             if (dragDogu != null)
             {
                 if (dragDogu.attachPointInfo.AttachPoint == AttachPoint.None) return;
@@ -201,21 +180,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void SwitchDogu()
         {
             if (updating) return;
-            DragPointDogu dragDogu = this.propManager.GetDogu(this.doguDropdown.SelectedItemIndex);
+            DragPointDogu dragDogu = this.propManager.CurrentDogu;
             if (dragDogu != null) SetAttachPointToggle(dragDogu.attachPointInfo.AttachPoint, true);
-        }
-
-        private void SetDoguDropdown()
-        {
-            if (this.propManager.DoguCount == 0)
-            {
-                SetAttachPointToggle(AttachPoint.Head, false);
-            }
-            int index = Mathf.Clamp(this.doguDropdown.SelectedItemIndex, 0, this.propManager.DoguCount);
-
-            this.doguDropdown.SetDropdownItems(this.propManager.PropNameList, index);
-
-            doguDropdownActive = this.propManager.DoguCount != 0;
         }
 
         private void SetMeidoDropdown()

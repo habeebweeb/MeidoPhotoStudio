@@ -68,6 +68,28 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
         }
+        private bool dragPointEnabled = true;
+        public bool DragPointEnabled
+        {
+            get => dragPointEnabled;
+            set
+            {
+                if (dragPointEnabled == value) return;
+                dragPointEnabled = value;
+                ApplyDragType();
+            }
+        }
+        private bool gizmoEnabled = true;
+        public bool GizmoEnabled
+        {
+            get => GizmoGo != null && gizmoEnabled;
+            set
+            {
+                if (GizmoGo == null || (GizmoGo != null && gizmoEnabled == value)) return;
+                gizmoEnabled = value;
+                ApplyDragType();
+            }
+        }
 
         private void Awake()
         {
