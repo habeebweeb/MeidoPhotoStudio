@@ -3,6 +3,7 @@ using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using BepInEx.Configuration;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -10,28 +11,44 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private static readonly string[] props = { "ui", "props", "bg", "face" };
         private static Dictionary<string, Dictionary<string, string>> Translations;
-        public static string CurrentLanguage { get; private set; }
+        private static readonly ConfigEntry<string> currentLanguage;
+        public static string CurrentLanguage
+        {
+            get => currentLanguage.Value;
+            private set => currentLanguage.Value = value;
+        }
         public static event EventHandler ReloadTranslationEvent;
+
+        static Translation()
+        {
+            currentLanguage = Configuration.Config.Bind<string>(
+                "Translation", "Language",
+                "en",
+                "Directory to pull translations from"
+                + "\nTranslations are found in the 'Translations' folder"
+            );
+
+            Configuration.Config.ConfigReloaded += OnSettingChange;
+        }
+
+        static void OnSettingChange(object sender, EventArgs args) => ReloadTranslation();
 
         public static void Initialize(string language)
         {
-            CurrentLanguage = language;
-
-            Translations = new Dictionary<string, Dictionary<string, string>>(
-                StringComparer.InvariantCultureIgnoreCase
-            );
-
             string rootTranslationPath = Path.Combine(Constants.configPath, Constants.translationDirectory);
-
-            string currentTranslationPath = Path.Combine(rootTranslationPath, CurrentLanguage);
+            string currentTranslationPath = Path.Combine(rootTranslationPath, language);
 
             if (!Directory.Exists(currentTranslationPath))
             {
                 Utility.LogWarning(
-                    $"No translations found for '{CurrentLanguage}' in '{currentTranslationPath}'"
+                    $"No translations found for '{language}' in '{currentTranslationPath}'"
                 );
                 return;
             }
+
+            Translations = new Dictionary<string, Dictionary<string, string>>(
+                StringComparer.InvariantCultureIgnoreCase
+            );
 
             foreach (string prop in props)
             {
@@ -59,11 +76,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        public static void SetLanguage(string language)
-        {
-            Initialize(language);
-            OnReloadTranslation();
-        }
+        public static void ReinitializeTranslation() => Configuration.Config.Reload();
 
         public static void ReloadTranslation()
         {

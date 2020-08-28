@@ -23,7 +23,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             refreshButton = new Button(Translation.Get("sceneManager", "refreshButton"));
             refreshButton.ControlEvent += (s, a) => sceneManager.Refresh();
 
-            sortDropdown = new Dropdown(Translation.GetArray("sceneManager", sortModes));
+            sortDropdown = new Dropdown(
+                Translation.GetArray("sceneManager", sortModes), (int)sceneManager.CurrentSortMode
+            );
             sortDropdown.SelectionChange += (s, a) =>
             {
                 SceneManager.SortMode sortMode = (SceneManager.SortMode)sortDropdown.SelectedItemIndex;

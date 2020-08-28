@@ -667,7 +667,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 ModPropDict[MenuCategories[i]] = new List<ModItem>();
             }
 
-            if (!Configuration.ModItemsOnly)
+            if (!PropManager.ModItemsOnly)
             {
                 MenuDataBase menuDatabase = GameMain.Instance.MenuDataBase;
 
@@ -712,7 +712,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static List<ModItem> GetModPropList(string category)
         {
-            if (!Configuration.ModItemsOnly)
+            if (!PropManager.ModItemsOnly)
             {
                 if (!MenuFileUtility.MenuFilesReady)
                 {

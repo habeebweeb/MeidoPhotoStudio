@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using BepInEx.Configuration;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -15,7 +16,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private int SortDirection => SortDescending ? -1 : 1;
         public static Vector2 sceneDimensions = new Vector2(480, 270);
         public bool KankyoMode { get; set; } = false;
-        public bool SortDescending { get; set; } = false;
+        private static readonly ConfigEntry<bool> sortDescending;
+        public bool SortDescending
+        {
+            get => sortDescending.Value;
+            set => sortDescending.Value = value;
+        }
         public List<Scene> SceneList { get; private set; } = new List<Scene>();
         public int CurrentDirectoryIndex { get; private set; } = -1;
         public string CurrentDirectoryName => CurrentDirectoryList[CurrentDirectoryIndex];
@@ -28,7 +34,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             get => CurrentDirectoryIndex == 0 ? CurrentBasePath : Path.Combine(CurrentBasePath, CurrentDirectoryName);
         }
-        public SortMode CurrentSortMode { get; private set; } = SortMode.Name;
+        private static readonly ConfigEntry<SortMode> currentSortMode;
+        public SortMode CurrentSortMode
+        {
+            get => currentSortMode.Value;
+            private set => currentSortMode.Value = value;
+        }
         public int CurrentSceneIndex { get; private set; } = -1;
         public Scene CurrentScene
         {
@@ -41,6 +52,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public enum SortMode
         {
             Name, DateCreated, DateModified
+        }
+
+        static SceneManager()
+        {
+            sortDescending = Configuration.Config.Bind<bool>(
+                "SceneManager", "SortDescending",
+                false,
+                "Sort scenes descending (Z-A)"
+            );
+
+            currentSortMode = Configuration.Config.Bind<SortMode>(
+                "SceneManager", "SortMode",
+                SortMode.Name,
+                "Scene sorting mode"
+            );
         }
 
         public SceneManager(MeidoPhotoStudio meidoPhotoStudio)

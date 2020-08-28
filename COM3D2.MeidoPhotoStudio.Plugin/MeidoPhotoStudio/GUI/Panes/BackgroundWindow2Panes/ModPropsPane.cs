@@ -24,7 +24,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private bool modFilter = false;
         private bool baseFilter = false;
         private int currentListCount;
-        private bool isModsOnly = Configuration.ModItemsOnly;
+        private bool isModsOnly = PropManager.ModItemsOnly;
         private enum FilterType
         {
             None, Mod, Base
@@ -34,7 +34,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.propManager = propManager;
 
-            this.modItemsReady = MenuFileUtility.MenuFilesReady || Configuration.ModItemsOnly;
+            this.modItemsReady = MenuFileUtility.MenuFilesReady || PropManager.ModItemsOnly;
 
             string[] listItems = Translation.GetArray("clothing", MenuFileUtility.MenuCategories);
 
@@ -77,9 +77,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.propCategoryDropdown.SetDropdownItems(listItems);
 
-
-            this.modFilterToggle.Label = Translation.Get("background2Window", "modsToggle");
-            this.baseFilterToggle.Label = Translation.Get("background2Window", "baseToggle");
+            if (!isModsOnly)
+            {
+                this.modFilterToggle.Label = Translation.Get("background2Window", "modsToggle");
+                this.baseFilterToggle.Label = Translation.Get("background2Window", "baseToggle");
+            }
         }
 
         public override void Draw()

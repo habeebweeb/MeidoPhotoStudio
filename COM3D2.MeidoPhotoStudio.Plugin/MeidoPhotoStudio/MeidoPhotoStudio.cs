@@ -42,7 +42,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void Start()
         {
             Constants.Initialize();
-            Translation.Initialize(Configuration.CurrentLanguage);
+            Translation.Initialize(Translation.CurrentLanguage);
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
@@ -402,6 +402,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                         GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
                         dailyPanel?.SetActive(true);
+                        Configuration.Config.Save();
                     },
                     f_dgCancel: () =>
                     {

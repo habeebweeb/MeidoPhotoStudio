@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
+using BepInEx.Configuration;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -11,6 +12,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class PropManager : IManager, ISerializable
     {
         public const string header = "PROP";
+        private static readonly ConfigEntry<bool> modItemsOnly;
+        public static bool ModItemsOnly => modItemsOnly.Value;
         private MeidoManager meidoManager;
         private static bool cubeActive = true;
         public static bool CubeActive
@@ -55,6 +58,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         public int CurrentDoguIndex { get; private set; } = 0;
         public DragPointDogu CurrentDogu => DoguCount == 0 ? null : doguList[CurrentDoguIndex];
+
+        static PropManager()
+        {
+            modItemsOnly = Configuration.Config.Bind<bool>(
+                "Prop", "ModItemsOnly",
+                false,
+                "Disable waiting for and loading base game clothing"
+            );
+        }
 
         public PropManager(MeidoManager meidoManager)
         {
@@ -536,6 +548,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void OnDoguListChange()
         {
             this.DoguListChange?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void SaveConfiguration()
+        {
+
         }
     }
 }

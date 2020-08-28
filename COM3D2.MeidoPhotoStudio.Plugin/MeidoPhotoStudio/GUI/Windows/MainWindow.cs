@@ -52,7 +52,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             ReloadTranslationButton = new Button("Reload Translation");
             ReloadTranslationButton.ControlEvent += (s, a) =>
             {
-                Translation.ReloadTranslation();
+                Translation.ReinitializeTranslation();
             };
             windowRect.width = 240f;
             windowRect.height = Screen.height * 0.9f;
