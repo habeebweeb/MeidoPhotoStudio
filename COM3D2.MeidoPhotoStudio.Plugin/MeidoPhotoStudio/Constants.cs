@@ -687,13 +687,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (string modMenuFile in GameUty.ModOnlysMenuFiles)
             {
                 ModItem modItem;
-                if (cache.Has(modMenuFile))
-                {
-                    modItem = cache[modMenuFile];
-                }
+                if (cache.Has(modMenuFile)) modItem = cache[modMenuFile];
                 else
                 {
-                    modItem = new ModItem() { MenuFile = modMenuFile, IsMod = true };
+                    modItem = ModItem.Mod(modMenuFile);
                     MenuFileUtility.ParseMenuFile(modMenuFile, modItem);
                     cache[modMenuFile] = modItem;
                 }
@@ -704,13 +701,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             foreach (string modFile in Menu.GetModFiles())
             {
-                ModItem modItem = new ModItem()
-                {
-                    MenuFile = modFile,
-                    IsMod = true,
-                    IsOfficialMod = true,
-                    Priority = 1000f
-                };
+                ModItem modItem = ModItem.OfficialMod(modFile);
                 if (ParseModMenuFile(modFile, modItem))
                 {
                     ModPropDict[modItem.Category].Add(modItem);

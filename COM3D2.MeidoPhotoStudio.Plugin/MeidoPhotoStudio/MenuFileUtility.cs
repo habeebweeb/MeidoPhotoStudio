@@ -454,10 +454,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        public static GameObject LoadModel(string menuFile)
-        {
-            return LoadModel(new ModItem { MenuFile = menuFile });
-        }
+        public static GameObject LoadModel(string menuFile) => LoadModel(new ModItem(menuFile));
 
         public static GameObject LoadModel(ModItem modItem)
         {
@@ -763,6 +760,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             public float Priority { get; set; }
             public bool IsMod { get; set; }
             public bool IsOfficialMod { get; set; }
+
+            public static ModItem OfficialMod(string menuFile) => new ModItem()
+            {
+                MenuFile = menuFile,
+                IsMod = true,
+                IsOfficialMod = true,
+                Priority = 1000f
+            };
+
+            public static ModItem Mod(string menuFile) => new ModItem()
+            {
+                MenuFile = menuFile,
+                IsMod = true
+            };
+
+            public ModItem() { }
+
+            public ModItem(string menuFile) => MenuFile = menuFile;
 
             public override string ToString()
             {
