@@ -203,13 +203,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get
             {
                 return (this == MeidoUpdateEventArgs.Empty) ||
-                    (this.SelectedMeido == -1 && !this.FromMeido && !this.IsBody);
+                    (this.SelectedMeido == -1 && !this.FromMeido && this.IsBody);
             }
         }
         public int SelectedMeido { get; }
         public bool IsBody { get; }
         public bool FromMeido { get; }
-        public MeidoUpdateEventArgs(int meidoIndex, bool fromMaid = false, bool isBody = true)
+        public MeidoUpdateEventArgs(int meidoIndex = -1, bool fromMaid = false, bool isBody = true)
         {
             this.SelectedMeido = meidoIndex;
             this.IsBody = isBody;
