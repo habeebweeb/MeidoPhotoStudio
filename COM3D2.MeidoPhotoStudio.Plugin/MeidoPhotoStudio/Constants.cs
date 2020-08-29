@@ -234,7 +234,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static void InitializePoses()
         {
             // Load Poses
-            string poseListJson = File.ReadAllText(Path.Combine(configPath, "mm_pose_list.json"));
+            string poseListJson = File.ReadAllText(Path.Combine(configPath, "Database\\mm_pose_list.json"));
             List<SerializePoseList> poseLists = JsonConvert.DeserializeObject<List<SerializePoseList>>(poseListJson);
 
             foreach (SerializePoseList poseList in poseLists)
@@ -433,7 +433,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             List<string> DoguList = DoguDict[customDoguCategories[DoguCategory.Other]];
 
-            string ignoreListPath = Path.Combine(configPath, "bg_ignore_list.json");
+            string ignoreListPath = Path.Combine(configPath, "Database\\bg_ignore_list.json");
             string ignoreListJson = File.ReadAllText(ignoreListPath);
             string[] ignoreList = JsonConvert.DeserializeObject<IEnumerable<string>>(ignoreListJson).ToArray();
 
@@ -462,7 +462,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             // Get cherry picked dogu that I can't find in the game files
-            string doguExtendPath = Path.Combine(configPath, "extra_dogu.json");
+            string doguExtendPath = Path.Combine(configPath, "Database\\extra_dogu.json");
             string doguExtendJson = File.ReadAllText(doguExtendPath);
 
             DoguList.AddRange(JsonConvert.DeserializeObject<IEnumerable<string>>(doguExtendJson));
@@ -589,7 +589,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             MenuDataBase menuDataBase = GameMain.Instance.MenuDataBase;
 
-            string ignoreListJson = File.ReadAllText(Path.Combine(configPath, "bg_ignore_list.json"));
+            string ignoreListJson = File.ReadAllText(Path.Combine(configPath, "Database\\bg_ignore_list.json"));
             string[] ignoreList = JsonConvert.DeserializeObject<IEnumerable<string>>(ignoreListJson).ToArray();
 
             HashSet<string> doguHashSet = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
