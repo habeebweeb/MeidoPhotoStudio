@@ -60,7 +60,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static CustomGizmo Make(Transform target, float scale = 0.25f, GizmoMode mode = GizmoMode.Local)
         {
-            GameObject gizmoGo = new GameObject();
+            GameObject gizmoGo = new GameObject("[MPS Gizmo]");
             gizmoGo.transform.SetParent(target);
 
             CustomGizmo gizmo = gizmoGo.AddComponent<CustomGizmo>();

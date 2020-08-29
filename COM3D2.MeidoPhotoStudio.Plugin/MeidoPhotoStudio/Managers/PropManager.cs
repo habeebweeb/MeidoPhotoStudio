@@ -185,7 +185,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GameObject dogu = MenuFileUtility.LoadModel(modItem);
             string name = modItem.MenuFile;
-            if (modItem.IsOfficialMod) name = Path.GetFileNameWithoutExtension(name);
+            if (modItem.IsOfficialMod) name = Path.GetFileName(name);
             if (dogu != null) AttachDragPoint(dogu, modItem.ToString(), name, new Vector3(0f, 0f, 0.5f));
             return dogu != null;
         }
@@ -195,7 +195,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             MyRoomCustom.PlacementData.Data data = MyRoomCustom.PlacementData.GetData(item.ID);
             GameObject dogu = GameObject.Instantiate(data.GetPrefab());
             string name = Translation.Get("myRoomPropNames", item.PrefabName);
-            if (dogu != null) AttachDragPoint(dogu, item.ToString(), name, new Vector3(0f, 0f, 0.5f));
+            if (dogu != null)
+            {
+                GameObject finalDogu = new GameObject();
+                dogu.transform.SetParent(finalDogu.transform, true);
+                finalDogu.transform.SetParent(GetDeploymentObject().transform, false);
+                AttachDragPoint(finalDogu, item.ToString(), name, new Vector3(0f, 0f, 0.5f));
+            }
             else Utility.LogInfo($"Could not load MyRoomCreative prop '{item.PrefabName}'");
             return dogu != null;
         }
@@ -212,7 +218,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GameObject dogu = GameObject.Instantiate(obj);
                 string name = Translation.Get("bgNames", assetName);
                 dogu.transform.localScale = Vector3.one * 0.1f;
-                AttachDragPoint(dogu, $"BG_{assetName}", name, Vector3.zero);
+                AttachDragPoint(dogu, $"BG_{assetName}", name, new Vector3(0f, 0f, 0.5f));
             }
             return obj != null;
         }
@@ -386,19 +392,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             // TODO: Figure out why some props aren't centred properly
             // Doesn't happen in MM but even after copy pasting the code, it doesn't work :/
-            GameObject deploymentObject = GetDeploymentObject();
-            GameObject finalDogu = new GameObject(name);
-
-            dogu.transform.SetParent(finalDogu.transform, true);
-            finalDogu.transform.SetParent(deploymentObject.transform, false);
-
-            finalDogu.transform.position = position;
+            dogu.name = name;
+            dogu.transform.position = position;
 
             DragPointDogu dragDogu = DragPoint.Make<DragPointDogu>(
                 PrimitiveType.Cube, Vector3.one * 0.12f, DragPoint.LightBlue
             );
-            dragDogu.Initialize(() => finalDogu.transform.position, () => Vector3.zero);
-            dragDogu.Set(finalDogu.transform);
+            dragDogu.Initialize(() => dogu.transform.position, () => Vector3.zero);
+            dragDogu.Set(dogu.transform);
             dragDogu.AddGizmo(scale: 0.45f, mode: CustomGizmo.GizmoMode.World);
             dragDogu.ConstantScale = true;
             dragDogu.Delete += DeleteDogu;
@@ -452,8 +453,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GameObject dogu = dragDogu.MyGameObject;
 
-            Transform attachPointTransform = meido?.IKManager.GetAttachPointTransform(attachPoint)
-                ?? GetDeploymentObject().transform;
+            Transform attachPointTransform = meido?.IKManager.GetAttachPointTransform(attachPoint);
+            // ?? GetDeploymentObject().transform;
 
             dragDogu.attachPointInfo = new AttachPointInfo(
                 attachPoint: meido == null ? AttachPoint.None : attachPoint,
@@ -489,7 +490,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (dogu.attachPointInfo.AttachPoint != AttachPoint.None)
                 {
-                    dogu.MyObject.SetParent(GetDeploymentObject().transform, true);
+                    dogu.MyObject.SetParent(null, /*GetDeploymentObject().transform*/ true);
                 }
             }
         }

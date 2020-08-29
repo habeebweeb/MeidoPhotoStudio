@@ -99,12 +99,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             ApplyDragType();
         }
 
+        private static GameObject DragPointParent() => GameObject.Find("[MPS DragPoint Parent]")
+            ?? new GameObject("[MPS DragPoint Parent]");
+
         public static T Make<T>(PrimitiveType primitiveType, Vector3 scale, Material material) where T : DragPoint
         {
             GameObject dragPoint = GameObject.CreatePrimitive(primitiveType);
             dragPoint.transform.localScale = scale;
             dragPoint.GetComponent<Renderer>().material = material;
             dragPoint.layer = 8;
+
+            dragPoint.transform.SetParent(DragPointParent().transform, true);
 
             return dragPoint.AddComponent<T>();
         }
@@ -118,6 +123,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public virtual void Set(Transform myObject)
         {
             this.MyObject = myObject;
+            this.gameObject.name = $"[MPS DragPoint: {this.MyObject.name}]";
         }
 
         public virtual void AddGizmo(float scale = 0.25f, GizmoMode mode = GizmoMode.Local)

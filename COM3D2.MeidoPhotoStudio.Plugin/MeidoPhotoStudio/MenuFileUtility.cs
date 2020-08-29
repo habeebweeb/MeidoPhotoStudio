@@ -450,6 +450,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     array11[num23] = material;
                 }
                 skinnedMeshRenderer.materials = array11;
+                gameObject.AddComponent<Animation>();
                 return gameObject;
             }
         }
