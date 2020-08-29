@@ -151,6 +151,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                             parent.Maid.status.guid,
                             parent.Slot
                         );
+                        dogu.attachPointInfo = info;
 
                         obj.position = position;
                         obj.localScale = scale;
