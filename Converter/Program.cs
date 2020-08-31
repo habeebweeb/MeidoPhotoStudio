@@ -4,40 +4,93 @@ using System.Collections.Generic;
 using System.Linq;
 using Ionic.Zlib;
 using ExIni;
+using BepInEx;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
-namespace Converter
+namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class Program
+    [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
+    public class SceneConverter : BaseUnityPlugin
     {
-        private static StreamWriter writer;
-        public static void Main(string[] args)
+        private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio.converter";
+        public const string pluginName = "MeidoPhotoStudio Converter";
+        public const string pluginVersion = "0.0.0";
+        private const string converterDirectoryName = "Converter";
+        private static string configPath = Path.Combine(Paths.ConfigPath, converterDirectoryName);
+        private bool active = false;
+        private Rect windowRect = new Rect(30f, 30f, 300f, 200f);
+
+        private void Awake()
         {
-            string writerPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log.txt");
-            IniFile mmIniFile = IniFile.FromFile(args[0]);
+            DontDestroyOnLoad(this);
+
+            if (!Directory.Exists(configPath)) Directory.CreateDirectory(configPath);
+        }
+
+        private void Start() => UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
+        {
+            int index = scene.buildIndex;
+            active = index == 9 || index == 3;
+        }
+
+        private void OnGUI()
+        {
+            if (active)
+            {
+                windowRect.width = 300f;
+                windowRect.height = 200f;
+                windowRect.x = UnityEngine.Mathf.Clamp(windowRect.x, 0, Screen.width - windowRect.width);
+                windowRect.y = UnityEngine.Mathf.Clamp(windowRect.y, 0, Screen.height - windowRect.height);
+                windowRect = GUI.Window(0xEA4040, windowRect, GUIFunc, "MeidoPhotoStudio Converter");
+            }
+        }
+
+        private void GUIFunc(int id)
+        {
+            if (GUILayout.Button("Convert ModifiedMM")) ProcessModifedMM();
+            if (GUILayout.Button("Convert ModifiedMM (Scene Manager)")) ProcessModifiedMMPng();
+            // GUILayout.Button("Convert MultipleMaids");
+        }
+
+        private void ProcessModifiedMMPng()
+        {
+            string modPath = Path.Combine(Paths.GameRootPath, "Mod");
+            string scenePath = Path.Combine(modPath, "MultipleMaidsScene");
+            string kankyoPath = Path.Combine(modPath, "MultipleMaidsScene");
+        }
+
+        private string GetModifiedMMSceneData(string pngPath)
+        {
+            return String.Empty;
+        }
+
+        private void ProcessModifedMM()
+        {
+            string sybarisPath = Path.Combine(Paths.GameRootPath, "Sybaris");
+            string iniPath = Utility.CombinePaths(sybarisPath, "UnityInjector", "Config", "MultipleMaids.ini");
+
+            IniFile mmIniFile = IniFile.FromFile(iniPath);
 
             IniSection sceneSection = mmIniFile.GetSection("scene");
 
-            using (writer = new StreamWriter(writerPath))
+            if (sceneSection != null)
             {
-                if (sceneSection != null)
+                foreach (IniKey key in sceneSection.Keys)
                 {
-                    foreach (IniKey key in sceneSection.Keys)
-                    {
-                        ProcessScene(key);
-                    }
+                    if (key.Key.StartsWith("ss")) continue;
+                    string sceneData = key.Value;
+                    ProcessScene(sceneData);
                 }
             }
         }
 
-        public static void ProcessScene(IniKey sceneKey)
+        public static void ProcessScene(string sceneData)
         {
-            if (sceneKey.Key.StartsWith("ss")) return;
-
-            string sceneData = sceneKey.Value;
 
             if (string.IsNullOrEmpty(sceneData)) return;
-
-            writer.WriteLine($"Deserialize {sceneKey.Key}");
 
             string[] strArray1 = sceneData.Split('_');
             string[] strArray2 = strArray1[1].Split(';');
@@ -68,10 +121,6 @@ namespace Converter
             if (!int.TryParse(strArray3[2], out bgIndex))
             {
                 bgAsset = strArray3[2].Replace(" ", "_");
-            }
-            else
-            {
-                writer.WriteLine($"No BG string: {bgIndex}");
             }
 
             Quaternion bgRotation = Quaternion.Euler(
@@ -199,8 +248,11 @@ namespace Converter
                 float vignetteBlurSpread = float.Parse(strArray4[11]);
                 float vignetteChromaticAberration = float.Parse(strArray4[12]);
 
-                // bokashi (TODO: implement in MPS)
+                // bokashi 
+                // TODO: implement bokashi in MPS
                 float bokashi = float.Parse(strArray4[13]);
+
+                // TODO: implement sepia in MPS too
 
                 if (strArray4.Length > 15)
                 {
@@ -274,8 +326,6 @@ namespace Converter
                         }
                     }
 
-                    writer.WriteLine(assetName);
-
                     Vector3 position = new Vector3(
                         float.Parse(assetParts[4]), float.Parse(assetParts[5]), float.Parse(assetParts[6])
                     );
@@ -299,7 +349,7 @@ namespace Converter
                 for (int j = 0; j < 40; j++)
                 {
                     string fingerString = maidData[j];
-                    fingerRotation.Add(Quaternion.FromEulerString(fingerString));
+                    fingerRotation.Add(UnityStructExtensions.EulerString(fingerString));
                 }
 
                 // TODO: Other maid related things
@@ -325,61 +375,22 @@ namespace Converter
         }
     }
 
-    public struct Vector3
+    public static class UnityStructExtensions
     {
-        public float x, y, z;
-        public Vector3(float x, float y, float z)
+        public static Quaternion EulerString(string euler)
         {
-            this.x = x;
-            this.y = y;
-            this.z = z;
+            string[] data = euler.Split(',');
+            return Quaternion.Euler(
+                float.Parse(data[0]), float.Parse(data[1]), float.Parse(data[2])
+            );
         }
-        public static Vector3 FromString(string vector3)
+
+        public static Vector3 Vector3String(string vector3)
         {
             string[] data = vector3.Split(',');
             return new Vector3(
                 float.Parse(data[0]), float.Parse(data[1]), float.Parse(data[2])
             );
-        }
-    }
-
-    public struct Quaternion
-    {
-        public const float DegToRad = MathF.PI / 180f;
-        public float x, y, z, w;
-
-        public Quaternion(float x, float y, float z, float w)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
-        }
-
-        public static Quaternion Euler(float x, float y, float z)
-        {
-            System.Numerics.Quaternion q = System.Numerics.Quaternion.CreateFromYawPitchRoll(
-                y * DegToRad, x * DegToRad, z * DegToRad
-            );
-            return new Quaternion(q.X, q.Y, q.Z, q.W);
-        }
-
-        public static Quaternion FromEulerString(string euler)
-        {
-            Vector3 components = Vector3.FromString(euler);
-            return Euler(components.x, components.y, components.z);
-        }
-    }
-
-    public struct Color
-    {
-        public float r, g, b, a;
-        public Color(float r, float g, float b, float a)
-        {
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            this.a = a;
         }
     }
 }
