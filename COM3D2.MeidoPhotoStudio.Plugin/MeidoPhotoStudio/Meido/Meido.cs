@@ -452,7 +452,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 string faceKey = Utility.GP01FbFaceHash(morph, hash);
                 try
                 {
-                    float value = blendValues[(int)morph.hash[hash]];
+                    float value = blendValues[(int)morph.hash[faceKey]];
                     binaryWriter.Write(hash);
                     binaryWriter.Write(value);
                 }
