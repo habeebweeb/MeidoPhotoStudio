@@ -142,8 +142,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Bone[] bones = {
                 Bone.Hip, Bone.Pelvis, Bone.Spine, Bone.Spine0a, Bone.Spine1, Bone.Spine1a, Bone.Neck,
                 Bone.ClavicleL, Bone.ClavicleR, Bone.UpperArmL, Bone.UpperArmR, Bone.ForearmL, Bone.ForearmR,
-                Bone.ForearmL, Bone.ForearmR, Bone.ThighL, Bone.ThighR, Bone.CalfL, Bone.CalfR,
-                Bone.HandL, Bone.HandR, Bone.FootL, Bone.FootR
+                Bone.ThighL, Bone.ThighR, Bone.CalfL, Bone.CalfR, Bone.HandL, Bone.HandR, Bone.FootL, Bone.FootR
             };
             for (Bone bone = Bone.Finger0L; bone <= Bone.Toe2NubR; ++bone)
             {
@@ -168,8 +167,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Bone[] single = new[] { Bone.Pelvis, Bone.Spine, Bone.Spine0a, Bone.Spine1, Bone.Spine1a, Bone.Neck };
             Bone[] pair = new[] {
                 Bone.ClavicleL, Bone.ClavicleR, Bone.UpperArmL, Bone.UpperArmR, Bone.ForearmL, Bone.ForearmR,
-                Bone.ForearmL, Bone.ForearmR, Bone.ThighL, Bone.ThighR, Bone.CalfL, Bone.CalfR,
-                Bone.HandL, Bone.HandR, Bone.FootL, Bone.FootR
+                Bone.ThighL, Bone.ThighR, Bone.CalfL, Bone.CalfR, Bone.HandL, Bone.HandR, Bone.FootL, Bone.FootR
             };
 
             List<Vector3> singleRotations = single.Select(bone => BoneTransform[bone].eulerAngles).ToList();
