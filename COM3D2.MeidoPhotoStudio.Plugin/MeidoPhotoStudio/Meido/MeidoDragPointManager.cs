@@ -144,13 +144,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Bone.ClavicleL, Bone.ClavicleR, Bone.UpperArmL, Bone.UpperArmR, Bone.ForearmL, Bone.ForearmR,
                 Bone.ThighL, Bone.ThighR, Bone.CalfL, Bone.CalfR, Bone.HandL, Bone.HandR, Bone.FootL, Bone.FootR
             };
+            int handIndex = Array.IndexOf(bones, Bone.CalfR);
             for (Bone bone = Bone.Finger0L; bone <= Bone.Toe2NubR; ++bone)
             {
                 BoneTransform[bone].localRotation = binaryReader.ReadQuaternion();
             }
-            foreach (Bone bone in bones)
+            for (int i = 0; i < bones.Length; i++)
             {
-                BoneTransform[bone].rotation = binaryReader.ReadQuaternion();
+                Bone bone = bones[i];
+                Quaternion rotation = binaryReader.ReadQuaternion();
+                if (i > handIndex) BoneTransform[bone].localRotation = rotation;
+                else BoneTransform[bone].rotation = rotation;
             }
             BoneTransform[Bone.Hip].position = binaryReader.ReadVector3();
         }
