@@ -135,6 +135,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (sceneBinary == null) return;
 
+
+            string header = string.Empty;
+            string previousHeader = string.Empty;
+
             using (MemoryStream memoryStream = new MemoryStream(sceneBinary))
             using (BinaryReader binaryReader = new BinaryReader(memoryStream, System.Text.Encoding.UTF8))
             {
@@ -153,9 +157,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     }
 
                     binaryReader.ReadInt32(); // Number of Maids
-
-                    string previousHeader = string.Empty;
-                    string header;
 
                     while ((header = binaryReader.ReadString()) != "END")
                     {
@@ -179,14 +180,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                             case EffectManager.header:
                                 effectManager.Deserialize(binaryReader);
                                 break;
-                            default: throw new Exception($"Unknown header '{header}'. Last {previousHeader}");
+                            default: throw new Exception($"Unknown header '{header}'");
                         }
                         previousHeader = header;
                     }
                 }
                 catch (Exception e)
                 {
-                    Utility.LogError($"Failed to deserialize scene '{filePath}' because {e.Message}");
+                    Utility.LogError(
+                        $"Failed to deserialize scene '{filePath}' because {e.Message}"
+                        + $"\nCurrent header: '{header}'. Last header: '{previousHeader}'"
+                    );
                     return;
                 }
             }
