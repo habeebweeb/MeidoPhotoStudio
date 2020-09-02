@@ -65,6 +65,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             binaryWriter.Write(header);
             // Only true for MM scenes converted to MPS scenes
             binaryWriter.Write(false);
+            binaryWriter.Write(Meido.meidoDataVersion);
             binaryWriter.Write(ActiveMeidoList.Count);
             foreach (Meido meido in ActiveMeidoList)
             {
@@ -75,6 +76,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Deserialize(System.IO.BinaryReader binaryReader)
         {
             bool isMMScene = binaryReader.ReadBoolean();
+            int dataVersion = binaryReader.ReadInt32();
             int numberOfMaids = binaryReader.ReadInt32();
             for (int i = 0; i < numberOfMaids; i++)
             {
@@ -85,7 +87,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     continue;
                 }
                 Meido meido = ActiveMeidoList[i];
-                meido.Deserialize(binaryReader, isMMScene);
+                meido.Deserialize(binaryReader, dataVersion, isMMScene);
             }
         }
 

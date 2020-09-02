@@ -11,7 +11,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class Meido : ISerializable
     {
-        private const int maxMaids = 12;
+        public const int meidoDataVersion = 1000;
         public static readonly PoseInfo DefaultPose =
             new PoseInfo(Constants.PoseGroupList[0], Constants.PoseDict[Constants.PoseGroupList[0]][0]);
         public static readonly string defaultFaceBlendSet = "通常";
@@ -470,9 +470,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             binaryWriter.Write("END_FACE");
         }
 
-        public void Deserialize(BinaryReader binaryReader) => Deserialize(binaryReader, false);
+        public void Deserialize(BinaryReader binaryReader) => Deserialize(binaryReader, meidoDataVersion, false);
 
-        public void Deserialize(BinaryReader binaryReader, bool mmScene)
+        public void Deserialize(BinaryReader binaryReader, int dataVersion, bool mmScene)
         {
             Maid.GetAnimation().Stop();
             binaryReader.ReadInt64(); // meido buffer length
