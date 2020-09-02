@@ -17,7 +17,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
         public const string pluginName = "MeidoPhotoStudio";
         public const string pluginVersion = "0.0.0";
-        public const int sceneVersion = 1100;
+        public const int sceneVersion = 1000;
         public const int kankyoMagic = -765;
         public static string pluginString = $"{pluginName} {pluginVersion}";
         private WindowManager windowManager;
