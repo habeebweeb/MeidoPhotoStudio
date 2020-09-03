@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,11 +55,18 @@ namespace COM3D2.MeidoPhotoStudio.Converter
             "namida", "tear1", "tear2", "tear3", "shock", "yodare", "hoho", "hoho2", "hohos", "hohol",
             "toothoff", "nosefook"
         };
+        private static readonly string[] mpnAttachProps = {
+            /* "", "", "", "", "", "", "", "", "", */
+            "kousokuu_tekaseone_i_.menu", "kousokuu_tekasetwo_i_.menu", "kousokul_ashikaseup_i_.menu",
+            "kousokuu_tekasetwo_i_.menu", "kousokul_ashikasedown_i_.menu", "kousokuu_tekasetwodown_i_.menu",
+            "kousokuu_ushirode_i_.menu", "kousokuu_smroom_haritsuke_i_.menu"
+        };
         private static readonly int[] bodyRotations =
         {
             71, 44, 40, 41, 42, 43, 57, 68, 69, 46, 49, 47, 50, 52, 55, 53, 56, 45, 48, 51, 54
         };
         public const int sceneVersion = 1000;
+        public const int meidoDataVersion = 1000;
         public const int kankyoMagic = -765;
         private static BepInEx.Logging.ManualLogSource Log;
         private static readonly int faceToggleIndex = Array.IndexOf(faceKeys, "tangopen") + 1;
@@ -268,6 +275,8 @@ namespace COM3D2.MeidoPhotoStudio.Converter
             // MM scene converted to MPS
             binaryWriter.Write(true);
 
+            binaryWriter.Write(meidoDataVersion);
+
             int numberOfMaids = strArray2.Length;
 
             binaryWriter.Write(numberOfMaids);
@@ -357,6 +366,44 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                     tempWriter.Write(false);
                     tempWriter.Write(false);
                     tempWriter.Write(false);
+
+                    string kousokuUpperMenu = string.Empty;
+                    string kousokuLowerMenu = string.Empty;
+
+                    int mpnIndex = int.Parse(maidData[65].Split(',')[0]);
+
+                    // MM can attach accvag, accanl and handitem stuff as well as kousoku_upper/lower
+                    // MPS attach prop is preferred for non kousoku_upper/lower props because unlike kousoku_upper/lower
+                    // props, accvag etc. props attach only to a single place.
+                    if (mpnIndex >= 9 && mpnIndex <= 16)
+                    {
+                        int actualIndex = mpnIndex - 9;
+                        if (mpnIndex == 12)
+                        {
+                            kousokuUpperMenu = mpnAttachProps[actualIndex];
+                            kousokuLowerMenu = mpnAttachProps[actualIndex - 1];
+                        }
+                        else if (mpnIndex == 13)
+                        {
+                            kousokuUpperMenu = mpnAttachProps[actualIndex + 1];
+                            kousokuLowerMenu = mpnAttachProps[actualIndex];
+                        }
+                        else
+                        {
+                            if (mpnIndex > 13) actualIndex += 1;
+                            string kousokuMenu = mpnAttachProps[actualIndex];
+                            if (mpnAttachProps[actualIndex][7] == 'u') kousokuUpperMenu = kousokuMenu;
+                            else kousokuLowerMenu = kousokuMenu;
+                        }
+                    }
+
+                    bool kousokuUpper = !string.IsNullOrEmpty(kousokuUpperMenu);
+                    tempWriter.Write(kousokuUpper);
+                    if (kousokuUpper) tempWriter.Write(kousokuUpperMenu);
+
+                    bool kousokuLower = !string.IsNullOrEmpty(kousokuLowerMenu);
+                    tempWriter.Write(kousokuLower);
+                    if (kousokuLower) tempWriter.Write(kousokuLowerMenu);
 
                     binaryWriter.Write(memoryStream.Length);
                     binaryWriter.Write(memoryStream.ToArray());
