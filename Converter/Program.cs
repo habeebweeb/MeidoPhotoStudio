@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,7 +59,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
         {
             71, 44, 40, 41, 42, 43, 57, 68, 69, 46, 49, 47, 50, 52, 55, 53, 56, 45, 48, 51, 54
         };
-        public const int sceneVersion = 1100;
+        public const int sceneVersion = 1000;
         public const int kankyoMagic = -765;
         private static BepInEx.Logging.ManualLogSource Log;
         private static readonly int faceToggleIndex = Array.IndexOf(faceKeys, "tangopen") + 1;
