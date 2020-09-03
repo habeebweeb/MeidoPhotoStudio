@@ -154,6 +154,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (Body.isLoadedBody)
             {
+                DetachAllMpnAttach();
                 Body.jbMuneL.enabled = true;
                 Body.jbMuneR.enabled = true;
             }
@@ -343,6 +344,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Maid.AllProcProp();
         }
 
+        public void SetMpnProp(MpnAttachProp prop, bool detach)
+        {
+            if (detach) Maid.ResetProp(prop.Tag, false);
+            else Maid.SetProp(prop.Tag, prop.MenuFile, 0, true);
+            Maid.AllProcProp();
+        }
+
+        public void DetachAllMpnAttach(bool unload = false)
+        {
+            Maid.ResetProp(MPN.kousoku_lower, false);
+            Maid.ResetProp(MPN.kousoku_upper, false);
+            Maid.AllProcProp();
+        }
+
         private CacheBoneDataArray GetCacheBoneData()
         {
             CacheBoneDataArray cache = this.Maid.gameObject.GetComponent<CacheBoneDataArray>();
@@ -433,6 +448,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 tempWriter.Write(CurlingBack);
                 tempWriter.Write(PantsuShift);
 
+                bool hasKousokuUpper = Body.GetSlotLoaded(SlotID.kousoku_upper);
+                tempWriter.Write(hasKousokuUpper);
+                if (hasKousokuUpper) tempWriter.Write(Maid.GetProp(MPN.kousoku_upper).strTempFileName);
+
+                bool hasKousokuLower = Body.GetSlotLoaded(SlotID.kousoku_lower);
+                tempWriter.Write(hasKousokuLower);
+                if (hasKousokuLower) tempWriter.Write(Maid.GetProp(MPN.kousoku_lower).strTempFileName);
+
                 binaryWriter.Write(memoryStream.Length);
                 binaryWriter.Write(memoryStream.ToArray());
             }
@@ -475,6 +498,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Deserialize(BinaryReader binaryReader, int dataVersion, bool mmScene)
         {
             Maid.GetAnimation().Stop();
+            DetachAllMpnAttach();
+
             binaryReader.ReadInt64(); // meido buffer length
             // transform
             Maid.transform.position = binaryReader.ReadVector3();
@@ -526,6 +551,26 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (CurlingFront != curlingFront) SetCurling(Curl.front, curlingFront);
             if (CurlingBack != curlingBack) SetCurling(Curl.back, curlingBack);
             SetCurling(Curl.shift, binaryReader.ReadBoolean());
+
+            bool hasKousokuUpper = binaryReader.ReadBoolean();
+            if (hasKousokuUpper)
+            {
+                try
+                {
+                    SetMpnProp(new MpnAttachProp(MPN.kousoku_upper, binaryReader.ReadString()), false);
+                }
+                catch { }
+            }
+
+            bool hasKousokuLower = binaryReader.ReadBoolean();
+            if (hasKousokuLower)
+            {
+                try
+                {
+                    SetMpnProp(new MpnAttachProp(MPN.kousoku_lower, binaryReader.ReadString()), false);
+                }
+                catch { }
+            }
             // OnUpdateMeido();
         }
 

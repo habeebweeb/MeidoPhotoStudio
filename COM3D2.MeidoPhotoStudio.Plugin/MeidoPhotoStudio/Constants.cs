@@ -14,6 +14,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class Constants
     {
         private static bool beginHandItemInit;
+        private static bool beginMpnAttachInit;
         public const string customPoseDirectory = "Custom Poses";
         public const string customHandDirectory = "Hand Presets";
         public const string sceneDirectory = "Scenes";
@@ -57,9 +58,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             = new Dictionary<string, List<ModItem>>(StringComparer.InvariantCultureIgnoreCase);
         public static readonly List<string> SceneDirectoryList = new List<string>();
         public static readonly List<string> KankyoDirectoryList = new List<string>();
+        public static readonly List<MpnAttachProp> MpnAttachPropList = new List<MpnAttachProp>();
         public static int CustomPoseGroupsIndex { get; private set; } = -1;
         public static int MyRoomCustomBGIndex { get; private set; } = -1;
         public static bool HandItemsInitialized { get; private set; } = false;
+        public static bool MpnAttachInitialized { get; private set; } = false;
         public static bool MenuFilesInitialized { get; private set; } = false;
         public static event EventHandler<MenuFilesEventArgs> MenuFilesChange;
         public static event EventHandler<CustomPoseEventArgs> customPoseChange;
@@ -106,6 +109,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             InitializeBGs();
             InitializeDogu();
             InitializeMyRoomProps();
+            InitializeMpnAttachProps();
         }
 
         public static void AddPose(byte[] anmBinary, string filename, string directory)
@@ -627,8 +631,43 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
 
-            OnMenuFilesChange(MenuFilesEventArgs.HandItems);
+            OnMenuFilesChange(MenuFilesEventArgs.EventType.HandItems);
             HandItemsInitialized = true;
+        }
+
+        private static void InitializeMpnAttachProps()
+        {
+            if (MpnAttachInitialized) return;
+
+            if (!MenuFileUtility.MenuFilesReady)
+            {
+                if (!beginMpnAttachInit) MenuFileUtility.MenuFilesReadyChange += (s, a) => InitializeMpnAttachProps();
+                beginMpnAttachInit = true;
+                return;
+            }
+
+            MenuDataBase menuDataBase = GameMain.Instance.MenuDataBase;
+
+            MPN[] attachMpn = { MPN.kousoku_lower, MPN.kousoku_upper };
+
+            for (int i = 0; i < menuDataBase.GetDataSize(); i++)
+            {
+                menuDataBase.SetIndex(i);
+                MPN itemMpn = (MPN)menuDataBase.GetCategoryMpn();
+
+                if (attachMpn.Any(mpn => mpn == itemMpn))
+                {
+                    string menuFileName = menuDataBase.GetMenuFileName();
+                    string mpnTag = menuDataBase.GetCategoryMpnText();
+
+                    if (menuDataBase.GetBoDelOnly() || menuFileName.EndsWith("_del.menu")) continue;
+
+                    MpnAttachPropList.Add(new MpnAttachProp(itemMpn, menuFileName));
+                }
+            }
+
+            OnMenuFilesChange(MenuFilesEventArgs.EventType.MpnAttach);
+            MpnAttachInitialized = true;
         }
 
         private static void InitializeMyRoomProps()
@@ -803,9 +842,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             File.WriteAllLines(Path.Combine(configPath, name), list.ToArray());
         }
 
-        private static void OnMenuFilesChange(MenuFilesEventArgs args)
+        private static void OnMenuFilesChange(MenuFilesEventArgs.EventType eventType)
         {
-            MenuFilesChange?.Invoke(null, args);
+            MenuFilesChange?.Invoke(null, new MenuFilesEventArgs(eventType));
         }
 
         private class SerializePoseList
@@ -820,10 +859,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public EventType Type { get; }
         public enum EventType
         {
-            HandItems, MenuFiles
+            HandItems, MenuFiles, MpnAttach
         }
-        public static MenuFilesEventArgs HandItems => new MenuFilesEventArgs(EventType.HandItems);
-        public static MenuFilesEventArgs MenuFiles => new MenuFilesEventArgs(EventType.MenuFiles);
         public MenuFilesEventArgs(EventType type) => this.Type = type;
     }
 
@@ -835,6 +872,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.Path = path;
             this.Category = category;
+        }
+    }
+
+    public struct MpnAttachProp
+    {
+        public MPN Tag { get; }
+        public string MenuFile { get; }
+
+        public MpnAttachProp(MPN tag, string menuFile)
+        {
+            this.Tag = tag;
+            this.MenuFile = menuFile;
         }
     }
 }

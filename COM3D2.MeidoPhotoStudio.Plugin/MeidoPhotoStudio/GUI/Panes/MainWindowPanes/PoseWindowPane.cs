@@ -13,6 +13,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private SavePosePane savePosePane;
         private MaidSwitcherPane maidSwitcherPane;
         private MaidFaceLookPane maidFaceLookPane;
+        private MpnAttachPropPane mpnAttachPropPane;
         private MaidDressingPane maidDressingPane;
         private CopyPosePane copyPosePane;
         private HandPresetPane handPresetPane;
@@ -43,6 +44,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.savePoseToggle = new Toggle(Translation.Get("posePane", "saveToggle"));
             this.savePoseToggle.ControlEvent += (s, a) => savePoseMode = !savePoseMode;
+
+            this.mpnAttachPropPane = new MpnAttachPropPane(this.meidoManager);
 
             this.maidDressingPane = AddPane(new MaidDressingPane(meidoManager));
 
@@ -88,6 +91,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (savePoseMode) savePosePane.Draw();
             else maidFaceLookPane.Draw();
+
+            mpnAttachPropPane.Draw();
 
             maidDressingPane.Draw();
 
