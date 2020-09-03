@@ -458,7 +458,8 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                     else if (assetName.StartsWith("MYR_"))
                     {
                         // MM 23.0+ my room creative prop
-                        PlacementData.Data data = myrAssetNameToData[assetName];
+                        int assetID = int.Parse(assetName.Replace("MYR_", string.Empty));
+                        PlacementData.Data data = PlacementData.GetData(assetID);
                         string asset = string.IsNullOrEmpty(data.assetName) ? data.resourceName : data.assetName;
 
                         assetName = $"{assetName}#{asset}";
