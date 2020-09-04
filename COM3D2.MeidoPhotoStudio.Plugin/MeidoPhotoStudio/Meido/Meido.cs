@@ -515,8 +515,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             CachedPose = PoseInfo.Deserialize(binaryReader);
             // eye direction
-            Body.quaDefEyeL = DefaultEyeRotL * binaryReader.ReadQuaternion();
-            Body.quaDefEyeR = DefaultEyeRotR * binaryReader.ReadQuaternion();
+            Body.quaDefEyeL = binaryReader.ReadQuaternion() * DefaultEyeRotL;
+            Body.quaDefEyeR = binaryReader.ReadQuaternion() * DefaultEyeRotR;
             // free look
             FreeLook = binaryReader.ReadBoolean();
             Vector3 lookTarget = binaryReader.ReadVector3();
