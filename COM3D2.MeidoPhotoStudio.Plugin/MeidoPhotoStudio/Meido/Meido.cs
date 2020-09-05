@@ -413,7 +413,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 tempWriter.WriteQuaternion(Body.quaDefEyeR * Quaternion.Inverse(DefaultEyeRotR));
                 // free look
                 tempWriter.Write(FreeLook);
-                tempWriter.WriteVector3(Body.offsetLookTarget);
+                if (FreeLook)
+                {
+                    tempWriter.WriteVector3(Body.offsetLookTarget);
+                    tempWriter.WriteVector3(Utility.GetFieldValue<TBody, Vector3>(Body, "HeadEulerAngle"));
+                }
                 // face
                 SerializeFace(tempWriter);
                 // body visible
@@ -519,8 +523,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Body.quaDefEyeR = binaryReader.ReadQuaternion() * DefaultEyeRotR;
             // free look
             FreeLook = binaryReader.ReadBoolean();
-            Vector3 lookTarget = binaryReader.ReadVector3();
-            if (FreeLook) Body.offsetLookTarget = lookTarget;
+            if (FreeLook)
+            {
+                Body.offsetLookTarget = binaryReader.ReadVector3();
+                Utility.SetFieldValue<TBody, Vector3>(Body, "HeadEulerAngleG", Vector3.zero);
+                Utility.SetFieldValue<TBody, Vector3>(Body, "HeadEulerAngle", binaryReader.ReadVector3());
+            }
             // face
             DeserializeFace(binaryReader);
             // body visible
