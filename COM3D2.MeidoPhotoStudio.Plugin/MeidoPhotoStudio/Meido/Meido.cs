@@ -533,8 +533,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (FreeLook)
             {
                 Body.offsetLookTarget = binaryReader.ReadVector3();
-                Utility.SetFieldValue<TBody, Vector3>(Body, "HeadEulerAngleG", Vector3.zero);
-                Utility.SetFieldValue<TBody, Vector3>(Body, "HeadEulerAngle", binaryReader.ReadVector3());
+                // Head angle cannot be resolved with just the offsetLookTarget
+                if (!mmScene)
+                {
+                    Utility.SetFieldValue<TBody, Vector3>(Body, "HeadEulerAngleG", Vector3.zero);
+                    Utility.SetFieldValue<TBody, Vector3>(Body, "HeadEulerAngle", binaryReader.ReadVector3());
+                }
             }
             // face
             DeserializeFace(binaryReader);
