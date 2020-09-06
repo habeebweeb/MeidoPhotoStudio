@@ -191,6 +191,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         $"Failed to deserialize scene '{filePath}' because {e.Message}"
                         + $"\nCurrent header: '{header}'. Last header: '{previousHeader}'"
                     );
+                    Utility.LogError(e.StackTrace);
                     return;
                 }
             }
