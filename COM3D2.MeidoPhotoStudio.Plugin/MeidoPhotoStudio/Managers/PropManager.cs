@@ -95,6 +95,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Dictionary<string, string> modToModPath = null;
             ClearDogu();
             int numberOfProps = binaryReader.ReadInt32();
+
+            int doguIndex = 0;
+
             for (int i = 0; i < numberOfProps; i++)
             {
                 string assetName = binaryReader.ReadString();
@@ -115,7 +118,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Vector3 scale = binaryReader.ReadVector3();
                 if (result)
                 {
-                    DragPointDogu dogu = doguList[i];
+                    DragPointDogu dogu = doguList[doguIndex++];
                     Transform obj = dogu.MyObject;
                     obj.position = position;
                     obj.rotation = rotation;
