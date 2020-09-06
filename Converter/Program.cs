@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -250,16 +250,15 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                 binaryWriter.Write(kankyo ? kankyoMagic : int.Parse(strArray3[1]));
 
                 SerializeEnvironment(strArray3, binaryWriter, kankyo);
-
                 SerializeLights(strArray3, strArray4, strArray5, strArray7, binaryWriter);
-
-                SerializeMessage(strArray3, binaryWriter);
-
                 SerializeEffect(strArray4, binaryWriter);
-
                 SerializeProp(strArray3, strArray6, binaryWriter);
 
-                SerializeMaid(strArray2, binaryWriter);
+                if (!kankyo)
+                {
+                    SerializeMessage(strArray3, binaryWriter);
+                    SerializeMaid(strArray2, binaryWriter);
+                }
 
                 binaryWriter.Write("END");
 
