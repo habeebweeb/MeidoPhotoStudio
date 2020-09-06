@@ -159,7 +159,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (i > localRotationIndex) BoneTransform[bone].localRotation = rotation;
                 else BoneTransform[bone].rotation = rotation;
             }
-            BoneTransform[Bone.Hip].position = binaryReader.ReadVector3();
+            // WHY????
+            GameMain.Instance.StartCoroutine(ApplyHipPosition(binaryReader.ReadVector3()));
+        }
+
+        /* 
+            Somebody smarter than me please help me find a way to do this better T_T
+            inb4 for loop.
+         */
+        private System.Collections.IEnumerator ApplyHipPosition(Vector3 hipPosition)
+        {
+            BoneTransform[Bone.Hip].position = hipPosition;
+            yield return new WaitForEndOfFrame();
+            BoneTransform[Bone.Hip].position = hipPosition;
+            yield return new WaitForEndOfFrame();
+            BoneTransform[Bone.Hip].position = hipPosition;
         }
 
         public Transform GetAttachPointTransform(AttachPoint point)
