@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
@@ -9,6 +10,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         internal static readonly byte[] pngHeader = { 137, 80, 78, 71, 13, 10, 26, 10 };
         internal static readonly byte[] pngEnd = System.Text.Encoding.ASCII.GetBytes("IEND");
+        internal static readonly Regex guidRegEx = new Regex(
+            @"^[a-f0-9]{8}(\-[a-f0-9]{4}){3}\-[a-f0-9]{12}$", RegexOptions.IgnoreCase
+        );
         public static readonly BepInEx.Logging.ManualLogSource Logger
             = BepInEx.Logging.Logger.CreateLogSource(MeidoPhotoStudio.pluginName);
         public enum ModKey
@@ -118,6 +122,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             MouseExposition mouseExposition = MouseExposition.GetObject();
             mouseExposition.SetText(text, time);
+        }
+
+        public static bool IsGuidString(string guid)
+        {
+            if (string.IsNullOrEmpty(guid) || guid.Length != 36) return false;
+            return guidRegEx.IsMatch(guid);
         }
 
         public static string HandItemToOdogu(string menu)
