@@ -105,6 +105,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => isBone;
             set
             {
+                if (!initialized) return;
                 if (isBone != value)
                 {
                     isBone = value;
@@ -121,6 +122,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => active;
             set
             {
+                if (!initialized) return;
                 if (active != value)
                 {
                     active = value;

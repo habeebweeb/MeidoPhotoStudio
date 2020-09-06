@@ -113,7 +113,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.StockNo = stockMaidIndex;
             this.Maid = GameMain.Instance.CharacterMgr.GetStockMaid(stockMaidIndex);
             this.Portrait = Maid.GetThumIcon();
-            Maid.boAllProcPropBUSY = false;
             IKManager = new MeidoDragPointManager(this);
             IKManager.SelectMaid += (s, args) => OnUpdateMeido((MeidoUpdateEventArgs)args);
         }
@@ -157,6 +156,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 DetachAllMpnAttach();
                 Body.jbMuneL.enabled = true;
                 Body.jbMuneR.enabled = true;
+
+                Body.quaDefEyeL = DefaultEyeRotL;
+                Body.quaDefEyeR = DefaultEyeRotR;
             }
 
             Body.MuneYureL(1f);
@@ -178,8 +180,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Maid.SetRot(Vector3.zero);
             Maid.SetPosOffset(Vector3.zero);
             Body.transform.localScale = Vector3.one;
-
-            Maid.DelPrefabAll();
+            Maid.ResetAll();
             Maid.ActiveSlotNo = -1;
         }
 
@@ -516,6 +517,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 int poseBufferLength = binaryReader.ReadInt32();
                 byte[] poseBuffer = binaryReader.ReadBytes(poseBufferLength);
                 GetCacheBoneData().SetFrameBinary(poseBuffer);
+                Body.MuneYureL(0f);
+                Body.MuneYureR(0f);
+                Body.jbMuneL.enabled = false;
+                Body.jbMuneR.enabled = false;
             }
             CachedPose = PoseInfo.Deserialize(binaryReader);
             // eye direction
