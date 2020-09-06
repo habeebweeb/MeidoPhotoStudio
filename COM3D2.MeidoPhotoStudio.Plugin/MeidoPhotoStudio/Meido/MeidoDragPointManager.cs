@@ -144,9 +144,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Bone[] bones = {
                 Bone.Hip, Bone.Pelvis, Bone.Spine, Bone.Spine0a, Bone.Spine1, Bone.Spine1a, Bone.Neck,
                 Bone.ClavicleL, Bone.ClavicleR, Bone.UpperArmL, Bone.UpperArmR, Bone.ForearmL, Bone.ForearmR,
-                Bone.ThighL, Bone.ThighR, Bone.CalfL, Bone.CalfR, Bone.HandL, Bone.HandR, Bone.FootL, Bone.FootR
+                Bone.ThighL, Bone.ThighR, Bone.CalfL, Bone.CalfR, Bone.MuneL, Bone.MuneR, Bone.MuneSubL, Bone.MuneSubR,
+                Bone.HandL, Bone.HandR, Bone.FootL, Bone.FootR
             };
-            int handIndex = Array.IndexOf(bones, Bone.CalfR);
+            int localRotationIndex = Array.IndexOf(bones, Bone.CalfR);
             for (Bone bone = Bone.Finger0L; bone <= Bone.Toe2NubR; ++bone)
             {
                 BoneTransform[bone].localRotation = binaryReader.ReadQuaternion();
@@ -155,7 +156,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Bone bone = bones[i];
                 Quaternion rotation = binaryReader.ReadQuaternion();
-                if (i > handIndex) BoneTransform[bone].localRotation = rotation;
+                if (i > localRotationIndex) BoneTransform[bone].localRotation = rotation;
                 else BoneTransform[bone].rotation = rotation;
             }
             BoneTransform[Bone.Hip].position = binaryReader.ReadVector3();

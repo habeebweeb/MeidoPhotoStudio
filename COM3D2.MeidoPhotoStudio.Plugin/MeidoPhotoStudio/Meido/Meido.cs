@@ -517,11 +517,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 int poseBufferLength = binaryReader.ReadInt32();
                 byte[] poseBuffer = binaryReader.ReadBytes(poseBufferLength);
                 GetCacheBoneData().SetFrameBinary(poseBuffer);
-                Body.MuneYureL(0f);
-                Body.MuneYureR(0f);
-                Body.jbMuneL.enabled = false;
-                Body.jbMuneR.enabled = false;
             }
+
+            Body.MuneYureL(0f);
+            Body.MuneYureR(0f);
+            Body.jbMuneL.enabled = false;
+            Body.jbMuneR.enabled = false;
+
             CachedPose = PoseInfo.Deserialize(binaryReader);
             // eye direction
             Body.quaDefEyeL = binaryReader.ReadQuaternion() * DefaultEyeRotL;
