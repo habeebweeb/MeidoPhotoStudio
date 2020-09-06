@@ -328,7 +328,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
         {
             currentScene = (Constants.Scene)scene.buildIndex;
-            if (active) Deactivate();
+            if (active) Deactivate(true);
             ResetCalcNearClip();
         }
 
@@ -392,44 +392,54 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             dailyPanel.SetActive(false);
         }
 
-        private void Deactivate()
+        private void Deactivate(bool force = false)
         {
             if (meidoManager.Busy || SceneManager.Busy) return;
 
             SystemDialog sysDialog = GameMain.Instance.SysDlg;
 
-            if (sysDialog.IsDecided)
+            SystemDialog.OnClick exit = () =>
+            {
+                sysDialog.Close();
+                ResetCalcNearClip();
+
+                meidoManager.Deactivate();
+                environmentManager.Deactivate();
+                propManager.Deactivate();
+                lightManager.Deactivate();
+                effectManager.Deactivate();
+                messageWindowManager.Deactivate();
+                windowManager.Deactivate();
+
+                Modal.Close();
+
+                GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
+                dailyPanel?.SetActive(true);
+                Configuration.Config.Save();
+            };
+
+            if (force || sysDialog.IsDecided)
             {
                 uiActive = false;
                 active = false;
-                string exitMessage = string.Format(Translation.Get("systemMessage", "exitConfirm"), pluginName);
-                sysDialog.Show(exitMessage, SystemDialog.TYPE.OK_CANCEL,
-                    f_dgOk: () =>
-                    {
-                        sysDialog.Close();
-                        ResetCalcNearClip();
-
-                        meidoManager.Deactivate();
-                        environmentManager.Deactivate();
-                        propManager.Deactivate();
-                        lightManager.Deactivate();
-                        effectManager.Deactivate();
-                        messageWindowManager.Deactivate();
-                        windowManager.Deactivate();
-
-                        Modal.Close();
-
-                        GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
-                        dailyPanel?.SetActive(true);
-                        Configuration.Config.Save();
-                    },
-                    f_dgCancel: () =>
-                    {
-                        sysDialog.Close();
-                        uiActive = true;
-                        active = true;
-                    }
-                );
+                if (force)
+                {
+                    sysDialog.Close();
+                    exit();
+                }
+                else
+                {
+                    string exitMessage = string.Format(Translation.Get("systemMessage", "exitConfirm"), pluginName);
+                    sysDialog.Show(exitMessage, SystemDialog.TYPE.OK_CANCEL,
+                        f_dgOk: exit,
+                        f_dgCancel: () =>
+                        {
+                            sysDialog.Close();
+                            uiActive = true;
+                            active = true;
+                        }
+                    );
+                }
             }
         }
 
