@@ -548,6 +548,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (SlotID clothingSlot in MaidDressingPane.clothingSlots)
             {
                 bool value = binaryReader.ReadBoolean();
+                if (mmScene) continue;
                 if (clothingSlot == SlotID.wear)
                 {
                     Body.SetMask(SlotID.wear, value);
@@ -567,9 +568,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             // zurashi and mekure
             bool curlingFront = binaryReader.ReadBoolean();
             bool curlingBack = binaryReader.ReadBoolean();
-            if (CurlingFront != curlingFront) SetCurling(Curl.front, curlingFront);
-            if (CurlingBack != curlingBack) SetCurling(Curl.back, curlingBack);
-            SetCurling(Curl.shift, binaryReader.ReadBoolean());
+            bool curlingPantsu = binaryReader.ReadBoolean();
+            if (!mmScene)
+            {
+                if (CurlingFront != curlingFront) SetCurling(Curl.front, curlingFront);
+                if (CurlingBack != curlingBack) SetCurling(Curl.back, curlingBack);
+                SetCurling(Curl.shift, curlingPantsu);
+            }
 
             bool hasKousokuUpper = binaryReader.ReadBoolean();
             if (hasKousokuUpper)
