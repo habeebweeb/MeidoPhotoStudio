@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -335,10 +335,14 @@ namespace COM3D2.MeidoPhotoStudio.Converter
 
                     string[] freeLookData = maidData[64].Split(',');
 
-                    tempWriter.Write(int.Parse(freeLookData[0]) == 1);
-                    tempWriter.WriteVector3(new Vector3(
-                        float.Parse(freeLookData[2]), 1f, float.Parse(freeLookData[1])
-                    ));
+                    bool isFreeLook = int.Parse(freeLookData[0]) == 1;
+                    tempWriter.Write(isFreeLook);
+                    if (isFreeLook)
+                    {
+                        tempWriter.WriteVector3(new Vector3(
+                            float.Parse(freeLookData[2]), 1f, float.Parse(freeLookData[1])
+                        ));
+                    }
 
                     string[] faceValues = maidData[63].Split(',');
 
