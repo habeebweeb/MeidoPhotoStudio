@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -481,6 +481,11 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                         {
                             assetName = assetName.Split('#')[1].Replace(' ', '_');
                         }
+                    }
+                    else if (assetName.StartsWith("BGOdogu", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        // I don't know why multiplemaids even prepends BG
+                        assetName = assetName.Substring(2);
                     }
 
                     binaryWriter.Write(assetName);
