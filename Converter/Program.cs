@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,7 +63,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
         };
         private static readonly int[] bodyRotations =
         {
-            71, 44, 40, 41, 42, 43, 57, 68, 69, 46, 49, 47, 50, 52, 55, 53, 56, 45, 48, 51, 54
+            71, 44, 40, 41, 42, 43, 57, 68, 69, 46, 49, 47, 50, 52, 55, 53, 56, 92, 94, 93, 95, 45, 48, 51, 54
         };
         public const int sceneVersion = 1000;
         public const int meidoDataVersion = 1000;
