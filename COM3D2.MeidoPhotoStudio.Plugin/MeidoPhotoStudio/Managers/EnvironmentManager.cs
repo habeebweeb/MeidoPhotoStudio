@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
@@ -79,8 +80,23 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Deserialize(System.IO.BinaryReader binaryReader)
         {
             string bgAsset = binaryReader.ReadString();
-            int assetIndex = Constants.BGList.FindIndex(bg => bg == bgAsset);
-            ChangeBackground(bgAsset, assetIndex > Constants.MyRoomCustomBGIndex);
+            bool isCreative = Utility.IsGuidString(bgAsset);
+            System.Collections.Generic.List<string> bgList = isCreative
+                ? Constants.MyRoomCustomBGList.Select(kvp => kvp.Key).ToList()
+                : Constants.BGList;
+
+            int assetIndex = bgList.FindIndex(
+                asset => asset.Equals(bgAsset, StringComparison.InvariantCultureIgnoreCase)
+            );
+            if (assetIndex < 0)
+            {
+                Utility.LogWarning($"Could not load BG '{bgAsset}'");
+                isCreative = false;
+                bgAsset = "Theater";
+            }
+            else bgAsset = bgList[assetIndex];
+
+            ChangeBackground(bgAsset, isCreative);
             this.bg.position = binaryReader.ReadVector3();
             this.bg.rotation = binaryReader.ReadQuaternion();
             this.bg.localScale = binaryReader.ReadVector3();
