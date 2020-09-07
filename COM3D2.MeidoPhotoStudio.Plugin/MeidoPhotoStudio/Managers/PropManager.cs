@@ -12,6 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class PropManager : IManager, ISerializable
     {
         public const string header = "PROP";
+        public const int propDataVersion = 1000;
         private static readonly ConfigEntry<bool> modItemsOnly;
         public static bool ModItemsOnly => modItemsOnly.Value;
         private MeidoManager meidoManager;
@@ -78,15 +79,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Serialize(BinaryWriter binaryWriter)
         {
             binaryWriter.Write(header);
+            binaryWriter.Write(propDataVersion);
             binaryWriter.Write(doguList.Count);
             foreach (DragPointDogu dogu in doguList)
             {
-                binaryWriter.Write(dogu.assetName);
-                AttachPointInfo info = dogu.attachPointInfo;
-                info.Serialize(binaryWriter);
                 binaryWriter.WriteVector3(dogu.MyObject.position);
                 binaryWriter.WriteQuaternion(dogu.MyObject.rotation);
                 binaryWriter.WriteVector3(dogu.MyObject.localScale);
+                dogu.attachPointInfo.Serialize(binaryWriter);
+                binaryWriter.Write(dogu.ShadowCasting);
+
+                binaryWriter.Write(dogu.assetName);
             }
         }
 
@@ -94,14 +97,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             Dictionary<string, string> modToModPath = null;
             ClearDogu();
+
+            int version = binaryReader.ReadInt32();
+
             int numberOfProps = binaryReader.ReadInt32();
 
             int doguIndex = 0;
 
             for (int i = 0; i < numberOfProps; i++)
             {
+                Vector3 position = binaryReader.ReadVector3();
+                Quaternion rotation = binaryReader.ReadQuaternion();
+                Vector3 scale = binaryReader.ReadVector3();
+
+                AttachPointInfo info = AttachPointInfo.Deserialize(binaryReader);
+
+                bool shadowCasting = binaryReader.ReadBoolean();
+
                 string assetName = binaryReader.ReadString();
-                bool result = false;
 
                 if (assetName.EndsWith(".menu") && assetName.Contains('#') && modToModPath == null)
                 {
@@ -109,14 +122,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     foreach (string mod in Menu.GetModFiles()) modToModPath.Add(Path.GetFileName(mod), mod);
                 }
 
-                result = SpawnFromAssetString(assetName, modToModPath);
-
-                AttachPointInfo info = AttachPointInfo.Deserialize(binaryReader);
-
-                Vector3 position = binaryReader.ReadVector3();
-                Quaternion rotation = binaryReader.ReadQuaternion();
-                Vector3 scale = binaryReader.ReadVector3();
-                if (result)
+                if (SpawnFromAssetString(assetName, modToModPath))
                 {
                     DragPointDogu dogu = doguList[doguIndex++];
                     Transform obj = dogu.MyObject;
@@ -124,6 +130,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     obj.rotation = rotation;
                     obj.localScale = scale;
                     dogu.attachPointInfo = info;
+                    dogu.ShadowCasting = shadowCasting;
                 }
             }
             CurrentDoguIndex = 0;
