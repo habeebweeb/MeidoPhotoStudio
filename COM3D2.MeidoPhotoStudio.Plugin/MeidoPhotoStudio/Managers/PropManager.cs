@@ -286,7 +286,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else
             {
                 GameObject obj = GameMain.Instance.BgMgr.CreateAssetBundle(assetName)
-                    ?? Resources.Load<GameObject>("Prefab/" + assetName);
+                    ?? Resources.Load<GameObject>("Prefab/" + assetName)
+                    ?? Resources.Load<GameObject>("BG/" + assetName);
                 try
                 {
                     dogu = GameObject.Instantiate<GameObject>(obj);
