@@ -206,7 +206,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private int SortByName(Scene a, Scene b)
         {
-            return SortDirection * string.Compare(a.FileInfo.Name, b.FileInfo.Name);
+            return SortDirection * LexicographicStringComparer.Comparison(a.FileInfo.Name, b.FileInfo.Name);
         }
 
         private int SortByDateCreated(Scene a, Scene b)
