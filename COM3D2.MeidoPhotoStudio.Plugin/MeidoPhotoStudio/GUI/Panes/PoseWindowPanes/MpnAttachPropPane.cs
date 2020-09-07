@@ -22,7 +22,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (!Constants.MpnAttachInitialized) Constants.MenuFilesChange += InitializeMpnAttach;
 
-            SetDropdownList(!Constants.MpnAttachInitialized);
+            SetDropdownList();
 
             this.previousPropButton = new Button("<");
             this.previousPropButton.ControlEvent += (s, a) => this.mpnAttachDropdown.Step(-1);
@@ -74,9 +74,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (args.Type == MenuFilesEventArgs.EventType.MpnAttach) SetDropdownList();
         }
 
-        private void SetDropdownList(bool initializing = false)
+        private void SetDropdownList()
         {
-            IEnumerable<string> dropdownList = initializing
+            IEnumerable<string> dropdownList = !Constants.MpnAttachInitialized
                 ? new[] { Translation.Get("systemMessage", "initializing") }
                 : Translation.GetArray(
                     "mpnAttachPropNames", Constants.MpnAttachPropList.Select(mpnProp => mpnProp.MenuFile)
