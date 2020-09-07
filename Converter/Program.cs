@@ -67,6 +67,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
         };
         public const int sceneVersion = 1000;
         public const int meidoDataVersion = 1000;
+        public const int propDataVersion = 1000;
         public const int kankyoMagic = -765;
         private static BepInEx.Logging.ManualLogSource Log;
         private static readonly int faceToggleIndex = Array.IndexOf(faceKeys, "tangopen") + 1;
@@ -418,6 +419,8 @@ namespace COM3D2.MeidoPhotoStudio.Converter
         {
             binaryWriter.Write("PROP");
 
+            binaryWriter.Write(propDataVersion);
+
             bool hasWProp = strArray3.Length > 37 && !string.IsNullOrEmpty(strArray3[37]);
             int numberOfProps = hasWProp ? 1 : 0;
             numberOfProps += strArray6 == null ? 0 : strArray6.Length - 1;
@@ -427,9 +430,6 @@ namespace COM3D2.MeidoPhotoStudio.Converter
             if (hasWProp)
             {
                 // For the prop that spawns when you push (shift +) W
-                binaryWriter.Write(strArray3[37].Replace(' ', '_'));
-
-                SerializeAttachPoint(binaryWriter);
 
                 binaryWriter.WriteVector3(new Vector3(
                     float.Parse(strArray3[41]), float.Parse(strArray3[42]), float.Parse(strArray3[43])
@@ -442,6 +442,12 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                 binaryWriter.WriteVector3(new Vector3(
                     float.Parse(strArray3[44]), float.Parse(strArray3[45]), float.Parse(strArray3[46])
                 ));
+
+                SerializeAttachPoint(binaryWriter);
+
+                binaryWriter.Write(false); // shadow casting
+
+                binaryWriter.Write(strArray3[37].Replace(' ', '_'));
             }
 
             if (strArray6 != null)
@@ -450,6 +456,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                 {
                     string[] assetParts = strArray6[i].Split(',');
                     string assetName = assetParts[0].Replace(' ', '_');
+                    bool shadowCasting = assetName.EndsWith(".menu") ? true : false;
 
                     if (assetName.StartsWith("creative_"))
                     {
@@ -488,10 +495,6 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                         assetName = assetName.Substring(2);
                     }
 
-                    binaryWriter.Write(assetName);
-
-                    SerializeAttachPoint(binaryWriter);
-
                     binaryWriter.WriteVector3(new Vector3(
                         float.Parse(assetParts[4]), float.Parse(assetParts[5]), float.Parse(assetParts[6])
                     ));
@@ -503,6 +506,12 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                     binaryWriter.WriteVector3(new Vector3(
                         float.Parse(assetParts[7]), float.Parse(assetParts[8]), float.Parse(assetParts[9])
                     ));
+
+                    SerializeAttachPoint(binaryWriter);
+
+                    binaryWriter.Write(shadowCasting);
+
+                    binaryWriter.Write(assetName);
                 }
             }
         }
