@@ -216,6 +216,7 @@
     "propManagerPane": {
         "dragPointToggle": "Cube",
         "gizmoToggle": "Gizmo",
+        "shadowCastingToggle": "Shadow",
         "copyButton": "Copy",
         "deleteButton": "Delete"
     },

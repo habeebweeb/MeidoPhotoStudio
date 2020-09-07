@@ -10,6 +10,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Button nextPropButton;
         private Toggle dragPointToggle;
         private Toggle gizmoToggle;
+        private Toggle shadowCastingToggle;
         private Button deletePropButton;
         private Button copyPropButton;
         private int CurrentDoguIndex => this.propManager.CurrentDoguIndex;
@@ -59,6 +60,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.propManager.CurrentDogu.GizmoEnabled = gizmoToggle.Value;
             };
 
+            this.shadowCastingToggle = new Toggle(Translation.Get("propManagerPane", "shadowCastingToggle"));
+            this.shadowCastingToggle.ControlEvent += (s, a) =>
+            {
+                if (this.updating || this.propManager.DoguCount == 0) return;
+                this.propManager.CurrentDogu.ShadowCasting = this.shadowCastingToggle.Value;
+            };
+
             this.copyPropButton = new Button(Translation.Get("propManagerPane", "copyButton"));
             this.copyPropButton.ControlEvent += (s, a) => this.propManager.CopyDogu(CurrentDoguIndex);
 
@@ -70,6 +78,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.dragPointToggle.Label = Translation.Get("propManagerPane", "dragPointToggle");
             this.gizmoToggle.Label = Translation.Get("propManagerPane", "gizmoToggle");
+            this.shadowCastingToggle.Label = Translation.Get("propManagerPane", "shadowCastingToggle");
             this.copyPropButton.Label = Translation.Get("propManagerPane", "copyButton");
             this.deletePropButton.Label = Translation.Get("propManagerPane", "deleteButton");
         }
@@ -108,6 +117,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.deletePropButton.Draw(noExpandWidth);
             GUILayout.EndHorizontal();
 
+            GUILayout.BeginHorizontal();
+            this.shadowCastingToggle.Draw(noExpandWidth);
+            GUILayout.EndHorizontal();
+
             GUI.enabled = true;
         }
 
@@ -126,6 +139,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.updating = true;
             this.dragPointToggle.Value = dogu.DragPointEnabled;
             this.gizmoToggle.Value = dogu.GizmoEnabled;
+            this.shadowCastingToggle.Value = dogu.ShadowCasting;
             this.updating = false;
         }
     }
