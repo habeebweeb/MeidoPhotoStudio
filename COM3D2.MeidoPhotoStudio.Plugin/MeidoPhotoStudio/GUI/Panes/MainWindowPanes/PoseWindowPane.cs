@@ -39,7 +39,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.maidFaceLookPane = AddPane(new MaidFaceLookPane(meidoManager));
             this.maidFaceLookPane.Enabled = false;
 
-            this.freeLookToggle = new Toggle(Translation.Get("freeLook", "freeLookToggle"), false);
+            this.freeLookToggle = new Toggle(Translation.Get("freeLookPane", "freeLookToggle"), false);
             this.freeLookToggle.ControlEvent += (s, a) => SetMaidFreeLook();
 
             this.savePoseToggle = new Toggle(Translation.Get("posePane", "saveToggle"));
@@ -68,7 +68,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void ReloadTranslation()
         {
-            this.freeLookToggle.Label = Translation.Get("freeLook", "freeLookToggle");
+            this.freeLookToggle.Label = Translation.Get("freeLookPane", "freeLookToggle");
             this.savePoseToggle.Label = Translation.Get("posePane", "saveToggle");
             this.saveHandToggle.Label = Translation.Get("handPane", "saveToggle");
             this.flipButton.Label = Translation.Get("flipIK", "flipButton");

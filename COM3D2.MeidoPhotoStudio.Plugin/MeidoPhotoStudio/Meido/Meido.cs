@@ -66,6 +66,28 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 OnUpdateMeido();
             }
         }
+        public bool HeadToCam
+        {
+            get => !Body.isLoadedBody ? false : Body.boHeadToCam;
+            set
+            {
+                if (!Body.isLoadedBody || HeadToCam == value) return;
+                Body.boHeadToCam = value;
+                if (!HeadToCam && !EyeToCam) FreeLook = false;
+                OnUpdateMeido();
+            }
+        }
+        public bool EyeToCam
+        {
+            get => !Body.isLoadedBody ? false : Body.boEyeToCam;
+            set
+            {
+                if (!Body.isLoadedBody || EyeToCam == value) return;
+                Body.boEyeToCam = value;
+                if (!HeadToCam && !EyeToCam) FreeLook = false;
+                OnUpdateMeido();
+            }
+        }
         public bool Stop
         {
             get
@@ -79,7 +101,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 else
                 {
                     if (value) Maid.GetAnimation().Stop();
-                    else this.SetPose(this.CachedPose.Pose);
+                    else
+                    {
+                        Body.boEyeToCam = true;
+                        Body.boHeadToCam = true;
+                        this.SetPose(this.CachedPose.Pose);
+                    }
                     OnUpdateMeido();
                 }
             }

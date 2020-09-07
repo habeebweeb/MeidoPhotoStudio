@@ -65,10 +65,12 @@
         "baseTab": "Base",
         "customTab": "Custom"
     },
-    "freeLook": {
+    "freeLookPane": {
         "freeLookToggle": "F-Look",
-        "x": "Look X",
-        "y": "Look Y"
+        "headToCamToggle": "Head",
+        "eyeToCamToggle": "Eye",
+        "xSlider": "Look X",
+        "ySlider": "Look Y"
     },
     "attachMpnPropPane": {
         "attachButton": "Attach",
