@@ -375,11 +375,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             dragBody.Select += OnSelectBody;
             dragBody.EndScale += OnSetDragPointScale;
 
-            // Head Dragpoint
-            DragPointHead dragHead = DragPoint.Make<DragPointHead>(
+            // Neck Dragpoint
+            DragPointHead dragNeck = DragPoint.Make<DragPointHead>(
                 PrimitiveType.Sphere, new Vector3(0.2f, 0.24f, 0.2f), DragPoint.LightBlue
             );
-            dragHead.Initialize(meido,
+            dragNeck.Initialize(meido,
                 () => new Vector3(
                     BoneTransform[Bone.Head].position.x,
                     (BoneTransform[Bone.Head].position.y * 1.2f + BoneTransform[Bone.HeadNub].position.y * 0.8f) / 2f,
@@ -391,10 +391,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     BoneTransform[Bone.Head].eulerAngles.z + 90f
                 )
             );
-            dragHead.Set(BoneTransform[Bone.Neck]);
-            dragHead.Select += OnSelectFace;
+            dragNeck.Set(BoneTransform[Bone.Neck]);
+            dragNeck.Select += OnSelectFace;
 
-            DragPoints[Bone.Head] = dragHead;
+            DragPoints[Bone.Head] = dragNeck;
+
+            // Head Dragpoint
+            DragPointSpine dragHead = DragPoint.Make<DragPointSpine>(
+                PrimitiveType.Sphere, Vector3.one * 0.045f, DragPoint.LightBlue
+            );
+            dragHead.Initialize(meido, () => BoneTransform[Bone.Head].position, () => Vector3.zero);
+            dragHead.Set(BoneTransform[Bone.Head]);
+            dragHead.AddGizmo();
+
+            DragPoints[Bone.HeadNub] = dragHead;
 
             // Torso Dragpoint
             Transform spineTrans1 = BoneTransform[Bone.Spine1];

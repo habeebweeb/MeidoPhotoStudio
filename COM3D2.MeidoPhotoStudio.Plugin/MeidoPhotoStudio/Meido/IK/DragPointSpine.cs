@@ -7,12 +7,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Quaternion spineRotation;
         private bool isHip = false;
         private bool isThigh = false;
+        private bool isHead = false;
+
+        public override void AddGizmo(float scale = 0.25f, CustomGizmo.GizmoMode mode = CustomGizmo.GizmoMode.Local)
+        {
+            base.AddGizmo(scale, mode);
+            if (isHead) this.Gizmo.GizmoDrag += (s, a) => meido.HeadToCam = false;
+        }
 
         public override void Set(Transform spine)
         {
             base.Set(spine);
             isHip = spine.name == "Bip01";
             isThigh = spine.name.EndsWith("Thigh");
+            isHead = spine.name.EndsWith("Head");
         }
 
         protected override void ApplyDragType()
@@ -20,10 +28,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DragType current = CurrentDragType;
             if (IsBone && current != DragType.Ignore)
             {
-                if (current == DragType.RotLocalXZ) ApplyProperties(false, false, isThigh);
+                if (!isHead && current == DragType.RotLocalXZ) ApplyProperties(false, false, isThigh);
                 else if (!isThigh && (current == DragType.MoveY)) ApplyProperties(isHip, isHip, !isHip);
-                else if (!isThigh && (current == DragType.RotLocalY)) ApplyProperties(!isHip, !isHip, isHip);
-                else ApplyProperties(!isThigh, !isThigh, false);
+                else if (!(isThigh || isHead) && (current == DragType.RotLocalY)) ApplyProperties(!isHip, !isHip, isHip);
+                else
+                {
+                    bool active = !isThigh;
+                    ApplyProperties(active, active, false);
+                }
             }
             else ApplyProperties(false, false, false);
         }
@@ -32,6 +44,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             bool shift = Utility.GetModKey(Utility.ModKey.Shift);
             bool alt = Utility.GetModKey(Utility.ModKey.Alt);
+            bool ctrl = Utility.GetModKey(Utility.ModKey.Control);
 
             if (Input.GetKey(KeyCode.Space) || OtherDragType())
             {
@@ -50,7 +63,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 CurrentDragType = DragType.RotLocalY;
             }
-            else if (Utility.GetModKey(Utility.ModKey.Control))
+            else if (ctrl)
             {
                 // hip y transform and spine gizmo rotation
                 CurrentDragType = DragType.MoveY;
@@ -73,6 +86,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (CurrentDragType == DragType.None)
             {
+                if (isHead) meido.HeadToCam = false;
+
                 Vector3 mouseDelta = MouseDelta();
 
                 MyObject.rotation = spineRotation;
