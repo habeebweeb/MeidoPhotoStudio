@@ -145,8 +145,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (CurrentDragType == DragType.RotLocalXZ)
             {
                 MyObject.rotation = currentRotation;
-                MyObject.Rotate(Vector3.forward, mouseDelta.x / 6f, Space.World);
-                MyObject.Rotate(Vector3.right, -mouseDelta.y / 4f, Space.World);
+                MyObject.Rotate(camera.transform.forward, -mouseDelta.x / 6f, Space.World);
+                MyObject.Rotate(camera.transform.right, mouseDelta.y / 4f, Space.World);
                 OnRotate();
             }
 
