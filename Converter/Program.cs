@@ -152,7 +152,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                     if (!string.IsNullOrEmpty(sceneData))
                     {
                         byte[] convertedSceneData = ProcessScene(sceneData, false);
-                        string path = Path.Combine(configPath, $"mmtempscene{GetMMDateString(sceneData)}.png");
+                        string path = Path.Combine(configPath, $"mmtempscene_{GetMMDateString(sceneData)}.png");
                         SaveSceneToFile(path, convertedSceneData, noThumb);
                     }
                 }
@@ -174,16 +174,20 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                 {
                     if (key.Key.StartsWith("ss")) continue;
 
-                    bool kankyo = int.Parse(key.Key.Substring(1)) >= 10000;
+                    int sceneIndex = int.Parse(key.Key.Substring(1));
+                    bool kankyo = sceneIndex >= 10000;
                     string sceneData = key.Value;
 
                     if (!string.IsNullOrEmpty(sceneData))
                     {
                         byte[] convertedSceneData = ProcessScene(sceneData, kankyo);
 
-                        string prefix = kankyo ? "mmkankyo" : "mmscene";
+                        string prefix = kankyo
+                            ? "mmkankyo"
+                            : sceneIndex == 9999
+                                ? "mmtempscene" : $"mmscene{sceneIndex}";
 
-                        string path = Path.Combine(configPath, $"{prefix}_{key.Key}{GetMMDateString(sceneData)}.png");
+                        string path = Path.Combine(configPath, $"{prefix}_{GetMMDateString(sceneData)}.png");
 
                         byte[] thumbnail = noThumb;
 
