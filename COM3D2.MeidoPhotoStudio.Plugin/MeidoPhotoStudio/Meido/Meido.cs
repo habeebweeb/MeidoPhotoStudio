@@ -72,6 +72,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             set
             {
                 if (!Body.isLoadedBody || HeadToCam == value) return;
+                Body.HeadToCamPer = 0f;
                 Body.boHeadToCam = value;
                 if (!HeadToCam && !EyeToCam) FreeLook = false;
                 OnUpdateMeido();
@@ -446,6 +447,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     tempWriter.WriteVector3(Body.offsetLookTarget);
                     tempWriter.WriteVector3(Utility.GetFieldValue<TBody, Vector3>(Body, "HeadEulerAngle"));
                 }
+                // Head/eye to camera
+                tempWriter.Write(HeadToCam);
+                tempWriter.Write(EyeToCam);
                 // face
                 SerializeFace(tempWriter);
                 // body visible
@@ -567,6 +571,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     Utility.SetFieldValue<TBody, Vector3>(Body, "HeadEulerAngle", binaryReader.ReadVector3());
                 }
             }
+            // Head/eye to camera
+            HeadToCam = binaryReader.ReadBoolean();
+            EyeToCam = binaryReader.ReadBoolean();
             // face
             DeserializeFace(binaryReader);
             // body visible
