@@ -133,6 +133,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     DragPointHead head = (DragPointHead)DragPoints[Bone.Head];
                     head.gameObject.SetActive(true);
                     head.IsIK = !active;
+                    dragBody.IsIK = !active;
                 }
             }
         }
