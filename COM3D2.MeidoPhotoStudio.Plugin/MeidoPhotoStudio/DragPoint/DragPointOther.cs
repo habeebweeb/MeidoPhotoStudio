@@ -71,10 +71,5 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class DragPointGravity : DragPointGeneral
     {
         protected override void ApplyDragType() => ApplyProperties(Moving, Moving, false);
-        protected override void OnDestroy()
-        {
-            GameObject.Destroy(MyGameObject);
-            base.OnDestroy();
-        }
     }
 }

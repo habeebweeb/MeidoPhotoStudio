@@ -219,6 +219,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             DestroyGravityControl(ref hairGravityControl);
             DestroyGravityControl(ref skirtGravityControl);
+            GameObject.Destroy(hairGravityDragPoint?.gameObject);
+            GameObject.Destroy(skirtGravityDragPoint?.gameObject);
 
             Maid.SetPos(Vector3.zero);
             Maid.SetRot(Vector3.zero);
