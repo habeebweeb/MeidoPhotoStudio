@@ -13,6 +13,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Quaternion currentRotation;
         public float ScaleFactor { get; set; } = 1f;
         public bool ConstantScale { get; set; }
+        public event EventHandler Move;
         public event EventHandler Rotate;
         public event EventHandler Scale;
         public event EventHandler EndScale;
@@ -126,6 +127,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (CurrentDragType == DragType.MoveXZ)
             {
                 MyObject.position = new Vector3(cursorPosition.x, MyObject.position.y, cursorPosition.z);
+                OnMove();
             }
 
             if (CurrentDragType == DragType.MoveY)
@@ -133,6 +135,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 MyObject.position = new Vector3(
                     MyObject.position.x, cursorPosition.y, MyObject.position.z
                 );
+                OnMove();
             }
 
             if (CurrentDragType == DragType.RotY)
@@ -169,6 +172,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected virtual void OnEndScale() => OnEvent(EndScale);
         protected virtual void OnScale() => OnEvent(Scale);
+        protected virtual void OnMove() => OnEvent(Move);
         protected virtual void OnRotate() => OnEvent(Rotate);
         protected virtual void OnSelect() => OnEvent(Select);
         protected virtual void OnDelete() => OnEvent(Delete);
