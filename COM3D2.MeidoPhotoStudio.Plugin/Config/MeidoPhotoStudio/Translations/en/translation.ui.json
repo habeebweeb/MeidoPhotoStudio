@@ -121,6 +121,11 @@
         "shiftPanties": "Shift",
         "detail": "Detailed Clothing"
     },
+    "gravityControlPane": {
+        "hairToggle": "Hair",
+        "skirtToggle": "Skirt",
+        "globalToggle": "Global"
+    },
     "handPane": {
         "header": "Hand Preset",
         "saveToggle": "Save Hand",

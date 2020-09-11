@@ -131,6 +131,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 OnUpdateMeido();
             }
         }
+        private DragPointGravity hairGravityDragPoint;
+        private GravityTransformControl hairGravityControl;
+        private DragPointGravity skirtGravityDragPoint;
+        private GravityTransformControl skirtGravityControl;
+        public bool HairGravityValid => hairGravityControl != null;
+        public bool SkirtGravityValid => skirtGravityControl != null;
+        public event EventHandler<GravityEventArgs> GravityMove;
         public float[] BlendValuesBackup { get; private set; }
         public float[] BlendValues { get; private set; }
         public Quaternion DefaultEyeRotL { get; private set; }
@@ -187,6 +194,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 Body.quaDefEyeL = DefaultEyeRotL;
                 Body.quaDefEyeR = DefaultEyeRotR;
+
+                HairGravityActive = false;
+                SkirtGravityActive = false;
+
+                if (HairGravityValid) hairGravityDragPoint.Move -= OnGravityEvent;
+                if (SkirtGravityValid) skirtGravityDragPoint.Move -= OnGravityEvent;
             }
 
             Body.MuneYureL(1f);
@@ -203,6 +216,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Deactivate()
         {
             Unload();
+
+            DestroyGravityControl(ref hairGravityControl);
+            DestroyGravityControl(ref skirtGravityControl);
 
             Maid.SetPos(Vector3.zero);
             Maid.SetRot(Vector3.zero);
@@ -371,6 +387,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Maid.ResetProp(name[1]);
             }
             Maid.AllProcProp();
+            hairGravityControl?.OnChangeMekure();
+            skirtGravityControl?.OnChangeMekure();
         }
 
         public void SetMpnProp(MpnAttachProp prop, bool detach)
@@ -385,6 +403,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Maid.ResetProp(MPN.kousoku_lower, false);
             Maid.ResetProp(MPN.kousoku_upper, false);
             Maid.AllProcProp();
+        }
+
+        public void ApplyGravity(Vector3 position, bool skirt = false)
+        {
+            DragPointGravity dragPoint = skirt ? skirtGravityDragPoint : hairGravityDragPoint;
+            if (dragPoint != null) dragPoint.MyObject.localPosition = position;
         }
 
         private CacheBoneDataArray GetCacheBoneData()
@@ -407,8 +431,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 BlendValues = Utility.GetFieldValue<TMorph, float[]>(faceMorph, "BlendValues");
                 DefaultEyeRotL = Body.quaDefEyeL;
                 DefaultEyeRotR = Body.quaDefEyeR;
+
+                InitializeGravityControls();
+
                 initialized = true;
             }
+
+            if (HairGravityValid) hairGravityDragPoint.Move += OnGravityEvent;
+            if (SkirtGravityValid) skirtGravityDragPoint.Move += OnGravityEvent;
 
             IKManager.Initialize();
 
@@ -417,10 +447,119 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Bone = false;
             Loading = false;
         }
+        public bool HairGravityActive
+        {
+            get => HairGravityValid && hairGravityDragPoint.gameObject.activeSelf;
+            set
+            {
+                if (HairGravityValid && value != HairGravityActive)
+                {
+                    hairGravityDragPoint.gameObject.SetActive(value);
+                    hairGravityControl.isEnabled = value;
+                }
+            }
+        }
+        public bool SkirtGravityActive
+        {
+            get => SkirtGravityValid && skirtGravityDragPoint.gameObject.activeSelf;
+            set
+            {
+                if (SkirtGravityValid && value != SkirtGravityActive)
+                {
+                    skirtGravityDragPoint.gameObject.SetActive(value);
+                    skirtGravityControl.isEnabled = value;
+                }
+            }
+        }
+        private void InitializeGravityControls()
+        {
+            hairGravityControl = InitializeGravityControl("hair");
+            if (hairGravityControl.isValid)
+            {
+                hairGravityDragPoint = MakeGravityDragPoint(hairGravityControl);
+                HairGravityActive = false;
+            }
+            else DestroyGravityControl(ref hairGravityControl);
 
-        public void OnUpdateMeido(MeidoUpdateEventArgs args = null)
+            skirtGravityControl = InitializeGravityControl("skirt");
+            if (skirtGravityControl.isValid)
+            {
+                skirtGravityDragPoint = MakeGravityDragPoint(skirtGravityControl);
+                SkirtGravityActive = false;
+            }
+            else DestroyGravityControl(ref skirtGravityControl);
+        }
+
+        private DragPointGravity MakeGravityDragPoint(GravityTransformControl control)
+        {
+            DragPointGravity gravityDragpoint = DragPoint.Make<DragPointGravity>(
+                PrimitiveType.Cube, Vector3.one * 0.12f, DragPoint.LightBlue
+            );
+            gravityDragpoint.Initialize(() => control.transform.position, () => Vector3.zero);
+            gravityDragpoint.Set(control.transform);
+
+            return gravityDragpoint;
+        }
+
+        private GravityTransformControl InitializeGravityControl(string category)
+        {
+            Transform bone = Body.GetBone("Bip01");
+            string gravityGoName = $"GravityDatas_{Maid.status.guid}_{category}";
+            Transform gravityTransform = Maid.gameObject.transform.Find(gravityGoName);
+            if (gravityTransform == null)
+            {
+                GameObject go = new GameObject();
+                go.name = gravityGoName;
+                go.transform.SetParent(bone, false);
+                go.transform.SetParent(Maid.transform, true);
+                go.transform.localScale = Vector3.one;
+                go.transform.rotation = Quaternion.identity;
+                GameObject go2 = new GameObject();
+                go2.transform.SetParent(go.transform, false);
+                go2.name = gravityGoName;
+                gravityTransform = go2.transform;
+            }
+            else
+            {
+                gravityTransform = gravityTransform.GetChild(0);
+                GravityTransformControl control = gravityTransform.GetComponent<GravityTransformControl>();
+                if (control != null) GameObject.Destroy(control);
+            }
+
+            GravityTransformControl gravityControl = gravityTransform.gameObject.AddComponent<GravityTransformControl>();
+
+            SlotID[] slots = category == "skirt"
+                ? new[] { SlotID.skirt, SlotID.onepiece, SlotID.mizugi, SlotID.panz }
+                : new[] { SlotID.hairF, SlotID.hairR, SlotID.hairS, SlotID.hairT };
+
+            gravityControl.SetTargetSlods(slots);
+            gravityControl.forceRate = 0.1f;
+
+            return gravityControl;
+        }
+
+        private void DestroyGravityControl(ref GravityTransformControl control)
+        {
+            if (control != null)
+            {
+                GameObject.Destroy(control.transform.parent.gameObject);
+                control = null;
+            }
+        }
+
+        private void OnUpdateMeido(MeidoUpdateEventArgs args = null)
         {
             this.UpdateMeido?.Invoke(this, args ?? MeidoUpdateEventArgs.Empty);
+        }
+
+        private void OnGravityEvent(object sender, EventArgs args) => OnGravityChange((DragPointGravity)sender);
+
+        private void OnGravityChange(DragPointGravity dragPoint)
+        {
+            GravityEventArgs args = new GravityEventArgs(
+                dragPoint == skirtGravityDragPoint, dragPoint.MyObject.transform.localPosition
+            );
+            this.GravityMove?.Invoke(this, args);
         }
 
         public void Serialize(BinaryWriter binaryWriter)
@@ -664,6 +803,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Maid.boMabataki = false;
             morph.EyeMabataki = 0f;
             morph.FixBlendValues_Face();
+        }
+    }
+
+    public class GravityEventArgs : EventArgs
+    {
+        public Vector3 LocalPosition { get; }
+        public bool IsSkirt { get; }
+
+        public GravityEventArgs(bool isSkirt, Vector3 localPosition)
+        {
+            this.LocalPosition = localPosition;
+            this.IsSkirt = isSkirt;
         }
     }
 

@@ -15,6 +15,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private MaidFaceLookPane maidFaceLookPane;
         private MpnAttachPropPane mpnAttachPropPane;
         private MaidDressingPane maidDressingPane;
+        private GravityControlPane gravityControlPane;
         private CopyPosePane copyPosePane;
         private HandPresetPane handPresetPane;
         private SaveHandPane saveHandPane;
@@ -50,6 +51,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.maidDressingPane = AddPane(new MaidDressingPane(meidoManager));
 
             this.maidIKPane = AddPane(new MaidIKPane(meidoManager));
+
+            this.gravityControlPane = AddPane(new GravityControlPane(meidoManager));
 
             this.copyPosePane = AddPane(new CopyPosePane(meidoManager));
 
@@ -99,6 +102,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             MiscGUI.WhiteLine();
 
             maidIKPane.Draw();
+
+            MiscGUI.WhiteLine();
+
+            this.gravityControlPane.Draw();
 
             GUI.enabled = this.meidoManager.HasActiveMeido;
             MiscGUI.Header(this.handPresetHeader);

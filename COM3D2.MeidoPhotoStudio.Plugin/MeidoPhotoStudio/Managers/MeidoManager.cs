@@ -26,6 +26,26 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             private set => selectedMeido = Utility.Bound(value, 0, ActiveMeidoList.Count - 1);
         }
         public bool Busy => ActiveMeidoList.Any(meido => meido.Busy);
+        private bool globalGravity = false;
+        public bool GlobalGravity
+        {
+            get => globalGravity;
+            set
+            {
+                this.globalGravity = value;
+                Meido activeMeido = ActiveMeido;
+                int activeMeidoSlot = activeMeido.Slot;
+
+                foreach (Meido meido in ActiveMeidoList)
+                {
+                    if (meido.Slot != activeMeidoSlot)
+                    {
+                        meido.HairGravityActive = value ? activeMeido.HairGravityActive : false;
+                        meido.SkirtGravityActive = value ? activeMeido.SkirtGravityActive : false;
+                    }
+                }
+            }
+        }
 
         public void ChangeMaid(int index)
         {
@@ -49,6 +69,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (Meido meido in meidos)
             {
                 meido.UpdateMeido -= OnUpdateMeido;
+                meido.GravityMove -= OnGravityMove;
                 meido.Deactivate();
             }
             SelectMeidoList.Clear();
@@ -97,6 +118,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (Meido meido in ActiveMeidoList)
             {
                 meido.UpdateMeido -= OnUpdateMeido;
+                meido.GravityMove -= OnGravityMove;
                 meido.Unload();
             }
             ActiveMeidoList.Clear();
@@ -193,6 +215,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (Meido meido in ActiveMeidoList)
             {
                 meido.UpdateMeido += OnUpdateMeido;
+                meido.GravityMove += OnGravityMove;
+            }
+        }
+
+        private void OnGravityMove(object sender, GravityEventArgs args)
+        {
+            if (!GlobalGravity) return;
+
+            foreach (Meido meido in ActiveMeidoList)
+            {
+                meido.ApplyGravity(args.LocalPosition, args.IsSkirt);
             }
         }
     }
