@@ -407,9 +407,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             dogu.name = name;
             dogu.transform.position = position;
 
-            DragPointDogu dragDogu = DragPoint.Make<DragPointDogu>(
-                PrimitiveType.Cube, Vector3.one * 0.12f, DragPoint.LightBlue
-            );
+            DragPointDogu dragDogu = DragPoint.Make<DragPointDogu>(PrimitiveType.Cube, Vector3.one * 0.12f);
             dragDogu.Initialize(() => dogu.transform.position, () => Vector3.zero);
             dragDogu.Set(dogu.transform);
             dragDogu.AddGizmo(scale: 0.45f, mode: CustomGizmo.GizmoMode.World);

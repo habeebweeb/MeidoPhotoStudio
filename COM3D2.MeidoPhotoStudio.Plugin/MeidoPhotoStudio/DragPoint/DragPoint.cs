@@ -6,6 +6,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     using static CustomGizmo;
     internal abstract class DragPoint : MonoBehaviour
     {
+        public const float defaultAlpha = 0.75f;
+        private static GameObject dragPointParent = new GameObject("[MPS DragPoint Parent]");
         private const float doubleClickSensitivity = 0.3f;
         private Func<Vector3> position;
         private Func<Vector3> rotation;
@@ -13,9 +15,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Renderer renderer;
         private bool reinitializeDrag;
         protected bool Transforming => CurrentDragType >= DragType.MoveXZ;
+        protected bool Special => CurrentDragType == DragType.Select || CurrentDragType == DragType.Delete;
         protected bool Moving => CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY;
         protected bool Rotating => CurrentDragType >= DragType.RotLocalXZ && CurrentDragType <= DragType.RotLocalY;
-        protected bool Special => CurrentDragType == DragType.Select || CurrentDragType == DragType.Delete;
+        protected bool Scaling => CurrentDragType == DragType.Scale;
+        protected bool Selecting => CurrentDragType == DragType.Select;
+        protected bool Deleting => CurrentDragType == DragType.Delete;
         private Vector3 startMousePosition;
         protected static Camera camera = GameMain.Instance.MainCamera.camera;
         public enum DragType
@@ -31,14 +36,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 screenPoint;
         private Vector3 startOffset;
         private Vector3 newOffset;
-        public static Material LightBlue = new Material(Shader.Find("Transparent/Diffuse"))
-        {
-            color = new Color(0.4f, 0.4f, 1f, 0.3f)
-        };
-        public static Material Blue = new Material(Shader.Find("Transparent/Diffuse"))
-        {
-            color = new Color(0.5f, 0.5f, 1f, 0.8f)
-        };
+        public static Material dragPointMaterial = new Material(Shader.Find("CM3D2/Trans_AbsoluteFront"));
+        public static readonly Color defaultColour = new Color(0f, 0f, 0f, defaultAlpha);
         public Vector3 BaseScale { get; private set; }
         private float dragPointScale = 1f;
         public float DragPointScale
@@ -99,19 +98,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             ApplyDragType();
         }
 
-        private static GameObject DragPointParent() => GameObject.Find("[MPS DragPoint Parent]")
-            ?? new GameObject("[MPS DragPoint Parent]");
-
-        public static T Make<T>(PrimitiveType primitiveType, Vector3 scale, Material material) where T : DragPoint
+        public static T Make<T>(PrimitiveType primitiveType, Vector3 scale) where T : DragPoint
         {
-            GameObject dragPoint = GameObject.CreatePrimitive(primitiveType);
-            dragPoint.transform.localScale = scale;
-            dragPoint.GetComponent<Renderer>().material = material;
-            dragPoint.layer = 8;
+            GameObject dragPointGo = GameObject.CreatePrimitive(primitiveType);
+            dragPointGo.transform.SetParent(dragPointParent.transform, false);
+            dragPointGo.transform.localScale = scale;
+            dragPointGo.layer = 8;
 
-            dragPoint.transform.SetParent(DragPointParent().transform, true);
+            T dragPoint = dragPointGo.AddComponent<T>();
+            dragPoint.renderer.material = dragPointMaterial;
+            dragPoint.renderer.material.color = defaultColour;
 
-            return dragPoint.AddComponent<T>();
+            return dragPoint;
         }
 
         public virtual void Initialize(Func<Vector3> position, Func<Vector3> rotation)
@@ -141,6 +139,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.collider.enabled = active;
             this.renderer.enabled = visible;
             if (this.Gizmo != null) this.Gizmo.GizmoVisible = gizmo;
+        }
+
+        protected void ApplyColour(Color colour) => this.renderer.material.color = colour;
+
+        protected void ApplyColour(float r, float g, float b, float a = defaultAlpha)
+        {
+            ApplyColour(new Color(r, g, b, a));
         }
 
         protected Vector3 MouseDelta() => Input.mousePosition - startMousePosition;

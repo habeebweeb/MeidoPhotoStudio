@@ -194,29 +194,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void ApplyDragType()
         {
-            DragType current = CurrentDragType;
-            if (current == DragType.Select || current == DragType.MoveXZ || current == DragType.MoveY)
-            {
-                ApplyProperties(true, true, false);
-            }
-            else if (current == DragType.RotY || current == DragType.RotLocalXZ || current == DragType.RotLocalY)
-            {
-                bool canRotate = SelectedLightType != MPSLightType.Point;
-                ApplyProperties(canRotate, canRotate, false);
-            }
-            else if (current == DragType.Scale)
-            {
-                bool canScale = SelectedLightType != MPSLightType.Normal;
-                ApplyProperties(canScale, canScale, false);
-            }
-            else if (current == DragType.Delete)
-            {
-                ApplyProperties(!IsMain, !IsMain, false);
-            }
-            else
-            {
-                ApplyProperties(false, false, false);
-            }
+            if (Selecting || Moving) ApplyProperties(true, true, false);
+            else if (SelectedLightType != MPSLightType.Point && Rotating) ApplyProperties(true, true, false);
+            else if (SelectedLightType != MPSLightType.Normal && Scaling) ApplyProperties(true, true, false);
+            else if (!IsMain && Deleting) ApplyProperties(true, true, false);
+            else ApplyProperties(false, false, false);
+
+            ApplyColours();
         }
 
         public void SetLightType(MPSLightType type)

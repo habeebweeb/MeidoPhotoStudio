@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -22,10 +23,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         protected override void ApplyDragType()
         {
-            DragType current = CurrentDragType;
-            bool enabled = !IsIK && (Transforming || (current == DragType.Select));
-            bool select = IsIK && current == DragType.Select;
+            bool enabled = !IsIK && (Transforming || Selecting);
+            bool select = IsIK && Selecting;
             ApplyProperties(enabled || select, IsCube && enabled, false);
+
+            if (IsCube) ApplyColours();
         }
     }
 
@@ -34,6 +36,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected override void ApplyDragType()
         {
             ApplyProperties(Transforming, Transforming, Rotating);
+            ApplyColours();
         }
     }
 
@@ -68,9 +71,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void ApplyDragType()
         {
-            DragType current = CurrentDragType;
             bool active = (DragPointEnabled && Transforming) || Special;
             ApplyProperties(active, active, GizmoEnabled && Rotating);
+            ApplyColours();
         }
 
         protected override void OnDestroy()
@@ -82,6 +85,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
     internal class DragPointGravity : DragPointGeneral
     {
-        protected override void ApplyDragType() => ApplyProperties(Moving, Moving, false);
+        protected override void ApplyDragType()
+        {
+            ApplyProperties(Moving, Moving, false);
+            ApplyColours();
+        }
     }
 }

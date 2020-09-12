@@ -495,7 +495,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private DragPointGravity MakeGravityDragPoint(GravityTransformControl control)
         {
             DragPointGravity gravityDragpoint = DragPoint.Make<DragPointGravity>(
-                PrimitiveType.Cube, Vector3.one * 0.12f, DragPoint.LightBlue
+                PrimitiveType.Cube, Vector3.one * 0.12f
             );
             gravityDragpoint.Initialize(() => control.transform.position, () => Vector3.zero);
             gravityDragpoint.Set(control.transform);

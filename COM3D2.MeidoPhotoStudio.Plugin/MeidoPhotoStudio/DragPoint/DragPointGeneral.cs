@@ -13,6 +13,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Quaternion currentRotation;
         public float ScaleFactor { get; set; } = 1f;
         public bool ConstantScale { get; set; }
+        public static readonly Color moveColour = new Color(0.2f, 0.5f, 0.95f, defaultAlpha);
+        public static readonly Color rotateColour = new Color(0.2f, 0.75f, 0.3f, defaultAlpha);
+        public static readonly Color scaleColour = new Color(0.8f, 0.7f, 0.3f, defaultAlpha);
+        public static readonly Color selectColour = new Color(0.9f, 0.5f, 1f, defaultAlpha);
+        public static readonly Color deleteColour = new Color(1f, 0.1f, 0.1f, defaultAlpha);
         public event EventHandler Move;
         public event EventHandler Rotate;
         public event EventHandler Scale;
@@ -27,6 +32,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (Gizmo.CurrentGizmoType == GizmoType.Rotate) OnRotate();
             };
+        }
+
+        protected virtual void ApplyColours()
+        {
+            Color colour = moveColour;
+            if (Rotating) colour = rotateColour;
+            else if (Scaling) colour = scaleColour;
+            else if (Selecting) colour = selectColour;
+            else if (Deleting) colour = deleteColour;
+            ApplyColour(colour);
         }
 
         protected override void Update()

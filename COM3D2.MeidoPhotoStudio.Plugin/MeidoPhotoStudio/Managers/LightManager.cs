@@ -98,9 +98,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void AddLight(GameObject lightGo = null, bool isMain = false)
         {
             GameObject go = lightGo ?? new GameObject("MPS Light");
-            DragPointLight light = DragPoint.Make<DragPointLight>(
-                PrimitiveType.Cube, Vector3.one * 0.12f, DragPoint.LightBlue
-            );
+            DragPointLight light = DragPoint.Make<DragPointLight>(PrimitiveType.Cube, Vector3.one * 0.12f);
             light.Initialize(() => go.transform.position, () => go.transform.eulerAngles);
             light.Set(go.transform);
             light.IsMain = isMain;

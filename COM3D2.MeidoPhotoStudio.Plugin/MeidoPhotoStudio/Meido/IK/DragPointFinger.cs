@@ -8,6 +8,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Transform[] ikChain;
         private Quaternion[] jointRotation = new Quaternion[2];
         private bool baseFinger;
+        private static readonly Color dragpointColour = new Color(0.1f, 0.4f, 0.95f, defaultAlpha);
 
         public override void Set(Transform finger)
         {
@@ -30,18 +31,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void ApplyDragType()
         {
-            if (baseFinger && CurrentDragType == DragType.RotLocalY)
-            {
-                ApplyProperties(true, true, false);
-            }
-            else if (CurrentDragType == DragType.MoveXZ)
-            {
-                ApplyProperties(true, true, false);
-            }
-            else
-            {
-                ApplyProperties(false, false, false);
-            }
+            if (baseFinger && CurrentDragType == DragType.RotLocalY) ApplyProperties(true, true, false);
+            else if (CurrentDragType == DragType.MoveXZ) ApplyProperties(true, true, false);
+            else ApplyProperties(false, false, false);
+            ApplyColour(dragpointColour);
         }
 
         protected override void UpdateDragType()

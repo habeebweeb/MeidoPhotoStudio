@@ -122,9 +122,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bgObject = GameObject.Find("__GameMain__/BG");
             bg = bgObject.transform;
 
-            bgDragPoint = DragPoint.Make<DragPointBG>(
-                PrimitiveType.Cube, Vector3.one * 0.12f, DragPoint.LightBlue
-            );
+            bgDragPoint = DragPoint.Make<DragPointBG>(PrimitiveType.Cube, Vector3.one * 0.12f);
             bgDragPoint.Initialize(() => bg.position, () => Vector3.zero);
             bgDragPoint.Set(bg);
             bgDragPoint.AddGizmo();
