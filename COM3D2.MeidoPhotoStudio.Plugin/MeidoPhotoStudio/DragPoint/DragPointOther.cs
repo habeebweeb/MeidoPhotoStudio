@@ -7,7 +7,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class DragPointBody : DragPointGeneral
     {
         public bool IsCube = false;
-        public bool IsIK = false;
+        private bool isIK = false;
+        public bool IsIK
+        {
+            get => isIK;
+            set
+            {
+                if (isIK != value)
+                {
+                    isIK = value;
+                    ApplyDragType();
+                }
+            }
+        }
         protected override void ApplyDragType()
         {
             DragType current = CurrentDragType;
