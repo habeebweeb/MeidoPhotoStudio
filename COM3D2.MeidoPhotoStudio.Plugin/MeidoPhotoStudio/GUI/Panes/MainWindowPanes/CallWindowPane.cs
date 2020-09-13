@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class CallWindowPane : BaseWindowPane
+    internal class CallWindowPane : BaseMainWindowPane
     {
         private MeidoManager meidoManager;
         private MaidSelectorPane maidSelectorPane;
@@ -42,6 +42,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
+            this.tabsPane.Draw();
             GUILayout.BeginHorizontal();
             placementDropdown.Draw(GUILayout.Width(150));
             placementOKButton.Draw();

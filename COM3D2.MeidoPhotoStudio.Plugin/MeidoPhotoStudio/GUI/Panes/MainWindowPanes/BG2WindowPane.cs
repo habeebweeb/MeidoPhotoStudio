@@ -1,6 +1,6 @@
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class BG2WindowPane : BaseWindowPane
+    internal class BG2WindowPane : BaseMainWindowPane
     {
         private MeidoManager meidoManager;
         private PropManager propManager;
@@ -40,6 +40,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
+            this.tabsPane.Draw();
             this.propTabs.Draw();
             MiscGUI.WhiteLine();
             this.currentPropsPane.Draw();

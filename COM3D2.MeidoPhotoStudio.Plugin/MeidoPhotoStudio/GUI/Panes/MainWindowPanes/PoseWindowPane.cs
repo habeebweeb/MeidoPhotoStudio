@@ -1,12 +1,8 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class PoseWindowPane : BaseWindowPane
+    internal class PoseWindowPane : BaseMainWindowPane
     {
         private MeidoManager meidoManager;
         private MaidPoseSelectorPane maidPosePane;
@@ -80,6 +76,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
+            this.tabsPane.Draw();
             this.maidSwitcherPane.Draw();
             maidPosePane.Draw();
 

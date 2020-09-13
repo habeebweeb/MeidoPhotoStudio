@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class BGWindowPane : BaseWindowPane
+    internal class BGWindowPane : BaseMainWindowPane
     {
         private BackgroundSelectorPane backgroundSelectorPane;
         private LightsPane lightsPane;
@@ -38,6 +38,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
+            this.tabsPane.Draw();
             this.sceneManagerButton.Draw();
             this.backgroundSelectorPane.Draw();
             this.dragPointPane.Draw();

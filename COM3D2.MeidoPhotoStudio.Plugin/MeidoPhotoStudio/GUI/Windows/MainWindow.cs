@@ -8,10 +8,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private MeidoManager meidoManager;
         private PropManager propManager;
         private LightManager lightManager;
-        private Dictionary<Constants.Window, BaseWindowPane> windowPanes;
+        private Dictionary<Constants.Window, BaseMainWindowPane> windowPanes;
         private TabsPane tabsPane;
         private Button ReloadTranslationButton;
-        private BaseWindowPane currentWindowPane;
+        private BaseMainWindowPane currentWindowPane;
         public override Rect WindowRect
         {
             set
@@ -25,7 +25,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         private Constants.Window selectedWindow = Constants.Window.Call;
 
-        public BaseWindowPane this[Constants.Window id]
+        public BaseMainWindowPane this[Constants.Window id]
         {
             get => windowPanes[id];
             set => AddWindow(id, value);
@@ -43,7 +43,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.lightManager = lightManager;
             this.lightManager.Select += (s, a) => ChangeWindow(Constants.Window.BG);
 
-            windowPanes = new Dictionary<Constants.Window, BaseWindowPane>();
+            windowPanes = new Dictionary<Constants.Window, BaseMainWindowPane>();
             WindowRect = new Rect(Screen.width, Screen.height * 0.08f, 240f, Screen.height * 0.9f);
 
             tabsPane = new TabsPane();
@@ -64,13 +64,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.Visible = true;
         }
 
-        public void AddWindow(Constants.Window id, BaseWindowPane window)
+        public void AddWindow(Constants.Window id, BaseMainWindowPane window)
         {
             if (windowPanes.ContainsKey(id))
             {
                 Panes.Remove(windowPanes[id]);
             }
             windowPanes[id] = window;
+            windowPanes[id].SetTabsPane(tabsPane);
             Panes.Add(windowPanes[id]);
         }
 
@@ -99,8 +100,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
-            tabsPane.Draw();
-
             currentWindowPane?.Draw();
 
             GUI.enabled = true;

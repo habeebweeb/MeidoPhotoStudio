@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class FaceWindowPane : BaseWindowPane
+    internal class FaceWindowPane : BaseMainWindowPane
     {
         private MeidoManager meidoManager;
         private MaidFaceSliderPane maidFaceSliderPane;
@@ -21,6 +21,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
+            this.tabsPane.Draw();
             this.maidSwitcherPane.Draw();
 
             this.scrollPos = GUILayout.BeginScrollView(this.scrollPos);
