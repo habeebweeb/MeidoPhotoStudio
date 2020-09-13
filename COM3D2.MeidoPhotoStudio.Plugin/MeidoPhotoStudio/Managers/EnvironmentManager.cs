@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
+    using Input = InputManager;
     internal class EnvironmentManager : IManager, ISerializable
     {
         public const string header = "ENVIRONMENT";
@@ -51,6 +52,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.bgVisible = value;
                 bgObject.SetActive(this.bgVisible);
             }
+        }
+
+        static EnvironmentManager()
+        {
+            Input.Register(MpsKey.CameraLayer, KeyCode.Q);
+            Input.Register(MpsKey.CameraSave, KeyCode.S);
+            Input.Register(MpsKey.CameraLoad, KeyCode.A);
+            Input.Register(MpsKey.CameraReset, KeyCode.R);
         }
 
         public EnvironmentManager(MeidoManager meidoManager)
@@ -185,19 +194,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Update()
         {
-            if (Input.GetKey(KeyCode.Q))
+            if (Input.GetKey(MpsKey.CameraLayer))
             {
-                if (Input.GetKeyDown(KeyCode.S))
+                if (Input.GetKeyDown(MpsKey.CameraSave))
                 {
                     SaveCameraInfo();
                 }
 
-                if (Input.GetKeyDown(KeyCode.A))
+                if (Input.GetKeyDown(MpsKey.CameraLoad))
                 {
                     LoadCameraInfo(cameraInfo);
                 }
 
-                if (Input.GetKeyDown(KeyCode.R))
+                if (Input.GetKeyDown(MpsKey.CameraReset))
                 {
                     ResetCamera();
                 }

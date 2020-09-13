@@ -44,7 +44,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.lightManager.Select += (s, a) => ChangeWindow(Constants.Window.BG);
 
             windowPanes = new Dictionary<Constants.Window, BaseWindowPane>();
-            windowRect = new Rect(Screen.width, Screen.height * 0.08f, 230f, Screen.height * 0.9f);
+            WindowRect = new Rect(Screen.width, Screen.height * 0.08f, 240f, Screen.height * 0.9f);
 
             tabsPane = new TabsPane();
             tabsPane.TabChange += (s, a) => ChangeTab();
@@ -54,8 +54,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Translation.ReinitializeTranslation();
             };
-            windowRect.width = 240f;
-            windowRect.height = Screen.height * 0.9f;
         }
 
         public override void Activate()
@@ -93,7 +91,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void Update()
         {
             base.Update();
-            if (Input.GetKeyDown(KeyCode.Tab))
+            if (InputManager.GetKeyDown(MpsKey.ToggleUI))
             {
                 this.Visible = !this.Visible;
             }

@@ -90,6 +90,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
+        static DragPoint()
+        {
+            InputManager.Register(MpsKey.DragSelect, KeyCode.A);
+            InputManager.Register(MpsKey.DragDelete, KeyCode.D);
+            InputManager.Register(MpsKey.DragMove, KeyCode.Z);
+            InputManager.Register(MpsKey.DragRotate, KeyCode.X);
+            InputManager.Register(MpsKey.DragScale, KeyCode.C);
+            InputManager.Register(MpsKey.DragFinger, KeyCode.Space);
+        }
+
         private void Awake()
         {
             this.BaseScale = transform.localScale;
@@ -152,8 +162,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected bool OtherDragType()
         {
-            return Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D)
-                || Input.GetKey(KeyCode.Z) || Input.GetKey(KeyCode.X) || Input.GetKey(KeyCode.C);
+            return InputManager.GetKey(MpsKey.DragSelect) || InputManager.GetKey(MpsKey.DragDelete)
+                || InputManager.GetKey(MpsKey.DragMove) || InputManager.GetKey(MpsKey.DragRotate)
+                || InputManager.GetKey(MpsKey.DragScale) || InputManager.GetKey(MpsKey.DragFinger);
         }
 
         protected Vector3 CursorPosition()

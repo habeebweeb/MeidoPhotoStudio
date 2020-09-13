@@ -9,6 +9,7 @@ using BepInEx;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
+    using Input = InputManager;
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class MeidoPhotoStudio : BaseUnityPlugin
     {
@@ -32,6 +33,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private bool initialized = false;
         private bool active = false;
         private bool uiActive = false;
+
+        static MeidoPhotoStudio()
+        {
+            Input.Register(MpsKey.Screenshot, KeyCode.S);
+            Input.Register(MpsKey.Activate, KeyCode.F6);
+        }
 
         private void Awake()
         {
@@ -213,7 +220,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (currentScene == Constants.Scene.Daily)
             {
-                if (Input.GetKeyDown(KeyCode.F6))
+                if (Input.GetKeyDown(MpsKey.Activate))
                 {
                     if (active) Deactivate();
                     else Activate();
@@ -221,9 +228,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 if (active)
                 {
-                    if (!Input.GetKey(KeyCode.Q) && !Utility.GetModKey(Utility.ModKey.Control)
-                        && Input.GetKeyDown(KeyCode.S)
-                    ) TakeScreenshot();
+                    if (!Input.Control && !Input.GetKey(MpsKey.CameraLayer) && Input.GetKeyDown(MpsKey.Screenshot))
+                    {
+                        TakeScreenshot();
+                    }
 
                     meidoManager.Update();
                     environmentManager.Update();
@@ -411,6 +419,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 effectManager.Deactivate();
                 messageWindowManager.Deactivate();
                 windowManager.Deactivate();
+                InputManager.Deactivate();
 
                 Modal.Close();
 

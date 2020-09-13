@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
+    using Input = InputManager;
     internal class DragPointSpine : DragPointMeido
     {
         private Quaternion spineRotation;
@@ -38,15 +39,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void UpdateDragType()
         {
-            bool shift = Utility.GetModKey(Utility.ModKey.Shift);
-            bool alt = Utility.GetModKey(Utility.ModKey.Alt);
-            bool ctrl = Utility.GetModKey(Utility.ModKey.Control);
+            bool shift = Input.Shift;
+            bool alt = Input.Alt;
 
-            if (Input.GetKey(KeyCode.Space) || OtherDragType())
-            {
-                CurrentDragType = DragType.Ignore;
-            }
-            else if (isThigh && alt && shift)
+            if (isThigh && alt && shift)
             {
                 // gizmo thigh rotation
                 CurrentDragType = DragType.RotLocalXZ;
@@ -59,14 +55,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 CurrentDragType = DragType.RotLocalY;
             }
-            else if (ctrl)
+            else if (Input.Control)
             {
                 // hip y transform and spine gizmo rotation
                 CurrentDragType = DragType.MoveY;
             }
             else
             {
-                CurrentDragType = DragType.None;
+                CurrentDragType = OtherDragType() ? DragType.Ignore : DragType.None;
             }
         }
 

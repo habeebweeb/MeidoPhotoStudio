@@ -47,6 +47,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
+        static MeidoManager()
+        {
+            InputManager.Register(MpsKey.MeidoUndressing, KeyCode.H);
+        }
+
         public void ChangeMaid(int index)
         {
             OnUpdateMeido(null, new MeidoUpdateEventArgs(index));
@@ -78,7 +83,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Update()
         {
-            if (Input.GetKeyDown(KeyCode.H)) UndressAll();
+            if (InputManager.GetKeyDown(MpsKey.MeidoUndressing)) UndressAll();
         }
 
         public void Serialize(System.IO.BinaryWriter binaryWriter)

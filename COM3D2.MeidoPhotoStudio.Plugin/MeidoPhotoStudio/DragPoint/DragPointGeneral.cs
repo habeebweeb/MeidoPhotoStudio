@@ -4,6 +4,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static CustomGizmo;
+    using Input = InputManager;
 
     internal abstract class DragPointGeneral : DragPoint
     {
@@ -57,25 +58,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void UpdateDragType()
         {
-            bool shift = Utility.GetModKey(Utility.ModKey.Shift);
-            if (Input.GetKey(KeyCode.A))
+            bool shift = Input.Shift;
+            if (Input.GetKey(MpsKey.DragSelect))
             {
                 CurrentDragType = DragType.Select;
             }
-            else if (Input.GetKey(KeyCode.D))
+            else if (Input.GetKey(MpsKey.DragDelete))
             {
                 CurrentDragType = DragType.Delete;
             }
-            else if (Input.GetKey(KeyCode.Z))
+            else if (Input.GetKey(MpsKey.DragMove))
             {
-                if (Utility.GetModKey(Utility.ModKey.Control)) CurrentDragType = DragType.MoveY;
+                if (Input.Control) CurrentDragType = DragType.MoveY;
                 else CurrentDragType = shift ? DragType.RotY : DragType.MoveXZ;
             }
-            else if (Input.GetKey(KeyCode.X))
+            else if (Input.GetKey(MpsKey.DragRotate))
             {
                 CurrentDragType = shift ? DragType.RotLocalY : DragType.RotLocalXZ;
             }
-            else if (Input.GetKey(KeyCode.C))
+            else if (Input.GetKey(MpsKey.DragScale))
             {
                 CurrentDragType = DragType.Scale;
             }

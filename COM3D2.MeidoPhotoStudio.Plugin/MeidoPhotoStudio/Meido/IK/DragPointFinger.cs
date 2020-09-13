@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
+    using Input = InputManager;
     internal class DragPointFinger : DragPointMeido
     {
         private readonly TBody.IKCMO IK = new TBody.IKCMO();
@@ -39,9 +40,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void UpdateDragType()
         {
-            if (Input.GetKey(KeyCode.Space))
+            if (Input.GetKey(MpsKey.DragFinger))
             {
-                CurrentDragType = Utility.GetModKey(Utility.ModKey.Shift)
+                CurrentDragType = Input.Shift
                     ? DragType.RotLocalY
                     : DragType.MoveXZ;
             }

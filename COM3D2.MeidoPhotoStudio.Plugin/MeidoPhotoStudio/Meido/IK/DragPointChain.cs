@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
+    using Input = InputManager;
     internal class DragPointChain : DragPointMeido
     {
         private readonly TBody.IKCMO IK = new TBody.IKCMO();
@@ -69,14 +70,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void UpdateDragType()
         {
-            bool control = Utility.GetModKey(Utility.ModKey.Control);
-            bool alt = Utility.GetModKey(Utility.ModKey.Alt);
+            bool control = Input.Control;
+            bool alt = Input.Alt;
 
-            if (Input.GetKey(KeyCode.Space) || OtherDragType())
-            {
-                CurrentDragType = DragType.Ignore;
-            }
-            else if (control && alt)
+            if (control && alt)
             {
                 // mune
                 CurrentDragType = DragType.RotY;
@@ -87,12 +84,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else if (alt)
             {
-                bool shift = Utility.GetModKey(Utility.ModKey.Shift);
-                CurrentDragType = shift ? DragType.RotLocalY : DragType.RotLocalXZ;
+                CurrentDragType = Input.Shift ? DragType.RotLocalY : DragType.RotLocalXZ;
             }
             else
             {
-                CurrentDragType = DragType.None;
+                CurrentDragType = OtherDragType() ? DragType.Ignore : DragType.None;
             }
         }
 

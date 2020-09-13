@@ -72,10 +72,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void Update()
         {
             base.Update();
-            if (Input.GetKeyDown(KeyCode.M))
-            {
-                this.ToggleVisibility();
-            }
+            if (InputManager.GetKeyDown(MpsKey.ToggleMessage)) this.ToggleVisibility();
         }
 
         public override void Draw()

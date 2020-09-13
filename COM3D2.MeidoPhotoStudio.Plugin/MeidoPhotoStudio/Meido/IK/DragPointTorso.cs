@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
+    using Input = InputManager;
     internal class DragPointTorso : DragPointMeido
     {
         private static readonly float[] blah = new[] { 0.03f, 0.1f, 0.09f, 0.07f };
@@ -29,18 +30,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void UpdateDragType()
         {
-            if (Input.GetKey(KeyCode.Space) || OtherDragType())
+            if (Input.Alt && !Input.Control)
             {
-                CurrentDragType = DragType.Ignore;
-            }
-            else if (Utility.GetModKey(Utility.ModKey.Alt) && !Utility.GetModKey(Utility.ModKey.Control))
-            {
-                bool shift = Utility.GetModKey(Utility.ModKey.Shift);
-                CurrentDragType = shift ? DragType.RotLocalY : DragType.RotLocalXZ;
+                CurrentDragType = Input.Shift ? DragType.RotLocalY : DragType.RotLocalXZ;
             }
             else
             {
-                CurrentDragType = DragType.None;
+                CurrentDragType = OtherDragType() ? DragType.Ignore : DragType.None;
             }
         }
 

@@ -85,17 +85,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GetFieldInfo<TType>(name).SetValue(instance, value);
         }
 
-        public static bool GetModKey(ModKey key)
-        {
-            switch (key)
-            {
-                case ModKey.Control: return Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-                case ModKey.Alt: return Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
-                case ModKey.Shift: return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-                default: return false;
-            }
-        }
-
         public static bool AnyMouseDown()
         {
             return Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2);

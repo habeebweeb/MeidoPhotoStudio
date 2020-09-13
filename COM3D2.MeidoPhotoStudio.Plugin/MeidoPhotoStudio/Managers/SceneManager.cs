@@ -7,6 +7,7 @@ using BepInEx.Configuration;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
+    using Input = InputManager;
     internal class SceneManager : IManager
     {
         public static bool Busy { get; private set; } = false;
@@ -67,6 +68,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 SortMode.Name,
                 "Scene sorting mode"
             );
+
+            InputManager.Register(MpsKey.OpenSceneManager, KeyCode.F8);
+            InputManager.Register(MpsKey.SaveScene, KeyCode.S);
+            InputManager.Register(MpsKey.LoadScene, KeyCode.A);
         }
 
         public SceneManager(MeidoPhotoStudio meidoPhotoStudio)
@@ -90,10 +95,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Update()
         {
-            if (Utility.GetModKey(Utility.ModKey.Control))
+            if (Input.Control)
             {
-                if (Input.GetKeyDown(KeyCode.S)) QuickSaveScene();
-                else if (Input.GetKeyDown(KeyCode.A)) QuickLoadScene();
+                if (Input.GetKeyDown(MpsKey.SaveScene)) QuickSaveScene();
+                else if (Input.GetKeyDown(MpsKey.LoadScene)) QuickLoadScene();
             }
         }
 

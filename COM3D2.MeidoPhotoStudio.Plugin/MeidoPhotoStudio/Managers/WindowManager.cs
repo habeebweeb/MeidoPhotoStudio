@@ -13,6 +13,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             set => Windows[id] = value;
         }
 
+        public WindowManager()
+        {
+            InputManager.Register(MpsKey.ToggleUI, KeyCode.Tab);
+        }
+
         public void DrawWindow(BaseWindow window)
         {
             if (window.Visible)
