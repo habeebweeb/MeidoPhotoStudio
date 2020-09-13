@@ -11,6 +11,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal static class MenuFileUtility
     {
+        private static byte[] menuFileBuffer;
         public const string noCategory = "noCategory";
         public static string[] MenuCategories = new[] {
             noCategory, "acchat", "headset", "wear", "skirt", "onepiece", "mizugi", "bra", "panz", "stkg", "shoes",
@@ -252,12 +253,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private static GameObject LoadSkinMesh_R(string modelFileName, int layer)
         {
-            byte[] buffer = null;
             using (AFileBase afileBase = GameUty.FileOpen(modelFileName, null))
             {
                 if (afileBase.IsValid() && afileBase.GetSize() != 0)
                 {
-                    buffer = afileBase.ReadAll();
+                    if (menuFileBuffer == null)
+                    {
+                        menuFileBuffer = new byte[System.Math.Max(500000, afileBase.GetSize())];
+                    }
+                    else if (menuFileBuffer.Length < afileBase.GetSize())
+                    {
+                        menuFileBuffer = new byte[afileBase.GetSize()];
+                    }
+                    afileBase.Read(ref menuFileBuffer, afileBase.GetSize());
                 }
                 else
                 {
@@ -265,7 +273,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     return null;
                 }
             }
-            using (BinaryReader binaryReader = new BinaryReader(new MemoryStream(buffer), Encoding.UTF8))
+            using (BinaryReader binaryReader = new BinaryReader(new MemoryStream(menuFileBuffer), Encoding.UTF8))
             {
                 GameObject gameObject = UnityEngine.Object.Instantiate(Resources.Load("seed")) as GameObject;
                 gameObject.layer = 1;
@@ -566,13 +574,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (!ValidBG2MenuFile(menuFile)) return false;
 
-            byte[] buf = null;
             try
             {
                 using (AFileBase afileBase = GameUty.FileOpen(menuFile))
                 {
                     if (afileBase == null || !afileBase.IsValid() || afileBase.GetSize() == 0) return false;
-                    buf = afileBase.ReadAll();
+                    if (menuFileBuffer == null)
+                    {
+                        menuFileBuffer = new byte[System.Math.Max(500000, afileBase.GetSize())];
+                    }
+                    else if (menuFileBuffer.Length < afileBase.GetSize())
+                    {
+                        menuFileBuffer = new byte[afileBase.GetSize()];
+                    }
+                    afileBase.Read(ref menuFileBuffer, afileBase.GetSize());
                 }
             }
             catch
@@ -581,7 +596,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 return false;
             }
 
-            using (BinaryReader binaryReader = new BinaryReader(new MemoryStream(buf), Encoding.UTF8))
+            using (BinaryReader binaryReader = new BinaryReader(new MemoryStream(menuFileBuffer), Encoding.UTF8))
             {
                 string menuHeader = binaryReader.ReadString();
                 NDebug.Assert(
