@@ -31,11 +31,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (!isHead && current == DragType.RotLocalXZ) ApplyProperties(false, false, isThigh);
                 else if (!isThigh && (current == DragType.MoveY)) ApplyProperties(isHip, isHip, !isHip);
                 else if (!(isThigh || isHead) && (current == DragType.RotLocalY)) ApplyProperties(!isHip, !isHip, isHip);
-                else
-                {
-                    bool active = !isThigh;
-                    ApplyProperties(active, active, false);
-                }
+                else ApplyProperties(!isThigh, !isThigh, false);
             }
             else ApplyProperties(false, false, false);
         }
@@ -84,15 +80,23 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (isPlaying) meido.Stop = true;
 
+            Vector3 mouseDelta = MouseDelta();
+
             if (CurrentDragType == DragType.None)
             {
                 if (isHead) meido.HeadToCam = false;
 
-                Vector3 mouseDelta = MouseDelta();
-
                 MyObject.rotation = spineRotation;
                 MyObject.Rotate(camera.transform.forward, -mouseDelta.x / 4.5f, Space.World);
                 MyObject.Rotate(camera.transform.right, mouseDelta.y / 3f, Space.World);
+            }
+
+            if (CurrentDragType == DragType.RotLocalY)
+            {
+                if (isHead) meido.HeadToCam = false;
+
+                MyObject.rotation = spineRotation;
+                MyObject.Rotate(Vector3.right * mouseDelta.x / 4f);
             }
 
             if (CurrentDragType == DragType.MoveY)
