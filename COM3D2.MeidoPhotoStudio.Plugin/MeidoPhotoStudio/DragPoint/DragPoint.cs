@@ -7,7 +7,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal abstract class DragPoint : MonoBehaviour
     {
         public const float defaultAlpha = 0.75f;
-        private static GameObject dragPointParent = new GameObject("[MPS DragPoint Parent]");
+        private static GameObject dragPointParent;
         private const float doubleClickSensitivity = 0.3f;
         private Func<Vector3> position;
         private Func<Vector3> rotation;
@@ -108,10 +108,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             ApplyDragType();
         }
 
+        private static GameObject DragPointParent()
+        {
+            if (dragPointParent == null) dragPointParent = new GameObject("[MPS DragPoint Parent]");
+            return dragPointParent;
+        }
+
         public static T Make<T>(PrimitiveType primitiveType, Vector3 scale) where T : DragPoint
         {
             GameObject dragPointGo = GameObject.CreatePrimitive(primitiveType);
-            dragPointGo.transform.SetParent(dragPointParent.transform, false);
+            dragPointGo.transform.SetParent(DragPointParent().transform, false);
             dragPointGo.transform.localScale = scale;
             dragPointGo.layer = 8;
 
