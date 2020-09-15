@@ -17,9 +17,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private string messageName;
         private string messageText;
 
+        static MessageWindowManager() => InputManager.Register(MpsKey.ToggleMessage, KeyCode.M, "Show/hide message box");
+
         public MessageWindowManager()
         {
-            InputManager.Register(MpsKey.ToggleMessage, KeyCode.M);
             sysRoot = GameObject.Find("__GameMain__/SystemUI Root");
             this.msgWnd = GameMain.Instance.MsgWnd;
             this.msgGameObject = sysRoot.transform.Find("MessageWindowPanel").gameObject;

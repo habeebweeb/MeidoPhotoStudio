@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,7 +33,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static readonly int dropdownWindowID = 777;
         public enum Window
         {
-            Call, Pose, Face, BG, BG2, Main, Message, Save, SaveModal
+            Call, Pose, Face, BG, BG2, Main, Message, Save, SaveModal, Settings
         }
         public enum Scene
         {

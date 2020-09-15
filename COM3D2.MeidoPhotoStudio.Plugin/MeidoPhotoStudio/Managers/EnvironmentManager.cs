@@ -56,10 +56,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         static EnvironmentManager()
         {
-            Input.Register(MpsKey.CameraLayer, KeyCode.Q);
-            Input.Register(MpsKey.CameraSave, KeyCode.S);
-            Input.Register(MpsKey.CameraLoad, KeyCode.A);
-            Input.Register(MpsKey.CameraReset, KeyCode.R);
+            Input.Register(MpsKey.CameraLayer, KeyCode.Q, "Camera control layer");
+            Input.Register(MpsKey.CameraSave, KeyCode.S, "Save camera transform");
+            Input.Register(MpsKey.CameraLoad, KeyCode.A, "Load camera transform");
+            Input.Register(MpsKey.CameraReset, KeyCode.R, "Reset camera transform");
         }
 
         public EnvironmentManager(MeidoManager meidoManager)

@@ -36,8 +36,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         static MeidoPhotoStudio()
         {
-            Input.Register(MpsKey.Screenshot, KeyCode.S);
-            Input.Register(MpsKey.Activate, KeyCode.F6);
+            Input.Register(MpsKey.Screenshot, KeyCode.S, "Take screenshot");
+            Input.Register(MpsKey.Activate, KeyCode.F6, "Activate/deactivate MeidoPhotoStudio");
         }
 
         private void Awake()
@@ -368,7 +368,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     [Constants.Window.BG] = new BGWindowPane(
                         environmentManager, lightManager, effectManager, sceneWindow
                     ),
-                    [Constants.Window.BG2] = new BG2WindowPane(meidoManager, propManager)
+                    [Constants.Window.BG2] = new BG2WindowPane(meidoManager, propManager),
+                    [Constants.Window.Settings] = new SettingsWindowPane()
                 },
                 [Constants.Window.Message] = new MessageWindow(messageWindowManager),
                 [Constants.Window.Save] = sceneWindow

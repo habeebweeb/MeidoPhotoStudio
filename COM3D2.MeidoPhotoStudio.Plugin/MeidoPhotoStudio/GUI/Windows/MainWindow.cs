@@ -10,7 +10,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private LightManager lightManager;
         private Dictionary<Constants.Window, BaseMainWindowPane> windowPanes;
         private TabsPane tabsPane;
-        private Button ReloadTranslationButton;
+        private Button settingsButton;
         private BaseMainWindowPane currentWindowPane;
         public override Rect WindowRect
         {
@@ -49,10 +49,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             tabsPane = new TabsPane();
             tabsPane.TabChange += (s, a) => ChangeTab();
 
-            ReloadTranslationButton = new Button("Reload Translation");
-            ReloadTranslationButton.ControlEvent += (s, a) =>
+            settingsButton = new Button("Settings");
+            settingsButton.ControlEvent += (s, a) =>
             {
-                Translation.ReinitializeTranslation();
+                if (selectedWindow == Constants.Window.Settings) ChangeTab();
+                else
+                {
+                    settingsButton.Label = "Close";
+                    SetCurrentWindow(Constants.Window.Settings);
+                }
             };
         }
 
@@ -77,13 +82,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void ChangeTab()
         {
-            this.selectedWindow = (Constants.Window)tabsPane.SelectedTab;
-            SetCurrentWindow();
+            settingsButton.Label = "Settings";
+            SetCurrentWindow(tabsPane.SelectedTab);
         }
 
-        private void SetCurrentWindow()
+        private void SetCurrentWindow(Constants.Window window)
         {
             if (currentWindowPane != null) currentWindowPane.ActiveWindow = false;
+            selectedWindow = window;
             currentWindowPane = windowPanes[selectedWindow];
             currentWindowPane.ActiveWindow = true;
             currentWindowPane.UpdatePanes();
@@ -106,13 +112,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             GUILayout.FlexibleSpace();
 
-            ReloadTranslationButton.Draw();
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 10,
+                alignment = TextAnchor.LowerLeft
+            };
 
-            GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
-            labelStyle.fontSize = 10;
-            labelStyle.alignment = TextAnchor.LowerLeft;
-
+            GUILayout.BeginHorizontal();
             GUILayout.Label(MeidoPhotoStudio.pluginString, labelStyle);
+            GUILayout.FlexibleSpace();
+            settingsButton.Draw(GUILayout.ExpandWidth(false));
+            GUILayout.EndHorizontal();
+
             GUI.DragWindow();
         }
 

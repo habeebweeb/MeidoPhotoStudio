@@ -69,9 +69,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 "Scene sorting mode"
             );
 
-            InputManager.Register(MpsKey.OpenSceneManager, KeyCode.F8);
-            InputManager.Register(MpsKey.SaveScene, KeyCode.S);
-            InputManager.Register(MpsKey.LoadScene, KeyCode.A);
+            Input.Register(MpsKey.OpenSceneManager, KeyCode.F8, "Hide/show scene manager");
+            Input.Register(MpsKey.SaveScene, KeyCode.S, "Quick save scene");
+            Input.Register(MpsKey.LoadScene, KeyCode.A, "Load quick saved scene");
         }
 
         public SceneManager(MeidoPhotoStudio meidoPhotoStudio)

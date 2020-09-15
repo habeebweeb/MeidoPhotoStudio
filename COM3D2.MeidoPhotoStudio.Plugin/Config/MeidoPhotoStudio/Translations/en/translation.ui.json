@@ -384,5 +384,33 @@
         "initializing": "Initializing",
         "noMaids": "No Maids",
         "noProps": "No Props"
+    },
+    "controls": {
+        "activate": "Activate MPS",
+        "screenshot": "Screenshot",
+        "toggleUI": "Hide/Show UI",
+        "toggleMessage": "Message Box",
+        "meidoUndressing": "Undressing",
+        "cameraLayer": "Camera Layer",
+        "cameraReset": "Reset Camera",
+        "cameraSave": "Save Camera",
+        "cameraLoad": "Load Camera",
+        "dragSelect": "Select",
+        "dragDelete": "Delete",
+        "dragMove": "Move",
+        "dragRotate": "Rotate",
+        "dragScale": "Scale",
+        "dragFinger": "Show Fingers",
+        "saveScene": "Quick Save",
+        "loadScene": "Quick Load",
+        "openSceneManager": "Open Scene Manager"
+    },
+    "settingsHeaders": {
+        "controls": "Controls",
+        "controlsGeneral": "General",
+        "controlsMaids": "Maids",
+        "controlsCamera": "Camera",
+        "controlsDragPoint": "Drag Handles",
+        "controlsScene": "Scene Management"
     }
 }
