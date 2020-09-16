@@ -38,8 +38,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (!this.meidoManager.HasActiveMeido) return;
             if (ActiveWindow)
             {
-                this.meidoManager.ActiveMeido.Maid.boMabataki = false;
-                this.meidoManager.ActiveMeido.Maid.body0.Face.morph.EyeMabataki = 0f;
+                this.meidoManager.ActiveMeido.StopBlink();
                 base.UpdatePanes();
             }
         }

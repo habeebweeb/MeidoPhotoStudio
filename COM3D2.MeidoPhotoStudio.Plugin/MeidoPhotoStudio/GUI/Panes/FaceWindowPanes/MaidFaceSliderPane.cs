@@ -60,6 +60,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         };
         private MeidoManager meidoManager;
         private Dictionary<string, BaseControl> faceControls;
+        private bool hasTangOpen = false;
 
         public MaidFaceSliderPane(MeidoManager meidoManager)
         {
@@ -103,21 +104,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void UpdatePane()
         {
             this.updating = true;
-            TMorph morph = this.meidoManager.ActiveMeido.Maid.body0.Face.morph;
-            bool gp01FBFace = morph.bodyskin.PartsVersion >= 120;
-            float[] blendValues = this.meidoManager.ActiveMeido.BlendValues;
-            float[] blendValuesBackup = this.meidoManager.ActiveMeido.BlendValuesBackup;
+            Meido meido = this.meidoManager.ActiveMeido;
             for (int i = 0; i < faceKeys.Length; i++)
             {
-                string hash = faceKeys[i];
-                Slider slider = (Slider)faceControls[hash];
+                Slider slider = (Slider)faceControls[faceKeys[i]];
                 try
                 {
-                    hash = Utility.GP01FbFaceHash(morph, hash);
-                    if (hash.StartsWith("eyeclose") && !(gp01FBFace && (hash == "eyeclose3")))
-                        slider.Value = blendValuesBackup[(int)morph.hash[hash]];
-                    else
-                        slider.Value = blendValues[(int)morph.hash[hash]];
+                    slider.Value = meido.GetFaceBlendValue(faceKeys[i]);
                 }
                 catch { }
             }
@@ -126,10 +119,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 string hash = faceToggleKeys[i];
                 Toggle toggle = (Toggle)faceControls[hash];
-                if (hash == "nosefook") toggle.Value = morph.boNoseFook;
-                else toggle.Value = blendValues[(int)morph.hash[hash]] > 0f;
+                toggle.Value = meido.GetFaceBlendValue(hash) > 0f;
                 if (hash == "toothoff") toggle.Value = !toggle.Value;
             }
+            hasTangOpen = meido.Body.Face.morph.hash["tangopen"] != null;
             this.updating = false;
         }
 
@@ -148,7 +141,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DrawSliders("mouthup", "mouthdw");
             DrawSliders("mouthhe", "mouthuphalf");
             DrawSliders("tangout", "tangup");
-            DrawSliders("tangopen");
+            if (hasTangOpen) DrawSliders("tangopen");
             MiscGUI.WhiteLine();
             DrawToggles("hoho2", "shock", "nosefook");
             DrawToggles("namida", "yodare", "toothoff");
@@ -185,7 +178,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void SetFaceValue(string key, bool value)
         {
-            float max = (key == "hoho" || key == "hoho2") ? 0.5f : 1f;
+            float max = key.StartsWith("hoho") ? 0.5f : 1f;
             if (key == "toothoff") value = !value;
             SetFaceValue(key, value ? max : 0f);
         }

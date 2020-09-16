@@ -68,7 +68,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.updating = true;
             int faceBlendSetIndex = Constants.FaceBlendList.FindIndex(
-                blend => blend == this.meidoManager.ActiveMeido.FaceBlendSet
+                blend => blend == this.meidoManager.ActiveMeido.CurrentFaceBlendSet
             );
             this.faceBlendDropdown.SelectedItemIndex = Mathf.Clamp(faceBlendSetIndex, 0, Constants.FaceBlendList.Count);
             this.updating = false;

@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
@@ -11,6 +10,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class Meido : ISerializable
     {
+        private bool initialized;
+        private DragPointGravity hairGravityDragPoint;
+        private GravityTransformControl hairGravityControl;
+        public bool HairGravityValid => hairGravityControl != null;
+        private DragPointGravity skirtGravityDragPoint;
+        private GravityTransformControl skirtGravityControl;
+        public bool SkirtGravityValid => skirtGravityControl != null;
+        private float[] BlendSetValueBackup;
         public const int meidoDataVersion = 1000;
         public static readonly PoseInfo DefaultPose =
             new PoseInfo(Constants.PoseGroupList[0], Constants.PoseDict[Constants.PoseGroupList[0]][0]);
@@ -34,7 +41,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             front, back, shift
         }
-        private bool initialized;
         public event EventHandler<MeidoUpdateEventArgs> UpdateMeido;
         public int StockNo { get; }
         public Maid Maid { get; private set; }
@@ -42,7 +48,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public MeidoDragPointManager IKManager { get; private set; }
         public Texture2D Portrait { get; private set; }
         public PoseInfo CachedPose { get; private set; } = DefaultPose;
-        public string FaceBlendSet { get; private set; } = defaultFaceBlendSet;
+        public string CurrentFaceBlendSet { get; private set; } = defaultFaceBlendSet;
         public int Slot { get; private set; }
         public bool Loading { get; private set; }
         public string FirstName => Maid.status.firstName;
@@ -131,15 +137,31 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 OnUpdateMeido();
             }
         }
-        private DragPointGravity hairGravityDragPoint;
-        private GravityTransformControl hairGravityControl;
-        private DragPointGravity skirtGravityDragPoint;
-        private GravityTransformControl skirtGravityControl;
-        public bool HairGravityValid => hairGravityControl != null;
-        public bool SkirtGravityValid => skirtGravityControl != null;
+        public bool HairGravityActive
+        {
+            get => HairGravityValid && hairGravityDragPoint.gameObject.activeSelf;
+            set
+            {
+                if (HairGravityValid && value != HairGravityActive)
+                {
+                    hairGravityDragPoint.gameObject.SetActive(value);
+                    hairGravityControl.isEnabled = value;
+                }
+            }
+        }
+        public bool SkirtGravityActive
+        {
+            get => SkirtGravityValid && skirtGravityDragPoint.gameObject.activeSelf;
+            set
+            {
+                if (SkirtGravityValid && value != SkirtGravityActive)
+                {
+                    skirtGravityDragPoint.gameObject.SetActive(value);
+                    skirtGravityControl.isEnabled = value;
+                }
+            }
+        }
         public event EventHandler<GravityEventArgs> GravityMove;
-        public float[] BlendValuesBackup { get; private set; }
-        public float[] BlendValues { get; private set; }
         public Quaternion DefaultEyeRotL { get; private set; }
         public Quaternion DefaultEyeRotR { get; private set; }
 
@@ -215,6 +237,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Deactivate()
         {
+            if (Body.isLoadedBody) SetFaceBlendSet(defaultFaceBlendSet);
+
             Unload();
 
             DestroyGravityControl(ref hairGravityControl);
@@ -227,6 +251,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Maid.SetPosOffset(Vector3.zero);
             Body.transform.localScale = Vector3.one;
             Maid.ResetAll();
+            Maid.MabatakiUpdateStop = false;
             Maid.ActiveSlotNo = -1;
         }
 
@@ -311,41 +336,46 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void SetFaceBlendSet(string blendSet)
         {
-            FaceBlendSet = blendSet;
-            Maid.boMabataki = false;
-            TMorph morph = Body.Face.morph;
-            morph.EyeMabataki = 0f;
-            morph.MulBlendValues(blendSet, 1f);
-            morph.FixBlendValues_Face();
+            ApplyBackupBlendSet();
+
+            CurrentFaceBlendSet = blendSet;
+
+            BackupBlendSetValuess();
+
+            Maid.FaceAnime(blendSet, 0f);
+
+            StopBlink();
             OnUpdateMeido();
         }
 
         public void SetFaceBlendValue(string hash, float value)
         {
             TMorph morph = Body.Face.morph;
-            if (hash == "nosefook")
-            {
-                morph.boNoseFook = value > 0f;
-                Maid.boNoseFook = morph.boNoseFook;
-            }
+            if (hash == "nosefook") Maid.boNoseFook = morph.boNoseFook = value > 0f;
             else
             {
-                bool gp01FBFace = morph.bodyskin.PartsVersion >= 120;
-                float[] blendValues = hash.StartsWith("eyeclose") && !(gp01FBFace && (hash == "eyeclose3"))
-                    ? this.BlendValuesBackup
-                    : this.BlendValues;
-
                 hash = Utility.GP01FbFaceHash(morph, hash);
-
                 try
                 {
-                    blendValues[(int)morph.hash[hash]] = value;
+                    morph.dicBlendSet[CurrentFaceBlendSet][(int)morph.hash[hash]] = value;
                 }
                 catch { }
             }
-            Maid.boMabataki = false;
-            morph.EyeMabataki = 0f;
-            morph.FixBlendValues_Face();
+        }
+
+        public float GetFaceBlendValue(string hash)
+        {
+            TMorph morph = Body.Face.morph;
+            if (hash == "nosefook") return (Maid.boNoseFook || morph.boNoseFook) ? 1f : 0f;
+            hash = Utility.GP01FbFaceHash(morph, hash);
+            return morph.dicBlendSet[CurrentFaceBlendSet][(int)morph.hash[hash]];
+        }
+
+        public void StopBlink()
+        {
+            Maid.MabatakiUpdateStop = true;
+            Body.Face.morph.EyeMabataki = 0f;
+            Utility.SetFieldValue(Maid, "MabatakiVal", 0f);
         }
 
         public void SetMaskMode(MaskMode maskMode)
@@ -413,6 +443,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (dragPoint != null) dragPoint.MyObject.localPosition = position;
         }
 
+        private void BackupBlendSetValuess()
+        {
+            float[] values = Body.Face.morph.dicBlendSet[CurrentFaceBlendSet];
+            BlendSetValueBackup = new float[values.Length];
+            values.CopyTo(BlendSetValueBackup, 0);
+        }
+
+        private void ApplyBackupBlendSet()
+        {
+            BlendSetValueBackup.CopyTo(Body.Face.morph.dicBlendSet[CurrentFaceBlendSet], 0);
+            Maid.boNoseFook = false;
+        }
+
         private CacheBoneDataArray GetCacheBoneData()
         {
             CacheBoneDataArray cache = this.Maid.gameObject.GetComponent<CacheBoneDataArray>();
@@ -429,8 +472,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (!initialized)
             {
                 TMorph faceMorph = Body.Face.morph;
-                BlendValuesBackup = Utility.GetFieldValue<TMorph, float[]>(faceMorph, "BlendValuesBackup");
-                BlendValues = Utility.GetFieldValue<TMorph, float[]>(faceMorph, "BlendValues");
                 DefaultEyeRotL = Body.quaDefEyeL;
                 DefaultEyeRotR = Body.quaDefEyeR;
 
@@ -438,6 +479,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 initialized = true;
             }
+
+            if (BlendSetValueBackup == null) BackupBlendSetValuess();
 
             if (HairGravityValid) hairGravityDragPoint.Move += OnGravityEvent;
             if (SkirtGravityValid) skirtGravityDragPoint.Move += OnGravityEvent;
@@ -449,30 +492,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Bone = false;
             Loading = false;
         }
-        public bool HairGravityActive
-        {
-            get => HairGravityValid && hairGravityDragPoint.gameObject.activeSelf;
-            set
-            {
-                if (HairGravityValid && value != HairGravityActive)
-                {
-                    hairGravityDragPoint.gameObject.SetActive(value);
-                    hairGravityControl.isEnabled = value;
-                }
-            }
-        }
-        public bool SkirtGravityActive
-        {
-            get => SkirtGravityValid && skirtGravityDragPoint.gameObject.activeSelf;
-            set
-            {
-                if (SkirtGravityValid && value != SkirtGravityActive)
-                {
-                    skirtGravityDragPoint.gameObject.SetActive(value);
-                    skirtGravityControl.isEnabled = value;
-                }
-            }
-        }
+
         private void InitializeGravityControls()
         {
             hairGravityControl = InitializeGravityControl("hair");
@@ -641,31 +661,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void SerializeFace(BinaryWriter binaryWriter)
         {
             binaryWriter.Write("MPS_FACE");
-            TMorph morph = Maid.body0.Face.morph;
-            bool gp01FBFace = morph.bodyskin.PartsVersion >= 120;
-            foreach (string hash in faceKeys)
+            foreach (string hash in faceKeys.Concat(faceToggleKeys))
             {
-                float[] blendValues = hash.StartsWith("eyeclose") && !(gp01FBFace && (hash == "eyeclose3"))
-                    ? this.BlendValuesBackup
-                    : this.BlendValues;
-
-                string faceKey = Utility.GP01FbFaceHash(morph, hash);
                 try
                 {
-                    float value = blendValues[(int)morph.hash[faceKey]];
+                    float value = GetFaceBlendValue(hash);
                     binaryWriter.Write(hash);
                     binaryWriter.Write(value);
                 }
                 catch { }
-            }
-
-            foreach (string hash in faceToggleKeys)
-            {
-                bool value = this.BlendValues[(int)morph.hash[hash]] > 0f;
-                if (hash == "nosefook") value = morph.boNoseFook;
-
-                binaryWriter.Write(hash);
-                binaryWriter.Write(value);
             }
             binaryWriter.Write("END_FACE");
         }
@@ -678,7 +682,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DetachAllMpnAttach();
 
             binaryReader.ReadInt64(); // meido buffer length
-            // transform
+                                      // transform
             Maid.transform.position = binaryReader.ReadVector3();
             Maid.transform.rotation = binaryReader.ReadQuaternion();
             Maid.transform.localScale = binaryReader.ReadVector3();
@@ -775,36 +779,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void DeserializeFace(BinaryReader binaryReader)
         {
+            StopBlink();
             binaryReader.ReadString(); // read face header
-            TMorph morph = Maid.body0.Face.morph;
-            bool gp01FBFace = morph.bodyskin.PartsVersion >= 120;
-            HashSet<string> faceKeys = new HashSet<string>(Meido.faceKeys);
             string header;
             while ((header = binaryReader.ReadString()) != "END_FACE")
             {
-                if (faceKeys.Contains(header))
-                {
-                    float[] blendValues = header.StartsWith("eyeclose") && !(gp01FBFace && (header == "eyeclose3"))
-                        ? this.BlendValuesBackup
-                        : this.BlendValues;
-                    string hash = Utility.GP01FbFaceHash(morph, header);
-                    try
-                    {
-                        float value = binaryReader.ReadSingle();
-                        blendValues[(int)morph.hash[hash]] = value;
-                    }
-                    catch { }
-                }
-                else
-                {
-                    bool value = binaryReader.ReadBoolean();
-                    if (header == "nosefook") this.Maid.boNoseFook = value;
-                    else this.BlendValues[(int)morph.hash[header]] = value ? 1f : 0f;
-                }
+                SetFaceBlendValue(header, binaryReader.ReadSingle());
             }
-            Maid.boMabataki = false;
-            morph.EyeMabataki = 0f;
-            morph.FixBlendValues_Face();
         }
     }
 
