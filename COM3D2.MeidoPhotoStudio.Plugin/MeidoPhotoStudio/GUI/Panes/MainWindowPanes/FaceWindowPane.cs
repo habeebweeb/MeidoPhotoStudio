@@ -8,6 +8,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private MaidFaceSliderPane maidFaceSliderPane;
         private MaidFaceBlendPane maidFaceBlendPane;
         private MaidSwitcherPane maidSwitcherPane;
+        private readonly SaveFacePane saveFacePane;
+        private readonly Toggle saveFaceToggle;
+        private bool saveFaceMode = false;
 
         public FaceWindowPane(MeidoManager meidoManager, MaidSwitcherPane maidSwitcherPane)
         {
@@ -17,18 +20,33 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.maidFaceSliderPane = AddPane(new MaidFaceSliderPane(this.meidoManager));
             this.maidFaceBlendPane = AddPane(new MaidFaceBlendPane(this.meidoManager));
+            saveFacePane = AddPane(new SaveFacePane(this.meidoManager));
+
+            saveFaceToggle = new Toggle(Translation.Get("maidFaceWindow", "savePaneToggle"));
+            saveFaceToggle.ControlEvent += (s, a) => saveFaceMode = !saveFaceMode;
+        }
+
+        protected override void ReloadTranslation()
+        {
+            saveFaceToggle.Label = Translation.Get("maidFaceWindow", "savePaneToggle");
         }
 
         public override void Draw()
         {
-            this.tabsPane.Draw();
-            this.maidSwitcherPane.Draw();
+            tabsPane.Draw();
+            maidSwitcherPane.Draw();
 
-            this.scrollPos = GUILayout.BeginScrollView(this.scrollPos);
+            maidFaceBlendPane.Draw();
 
-            this.maidFaceBlendPane.Draw();
+            scrollPos = GUILayout.BeginScrollView(scrollPos);
 
-            this.maidFaceSliderPane.Draw();
+            maidFaceSliderPane.Draw();
+
+            GUI.enabled = meidoManager.HasActiveMeido;
+            saveFaceToggle.Draw();
+            GUI.enabled = true;
+
+            if (saveFaceMode) saveFacePane.Draw();
 
             GUILayout.EndScrollView();
         }

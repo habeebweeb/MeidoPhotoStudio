@@ -150,7 +150,9 @@
         "speakEro": "H Lines"
     },
     "maidFaceWindow": {
-        "faceLock": "L"
+        "savePaneToggle": "Save",
+        "baseTab": "Base",
+        "customTab": "Custom"
     },
     "faceBlendValues": {
         "eyeclose": "Eye Shut",
@@ -191,6 +193,8 @@
         "hohol": "Blush 3"
     },
     "faceSave": {
+        "categoryHeader": "Cateogory",
+        "nameHeader": "Name",
         "saveButton": "Add",
         "deleteButton": "D"
     },

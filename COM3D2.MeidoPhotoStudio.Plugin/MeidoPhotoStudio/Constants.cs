@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,12 +17,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private static bool beginMpnAttachInit;
         public const string customPoseDirectory = "Custom Poses";
         public const string customHandDirectory = "Hand Presets";
+        public const string customFaceDirectory = "Face Presets";
         public const string sceneDirectory = "Scenes";
         public const string kankyoDirectory = "Environments";
         public const string configDirectory = "MeidoPhotoStudio";
         public const string translationDirectory = "Translations";
         public static readonly string customPosePath;
         public static readonly string customHandPath;
+        public static readonly string customFacePath;
         public static readonly string scenesPath;
         public static readonly string kankyoPath;
         public static readonly string configPath;
@@ -45,7 +47,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static readonly Dictionary<string, List<string>> CustomPoseDict = new Dictionary<string, List<string>>();
         public static readonly List<string> CustomHandGroupList = new List<string>();
         public static readonly Dictionary<string, List<string>> CustomHandDict = new Dictionary<string, List<string>>();
-        public static readonly List<string> FaceBlendList = new List<string>();
+        public static readonly List<string> FaceGroupList = new List<string>();
+        public static readonly Dictionary<string, List<string>> FaceDict = new Dictionary<string, List<string>>();
+        public static readonly List<string> CustomFaceGroupList = new List<string>();
+        public static readonly Dictionary<string, List<string>> CustomFaceDict = new Dictionary<string, List<string>>();
         public static readonly List<string> BGList = new List<string>();
         public static readonly List<KeyValuePair<string, string>> MyRoomCustomBGList
             = new List<KeyValuePair<string, string>>();
@@ -67,6 +72,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static event EventHandler<MenuFilesEventArgs> MenuFilesChange;
         public static event EventHandler<CustomPoseEventArgs> customPoseChange;
         public static event EventHandler<CustomPoseEventArgs> customHandChange;
+        public static event EventHandler<CustomPoseEventArgs> CustomFaceChange;
         public enum DoguCategory
         {
             Other, Mob, Desk, HandItem, BGSmall
@@ -89,10 +95,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             customPosePath = Path.Combine(presetPath, customPoseDirectory);
             customHandPath = Path.Combine(presetPath, customHandDirectory);
+            customFacePath = Path.Combine(presetPath, customFaceDirectory);
             scenesPath = Path.Combine(configPath, sceneDirectory);
             kankyoPath = Path.Combine(configPath, kankyoDirectory);
 
-            string[] directories = new[] { customPosePath, customHandPath, scenesPath, kankyoPath, configPath };
+            string[] directories = new[] {
+                customPosePath, customHandPath, scenesPath, kankyoPath, configPath, customFacePath
+            };
 
             foreach (string directory in directories)
             {
@@ -110,6 +119,67 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             InitializeDogu();
             InitializeMyRoomProps();
             InitializeMpnAttachProps();
+        }
+
+        public static void AddFacePreset(Dictionary<string, float> faceData, string filename, string directory)
+        {
+            filename = Utility.SanitizePathPortion(filename);
+            directory = Utility.SanitizePathPortion(directory);
+
+            if (string.IsNullOrEmpty(filename)) filename = "face_preset";
+            if (directory.Equals(customFaceDirectory, StringComparison.InvariantCultureIgnoreCase))
+            {
+                directory = string.Empty;
+            }
+            directory = Path.Combine(customFacePath, directory);
+
+            if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
+
+            string fullPath = Path.Combine(directory, filename);
+
+            if (File.Exists($"{fullPath}.xml")) fullPath += $"_{DateTime.Now:yyyyMMddHHmmss}";
+
+            fullPath = Path.GetFullPath($"{fullPath}.xml");
+
+            if (!fullPath.StartsWith(customFacePath))
+            {
+                Utility.LogError($"Could not save face preset! Path is invalid: '{fullPath}'");
+                return;
+            }
+
+            XElement rootElement = new XElement("FaceData");
+
+            foreach (KeyValuePair<string, float> kvp in faceData)
+            {
+                rootElement.Add(new XElement("elm", kvp.Value.ToString("G9"), new XAttribute("name", kvp.Key)));
+            }
+
+            XDocument fullDocument = new XDocument(
+                new XDeclaration("1.0", "utf-8", "true"),
+                new XComment("MeidoPhotoStudio Face Preset"),
+                rootElement
+            );
+
+            fullDocument.Save(fullPath);
+
+            FileInfo fileInfo = new FileInfo(fullPath);
+
+            string category = fileInfo.Directory.Name;
+            string faceGroup = CustomFaceGroupList.Find(
+                group => string.Equals(category, group, StringComparison.InvariantCultureIgnoreCase)
+            );
+
+            if (string.IsNullOrEmpty(faceGroup))
+            {
+                CustomFaceGroupList.Add(category);
+                CustomHandDict[category] = new List<string>();
+            }
+            else category = faceGroup;
+
+            CustomFaceDict[category].Add(fullPath);
+            CustomFaceDict[category].Sort();
+
+            CustomFaceChange?.Invoke(null, new CustomPoseEventArgs(fullPath, category));
         }
 
         public static void AddPose(byte[] anmBinary, string filename, string directory)
@@ -295,7 +365,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 PoseGroupList.AddRange(new[] { "normal2", "ero2" });
             }
 
-            Action<string> GetPoses = directory =>
+            void GetPoses(string directory)
             {
                 List<string> poseList = Directory.GetFiles(directory)
                     .Where(file => Path.GetExtension(file) == ".anm").ToList();
@@ -306,7 +376,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     if (poseGroupName != customPoseDirectory) CustomPoseGroupList.Add(poseGroupName);
                     CustomPoseDict[poseGroupName] = poseList;
                 }
-            };
+            }
 
             CustomPoseGroupList.Add(customPoseDirectory);
             CustomPoseDict[customPoseDirectory] = new List<string>();
@@ -321,7 +391,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static void InitializeHandPresets()
         {
-            Action<string> GetPresets = directory =>
+            void GetPresets(string directory)
             {
                 IEnumerable<string> presetList = Directory.GetFiles(directory)
                     .Where(file => Path.GetExtension(file) == ".xml");
@@ -332,7 +402,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     if (presetCategory != customHandDirectory) CustomHandGroupList.Add(presetCategory);
                     CustomHandDict[presetCategory] = new List<string>(presetList);
                 }
-            };
+            }
 
             CustomHandGroupList.Add(customHandDirectory);
             CustomHandDict[customHandDirectory] = new List<string>();
@@ -347,16 +417,36 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static void InitializeFaceBlends()
         {
-            using (CsvParser csvParser = OpenCsvParser("phot_face_list.nei"))
+            PhotoFaceData.Create();
+
+            FaceGroupList.AddRange(PhotoFaceData.popup_category_list.Select(kvp => kvp.Key));
+
+            foreach (KeyValuePair<string, List<PhotoFaceData>> kvp in PhotoFaceData.category_list)
             {
-                for (int cell_y = 1; cell_y < csvParser.max_cell_y; cell_y++)
+                FaceDict[kvp.Key] = kvp.Value.Select(data => data.setting_name).ToList();
+            }
+
+            void GetFacePresets(string directory)
+            {
+                List<string> presetList = Directory.GetFiles(directory)
+                    .Where(file => Path.GetExtension(file) == ".xml").ToList();
+
+                if (presetList.Count > 0)
                 {
-                    if (csvParser.IsCellToExistData(3, cell_y))
-                    {
-                        string blendValue = csvParser.GetCellAsString(3, cell_y);
-                        FaceBlendList.Add(blendValue);
-                    }
+                    string faceGroupName = new DirectoryInfo(directory).Name;
+                    if (faceGroupName != customFaceDirectory) CustomFaceGroupList.Add(faceGroupName);
+                    CustomFaceDict[faceGroupName] = presetList;
                 }
+            }
+
+            CustomFaceGroupList.Add(customFaceDirectory);
+            CustomFaceDict[customFaceDirectory] = new List<string>();
+
+            GetFacePresets(customFacePath);
+
+            foreach (string directory in Directory.GetDirectories(customFacePath))
+            {
+                GetFacePresets(directory);
             }
         }
 
@@ -439,7 +529,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             string ignoreListPath = Path.Combine(configPath, "Database\\bg_ignore_list.json");
             string ignoreListJson = File.ReadAllText(ignoreListPath);
-            string[] ignoreList = JsonConvert.DeserializeObject<IEnumerable<string>>(ignoreListJson).ToArray();
+            string[] ignoreList = JsonConvert.DeserializeObject<string[]>(ignoreListJson);
 
             // bg object extend
             HashSet<string> doguHashSet = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
@@ -497,7 +587,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             List<string> com3d2DeskDogu = DoguDict[customDoguCategories[DoguCategory.Desk]];
 
-            Action<AFileSystemBase> GetDeskItems = fs =>
+            void GetDeskItems(AFileSystemBase fs)
             {
                 using (CsvParser csvParser = OpenCsvParser("desk_item_detail.nei", fs))
                 {
@@ -526,7 +616,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         }
                     }
                 }
-            };
+            }
 
             GetDeskItems(GameUty.FileSystem);
         }
