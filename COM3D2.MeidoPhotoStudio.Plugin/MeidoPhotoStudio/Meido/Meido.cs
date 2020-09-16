@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
 using static TBody;
+using System.Collections.Generic;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -334,15 +335,60 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return frameBinary ? cache.GetFrameBinary(true, true) : cache.GetAnmBinary(true, true);
         }
 
-        public void SetFaceBlendSet(string blendSet)
+        public Dictionary<string, float> SerializeFace()
         {
-            ApplyBackupBlendSet();
+            Dictionary<string, float> faceData = new Dictionary<string, float>();
+            foreach (string hash in faceKeys.Concat(faceToggleKeys))
+            {
+                try
+                {
+                    float value = GetFaceBlendValue(hash);
+                    faceData.Add(hash, value);
+                }
+                catch { }
+            }
 
-            CurrentFaceBlendSet = blendSet;
+            return faceData;
+        }
 
-            BackupBlendSetValuess();
+        public void SetFaceBlendSet(string blendSet, bool custom = false)
+        {
+            if (custom)
+            {
+                XDocument faceDocument = XDocument.Load(blendSet);
+                XElement faceDataElement = faceDocument.Element("FaceData");
+                if (faceDataElement.IsEmpty) return;
 
-            Maid.FaceAnime(blendSet, 0f);
+                HashSet<string> hashKeys = new HashSet<string>(faceKeys.Concat(faceToggleKeys));
+
+                foreach (XElement element in faceDataElement.Elements())
+                {
+                    string key;
+                    if ((key = (string)element.Attribute("name")) != null)
+                    {
+                        if (!hashKeys.Contains(key)) continue;
+                    }
+
+                    if (float.TryParse(element.Value, out float value))
+                    {
+                        try
+                        {
+                            SetFaceBlendValue(key, value);
+                        }
+                        catch { }
+                    }
+                }
+            }
+            else
+            {
+                ApplyBackupBlendSet();
+
+                CurrentFaceBlendSet = blendSet;
+
+                BackupBlendSetValuess();
+
+                Maid.FaceAnime(blendSet, 0f);
+            }
 
             StopBlink();
             OnUpdateMeido();
@@ -682,7 +728,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DetachAllMpnAttach();
 
             binaryReader.ReadInt64(); // meido buffer length
-                                      // transform
+            // transform
             Maid.transform.position = binaryReader.ReadVector3();
             Maid.transform.rotation = binaryReader.ReadQuaternion();
             Maid.transform.localScale = binaryReader.ReadVector3();
