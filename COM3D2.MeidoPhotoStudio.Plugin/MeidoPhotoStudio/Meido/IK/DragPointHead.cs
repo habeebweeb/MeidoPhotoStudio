@@ -76,9 +76,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (IsIK) return;
 
-            if (!(CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY))
+            if (!(CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY) && isPlaying)
             {
-                if (isPlaying) meido.Stop = true;
+                meido.Stop = true;
             }
 
             Vector3 mouseDelta = MouseDelta();

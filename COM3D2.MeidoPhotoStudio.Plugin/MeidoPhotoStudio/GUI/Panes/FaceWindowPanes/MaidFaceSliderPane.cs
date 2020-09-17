@@ -60,7 +60,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         };
         private readonly MeidoManager meidoManager;
         private readonly Dictionary<string, BaseControl> faceControls;
-        private bool hasTangOpen = false;
+        private bool hasTangOpen;
 
         public MaidFaceSliderPane(MeidoManager meidoManager)
         {
@@ -142,7 +142,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DrawSliders("mouthhe", "mouthuphalf");
             DrawSliders("tangout", "tangup");
             if (hasTangOpen) DrawSliders("tangopen");
-            MiscGUI.WhiteLine();
+            MpsGui.WhiteLine();
             DrawToggles("hoho2", "shock", "nosefook");
             DrawToggles("namida", "yodare", "toothoff");
             DrawToggles("tear1", "tear2", "tear3");
@@ -155,7 +155,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUILayout.BeginHorizontal();
             foreach (string key in keys)
             {
-                ((Slider)faceControls[key]).Draw(MiscGUI.HalfSlider);
+                ((Slider)faceControls[key]).Draw(MpsGui.HalfSlider);
             }
             GUILayout.EndHorizontal();
         }

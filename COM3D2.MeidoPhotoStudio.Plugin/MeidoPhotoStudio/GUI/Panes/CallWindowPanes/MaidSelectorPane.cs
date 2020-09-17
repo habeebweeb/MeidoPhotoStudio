@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
@@ -9,7 +8,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector2 maidListScrollPos;
         private readonly Button clearMaidsButton;
         private readonly Button callMaidsButton;
-        public MaidSelectorPane(MeidoManager meidoManager) : base()
+        public MaidSelectorPane(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
             clearMaidsButton = new Button(Translation.Get("maidCallWindow", "clearButton"));

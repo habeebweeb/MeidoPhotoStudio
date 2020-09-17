@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,13 +17,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Dropdown poseDropdown;
         private readonly SelectionGrid poseModeGrid;
         private Dictionary<string, List<string>> CurrentPoseDict
-        {
-            get => customPoseMode ? Constants.CustomPoseDict : Constants.PoseDict;
-        }
+            => customPoseMode ? Constants.CustomPoseDict : Constants.PoseDict;
         private List<string> CurrentPoseGroupList
-        {
-            get => customPoseMode ? Constants.CustomPoseGroupList : Constants.PoseGroupList;
-        }
+            => customPoseMode ? Constants.CustomPoseGroupList : Constants.PoseGroupList;
         private string SelectedPoseGroup => CurrentPoseGroupList[poseGroupDropdown.SelectedItemIndex];
         private List<string> CurrentPoseList => CurrentPoseDict[SelectedPoseGroup];
         private int SelectedPoseIndex => poseDropdown.SelectedItemIndex;
@@ -95,7 +90,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUI.enabled = meidoManager.HasActiveMeido && !meidoManager.ActiveMeido.Stop;
 
             poseModeGrid.Draw();
-            MiscGUI.WhiteLine();
+            MpsGui.WhiteLine();
 
             GUILayout.BeginHorizontal();
             poseGroupLeftButton.Draw(arrowLayoutOptions);
@@ -193,13 +188,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private string[] UIPoseList()
         {
-            if (CurrentPoseList.Count == 0) return new[] { "No Poses" };
-            else
-            {
-                return CurrentPoseList
+            return CurrentPoseList.Count == 0
+                ? new[] { "No Poses" }
+                : CurrentPoseList
                     .Select((pose, i) => $"{i + 1}:{(customPoseMode ? Path.GetFileNameWithoutExtension(pose) : pose)}")
                     .ToArray();
-            }
         }
     }
 }

@@ -39,7 +39,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void Draw()
         {
             Tabs.Draw(GUILayout.ExpandWidth(false));
-            MiscGUI.BlackLine();
+            MpsGui.BlackLine();
         }
     }
 }

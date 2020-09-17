@@ -17,15 +17,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Controls = new List<BaseControl>();
         }
 
-        ~BasePane()
-        {
-            Translation.ReloadTranslationEvent -= OnReloadTranslation;
-        }
+        ~BasePane() => Translation.ReloadTranslationEvent -= OnReloadTranslation;
 
-        private void OnReloadTranslation(object sender, EventArgs args)
-        {
-            ReloadTranslation();
-        }
+        private void OnReloadTranslation(object sender, EventArgs args) => ReloadTranslation();
 
         public void SetParent(BaseWindow window) => parent = window;
 

@@ -14,7 +14,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private const int cacheVersion = 765;
         public static readonly string cachePath = Path.Combine(Constants.configPath, "cache.dat");
         private readonly Dictionary<string, ModItem> modItems;
-        private bool rebuild = false;
+        private bool rebuild;
         public ModItem this[string menu]
         {
             get => modItems[menu];
@@ -34,10 +34,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (File.Exists(cachePath)) Deserialize();
         }
 
-        public bool Has(string menuFileName)
-        {
-            return modItems.ContainsKey(menuFileName);
-        }
+        public bool Has(string menuFileName) => modItems.ContainsKey(menuFileName);
 
         private void Deserialize()
         {
@@ -62,10 +59,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             using (BinaryWriter binaryWriter = new BinaryWriter(File.OpenWrite(cachePath)))
             {
                 binaryWriter.Write(cacheVersion);
-                foreach (ModItem item in modItems.Values)
-                {
-                    item.Serialize(binaryWriter);
-                }
+                foreach (ModItem item in modItems.Values) item.Serialize(binaryWriter);
             }
         }
     }

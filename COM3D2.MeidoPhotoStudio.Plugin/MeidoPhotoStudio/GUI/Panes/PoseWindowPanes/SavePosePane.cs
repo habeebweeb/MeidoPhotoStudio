@@ -14,10 +14,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public SavePosePane(MeidoManager meidoManager)
         {
-            Constants.CustomPoseChange += (s, a) =>
-            {
-                categoryComboBox.SetDropdownItems(Constants.CustomPoseGroupList.ToArray());
-            };
+            Constants.CustomPoseChange += (s, a)
+                => categoryComboBox.SetDropdownItems(Constants.CustomPoseGroupList.ToArray());
 
             this.meidoManager = meidoManager;
 
@@ -43,10 +41,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GUI.enabled = meidoManager.HasActiveMeido;
 
-            MiscGUI.Header(categoryHeader);
+            MpsGui.Header(categoryHeader);
             categoryComboBox.Draw(GUILayout.Width(160f));
 
-            MiscGUI.Header(nameHeader);
+            MpsGui.Header(nameHeader);
             GUILayout.BeginHorizontal();
             poseNameTextField.Draw(GUILayout.Width(160f));
             savePoseButton.Draw(GUILayout.ExpandWidth(false));
@@ -59,7 +57,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             byte[] anmBinary = meidoManager.ActiveMeido.SerializePose();
             Constants.AddPose(anmBinary, poseNameTextField.Value, categoryComboBox.Value);
-            this.poseNameTextField.Value = String.Empty;
+            poseNameTextField.Value = string.Empty;
         }
     }
 }

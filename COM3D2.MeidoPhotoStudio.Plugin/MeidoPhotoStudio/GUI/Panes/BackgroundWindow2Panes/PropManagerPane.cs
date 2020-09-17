@@ -97,7 +97,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GUILayout.Width(dropdownButtonWidth)
             };
 
-            MiscGUI.WhiteLine();
+            MpsGui.WhiteLine();
 
             GUI.enabled = propManager.DoguCount > 0;
 

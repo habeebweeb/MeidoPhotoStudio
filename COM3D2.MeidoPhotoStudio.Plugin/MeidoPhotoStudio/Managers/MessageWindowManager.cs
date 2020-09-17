@@ -1,4 +1,3 @@
-using System.Reflection;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
@@ -83,7 +82,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 MessageWindowMgr.MessageWindowUnderButton.BackLog,
                 MessageWindowMgr.MessageWindowUnderButton.Config
             };
-            foreach (var msgButton in msgButtons)
+            foreach (MessageWindowMgr.MessageWindowUnderButton msgButton in msgButtons)
             {
                 transform.Find(msgButton.ToString()).gameObject.SetActive(!active);
             }

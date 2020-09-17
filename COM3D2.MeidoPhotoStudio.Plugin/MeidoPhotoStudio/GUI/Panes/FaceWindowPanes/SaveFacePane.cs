@@ -13,10 +13,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public SaveFacePane(MeidoManager meidoManager)
         {
-            Constants.CustomFaceChange += (s, a) =>
-            {
-                categoryComboBox.SetDropdownItems(Constants.CustomFaceGroupList.ToArray());
-            };
+            Constants.CustomFaceChange += (s, a)
+                => categoryComboBox.SetDropdownItems(Constants.CustomFaceGroupList.ToArray());
 
             this.meidoManager = meidoManager;
 
@@ -41,10 +39,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GUI.enabled = meidoManager.HasActiveMeido;
 
-            MiscGUI.Header(categoryHeader);
+            MpsGui.Header(categoryHeader);
             categoryComboBox.Draw(GUILayout.Width(165f));
 
-            MiscGUI.Header(nameHeader);
+            MpsGui.Header(nameHeader);
             GUILayout.BeginHorizontal();
             faceNameTextField.Draw(GUILayout.Width(160f));
             saveFaceButton.Draw(GUILayout.ExpandWidth(false));

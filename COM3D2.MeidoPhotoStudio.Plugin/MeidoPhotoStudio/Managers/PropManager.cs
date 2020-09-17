@@ -48,21 +48,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public int DoguCount => doguList.Count;
         public event EventHandler DoguListChange;
         public event EventHandler DoguSelectChange;
-        public string[] PropNameList
-        {
-            get
-            {
-                return doguList.Count == 0
-                    ? new[] { Translation.Get("systemMessage", "noProps") }
-                    : doguList.Select(dogu => dogu.Name).ToArray();
-            }
-        }
-        public int CurrentDoguIndex { get; private set; } = 0;
+        public string[] PropNameList => doguList.Count == 0
+            ? new[] { Translation.Get("systemMessage", "noProps") }
+            : doguList.Select(dogu => dogu.Name).ToArray();
+        public int CurrentDoguIndex { get; private set; }
         public DragPointDogu CurrentDogu => DoguCount == 0 ? null : doguList[CurrentDoguIndex];
 
         static PropManager()
         {
-            modItemsOnly = Configuration.Config.Bind<bool>(
+            modItemsOnly = Configuration.Config.Bind(
                 "Prop", "ModItemsOnly",
                 false,
                 "Disable waiting for and loading base game clothing"
@@ -194,7 +188,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public bool SpawnModItemProp(ModItem modItem)
         {
-            GameObject dogu = MenuFileUtility.LoadModel(modItem);
+            GameObject dogu = LoadModel(modItem);
             string name = modItem.MenuFile;
             if (modItem.IsOfficialMod) name = Path.GetFileName(name);
             if (dogu != null) AttachDragPoint(dogu, modItem.ToString(), name, new Vector3(0f, 0f, 0.5f));
@@ -243,7 +237,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (assetName.EndsWith(".menu"))
             {
-                dogu = MenuFileUtility.LoadModel(assetName);
+                dogu = LoadModel(assetName);
                 string handItem = Utility.HandItemToOdogu(assetName);
                 if (Translation.Has("propNames", handItem)) doguName = Translation.Get("propNames", handItem);
             }
@@ -353,7 +347,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 //         }
                 //     }
                 // }
-                #endregion
+                #endregion particle system experiment
             }
 
             if (dogu != null)
@@ -361,10 +355,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 AttachDragPoint(dogu, assetName, doguName, doguPosition);
                 return true;
             }
-            else
-            {
-                Utility.LogInfo($"Could not spawn object '{assetName}'");
-            }
+
+            Utility.LogInfo($"Could not spawn object '{assetName}'");
+
             return false;
         }
 
@@ -430,8 +423,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (doguIndex >= 0 && doguIndex < DoguCount)
             {
-                this.CurrentDoguIndex = doguIndex;
-                this.DoguSelectChange?.Invoke(this, EventArgs.Empty);
+                CurrentDoguIndex = doguIndex;
+                DoguSelectChange?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -473,7 +466,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             dragDogu.attachPointInfo = new AttachPointInfo(
                 attachPoint: meido == null ? AttachPoint.None : attachPoint,
-                maidGuid: meido == null ? String.Empty : meido.Maid.status.guid,
+                maidGuid: meido == null ? string.Empty : meido.Maid.status.guid,
                 maidIndex: meido == null ? -1 : meido.Slot
             );
 
@@ -528,8 +521,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 AttachPointInfo info = dragDogu.attachPointInfo;
                 Meido meido = useGuid
-                    ? this.meidoManager.GetMeido(info.MaidGuid)
-                    : this.meidoManager.GetMeido(info.MaidIndex);
+                    ? meidoManager.GetMeido(info.MaidGuid)
+                    : meidoManager.GetMeido(info.MaidIndex);
                 bool worldPositionStays = forceStay || meido == null;
                 AttachProp(dragDogu, dragDogu.attachPointInfo.AttachPoint, meido, worldPositionStays);
             }
@@ -571,9 +564,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        private void OnDoguListChange()
-        {
-            this.DoguListChange?.Invoke(this, EventArgs.Empty);
-        }
+        private void OnDoguListChange() => DoguListChange?.Invoke(this, EventArgs.Empty);
     }
 }

@@ -9,7 +9,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         public const string header = "MEIDO";
         private static readonly CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;
-        private int undress = 0;
+        private int undress;
         private int numberOfMeidos;
         public Meido[] Meidos { get; private set; }
         public List<int> SelectMeidoList { get; } = new List<int>();
@@ -19,14 +19,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public event EventHandler<MeidoUpdateEventArgs> UpdateMeido;
         public event EventHandler EndCallMeidos;
         public event EventHandler BeginCallMeidos;
-        private int selectedMeido = 0;
+        private int selectedMeido;
         public int SelectedMeido
         {
             get => selectedMeido;
             private set => selectedMeido = Utility.Bound(value, 0, ActiveMeidoList.Count - 1);
         }
         public bool Busy => ActiveMeidoList.Any(meido => meido.Busy);
-        private bool globalGravity = false;
+        private bool globalGravity;
         public bool GlobalGravity
         {
             get => globalGravity;
@@ -49,10 +49,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         static MeidoManager() => InputManager.Register(MpsKey.MeidoUndressing, KeyCode.H, "All maid undressing");
 
-        public void ChangeMaid(int index)
-        {
-            OnUpdateMeido(null, new MeidoUpdateEventArgs(index));
-        }
+        public void ChangeMaid(int index) => OnUpdateMeido(null, new MeidoUpdateEventArgs(index));
 
         public void Activate()
         {
@@ -105,7 +102,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (i >= ActiveMeidoList.Count)
                 {
-                    Int64 skip = binaryReader.ReadInt64(); // meido buffer length
+                    long skip = binaryReader.ReadInt64(); // meido buffer length
                     binaryReader.BaseStream.Seek(skip, System.IO.SeekOrigin.Current);
                     continue;
                 }
@@ -140,10 +137,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 return;
             }
 
-            GameMain.Instance.MainCamera.FadeOut(0.01f, f_bSkipable: false, f_dg: () =>
-            {
-                GameMain.Instance.StartCoroutine(LoadMeidos());
-            });
+            GameMain.Instance.MainCamera.FadeOut(
+                0.01f, f_bSkipable: false, f_dg: () => GameMain.Instance.StartCoroutine(LoadMeidos())
+            );
         }
 
         private System.Collections.IEnumerator LoadMeidos()
@@ -155,10 +151,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 meido.BeginLoad();
             }
 
-            for (int i = 0; i < ActiveMeidoList.Count; i++)
-            {
-                ActiveMeidoList[i].Load(i);
-            }
+            for (int i = 0; i < ActiveMeidoList.Count; i++) ActiveMeidoList[i].Load(i);
 
             while (Busy) yield return null;
 
@@ -169,14 +162,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public Meido GetMeido(string guid)
         {
-            if (string.IsNullOrEmpty(guid)) return null;
-            else return ActiveMeidoList.Find(meido => meido.Maid.status.guid == guid);
+            return string.IsNullOrEmpty(guid) ? null : ActiveMeidoList.Find(meido => meido.Maid.status.guid == guid);
         }
 
         public Meido GetMeido(int activeIndex)
         {
-            if (activeIndex >= 0 && activeIndex < ActiveMeidoList.Count) return ActiveMeidoList[activeIndex];
-            else return null;
+            return activeIndex >= 0 && activeIndex < ActiveMeidoList.Count ? ActiveMeidoList[activeIndex] : null;
         }
 
         public void PlaceMeidos(string placementType)

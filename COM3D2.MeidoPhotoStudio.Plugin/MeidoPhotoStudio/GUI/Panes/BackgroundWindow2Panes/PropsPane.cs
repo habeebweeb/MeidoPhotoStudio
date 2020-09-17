@@ -8,7 +8,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private readonly PropManager propManager;
         private string currentCategory;
-        private string SelectedCategory => Constants.DoguCategories[this.doguCategoryDropdown.SelectedItemIndex];
+        private string SelectedCategory => Constants.DoguCategories[doguCategoryDropdown.SelectedItemIndex];
         private readonly Dropdown doguCategoryDropdown;
         private readonly Dropdown doguDropdown;
         private readonly Button addDoguButton;
@@ -16,7 +16,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Button prevDoguButton;
         private readonly Button nextDoguCategoryButton;
         private readonly Button prevDoguCategoryButton;
-        private static bool handItemsReady = false;
+        private static bool handItemsReady;
         private bool itemSelectorEnabled = true;
 
         public PropsPane(PropManager propManager)
@@ -63,10 +63,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 translationArray = new[] { Translation.Get("systemMessage", "initializing") };
             }
-            else
-            {
-                translationArray = GetTranslations(category);
-            }
+            else translationArray = GetTranslations(category);
+
             doguDropdown.SetDropdownItems(translationArray);
         }
 
@@ -143,9 +141,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 itemList = itemList.Select(item =>
                 {
                     string handItemAsOdogu = Utility.HandItemToOdogu(item);
-
-                    if (Translation.Has("propNames", handItemAsOdogu)) return handItemAsOdogu;
-                    else return item;
+                    return Translation.Has("propNames", handItemAsOdogu) ? handItemAsOdogu : item;
                 });
             }
 

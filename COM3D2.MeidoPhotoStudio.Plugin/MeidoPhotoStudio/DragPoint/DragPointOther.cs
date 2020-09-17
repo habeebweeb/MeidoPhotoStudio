@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -7,8 +6,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class DragPointBody : DragPointGeneral
     {
-        public bool IsCube = false;
-        private bool isIK = false;
+        public bool IsCube;
+        private bool isIK;
         public bool IsIK
         {
             get => isIK;

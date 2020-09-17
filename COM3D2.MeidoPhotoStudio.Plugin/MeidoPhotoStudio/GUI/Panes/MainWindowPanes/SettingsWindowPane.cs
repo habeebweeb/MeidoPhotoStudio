@@ -64,42 +64,42 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             scrollPos = GUILayout.BeginScrollView(scrollPos);
 
-            MiscGUI.Header(headers["controls"]);
-            MiscGUI.WhiteLine();
+            MpsGui.Header(headers["controls"]);
+            MpsGui.WhiteLine();
 
-            MiscGUI.Header(headers["controlsGeneral"]);
-            MiscGUI.WhiteLine();
+            MpsGui.Header(headers["controlsGeneral"]);
+            MpsGui.WhiteLine();
             for (MpsKey key = MpsKey.Activate; key <= MpsKey.ToggleMessage; key++)
             {
                 DrawSetting(key);
             }
 
-            MiscGUI.Header(headers["controlsMaids"]);
-            MiscGUI.WhiteLine();
+            MpsGui.Header(headers["controlsMaids"]);
+            MpsGui.WhiteLine();
             DrawSetting(MpsKey.MeidoUndressing);
 
-            MiscGUI.Header(headers["controlsCamera"]);
-            MiscGUI.WhiteLine();
+            MpsGui.Header(headers["controlsCamera"]);
+            MpsGui.WhiteLine();
             for (MpsKey key = MpsKey.CameraLayer; key <= MpsKey.CameraLoad; key++)
             {
                 DrawSetting(key);
             }
 
-            MiscGUI.Header(headers["controlsDragPoint"]);
-            MiscGUI.WhiteLine();
+            MpsGui.Header(headers["controlsDragPoint"]);
+            MpsGui.WhiteLine();
             for (MpsKey key = MpsKey.DragSelect; key <= MpsKey.DragFinger; key++)
             {
                 DrawSetting(key);
             }
 
-            MiscGUI.Header(headers["controlsScene"]);
-            MiscGUI.WhiteLine();
+            MpsGui.Header(headers["controlsScene"]);
+            MpsGui.WhiteLine();
             for (MpsKey key = MpsKey.SaveScene; key <= MpsKey.OpenSceneManager; key++)
             {
                 DrawSetting(key);
             }
 
-            MiscGUI.WhiteLine();
+            MpsGui.WhiteLine();
             reloadTranslationButton.Draw();
             GUILayout.EndScrollView();
         }

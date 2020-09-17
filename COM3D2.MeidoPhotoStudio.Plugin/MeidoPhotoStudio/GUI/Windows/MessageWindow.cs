@@ -20,9 +20,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
         private int fontSize = 25;
-        private bool showingMessage = false;
+        private bool showingMessage;
 
-        public MessageWindow(MessageWindowManager messageWindowManager) : base()
+        public MessageWindow(MessageWindowManager messageWindowManager)
         {
             WindowRect = WindowRect;
             windowRect.x = MiddlePosition.x;
@@ -69,7 +69,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void Update()
         {
             base.Update();
-            if (InputManager.GetKeyDown(MpsKey.ToggleMessage)) this.ToggleVisibility();
+            if (InputManager.GetKeyDown(MpsKey.ToggleMessage)) ToggleVisibility();
         }
 
         public override void Draw()

@@ -47,15 +47,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
 
         public static KeyCode Clamp(KeyCode value, KeyCode min, KeyCode max)
-        {
-            return value < min ? min : value > max ? max : value;
-        }
+            => value < min ? min : value > max ? max : value;
 
         public static KeyCode GetActionKey(MpsKey action)
-        {
-            ActionKeys.TryGetValue(action, out KeyCode keyCode);
-            return keyCode;
-        }
+            => ActionKeys.TryGetValue(action, out KeyCode keyCode) ? keyCode : default;
 
         public static void StartListening()
         {
@@ -79,14 +74,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
 
         public static bool GetKey(MpsKey action)
-        {
-            return !Listening && ActionKeys.ContainsKey(action) && Input.GetKey(ActionKeys[action]);
-        }
+            => !Listening && ActionKeys.ContainsKey(action) && Input.GetKey(ActionKeys[action]);
 
         public static bool GetKeyDown(MpsKey action)
-        {
-            return !Listening && ActionKeys.ContainsKey(action) && Input.GetKeyDown(ActionKeys[action]);
-        }
+            => !Listening && ActionKeys.ContainsKey(action) && Input.GetKeyDown(ActionKeys[action]);
 
         public static void Deactivate()
         {

@@ -23,7 +23,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 windowRect = value;
             }
         }
-        private Constants.Window selectedWindow = Constants.Window.Call;
+        private Constants.Window selectedWindow;
 
         public BaseMainWindowPane this[Constants.Window id]
         {
@@ -32,7 +32,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
 
         // TODO: Find a better way of doing this
-        public MainWindow(MeidoManager meidoManager, PropManager propManager, LightManager lightManager) : base()
+        public MainWindow(MeidoManager meidoManager, PropManager propManager, LightManager lightManager)
         {
             this.meidoManager = meidoManager;
             this.meidoManager.UpdateMeido += UpdateMeido;

@@ -37,7 +37,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Toggle curlingFrontToggle;
         private readonly Toggle curlingBackToggle;
         private readonly Toggle pantsuShiftToggle;
-        private bool detailedClothing = false;
+        private bool detailedClothing;
 
         public MaidDressingPane(MeidoManager meidoManager)
         {
@@ -227,7 +227,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             GUI.enabled = Enabled;
             detailedClothingToggle.Draw();
-            MiscGUI.BlackLine();
+            MpsGui.BlackLine();
 
             DrawSlotGroup(SlotID.wear, SlotID.skirt);
             DrawSlotGroup(SlotID.bra, SlotID.panz);
@@ -237,7 +237,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (detailedClothing)
             {
-                MiscGUI.BlackLine();
+                MpsGui.BlackLine();
                 DrawSlotGroup(SlotID.accShippo, SlotID.accHat);
                 DrawSlotGroup(SlotID.accKami_1_, SlotID.accKami_2_, SlotID.accKami_3_);
                 DrawSlotGroup(SlotID.accKamiSubL, SlotID.accKamiSubR);

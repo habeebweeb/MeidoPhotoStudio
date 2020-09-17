@@ -77,7 +77,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
         }
-        private static bool cubeSmall = false;
+        private static bool cubeSmall;
         public static bool CubeSmall
         {
             get => cubeSmall;
@@ -97,9 +97,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Dictionary<Bone, Transform> BoneTransform = new Dictionary<Bone, Transform>();
         private DragPointBody dragBody;
         private DragPointBody dragCube;
-        private bool initialized = false;
+        private bool initialized;
         public event EventHandler<MeidoUpdateEventArgs> SelectMaid;
-        private bool isBone = false;
+        private bool isBone;
         public bool IsBone
         {
             get => isBone;
@@ -178,10 +178,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
 
         public Transform GetAttachPointTransform(AttachPoint point)
-        {
-            if (point == AttachPoint.None) return null;
-            return BoneTransform[PointToBone[point]];
-        }
+            => point == AttachPoint.None ? null : BoneTransform[PointToBone[point]];
 
         public void Flip()
         {
@@ -681,7 +678,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public AttachPoint AttachPoint { get; }
         public string MaidGuid { get; }
         public int MaidIndex { get; }
-        public static AttachPointInfo Empty => new AttachPointInfo(AttachPoint.None, String.Empty, -1);
+        public static AttachPointInfo Empty => new AttachPointInfo(AttachPoint.None, string.Empty, -1);
 
         public AttachPointInfo(AttachPoint attachPoint, string maidGuid, int maidIndex)
         {

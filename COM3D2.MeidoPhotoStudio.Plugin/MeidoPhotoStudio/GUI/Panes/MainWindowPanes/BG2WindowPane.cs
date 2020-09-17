@@ -38,7 +38,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             tabsPane.Draw();
             propTabs.Draw();
-            MiscGUI.WhiteLine();
+            MpsGui.WhiteLine();
             currentPropsPane.Draw();
             if (propTabs.SelectedItemIndex == 0)
             {

@@ -6,9 +6,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class DragPointSpine : DragPointMeido
     {
         private Quaternion spineRotation;
-        private bool isHip = false;
-        private bool isThigh = false;
-        private bool isHead = false;
+        private bool isHip;
+        private bool isThigh;
+        private bool isHead;
 
         public override void AddGizmo(float scale = 0.25f, CustomGizmo.GizmoMode mode = CustomGizmo.GizmoMode.Local)
         {
@@ -16,12 +16,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (isHead) Gizmo.GizmoDrag += (s, a) => meido.HeadToCam = false;
         }
 
-        public override void Set(Transform spine)
+        public override void Set(Transform myObject)
         {
-            base.Set(spine);
-            isHip = spine.name == "Bip01";
-            isThigh = spine.name.EndsWith("Thigh");
-            isHead = spine.name.EndsWith("Head");
+            base.Set(myObject);
+            isHip = myObject.name == "Bip01";
+            isThigh = myObject.name.EndsWith("Thigh");
+            isHead = myObject.name.EndsWith("Head");
         }
 
         protected override void ApplyDragType()

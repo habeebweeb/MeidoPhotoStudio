@@ -98,25 +98,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         public bool Stop
         {
-            get
-            {
-                if (!Body.isLoadedBody) return true;
-                else return !Maid.GetAnimation().isPlaying;
-            }
+            get => !Body.isLoadedBody || !Maid.GetAnimation().isPlaying;
             set
             {
                 if (!Body.isLoadedBody || value == Stop) return;
+                if (value) Maid.GetAnimation().Stop();
                 else
                 {
-                    if (value) Maid.GetAnimation().Stop();
-                    else
-                    {
-                        Body.boEyeToCam = true;
-                        Body.boHeadToCam = true;
-                        SetPose(CachedPose.Pose);
-                    }
-                    OnUpdateMeido();
+                    Body.boEyeToCam = true;
+                    Body.boHeadToCam = true;
+                    SetPose(CachedPose.Pose);
                 }
+
+                OnUpdateMeido();
             }
         }
         public bool IK
@@ -125,7 +119,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             set
             {
                 if (value == IKManager.Active) return;
-                else IKManager.Active = value;
+
+                IKManager.Active = value;
             }
         }
         public bool Bone
@@ -134,7 +129,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             set
             {
                 if (value == Bone) return;
-                else IKManager.IsBone = value;
+
+                IKManager.IsBone = value;
                 OnUpdateMeido();
             }
         }
@@ -364,10 +360,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 foreach (XElement element in faceDataElement.Elements())
                 {
                     string key;
-                    if ((key = (string)element.Attribute("name")) != null)
-                    {
-                        if (!hashKeys.Contains(key)) continue;
-                    }
+                    if ((key = (string)element.Attribute("name")) != null && !hashKeys.Contains(key)) continue;
 
                     if (float.TryParse(element.Value, out float value))
                     {
@@ -615,7 +608,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void OnUpdateMeido(MeidoUpdateEventArgs args = null)
         {
-            this.UpdateMeido?.Invoke(this, args ?? MeidoUpdateEventArgs.Empty);
+            UpdateMeido?.Invoke(this, args ?? MeidoUpdateEventArgs.Empty);
         }
 
         private void OnGravityEvent(object sender, EventArgs args) => OnGravityChange((DragPointGravity)sender);
@@ -625,7 +618,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GravityEventArgs args = new GravityEventArgs(
                 dragPoint == skirtGravityDragPoint, dragPoint.MyObject.transform.localPosition
             );
-            this.GravityMove?.Invoke(this, args);
+            GravityMove?.Invoke(this, args);
         }
 
         public void Serialize(BinaryWriter binaryWriter)
@@ -756,8 +749,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 // Head angle cannot be resolved with just the offsetLookTarget
                 if (!mmScene)
                 {
-                    Utility.SetFieldValue<TBody, Vector3>(Body, "HeadEulerAngleG", Vector3.zero);
-                    Utility.SetFieldValue<TBody, Vector3>(Body, "HeadEulerAngle", binaryReader.ReadVector3());
+                    Utility.SetFieldValue(Body, "HeadEulerAngleG", Vector3.zero);
+                    Utility.SetFieldValue(Body, "HeadEulerAngle", binaryReader.ReadVector3());
                 }
             }
             // Head/eye to camera
@@ -840,8 +833,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public GravityEventArgs(bool isSkirt, Vector3 localPosition)
         {
-            this.LocalPosition = localPosition;
-            this.IsSkirt = isSkirt;
+            LocalPosition = localPosition;
+            IsSkirt = isSkirt;
         }
     }
 
@@ -852,9 +845,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public bool CustomPose { get; }
         public PoseInfo(string poseGroup, string pose, bool customPose = false)
         {
-            this.PoseGroup = poseGroup;
-            this.Pose = pose;
-            this.CustomPose = customPose;
+            PoseGroup = poseGroup;
+            Pose = pose;
+            CustomPose = customPose;
         }
 
         public void Serialize(BinaryWriter binaryWriter)

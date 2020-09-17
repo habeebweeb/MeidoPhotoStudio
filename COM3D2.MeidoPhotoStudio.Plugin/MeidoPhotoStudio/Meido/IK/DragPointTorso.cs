@@ -10,10 +10,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Quaternion[] spineRotation = new Quaternion[4];
         private readonly Transform[] spine = new Transform[4];
 
-        public override void Set(Transform spine1a)
+        public override void Set(Transform myObject)
         {
-            base.Set(spine1a);
-            Transform spine = spine1a;
+            base.Set(myObject);
+            Transform spine = myObject;
             for (int i = 0; i < this.spine.Length; i++)
             {
                 this.spine[i] = spine;
@@ -30,14 +30,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void UpdateDragType()
         {
-            if (Input.Alt && !Input.Control)
-            {
-                CurrentDragType = Input.Shift ? DragType.RotLocalY : DragType.RotLocalXZ;
-            }
-            else
-            {
-                CurrentDragType = OtherDragType() ? DragType.Ignore : DragType.None;
-            }
+            CurrentDragType = Input.Alt && !Input.Control
+                ? Input.Shift ? DragType.RotLocalY : DragType.RotLocalXZ
+                : OtherDragType() ? DragType.Ignore : DragType.None;
         }
 
         protected override void OnMouseDown()

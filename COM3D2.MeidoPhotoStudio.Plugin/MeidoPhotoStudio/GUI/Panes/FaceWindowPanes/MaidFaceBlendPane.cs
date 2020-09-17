@@ -16,16 +16,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Button facePrevButton;
         private readonly Button faceNextButton;
         private static readonly string[] tabTranslations = { "baseTab", "customTab" };
-        private bool facePresetMode = false;
-        private bool faceListEnabled = false;
-        private Dictionary<string, List<string>> CurrentFaceDict
-        {
-            get => facePresetMode ? Constants.CustomFaceDict : Constants.FaceDict;
-        }
-        private List<string> CurrentFaceGroupList
-        {
-            get => facePresetMode ? Constants.CustomFaceGroupList : Constants.FaceGroupList;
-        }
+        private bool facePresetMode;
+        private bool faceListEnabled;
+        private Dictionary<string, List<string>> CurrentFaceDict => facePresetMode
+            ? Constants.CustomFaceDict : Constants.FaceDict;
+        private List<string> CurrentFaceGroupList => facePresetMode
+            ? Constants.CustomFaceGroupList : Constants.FaceGroupList;
         private string SelectedFaceGroup => CurrentFaceGroupList[faceBlendCategoryDropdown.SelectedItemIndex];
         private List<string> CurrentFaceList => CurrentFaceDict[SelectedFaceGroup];
         private int SelectedFaceIndex => faceBlendDropdown.SelectedItemIndex;
@@ -109,7 +105,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             faceBlendSourceGrid.Draw();
 
-            MiscGUI.WhiteLine();
+            MpsGui.WhiteLine();
 
             GUILayout.BeginHorizontal();
             prevCategoryButton.Draw(arrowLayoutOptions);
@@ -128,13 +124,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private string[] UIFaceList()
         {
-            if (CurrentFaceList.Count == 0) return new[] { "No Face Presets" };
-            else
-            {
-                return CurrentFaceList.Select(face => facePresetMode
-                    ? Path.GetFileNameWithoutExtension(face) : Translation.Get("faceBlendPresetsDropdown", face)
+            return CurrentFaceList.Count == 0
+                ? (new[] { "No Face Presets" })
+                : CurrentFaceList.Select(face => facePresetMode
+                    ? Path.GetFileNameWithoutExtension(face)
+                    : Translation.Get("faceBlendPresetsDropdown", face)
                 ).ToArray();
-            }
         }
 
         private void SaveFaceEnd(object sender, CustomPoseEventArgs args)

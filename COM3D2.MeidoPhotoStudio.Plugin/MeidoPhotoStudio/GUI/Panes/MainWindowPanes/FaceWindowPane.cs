@@ -10,7 +10,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly MaidSwitcherPane maidSwitcherPane;
         private readonly SaveFacePane saveFacePane;
         private readonly Toggle saveFaceToggle;
-        private bool saveFaceMode = false;
+        private bool saveFaceMode;
 
         public FaceWindowPane(MeidoManager meidoManager, MaidSwitcherPane maidSwitcherPane)
         {

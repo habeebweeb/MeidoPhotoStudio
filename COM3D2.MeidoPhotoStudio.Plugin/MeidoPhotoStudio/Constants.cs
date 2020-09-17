@@ -308,9 +308,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             // Load Poses
             string poseListJson = File.ReadAllText(Path.Combine(configPath, "Database\\mm_pose_list.json"));
-            List<SerializePoseList> poseLists = JsonConvert.DeserializeObject<List<SerializePoseList>>(poseListJson);
-
-            foreach (SerializePoseList poseList in poseLists)
+            foreach (SerializePoseList poseList in JsonConvert.DeserializeObject<List<SerializePoseList>>(poseListJson))
             {
                 PoseDict[poseList.UIName] = poseList.PoseList;
                 PoseGroupList.Add(poseList.UIName);
@@ -453,10 +451,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             // Load BGs
             PhotoBGData.Create();
-            List<PhotoBGData> photList = PhotoBGData.data;
 
             // COM3D2 BGs
-            foreach (PhotoBGData bgData in photList)
+            foreach (PhotoBGData bgData in PhotoBGData.data)
             {
                 if (!string.IsNullOrEmpty(bgData.create_prefab_name))
                 {
@@ -540,8 +537,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 doguHashSet.UnionWith(doguList);
             }
 
-            string[] com3d2BgList = GameUty.FileSystem.GetList("bg", AFileSystemBase.ListType.AllFile);
-            foreach (string path in com3d2BgList)
+            foreach (string path in GameUty.FileSystem.GetList("bg", AFileSystemBase.ListType.AllFile))
             {
                 if (Path.GetExtension(path) == ".asset_bg" && !path.Contains("myroomcustomize"))
                 {
@@ -560,8 +556,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             DoguList.AddRange(JsonConvert.DeserializeObject<IEnumerable<string>>(doguExtendJson));
 
-            string[] cm3d2BgList = GameUty.FileSystemOld.GetList("bg", AFileSystemBase.ListType.AllFile);
-            foreach (string path in cm3d2BgList)
+            foreach (string path in GameUty.FileSystemOld.GetList("bg", AFileSystemBase.ListType.AllFile))
             {
                 if (Path.GetExtension(path) == ".asset_bg")
                 {
@@ -840,13 +835,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static List<ModItem> GetModPropList(string category)
         {
-            if (!PropManager.ModItemsOnly)
+            if (!PropManager.ModItemsOnly && !MenuFilesReady)
             {
-                if (!MenuFilesReady)
-                {
-                    Utility.LogMessage("Menu files are not ready yet");
-                    return null;
-                }
+                Utility.LogMessage("Menu files are not ready yet");
+                return null;
             }
 
             if (!MenuFilesInitialized) InitializeModProps();
@@ -876,23 +868,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                             Utility.LogWarning($"Could not find icon '{iconFile}' for menu '{item.MenuFile}");
                             return true;
                         }
-                        else
+
+                        try
+                        {
+                            icon = ImportCM.CreateTexture(iconFile);
+                        }
+                        catch
                         {
                             try
                             {
-                                icon = ImportCM.CreateTexture(iconFile);
+                                icon = ImportCM.CreateTexture($"tex\\{iconFile}");
                             }
                             catch
                             {
-                                try
-                                {
-                                    icon = ImportCM.CreateTexture($"tex\\{iconFile}");
-                                }
-                                catch
-                                {
-                                    Utility.LogWarning($"Could not load '{iconFile}' for menu '{item.MenuFile}");
-                                    return true;
-                                }
+                                Utility.LogWarning($"Could not load '{iconFile}' for menu '{item.MenuFile}");
+                                return true;
                             }
                         }
                         item.Icon = icon;
@@ -913,7 +903,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     AFileBase file = fs.FileOpen(nei);
                     CsvParser csvParser = new CsvParser();
                     if (csvParser.Open(file)) return csvParser;
-                    else file?.Dispose();
+
+                    file?.Dispose();
                 }
             }
             catch { }

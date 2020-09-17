@@ -20,10 +20,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
 
         public T Get<T>() where T : IEffectManager
-        {
-            if (EffectManagers.ContainsKey(typeof(T))) return (T)EffectManagers[typeof(T)];
-            else return default;
-        }
+            => EffectManagers.ContainsKey(typeof(T)) ? (T)EffectManagers[typeof(T)] : default;
 
         private T AddManager<T>() where T : IEffectManager, new()
         {
@@ -35,10 +32,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Serialize(System.IO.BinaryWriter binaryWriter)
         {
             binaryWriter.Write(header);
-            foreach (IEffectManager effectManager in EffectManagers.Values)
-            {
-                effectManager.Serialize(binaryWriter);
-            }
+            foreach (IEffectManager effectManager in EffectManagers.Values) effectManager.Serialize(binaryWriter);
             binaryWriter.Write(footer);
         }
 
@@ -67,18 +61,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Activate()
         {
-            foreach (IEffectManager effectManager in EffectManagers.Values)
-            {
-                effectManager.Activate();
-            }
+            foreach (IEffectManager effectManager in EffectManagers.Values) effectManager.Activate();
         }
 
         public void Deactivate()
         {
-            foreach (IEffectManager effectManager in EffectManagers.Values)
-            {
-                effectManager.Deactivate();
-            }
+            foreach (IEffectManager effectManager in EffectManagers.Values) effectManager.Deactivate();
         }
 
         public void Update()

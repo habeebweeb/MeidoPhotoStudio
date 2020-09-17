@@ -23,7 +23,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         private static event EventHandler CubeActiveChange;
         private readonly List<DragPointLight> lightList = new List<DragPointLight>();
-        private int selectedLightIndex = 0;
+        private int selectedLightIndex;
         public int SelectedLightIndex
         {
             get => selectedLightIndex;
@@ -129,17 +129,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             OnListModified();
         }
 
-        public void SetColourModeActive(bool isColourMode)
-        {
-            lightList[0].IsColourMode = isColourMode;
-        }
+        public void SetColourModeActive(bool isColourMode) => lightList[0].IsColourMode = isColourMode;
 
         public void ClearLights()
         {
-            for (int i = lightList.Count - 1; i > 0; i--)
-            {
-                DeleteLight(i);
-            }
+            for (int i = lightList.Count - 1; i > 0; i--) DeleteLight(i);
             selectedLightIndex = 0;
         }
 
@@ -153,10 +147,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameObject.Destroy(light.gameObject);
         }
 
-        private string LightName(string name)
-        {
-            return Translation.Get("lightType", name);
-        }
+        private string LightName(string name) => Translation.Get("lightType", name);
 
         private void OnDelete(object sender, EventArgs args)
         {
@@ -172,22 +163,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        private void OnRotate(object sender, EventArgs args)
-        {
-            OnTransformEvent((DragPointLight)sender, Rotate);
-        }
+        private void OnRotate(object sender, EventArgs args) => OnTransformEvent((DragPointLight)sender, Rotate);
 
-        private void OnScale(object sender, EventArgs args)
-        {
-            OnTransformEvent((DragPointLight)sender, Scale);
-        }
+        private void OnScale(object sender, EventArgs args) => OnTransformEvent((DragPointLight)sender, Scale);
 
         private void OnTransformEvent(DragPointLight light, EventHandler handler)
         {
-            if (light.IsActiveLight)
-            {
-                handler?.Invoke(this, EventArgs.Empty);
-            }
+            if (light.IsActiveLight) handler?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnSelect(object sender, EventArgs args)
@@ -201,17 +183,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        private void OnListModified()
-        {
-            ListModified?.Invoke(this, EventArgs.Empty);
-        }
+        private void OnListModified() => ListModified?.Invoke(this, EventArgs.Empty);
 
         private void OnCubeActive(object sender, EventArgs args)
         {
-            foreach (DragPointLight dragPoint in lightList)
-            {
-                dragPoint.gameObject.SetActive(CubeActive);
-            }
+            foreach (DragPointLight dragPoint in lightList) dragPoint.gameObject.SetActive(CubeActive);
         }
     }
 }

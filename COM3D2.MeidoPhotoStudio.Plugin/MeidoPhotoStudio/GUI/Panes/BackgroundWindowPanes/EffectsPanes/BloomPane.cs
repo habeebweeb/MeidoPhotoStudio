@@ -78,7 +78,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void DrawPane()
         {
-            GUILayoutOption sliderWidth = MiscGUI.HalfSlider;
+            GUILayoutOption sliderWidth = MpsGui.HalfSlider;
 
             GUILayout.BeginHorizontal();
             intensitySlider.Draw(sliderWidth);

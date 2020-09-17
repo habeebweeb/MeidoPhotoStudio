@@ -15,7 +15,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static readonly Vector2 sceneDimensions = new Vector2(480, 270);
         private readonly MeidoPhotoStudio meidoPhotoStudio;
         private int SortDirection => SortDescending ? -1 : 1;
-        public bool KankyoMode { get; set; } = false;
+        public bool KankyoMode { get; set; }
         private static readonly ConfigEntry<bool> sortDescending;
         public bool SortDescending
         {
@@ -26,14 +26,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public int CurrentDirectoryIndex { get; private set; } = -1;
         public string CurrentDirectoryName => CurrentDirectoryList[CurrentDirectoryIndex];
         public List<string> CurrentDirectoryList
-        {
-            get => KankyoMode ? Constants.KankyoDirectoryList : Constants.SceneDirectoryList;
-        }
+            => KankyoMode ? Constants.KankyoDirectoryList : Constants.SceneDirectoryList;
         public string CurrentBasePath => KankyoMode ? Constants.kankyoPath : Constants.scenesPath;
         public string CurrentScenesDirectory
-        {
-            get => CurrentDirectoryIndex == 0 ? CurrentBasePath : Path.Combine(CurrentBasePath, CurrentDirectoryName);
-        }
+            => CurrentDirectoryIndex == 0 ? CurrentBasePath : Path.Combine(CurrentBasePath, CurrentDirectoryName);
         private static readonly ConfigEntry<SortMode> currentSortMode;
         public SortMode CurrentSortMode
         {
@@ -174,7 +170,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 case SortMode.DateModified: comparator = SortByDateModified; break;
                 case SortMode.DateCreated: comparator = SortByDateCreated; break;
-                case SortMode.Name: comparator = SortByName; break;
                 default: comparator = SortByName; break;
             }
             SceneList.Sort(comparator);
@@ -232,10 +227,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void UpdateDirectoryList()
         {
             string baseDirectoryName = KankyoMode ? Constants.kankyoDirectory : Constants.sceneDirectory;
-            CurrentDirectoryList.Sort((a, b) =>
-            {
-                return a.Equals(baseDirectoryName, StringComparison.InvariantCultureIgnoreCase) ? -1 : a.CompareTo(b);
-            });
+            CurrentDirectoryList.Sort((a, b)
+                => a.Equals(baseDirectoryName, StringComparison.InvariantCultureIgnoreCase) ? -1 : a.CompareTo(b));
         }
 
         private void ClearSceneList()

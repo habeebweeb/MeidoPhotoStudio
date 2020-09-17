@@ -11,12 +11,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Dropdown meidoDropdown;
         private int[] copyMeidoSlot;
         private bool PlentyOfMaids => meidoManager.ActiveMeidoList.Count >= 2;
-        private Meido FromMeido
-        {
-            get => meidoManager.HasActiveMeido
-                ? meidoManager.ActiveMeidoList[copyMeidoSlot[meidoDropdown.SelectedItemIndex]]
-                : null;
-        }
+        private Meido FromMeido => meidoManager.HasActiveMeido
+            ? meidoManager.ActiveMeidoList[copyMeidoSlot[meidoDropdown.SelectedItemIndex]]
+            : null;
         private string copyIKHeader;
 
         public CopyPosePane(MeidoManager meidoManager)
@@ -45,8 +42,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GUI.enabled = PlentyOfMaids;
 
-            MiscGUI.Header(copyIKHeader);
-            MiscGUI.WhiteLine();
+            MpsGui.Header(copyIKHeader);
+            MpsGui.WhiteLine();
 
             GUILayout.BeginHorizontal();
             meidoDropdown.Draw(GUILayout.Width(160f));

@@ -35,11 +35,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Button previousMaidButton;
         private readonly Button nextMaidButton;
         private readonly Dropdown meidoDropdown;
-        private bool meidoDropdownActive = false;
-        private bool doguDropdownActive = false;
+        private bool meidoDropdownActive;
+        private bool doguDropdownActive;
         private bool PaneActive => meidoDropdownActive && doguDropdownActive;
         private string header;
-        private int selectedMaid = 0;
+        private int selectedMaid;
 
         public AttachPropPane(MeidoManager meidoManager, PropManager propManager)
         {
@@ -96,8 +96,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GUILayout.Width(dropdownButtonWidth)
             };
 
-            MiscGUI.Header(header);
-            MiscGUI.WhiteLine();
+            MpsGui.Header(header);
+            MpsGui.WhiteLine();
 
             GUI.enabled = PaneActive;
 

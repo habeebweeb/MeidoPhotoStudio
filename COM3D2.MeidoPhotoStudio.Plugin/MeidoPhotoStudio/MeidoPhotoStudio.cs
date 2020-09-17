@@ -30,9 +30,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private PropManager propManager;
         private EffectManager effectManager;
         private Constants.Scene currentScene;
-        private bool initialized = false;
-        private bool active = false;
-        private bool uiActive = false;
+        private bool initialized;
+        private bool active;
+        private bool uiActive;
 
         static MeidoPhotoStudio()
         {
@@ -141,7 +141,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             byte[] sceneBinary = DecompressScene(filePath);
 
             if (sceneBinary == null) return;
-
 
             string header = string.Empty;
             string previousHeader = string.Empty;
@@ -474,6 +473,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         public string Path { get; set; } = string.Empty;
         public int SuperSize { get; set; } = -1;
-        public bool HideMaids { get; set; } = false;
+        public bool HideMaids { get; set; }
     }
 }

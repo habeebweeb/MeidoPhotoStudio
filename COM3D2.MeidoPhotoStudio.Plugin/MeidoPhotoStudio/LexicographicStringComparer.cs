@@ -91,7 +91,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return 0;
         }
 
+        /// <summary>
         /// <see cref="IComparer{T}.Compare(T, T)"/>
+        /// </summary>
         public int Compare(string x, string y)
             => Comparison(x, y);
 

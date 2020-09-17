@@ -47,7 +47,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             focalLengthSlider.Draw();
 
-            GUILayoutOption sliderWidth = MiscGUI.HalfSlider;
+            GUILayoutOption sliderWidth = MpsGui.HalfSlider;
 
             GUILayout.BeginHorizontal();
             focalSizeSlider.Draw(sliderWidth);

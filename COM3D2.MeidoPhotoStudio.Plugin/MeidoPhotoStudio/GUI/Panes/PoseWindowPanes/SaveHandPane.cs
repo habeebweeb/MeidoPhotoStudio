@@ -14,10 +14,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public SaveHandPane(MeidoManager meidoManager)
         {
-            Constants.CustomHandChange += (s, a) =>
-            {
-                categoryComboBox.SetDropdownItems(Constants.CustomHandGroupList.ToArray());
-            };
+            Constants.CustomHandChange += (s, a)
+                => categoryComboBox.SetDropdownItems(Constants.CustomHandGroupList.ToArray());
 
             this.meidoManager = meidoManager;
 
@@ -48,10 +46,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GUI.enabled = meidoManager.HasActiveMeido;
 
-            MiscGUI.Header(categoryHeader);
+            MpsGui.Header(categoryHeader);
             categoryComboBox.Draw(GUILayout.Width(165f));
 
-            MiscGUI.Header(nameHeader);
+            MpsGui.Header(nameHeader);
             handNameTextField.Draw(GUILayout.Width(165f));
 
             GUILayout.BeginHorizontal();
@@ -66,7 +64,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             byte[] handBinary = meidoManager.ActiveMeido.IKManager.SerializeHand(right);
             Constants.AddHand(handBinary, right, handNameTextField.Value, categoryComboBox.Value);
-            this.handNameTextField.Value = string.Empty;
+            handNameTextField.Value = string.Empty;
         }
     }
 }

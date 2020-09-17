@@ -16,14 +16,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void UpdateDragType()
         {
-            if (Input.Alt && !Input.Control)
-            {
-                CurrentDragType = Input.Shift ? DragType.RotLocalY : DragType.RotLocalXZ;
-            }
-            else
-            {
-                CurrentDragType = OtherDragType() ? DragType.Ignore : DragType.None;
-            }
+            CurrentDragType = Input.Alt && !Input.Control
+                ? Input.Shift ? DragType.RotLocalY : DragType.RotLocalXZ
+                : OtherDragType() ? DragType.Ignore : DragType.None;
         }
 
         protected override void OnMouseDown()

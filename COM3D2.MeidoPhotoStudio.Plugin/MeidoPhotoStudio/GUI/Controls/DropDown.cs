@@ -112,10 +112,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 clickedYou = false;
             }
 
-            if (showDropdown)
-            {
-                if (Event.current.type == EventType.Repaint) InitializeDropdown(dropdownStyle);
-            }
+            if (showDropdown && Event.current.type == EventType.Repaint) InitializeDropdown(dropdownStyle);
         }
 
         public override void Draw(params GUILayoutOption[] layoutOptions)
@@ -190,10 +187,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private static Vector2 scrollPos;
         private static int currentDropdownID;
         private static int selectedItemIndex;
-        private static bool initialized = false;
+        private static bool initialized;
         public static bool Visible { get; set; }
         public static bool DropdownOpen { get; private set; }
-        private static bool onScrollBar = false;
+        private static bool onScrollBar;
         public static Rect dropdownWindow;
         private static Rect dropdownScrollRect;
         private static Rect dropdownRect;
@@ -217,8 +214,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Vector2 calculatedSize = style.CalcSize(content);
             for (int i = 1; i < list.Length; i++)
             {
-                string word = list[i];
-                content.text = word;
+                content.text = list[i];
                 Vector2 calcSize = style.CalcSize(content);
                 if (calcSize.x > calculatedSize.x) calculatedSize = calcSize;
             }
@@ -267,12 +263,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static void HandleDropdown()
         {
             dropdownWindow = GUI.Window(Constants.dropdownWindowID, dropdownWindow, GUIFunc, "", windowStyle);
-            if (Input.mouseScrollDelta.y != 0f)
+            if (Input.mouseScrollDelta.y != 0f && Visible && dropdownWindow.Contains(Event.current.mousePosition))
             {
-                if (Visible && dropdownWindow.Contains(Event.current.mousePosition))
-                {
-                    Input.ResetInputAxes();
-                }
+                Input.ResetInputAxes();
             }
         }
 

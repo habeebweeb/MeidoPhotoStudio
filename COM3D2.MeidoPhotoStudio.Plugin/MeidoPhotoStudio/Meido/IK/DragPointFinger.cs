@@ -11,15 +11,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private bool baseFinger;
         private static readonly Color dragpointColour = new Color(0.1f, 0.4f, 0.95f, defaultAlpha);
 
-        public override void Set(Transform finger)
+        public override void Set(Transform myObject)
         {
-            base.Set(finger);
-            string parentName = finger.parent.name.Split(' ')[2];
+            base.Set(myObject);
+            string parentName = myObject.parent.name.Split(' ')[2];
             // Base finger names have the form 'FingerN' or 'ToeN' where N is a natural number
             baseFinger = (parentName.Length == 7) || (parentName.Length == 4);
             ikChain = new Transform[2] {
-                finger.parent,
-                finger
+                myObject.parent,
+                myObject
             };
         }
 
@@ -40,13 +40,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void UpdateDragType()
         {
-            if (Input.GetKey(MpsKey.DragFinger))
-            {
-                CurrentDragType = Input.Shift
+            CurrentDragType = Input.GetKey(MpsKey.DragFinger)
+                ? Input.Shift
                     ? DragType.RotLocalY
-                    : DragType.MoveXZ;
-            }
-            else CurrentDragType = DragType.None;
+                    : DragType.MoveXZ
+                : DragType.None;
         }
 
         protected override void OnMouseDown()

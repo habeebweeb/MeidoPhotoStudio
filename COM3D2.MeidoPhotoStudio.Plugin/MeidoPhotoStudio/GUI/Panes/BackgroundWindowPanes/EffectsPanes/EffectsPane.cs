@@ -44,8 +44,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
-            MiscGUI.Header("Effects");
-            MiscGUI.WhiteLine();
+            MpsGui.Header("Effects");
+            MpsGui.WhiteLine();
             effectToggles.Draw();
             currentEffectPane.Draw();
         }

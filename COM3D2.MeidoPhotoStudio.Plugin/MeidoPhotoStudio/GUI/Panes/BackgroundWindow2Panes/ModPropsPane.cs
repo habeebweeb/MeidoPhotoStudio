@@ -12,14 +12,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Toggle modFilterToggle;
         private readonly Toggle baseFilterToggle;
         private Vector2 propListScrollPos;
-        private string SelectedCategory => MenuCategories[this.propCategoryDropdown.SelectedItemIndex];
+        private string SelectedCategory => MenuCategories[propCategoryDropdown.SelectedItemIndex];
         private List<ModItem> modPropList;
         private string currentCategory;
-        private bool modItemsReady = false;
-        private bool shouldDraw = false;
-        private int categoryIndex = 0;
-        private bool modFilter = false;
-        private bool baseFilter = false;
+        private bool modItemsReady;
+        private bool shouldDraw;
+        private int categoryIndex;
+        private bool modFilter;
+        private bool baseFilter;
         private int currentListCount;
         private readonly bool isModsOnly = PropManager.ModItemsOnly;
         private enum FilterType

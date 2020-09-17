@@ -33,7 +33,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             PreviousButton.Draw(buttonStyle, GUILayout.Height(40), GUILayout.ExpandWidth(false));
 
             if (meidoManager.HasActiveMeido)
-                MiscGUI.DrawTexture(meidoManager.ActiveMeido.Portrait, GUILayout.Width(70), GUILayout.Height(70));
+                MpsGui.DrawTexture(meidoManager.ActiveMeido.Portrait, GUILayout.Width(70), GUILayout.Height(70));
             else
                 GUILayout.Box("", boxStyle, GUILayout.Height(70), GUILayout.Width(70));
 

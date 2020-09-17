@@ -26,34 +26,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void DrawWindows()
         {
-            foreach (BaseWindow window in Windows.Values)
-            {
-                DrawWindow(window);
-            }
+            foreach (BaseWindow window in Windows.Values) DrawWindow(window);
         }
 
         public void Update()
         {
-            foreach (BaseWindow window in Windows.Values)
-            {
-                window.Update();
-            }
+            foreach (BaseWindow window in Windows.Values) window.Update();
         }
 
         public void Activate()
         {
-            foreach (BaseWindow window in Windows.Values)
-            {
-                window.Activate();
-            }
+            foreach (BaseWindow window in Windows.Values) window.Activate();
         }
 
         public void Deactivate()
         {
-            foreach (BaseWindow window in Windows.Values)
-            {
-                window.Deactivate();
-            }
+            foreach (BaseWindow window in Windows.Values) window.Deactivate();
         }
     }
 }

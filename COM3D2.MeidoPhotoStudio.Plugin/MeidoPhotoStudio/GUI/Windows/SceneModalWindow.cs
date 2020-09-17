@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
@@ -44,8 +43,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private string infoKankyo;
         private string infoMaidSingular;
         private string infoMaidPlural;
-        private bool directoryMode = false;
-        private bool deleteScene = false;
+        private bool directoryMode;
+        private bool deleteScene;
 
         public SceneModalWindow(SceneManager sceneManager)
         {
@@ -107,7 +106,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
 
-                MiscGUI.DrawTexture(thumb, GUILayout.Width(width), GUILayout.Height(height));
+                MpsGui.DrawTexture(thumb, GUILayout.Width(width), GUILayout.Height(height));
 
                 GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
                 {

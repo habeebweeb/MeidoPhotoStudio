@@ -12,7 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private enum Setting
         {
             Prop, Maid, Background, Size
-        };
+        }
 
         public DragPointPane()
         {
@@ -39,8 +39,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
-            MiscGUI.Header(header);
-            MiscGUI.WhiteLine();
+            MpsGui.Header(header);
+            MpsGui.WhiteLine();
 
             GUILayout.BeginHorizontal();
             propsCubeToggle.Draw();

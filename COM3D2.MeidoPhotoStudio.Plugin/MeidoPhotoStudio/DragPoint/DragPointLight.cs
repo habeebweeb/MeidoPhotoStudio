@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
@@ -16,10 +15,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             LightRotX, LightRotY, Intensity, ShadowStrength, SpotAngle, Range, Red, Green, Blue
         }
 
-        public bool IsActiveLight { get; set; } = false;
-        public string Name { get; private set; } = String.Empty;
-        public bool IsMain { get; set; } = false;
-        public MPSLightType SelectedLightType { get; private set; } = MPSLightType.Normal;
+        public bool IsActiveLight { get; set; }
+        public string Name { get; private set; } = string.Empty;
+        public bool IsMain { get; set; }
+        public MPSLightType SelectedLightType { get; private set; }
         public LightProperty CurrentLightProperty => LightProperties[(int)SelectedLightType];
         private readonly LightProperty[] LightProperties = new LightProperty[]
         {
@@ -27,7 +26,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             new LightProperty(),
             new LightProperty()
         };
-        private bool isDisabled = false;
+        private bool isDisabled;
         public bool IsDisabled
         {
             get => isDisabled;
@@ -37,7 +36,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 light.gameObject.SetActive(!isDisabled);
             }
         }
-        private bool isColourMode = false;
+        private bool isColourMode;
         public bool IsColourMode
         {
             get => IsMain && isColourMode && SelectedLightType == MPSLightType.Normal;

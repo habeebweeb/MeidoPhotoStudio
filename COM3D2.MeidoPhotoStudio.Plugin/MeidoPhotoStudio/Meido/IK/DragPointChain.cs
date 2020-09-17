@@ -9,33 +9,30 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Quaternion[] jointRotation = new Quaternion[3];
         private Transform[] ikChain;
         private int foot = 1;
-        private bool isLower = false;
-        private bool isMiddle = false;
-        private bool isUpper = false;
-        private bool isMune = false;
+        private bool isLower;
+        private bool isMiddle;
+        private bool isUpper;
+        private bool isMune;
 
-        public override void Set(Transform lower)
+        public override void Set(Transform myObject)
         {
-            base.Set(lower);
-            isMune = lower.name.StartsWith("Mune");
-            foot = lower.name.EndsWith("Foot") ? -1 : 1;
-            isLower = lower.name.EndsWith("Hand") || foot == -1;
-            isMiddle = lower.name.EndsWith("Calf") || lower.name.EndsWith("Forearm");
+            base.Set(myObject);
+            isMune = myObject.name.StartsWith("Mune");
+            foot = myObject.name.EndsWith("Foot") ? -1 : 1;
+            isLower = myObject.name.EndsWith("Hand") || foot == -1;
+            isMiddle = myObject.name.EndsWith("Calf") || myObject.name.EndsWith("Forearm");
             isUpper = !(isMiddle || isLower) && !isMune;
             ikChain = new Transform[] {
-                lower.parent,
-                lower.parent,
-                lower
+                myObject.parent,
+                myObject.parent,
+                myObject
             };
             if (isLower) ikChain[0] = ikChain[0].parent;
         }
 
         private void InitializeRotation()
         {
-            for (int i = 0; i < jointRotation.Length; i++)
-            {
-                jointRotation[i] = ikChain[i].localRotation;
-            }
+            for (int i = 0; i < jointRotation.Length; i++) jointRotation[i] = ikChain[i].localRotation;
         }
 
         protected override void ApplyDragType()
@@ -127,7 +124,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (CurrentDragType == DragType.RotLocalY)
             {
-                int joint = this.isMiddle ? jointUpper : jointLower;
+                int joint = isMiddle ? jointUpper : jointLower;
                 ikChain[joint].localRotation = jointRotation[joint];
                 ikChain[joint].Rotate(Vector3.right * (-mouseDelta.x / 1.5f));
             }

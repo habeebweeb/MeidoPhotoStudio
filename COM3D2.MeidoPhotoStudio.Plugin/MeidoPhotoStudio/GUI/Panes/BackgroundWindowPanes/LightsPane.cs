@@ -19,7 +19,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly SelectionGrid lightTypeGrid;
         private readonly Toggle colorToggle;
         private readonly Toggle disableToggle;
-        private MPSLightType currentLightType = MPSLightType.Normal;
+        private MPSLightType currentLightType;
         private string lightHeader;
         private static readonly Dictionary<LightProp, SliderProp> LightSliderProp =
             new Dictionary<LightProp, SliderProp>()
@@ -233,8 +233,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             bool isMain = lightManager.SelectedLightIndex == 0;
 
-            MiscGUI.Header(lightHeader);
-            MiscGUI.WhiteLine();
+            MpsGui.Header(lightHeader);
+            MpsGui.WhiteLine();
 
             GUILayout.BeginHorizontal();
             lightDropdown.Draw(GUILayout.Width(84));
@@ -282,7 +282,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 LightSlider[LightProp.SpotAngle].Draw();
             }
 
-            GUILayoutOption sliderWidth = MiscGUI.HalfSlider;
+            GUILayoutOption sliderWidth = MpsGui.HalfSlider;
             GUILayout.BeginHorizontal();
             LightSlider[LightProp.Red].Draw(sliderWidth);
             LightSlider[LightProp.Green].Draw(sliderWidth);

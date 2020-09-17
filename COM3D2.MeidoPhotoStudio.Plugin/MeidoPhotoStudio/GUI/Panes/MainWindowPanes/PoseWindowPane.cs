@@ -98,17 +98,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             maidDressingPane.Draw();
 
-            MiscGUI.WhiteLine();
+            MpsGui.WhiteLine();
 
             maidIKPane.Draw();
 
-            MiscGUI.WhiteLine();
+            MpsGui.WhiteLine();
 
             gravityControlPane.Draw();
 
             GUI.enabled = meidoManager.HasActiveMeido;
-            MiscGUI.Header(handPresetHeader);
-            MiscGUI.WhiteLine();
+            MpsGui.Header(handPresetHeader);
+            MpsGui.WhiteLine();
             saveHandToggle.Draw();
             GUI.enabled = true;
 

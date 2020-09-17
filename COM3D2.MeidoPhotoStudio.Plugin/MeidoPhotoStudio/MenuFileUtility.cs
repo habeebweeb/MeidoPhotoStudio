@@ -24,7 +24,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             None, ItemChange, TexChange
         }
         public static event EventHandler MenuFilesReadyChange;
-        public static bool MenuFilesReady { get; private set; } = false;
+        public static bool MenuFilesReady { get; private set; }
 
         static MenuFileUtility()
         {
@@ -38,7 +38,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             while (!GameMain.Instance.MenuDataBase.JobFinished()) yield return null;
             MenuFilesReady = true;
             MenuFilesReadyChange?.Invoke(null, EventArgs.Empty);
-            yield break;
         }
 
         private static bool ProcScriptBin(byte[] menuBuf, ModelInfo modelInfo)
@@ -418,7 +417,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     int[] array10 = new int[num20];
                     for (int num21 = 0; num21 < num20; num21++)
                     {
-                        array10[num21] = (int)binaryReader.ReadUInt16();
+                        array10[num21] = binaryReader.ReadUInt16();
                     }
                     mesh2.SetTriangles(array10, num19);
                 }
@@ -451,11 +450,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         Utility.LogWarning($"Could not open mod menu file '{modItem.MenuFile}'");
                         return null;
                     }
-                    else
-                    {
-                        modMenuBuffer = new byte[fileStream.Length];
-                        fileStream.Read(modMenuBuffer, 0, (int)fileStream.Length);
-                    }
+                    modMenuBuffer = new byte[fileStream.Length];
+
+                    fileStream.Read(modMenuBuffer, 0, (int)fileStream.Length);
                 }
             }
 
@@ -512,11 +509,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 return gameObject;
             }
-            else
-            {
-                Utility.LogMessage($"Could not parse menu file '{modItem.MenuFile}'");
-                return null;
-            }
+
+            Utility.LogMessage($"Could not parse menu file '{modItem.MenuFile}'");
+
+            return null;
         }
 
         public static bool ParseNativeMenuFile(int menuIndex, ModItem modItem)
@@ -663,44 +659,43 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 try
                 {
                     if (binaryReader.ReadString() != "CM3D2_MOD") return false;
-                    else
+
+                    binaryReader.ReadInt32();
+                    string iconName = binaryReader.ReadString();
+                    string baseItemPath = binaryReader.ReadString().Replace(":", " ");
+                    modItem.BaseMenuFile = Path.GetFileName(baseItemPath);
+                    modItem.Name = binaryReader.ReadString();
+                    modItem.Category = binaryReader.ReadString();
+                    if (!accMpn.Contains(modItem.Category)) return false;
+                    binaryReader.ReadString();
+                    string mpnValue = binaryReader.ReadString();
+                    MPN mpn = MPN.null_mpn;
+                    try
                     {
-                        binaryReader.ReadInt32();
-                        string iconName = binaryReader.ReadString();
-                        string baseItemPath = binaryReader.ReadString().Replace(":", " ");
-                        modItem.BaseMenuFile = Path.GetFileName(baseItemPath);
-                        modItem.Name = binaryReader.ReadString();
-                        modItem.Category = binaryReader.ReadString();
-                        if (!accMpn.Contains(modItem.Category)) return false;
+                        mpn = (MPN)Enum.Parse(typeof(MPN), mpnValue, true);
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                    if (mpn != MPN.null_mpn)
+                    {
                         binaryReader.ReadString();
-                        string mpnValue = binaryReader.ReadString();
-                        MPN mpn = MPN.null_mpn;
-                        try
+                    }
+                    binaryReader.ReadString();
+                    int size = binaryReader.ReadInt32();
+
+                    for (int i = 0; i < size; i++)
+                    {
+                        string key = binaryReader.ReadString();
+                        int count = binaryReader.ReadInt32();
+                        byte[] data = binaryReader.ReadBytes(count);
+                        if (string.Equals(key, iconName, StringComparison.InvariantCultureIgnoreCase))
                         {
-                            mpn = (MPN)Enum.Parse(typeof(MPN), mpnValue, true);
-                        }
-                        catch
-                        {
-                            return false;
-                        }
-                        if (mpn != MPN.null_mpn)
-                        {
-                            binaryReader.ReadString();
-                        }
-                        binaryReader.ReadString();
-                        int size = binaryReader.ReadInt32();
-                        for (int i = 0; i < size; i++)
-                        {
-                            string key = binaryReader.ReadString();
-                            int count = binaryReader.ReadInt32();
-                            byte[] data = binaryReader.ReadBytes(count);
-                            if (string.Equals(key, iconName, StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                Texture2D tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-                                tex.LoadImage(data);
-                                modItem.Icon = tex;
-                                break;
-                            }
+                            Texture2D tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+                            tex.LoadImage(data);
+                            modItem.Icon = tex;
+                            break;
                         }
                     }
                 }
