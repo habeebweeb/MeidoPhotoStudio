@@ -22,7 +22,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
         private static event EventHandler CubeActiveChange;
-        private List<DragPointLight> lightList = new List<DragPointLight>();
+        private readonly List<DragPointLight> lightList = new List<DragPointLight>();
         private int selectedLightIndex = 0;
         public int SelectedLightIndex
         {
@@ -35,13 +35,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         public string[] LightNameList => lightList.Select(light => LightName(light.Name)).ToArray();
         public string ActiveLightName => LightName(lightList[SelectedLightIndex].Name);
-        public DragPointLight CurrentLight
-        {
-            get
-            {
-                return lightList[SelectedLightIndex];
-            }
-        }
+        public DragPointLight CurrentLight => lightList[SelectedLightIndex];
         public event EventHandler Rotate;
         public event EventHandler Scale;
         public event EventHandler ListModified;
@@ -129,7 +123,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DestroyLight(lightList[lightIndex]);
             lightList.RemoveAt(lightIndex);
 
-            if (lightIndex <= SelectedLightIndex) SelectedLightIndex -= 1;
+            if (lightIndex <= SelectedLightIndex) SelectedLightIndex--;
 
             if (noUpdate) return;
             OnListModified();
@@ -202,8 +196,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             int select = lightList.FindIndex(light => light == theLight);
             if (select >= 0)
             {
-                this.SelectedLightIndex = select;
-                this.Select?.Invoke(this, EventArgs.Empty);
+                SelectedLightIndex = select;
+                Select?.Invoke(this, EventArgs.Empty);
             }
         }
 

@@ -7,8 +7,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         public const string header = "EFFECT";
         public const string footer = "END_EFFECT";
-        private Dictionary<Type, IEffectManager> EffectManagers = new Dictionary<Type, IEffectManager>();
-        private BloomEffectManager bloomEffectManager;
+        private readonly Dictionary<Type, IEffectManager> EffectManagers = new Dictionary<Type, IEffectManager>();
+        private readonly BloomEffectManager bloomEffectManager;
 
         public EffectManager()
         {
@@ -22,7 +22,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public T Get<T>() where T : IEffectManager
         {
             if (EffectManagers.ContainsKey(typeof(T))) return (T)EffectManagers[typeof(T)];
-            else return default(T);
+            else return default;
         }
 
         private T AddManager<T>() where T : IEffectManager, new()

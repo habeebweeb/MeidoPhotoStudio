@@ -5,39 +5,36 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class DragPointPane : BasePane
     {
         private string header;
-        private Toggle propsCubeToggle;
-        private Toggle smallCubeToggle;
-        private Toggle maidCubeToggle;
-        private Toggle bgCubeToggle;
-        private enum DragPointSetting
+        private readonly Toggle propsCubeToggle;
+        private readonly Toggle smallCubeToggle;
+        private readonly Toggle maidCubeToggle;
+        private readonly Toggle bgCubeToggle;
+        private enum Setting
         {
             Prop, Maid, Background, Size
         };
 
         public DragPointPane()
         {
-            this.header = Translation.Get("movementCube", "header");
-            this.propsCubeToggle = new Toggle(Translation.Get("movementCube", "props"), PropManager.CubeActive);
-            this.smallCubeToggle = new Toggle(Translation.Get("movementCube", "small"));
-            this.maidCubeToggle = new Toggle(Translation.Get("movementCube", "maid"), MeidoDragPointManager.CubeActive);
-            this.bgCubeToggle = new Toggle(Translation.Get("movementCube", "bg"), EnvironmentManager.CubeActive);
+            header = Translation.Get("movementCube", "header");
+            propsCubeToggle = new Toggle(Translation.Get("movementCube", "props"), PropManager.CubeActive);
+            smallCubeToggle = new Toggle(Translation.Get("movementCube", "small"));
+            maidCubeToggle = new Toggle(Translation.Get("movementCube", "maid"), MeidoDragPointManager.CubeActive);
+            bgCubeToggle = new Toggle(Translation.Get("movementCube", "bg"), EnvironmentManager.CubeActive);
 
-            this.propsCubeToggle.ControlEvent += (s, a) =>
-            {
-                ChangeDragPointSetting(DragPointSetting.Prop, this.propsCubeToggle.Value);
-            };
-            this.smallCubeToggle.ControlEvent += (s, a) =>
-            {
-                ChangeDragPointSetting(DragPointSetting.Size, this.smallCubeToggle.Value);
-            };
-            this.maidCubeToggle.ControlEvent += (s, a) =>
-            {
-                ChangeDragPointSetting(DragPointSetting.Maid, this.maidCubeToggle.Value);
-            };
-            this.bgCubeToggle.ControlEvent += (s, a) =>
-            {
-                ChangeDragPointSetting(DragPointSetting.Background, this.bgCubeToggle.Value);
-            };
+            propsCubeToggle.ControlEvent += (s, a) => ChangeDragPointSetting(Setting.Prop, propsCubeToggle.Value);
+            smallCubeToggle.ControlEvent += (s, a) => ChangeDragPointSetting(Setting.Size, smallCubeToggle.Value);
+            maidCubeToggle.ControlEvent += (s, a) => ChangeDragPointSetting(Setting.Maid, maidCubeToggle.Value);
+            bgCubeToggle.ControlEvent += (s, a) => ChangeDragPointSetting(Setting.Background, bgCubeToggle.Value);
+        }
+
+        protected override void ReloadTranslation()
+        {
+            header = Translation.Get("movementCube", "header");
+            propsCubeToggle.Label = Translation.Get("movementCube", "props");
+            smallCubeToggle.Label = Translation.Get("movementCube", "small");
+            maidCubeToggle.Label = Translation.Get("movementCube", "maid");
+            bgCubeToggle.Label = Translation.Get("movementCube", "bg");
         }
 
         public override void Draw()
@@ -46,27 +43,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             MiscGUI.WhiteLine();
 
             GUILayout.BeginHorizontal();
-            this.propsCubeToggle.Draw();
-            this.smallCubeToggle.Draw();
-            this.maidCubeToggle.Draw();
-            this.bgCubeToggle.Draw();
+            propsCubeToggle.Draw();
+            smallCubeToggle.Draw();
+            maidCubeToggle.Draw();
+            bgCubeToggle.Draw();
             GUILayout.EndHorizontal();
         }
 
-        private void ChangeDragPointSetting(DragPointSetting setting, bool value)
+        private void ChangeDragPointSetting(Setting setting, bool value)
         {
             switch (setting)
             {
-                case DragPointSetting.Prop:
+                case Setting.Prop:
                     PropManager.CubeActive = value;
                     break;
-                case DragPointSetting.Background:
+                case Setting.Background:
                     EnvironmentManager.CubeActive = value;
                     break;
-                case DragPointSetting.Maid:
+                case Setting.Maid:
                     MeidoDragPointManager.CubeActive = value;
                     break;
-                case DragPointSetting.Size:
+                case Setting.Size:
                     MeidoDragPointManager.CubeSmall = value;
                     EnvironmentManager.CubeSmall = value;
                     PropManager.CubeSmall = value;

@@ -6,18 +6,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     using Input = InputManager;
     internal class DragPointHead : DragPointMeido
     {
-        TBody body;
         private Quaternion headRotation;
         private Vector3 eyeRotationL;
         private Vector3 eyeRotationR;
         public event EventHandler Select;
         public bool IsIK { get; set; }
-
-        public override void Set(Transform myObject)
-        {
-            base.Set(myObject);
-            this.body = this.maid.body0;
-        }
 
         protected override void ApplyDragType()
         {
@@ -62,16 +55,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             headRotation = MyObject.rotation;
 
-            eyeRotationL = body.quaDefEyeL.eulerAngles;
-            eyeRotationR = body.quaDefEyeR.eulerAngles;
+            eyeRotationL = meido.Body.quaDefEyeL.eulerAngles;
+            eyeRotationR = meido.Body.quaDefEyeR.eulerAngles;
         }
 
         protected override void OnDoubleClick()
         {
             if (CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY)
             {
-                body.quaDefEyeL = this.meido.DefaultEyeRotL;
-                body.quaDefEyeR = this.meido.DefaultEyeRotR;
+                meido.Body.quaDefEyeL = meido.DefaultEyeRotL;
+                meido.Body.quaDefEyeR = meido.DefaultEyeRotR;
             }
             else if (CurrentDragType == DragType.RotLocalY || CurrentDragType == DragType.RotLocalXZ)
             {
@@ -107,11 +100,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 int inv = CurrentDragType == DragType.MoveY ? -1 : 1;
 
-                body.quaDefEyeL.eulerAngles = new Vector3(
-                    eyeRotationL.x, eyeRotationL.y - mouseDelta.x / 10f, eyeRotationL.z - mouseDelta.y / 10f
+                meido.Body.quaDefEyeL.eulerAngles = new Vector3(
+                    eyeRotationL.x, eyeRotationL.y - (mouseDelta.x / 10f), eyeRotationL.z - (mouseDelta.y / 10f)
                 );
-                body.quaDefEyeR.eulerAngles = new Vector3(
-                    eyeRotationR.x, eyeRotationR.y + inv * mouseDelta.x / 10f, eyeRotationR.z + mouseDelta.y / 10f
+                meido.Body.quaDefEyeR.eulerAngles = new Vector3(
+                    eyeRotationR.x, eyeRotationR.y + (inv * mouseDelta.x / 10f), eyeRotationR.z + (mouseDelta.y / 10f)
                 );
             }
         }

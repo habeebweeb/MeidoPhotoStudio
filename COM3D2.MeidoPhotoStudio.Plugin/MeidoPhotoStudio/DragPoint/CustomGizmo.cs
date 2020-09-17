@@ -6,11 +6,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class CustomGizmo : GizmoRender
     {
-        private static Camera camera = GameMain.Instance.MainCamera.camera;
+        private static readonly Camera camera = GameMain.Instance.MainCamera.camera;
         private Transform target;
-        private FieldInfo beSelectedType = Utility.GetFieldInfo<GizmoRender>("beSelectedType");
+        private readonly FieldInfo beSelectedType = Utility.GetFieldInfo<GizmoRender>("beSelectedType");
         private int SelectedType => (int)beSelectedType.GetValue(this);
-        private static FieldInfo is_drag_ = Utility.GetFieldInfo<GizmoRender>("is_drag_");
+        private static readonly FieldInfo is_drag_ = Utility.GetFieldInfo<GizmoRender>("is_drag_");
         public static bool IsDrag
         {
             get => (bool)is_drag_.GetValue(null);
@@ -18,7 +18,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         private Vector3 positionOld = Vector3.zero;
         private Vector3 deltaPosition = Vector3.zero;
-        private Vector3 localPositionOld = Vector3.zero;
         private Vector3 deltaLocalPosition = Vector3.zero;
         private Quaternion rotationOld = Quaternion.identity;
         private Quaternion deltaRotation = Quaternion.identity;
@@ -40,14 +39,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public bool IsGizmoDrag => GizmoVisible && IsDrag && SelectedType != 0;
         public bool GizmoVisible
         {
-            get => base.Visible;
+            get => Visible;
             set
             {
                 if (value && IsDrag) IsDrag = false;
-                base.Visible = value;
+                Visible = value;
             }
         }
-        public GizmoMode gizmoMode = GizmoMode.Local;
+        public GizmoMode gizmoMode;
         public event EventHandler GizmoDrag;
         public enum GizmoType
         {
@@ -110,7 +109,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 case GizmoMode.Local:
                     target.transform.position += target.transform.TransformVector(deltaLocalPosition).normalized
                         * deltaLocalPosition.magnitude;
-                    target.transform.rotation = target.transform.rotation * deltaLocalRotation;
+                    target.transform.rotation *= deltaLocalRotation;
                     target.transform.localScale += deltaScale;
                     if (deltaLocalRotation != Quaternion.identity || deltaLocalPosition != Vector3.zero
                         || deltaScale != Vector3.zero
@@ -153,24 +152,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             switch (gizmoType)
             {
                 case GizmoType.Move:
-                    this.eAxis = true;
-                    this.eRotate = false;
-                    this.eScal = false;
+                    eAxis = true;
+                    eRotate = false;
+                    eScal = false;
                     break;
                 case GizmoType.Rotate:
-                    this.eAxis = false;
-                    this.eRotate = true;
-                    this.eScal = false;
+                    eAxis = false;
+                    eRotate = true;
+                    eScal = false;
                     break;
                 case GizmoType.Scale:
-                    this.eAxis = false;
-                    this.eRotate = false;
-                    this.eScal = true;
+                    eAxis = false;
+                    eRotate = false;
+                    eScal = true;
                     break;
                 case GizmoType.None:
-                    this.eAxis = false;
-                    this.eRotate = false;
-                    this.eScal = false;
+                    eAxis = false;
+                    eRotate = false;
+                    eScal = false;
                     break;
             }
         }

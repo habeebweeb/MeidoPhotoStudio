@@ -5,10 +5,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class GravityControlPane : BasePane
     {
-        private MeidoManager meidoManager;
-        private Toggle hairToggle;
-        private Toggle skirtToggle;
-        private Toggle globalToggle;
+        private readonly MeidoManager meidoManager;
+        private readonly Toggle hairToggle;
+        private readonly Toggle skirtToggle;
+        private readonly Toggle globalToggle;
 
         public GravityControlPane(MeidoManager meidoManager)
         {
@@ -26,10 +26,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
-            bool enabled = this.meidoManager.HasActiveMeido;
+            bool enabled = meidoManager.HasActiveMeido;
             GUI.enabled = enabled;
 
-            Meido meido = this.meidoManager.ActiveMeido;
+            Meido meido = meidoManager.ActiveMeido;
             GUILayout.BeginHorizontal();
 
             GUI.enabled = enabled && meido.HairGravityValid;
@@ -48,25 +48,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void UpdatePane()
         {
-            if (!this.meidoManager.HasActiveMeido) return;
+            if (!meidoManager.HasActiveMeido) return;
 
             Meido meido = meidoManager.ActiveMeido;
 
-            this.updating = true;
+            updating = true;
 
             hairToggle.Value = meido.HairGravityActive;
             skirtToggle.Value = meido.SkirtGravityActive;
 
-            this.updating = false;
+            updating = false;
         }
 
         private void ToggleGravity(bool value, bool skirt = false)
         {
             if (updating) return;
 
-            if (this.meidoManager.GlobalGravity)
+            if (meidoManager.GlobalGravity)
             {
-                foreach (Meido meido in this.meidoManager.ActiveMeidoList)
+                foreach (Meido meido in meidoManager.ActiveMeidoList)
                 {
                     if (skirt) meido.SkirtGravityActive = value;
                     else meido.HairGravityActive = value;
@@ -74,11 +74,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else
             {
-                if (skirt) this.meidoManager.ActiveMeido.SkirtGravityActive = value;
-                else this.meidoManager.ActiveMeido.HairGravityActive = value;
+                if (skirt) meidoManager.ActiveMeido.SkirtGravityActive = value;
+                else meidoManager.ActiveMeido.HairGravityActive = value;
             }
         }
 
-        private void SetGlobalGravity(bool value) => this.meidoManager.GlobalGravity = value;
+        private void SetGlobalGravity(bool value) => meidoManager.GlobalGravity = value;
     }
 }

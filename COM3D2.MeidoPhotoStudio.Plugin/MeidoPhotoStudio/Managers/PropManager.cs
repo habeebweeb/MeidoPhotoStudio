@@ -15,7 +15,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public const int propDataVersion = 1000;
         private static readonly ConfigEntry<bool> modItemsOnly;
         public static bool ModItemsOnly => modItemsOnly.Value;
-        private MeidoManager meidoManager;
+        private readonly MeidoManager meidoManager;
         private static bool cubeActive = true;
         public static bool CubeActive
         {
@@ -44,7 +44,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         private static event EventHandler CubeActiveChange;
         private static event EventHandler CubeSmallChange;
-        private List<DragPointDogu> doguList = new List<DragPointDogu>();
+        private readonly List<DragPointDogu> doguList = new List<DragPointDogu>();
         public int DoguCount => doguList.Count;
         public event EventHandler DoguListChange;
         public event EventHandler DoguSelectChange;
@@ -303,9 +303,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     MeshRenderer[] meshRenderers = dogu.GetComponentsInChildren<MeshRenderer>();
                     for (int i = 0; i < meshRenderers.Length; i++)
                     {
-                        if (meshRenderers[i] != null
-                            && meshRenderers[i].gameObject.name.ToLower().IndexOf("castshadow") < 0
-                        ) meshRenderers[i].shadowCastingMode = ShadowCastingMode.Off;
+                        if (meshRenderers[i])
+                        {
+                            string name = meshRenderers[i].gameObject.name;
+                            if (name.IndexOf("castshadow", StringComparison.OrdinalIgnoreCase) < 0)
+                            {
+                                meshRenderers[i].shadowCastingMode = ShadowCastingMode.Off;
+                            }
+                        }
                     }
 
                     Collider collider = dogu.transform.GetComponent<Collider>();
@@ -365,7 +370,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private bool SpawnFromAssetString(string assetName, Dictionary<string, string> modDict = null)
         {
-            bool result = false;
+            bool result;
             if (assetName.EndsWith(".menu"))
             {
                 if (assetName.Contains('#'))

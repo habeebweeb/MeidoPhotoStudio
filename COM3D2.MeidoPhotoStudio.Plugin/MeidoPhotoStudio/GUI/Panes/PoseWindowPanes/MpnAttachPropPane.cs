@@ -6,65 +6,65 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class MpnAttachPropPane : BasePane
     {
-        private MeidoManager meidoManager;
-        private Dropdown mpnAttachDropdown;
-        private Button previousPropButton;
-        private Button nextPropButton;
-        private Button attachPropButton;
-        private Button detachPropButton;
-        private Button detachAllButton;
+        private readonly MeidoManager meidoManager;
+        private readonly Dropdown mpnAttachDropdown;
+        private readonly Button previousPropButton;
+        private readonly Button nextPropButton;
+        private readonly Button attachPropButton;
+        private readonly Button detachPropButton;
+        private readonly Button detachAllButton;
 
         public MpnAttachPropPane(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
 
-            this.mpnAttachDropdown = new Dropdown(new[] { string.Empty });
+            mpnAttachDropdown = new Dropdown(new[] { string.Empty });
 
             if (!Constants.MpnAttachInitialized) Constants.MenuFilesChange += InitializeMpnAttach;
 
             SetDropdownList();
 
-            this.previousPropButton = new Button("<");
-            this.previousPropButton.ControlEvent += (s, a) => this.mpnAttachDropdown.Step(-1);
+            previousPropButton = new Button("<");
+            previousPropButton.ControlEvent += (s, a) => mpnAttachDropdown.Step(-1);
 
-            this.nextPropButton = new Button(">");
-            this.nextPropButton.ControlEvent += (s, a) => this.mpnAttachDropdown.Step(1);
+            nextPropButton = new Button(">");
+            nextPropButton.ControlEvent += (s, a) => mpnAttachDropdown.Step(1);
 
-            this.attachPropButton = new Button(Translation.Get("attachMpnPropPane", "attachButton"));
-            this.attachPropButton.ControlEvent += (s, a) => AttachProp();
+            attachPropButton = new Button(Translation.Get("attachMpnPropPane", "attachButton"));
+            attachPropButton.ControlEvent += (s, a) => AttachProp();
 
-            this.detachPropButton = new Button(Translation.Get("attachMpnPropPane", "detachButton"));
-            this.detachPropButton.ControlEvent += (s, a) => AttachProp(detach: true);
+            detachPropButton = new Button(Translation.Get("attachMpnPropPane", "detachButton"));
+            detachPropButton.ControlEvent += (s, a) => AttachProp(detach: true);
 
-            this.detachAllButton = new Button(Translation.Get("attachMpnPropPane", "detachAllButton"));
-            this.detachAllButton.ControlEvent += (s, a) => DetachAll();
+            detachAllButton = new Button(Translation.Get("attachMpnPropPane", "detachAllButton"));
+            detachAllButton.ControlEvent += (s, a) => DetachAll();
         }
 
         protected override void ReloadTranslation()
         {
-            this.attachPropButton.Label = Translation.Get("attachMpnPropPane", "attachButton");
-            this.detachPropButton.Label = Translation.Get("attachMpnPropPane", "detachButton");
-            this.detachAllButton.Label = Translation.Get("attachMpnPropPane", "detachAllButton");
+            attachPropButton.Label = Translation.Get("attachMpnPropPane", "attachButton");
+            detachPropButton.Label = Translation.Get("attachMpnPropPane", "detachButton");
+            detachAllButton.Label = Translation.Get("attachMpnPropPane", "detachAllButton");
             SetDropdownList();
         }
 
         public override void Draw()
         {
-            GUI.enabled = this.meidoManager.HasActiveMeido && Constants.MpnAttachInitialized;
+            GUI.enabled = meidoManager.HasActiveMeido && Constants.MpnAttachInitialized;
 
             GUILayoutOption noExpand = GUILayout.ExpandWidth(false);
 
             GUILayout.BeginHorizontal();
-            this.previousPropButton.Draw(noExpand);
-            this.mpnAttachDropdown.Draw(GUILayout.Width(153f));
-            this.nextPropButton.Draw(noExpand);
+            previousPropButton.Draw(noExpand);
+            mpnAttachDropdown.Draw(GUILayout.Width(153f));
+            nextPropButton.Draw(noExpand);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            this.attachPropButton.Draw();
-            this.detachPropButton.Draw();
+            attachPropButton.Draw();
+            detachPropButton.Draw();
             GUILayout.EndHorizontal();
-            this.detachAllButton.Draw();
+            detachAllButton.Draw();
 
             GUI.enabled = true;
         }
@@ -82,23 +82,23 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     "mpnAttachPropNames", Constants.MpnAttachPropList.Select(mpnProp => mpnProp.MenuFile)
                 );
 
-            this.mpnAttachDropdown.SetDropdownItems(dropdownList.ToArray());
+            mpnAttachDropdown.SetDropdownItems(dropdownList.ToArray());
         }
 
         private void AttachProp(bool detach = false)
         {
-            if (!this.meidoManager.HasActiveMeido) return;
+            if (!meidoManager.HasActiveMeido) return;
 
-            MpnAttachProp prop = Constants.MpnAttachPropList[this.mpnAttachDropdown.SelectedItemIndex];
+            MpnAttachProp prop = Constants.MpnAttachPropList[mpnAttachDropdown.SelectedItemIndex];
 
-            this.meidoManager.ActiveMeido.SetMpnProp(prop, detach);
+            meidoManager.ActiveMeido.SetMpnProp(prop, detach);
         }
 
         private void DetachAll()
         {
-            if (!this.meidoManager.HasActiveMeido) return;
+            if (!meidoManager.HasActiveMeido) return;
 
-            this.meidoManager.ActiveMeido.DetachAllMpnAttach();
+            meidoManager.ActiveMeido.DetachAllMpnAttach();
         }
     }
 }

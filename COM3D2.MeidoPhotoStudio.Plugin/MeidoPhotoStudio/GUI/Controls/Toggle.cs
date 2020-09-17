@@ -23,7 +23,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public Toggle(string label, bool state = false)
         {
             Label = label;
-            this.value = state;
+            value = state;
         }
 
         public override void Draw(params GUILayoutOption[] layoutOptions)
@@ -34,7 +34,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Draw(GUIStyle toggleStyle, params GUILayoutOption[] layoutOptions)
         {
             if (!Visible) return;
-            bool value = GUILayout.Toggle(Value, Label, toggleStyle);
+            bool value = GUILayout.Toggle(Value, Label, toggleStyle, layoutOptions);
             if (value != Value) Value = value;
         }
     }

@@ -4,25 +4,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class BGWindowPane : BaseMainWindowPane
     {
-        private BackgroundSelectorPane backgroundSelectorPane;
-        private LightsPane lightsPane;
-        private EffectsPane effectsPane;
-        private DragPointPane dragPointPane;
-        private Button sceneManagerButton;
+        private readonly BackgroundSelectorPane backgroundSelectorPane;
+        private readonly LightsPane lightsPane;
+        private readonly EffectsPane effectsPane;
+        private readonly DragPointPane dragPointPane;
+        private readonly Button sceneManagerButton;
 
         public BGWindowPane(
             EnvironmentManager environmentManager, LightManager lightManager, EffectManager effectManager,
             SceneWindow sceneWindow
         )
         {
-            this.sceneManagerButton = new Button(Translation.Get("backgroundWindow", "manageScenesButton"));
-            this.sceneManagerButton.ControlEvent += (s, a) => sceneWindow.Visible = !sceneWindow.Visible;
+            sceneManagerButton = new Button(Translation.Get("backgroundWindow", "manageScenesButton"));
+            sceneManagerButton.ControlEvent += (s, a) => sceneWindow.Visible = !sceneWindow.Visible;
 
-            this.backgroundSelectorPane = AddPane(new BackgroundSelectorPane(environmentManager));
-            this.dragPointPane = AddPane(new DragPointPane());
-            this.lightsPane = AddPane(new LightsPane(lightManager));
+            backgroundSelectorPane = AddPane(new BackgroundSelectorPane(environmentManager));
+            dragPointPane = AddPane(new DragPointPane());
+            lightsPane = AddPane(new LightsPane(lightManager));
 
-            this.effectsPane = AddPane(new EffectsPane()
+            effectsPane = AddPane(new EffectsPane()
             {
                 ["bloom"] = new BloomPane(effectManager),
                 ["dof"] = new DepthOfFieldPane(effectManager),
@@ -33,27 +33,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void ReloadTranslation()
         {
-            this.sceneManagerButton.Label = Translation.Get("backgroundWindow", "manageScenesButton");
+            sceneManagerButton.Label = Translation.Get("backgroundWindow", "manageScenesButton");
         }
 
         public override void Draw()
         {
-            this.tabsPane.Draw();
-            this.sceneManagerButton.Draw();
-            this.backgroundSelectorPane.Draw();
-            this.dragPointPane.Draw();
-            this.scrollPos = GUILayout.BeginScrollView(this.scrollPos);
-            this.lightsPane.Draw();
-            this.effectsPane.Draw();
+            tabsPane.Draw();
+            sceneManagerButton.Draw();
+            backgroundSelectorPane.Draw();
+            dragPointPane.Draw();
+            scrollPos = GUILayout.BeginScrollView(scrollPos);
+            lightsPane.Draw();
+            effectsPane.Draw();
             GUILayout.EndScrollView();
         }
 
         public override void UpdatePanes()
         {
-            if (ActiveWindow)
-            {
-                base.UpdatePanes();
-            }
+            if (ActiveWindow) base.UpdatePanes();
         }
     }
 }

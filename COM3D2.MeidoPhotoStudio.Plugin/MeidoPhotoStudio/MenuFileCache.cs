@@ -13,7 +13,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private const int cacheVersion = 765;
         public static readonly string cachePath = Path.Combine(Constants.configPath, "cache.dat");
-        private Dictionary<string, ModItem> modItems;
+        private readonly Dictionary<string, ModItem> modItems;
         private bool rebuild = false;
         public ModItem this[string menu]
         {
@@ -45,7 +45,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (binaryReader.ReadInt32() != cacheVersion)
                 {
-                    Utility.LogInfo($"Cache version out of date. Rebuilding");
+                    Utility.LogInfo("Cache version out of date. Rebuilding");
                     return;
                 }
                 while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)

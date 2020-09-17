@@ -5,7 +5,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class KeyRebindButton : BaseControl
     {
-        private Button button;
+        private readonly Button button;
         private bool listening = false;
         private KeyCode keyCode;
         public KeyCode KeyCode

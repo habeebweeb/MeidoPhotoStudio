@@ -84,7 +84,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => GizmoGo != null && gizmoEnabled;
             set
             {
-                if (GizmoGo == null || (GizmoGo != null && gizmoEnabled == value)) return;
+                if (GizmoGo == null || (gizmoEnabled == value)) return;
                 gizmoEnabled = value;
                 ApplyDragType();
             }
@@ -102,16 +102,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void Awake()
         {
-            this.BaseScale = transform.localScale;
-            this.collider = GetComponent<Collider>();
-            this.renderer = GetComponent<Renderer>();
+            BaseScale = transform.localScale;
+            collider = GetComponent<Collider>();
+            renderer = GetComponent<Renderer>();
             ApplyDragType();
         }
 
         private static GameObject DragPointParent()
         {
-            if (dragPointParent == null) dragPointParent = new GameObject("[MPS DragPoint Parent]");
-            return dragPointParent;
+            return dragPointParent ? dragPointParent : (dragPointParent = new GameObject("[MPS DragPoint Parent]"));
         }
 
         public static T Make<T>(PrimitiveType primitiveType, Vector3 scale) where T : DragPoint
@@ -136,13 +135,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public virtual void Set(Transform myObject)
         {
-            this.MyObject = myObject;
-            this.gameObject.name = $"[MPS DragPoint: {this.MyObject.name}]";
+            MyObject = myObject;
+            gameObject.name = $"[MPS DragPoint: {MyObject.name}]";
         }
 
         public virtual void AddGizmo(float scale = 0.25f, GizmoMode mode = GizmoMode.Local)
         {
-            Gizmo = CustomGizmo.Make(this.MyObject, scale, mode);
+            Gizmo = CustomGizmo.Make(MyObject, scale, mode);
             GizmoGo = Gizmo.gameObject;
             Gizmo.GizmoVisible = false;
             ApplyDragType();
@@ -152,12 +151,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void ApplyProperties(bool active = false, bool visible = false, bool gizmo = false)
         {
-            this.collider.enabled = active;
-            this.renderer.enabled = visible;
-            if (this.Gizmo != null) this.Gizmo.GizmoVisible = gizmo;
+            collider.enabled = active;
+            renderer.enabled = visible;
+            if (Gizmo) Gizmo.GizmoVisible = gizmo;
         }
 
-        protected void ApplyColour(Color colour) => this.renderer.material.color = colour;
+        protected void ApplyColour(Color colour) => renderer.material.color = colour;
 
         protected void ApplyColour(float r, float g, float b, float a = defaultAlpha)
         {
@@ -235,15 +234,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 transform.position = position();
                 transform.eulerAngles = rotation();
             }
-            if (GizmoGo != null) GizmoGo.SetActive(true);
+            if (GizmoGo) GizmoGo.SetActive(true);
             ApplyDragType();
         }
 
         private void OnDisable()
         {
-            if (GizmoGo != null) GizmoGo.SetActive(false);
+            if (GizmoGo) GizmoGo.SetActive(false);
         }
 
-        protected virtual void OnDestroy() => GameObject.Destroy(GizmoGo);
+        protected virtual void OnDestroy() => Destroy(GizmoGo);
     }
 }

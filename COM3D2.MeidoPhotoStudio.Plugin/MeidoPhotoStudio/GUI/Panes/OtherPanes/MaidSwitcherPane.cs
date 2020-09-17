@@ -4,10 +4,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class MaidSwitcherPane : BasePane
     {
-        private MeidoManager meidoManager;
-        private Button PreviousButton;
-        private Button NextButton;
-        private int SelectedMeido => meidoManager.SelectedMeido;
+        private readonly MeidoManager meidoManager;
+        private readonly Button PreviousButton;
+        private readonly Button NextButton;
         public MaidSwitcherPane(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
@@ -58,9 +57,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             dir = (int)Mathf.Sign(dir);
             int selected = Utility.Wrap(
-                this.meidoManager.SelectedMeido + dir, 0, this.meidoManager.ActiveMeidoList.Count
+                meidoManager.SelectedMeido + dir, 0, meidoManager.ActiveMeidoList.Count
             );
-            this.meidoManager.ChangeMaid(selected);
+            meidoManager.ChangeMaid(selected);
         }
     }
 }

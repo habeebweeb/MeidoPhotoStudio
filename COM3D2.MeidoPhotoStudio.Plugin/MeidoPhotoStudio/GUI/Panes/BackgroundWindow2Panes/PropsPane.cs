@@ -6,57 +6,52 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class PropsPane : BasePane
     {
-        private PropManager propManager;
+        private readonly PropManager propManager;
         private string currentCategory;
         private string SelectedCategory => Constants.DoguCategories[this.doguCategoryDropdown.SelectedItemIndex];
-        private Dropdown doguCategoryDropdown;
-        private Dropdown doguDropdown;
-        private Button addDoguButton;
-        private Button nextDoguButton;
-        private Button prevDoguButton;
-        private Button nextDoguCategoryButton;
-        private Button prevDoguCategoryButton;
-        private string header;
+        private readonly Dropdown doguCategoryDropdown;
+        private readonly Dropdown doguDropdown;
+        private readonly Button addDoguButton;
+        private readonly Button nextDoguButton;
+        private readonly Button prevDoguButton;
+        private readonly Button nextDoguCategoryButton;
+        private readonly Button prevDoguCategoryButton;
         private static bool handItemsReady = false;
         private bool itemSelectorEnabled = true;
 
         public PropsPane(PropManager propManager)
         {
-            this.header = Translation.Get("propsPane", "header");
-
             this.propManager = propManager;
 
             handItemsReady = Constants.HandItemsInitialized;
             if (!handItemsReady) Constants.MenuFilesChange += InitializeHandItems;
 
-            this.doguCategoryDropdown = new Dropdown(Translation.GetArray("doguCategories", Constants.DoguCategories));
-            this.doguCategoryDropdown.SelectionChange += (s, a) => ChangeDoguCategory(SelectedCategory);
+            doguCategoryDropdown = new Dropdown(Translation.GetArray("doguCategories", Constants.DoguCategories));
+            doguCategoryDropdown.SelectionChange += (s, a) => ChangeDoguCategory(SelectedCategory);
 
-            this.doguDropdown = new Dropdown(new[] { string.Empty });
+            doguDropdown = new Dropdown(new[] { string.Empty });
 
-            this.addDoguButton = new Button("+");
-            this.addDoguButton.ControlEvent += (s, a) => SpawnObject();
+            addDoguButton = new Button("+");
+            addDoguButton.ControlEvent += (s, a) => SpawnObject();
 
-            this.nextDoguButton = new Button(">");
-            this.nextDoguButton.ControlEvent += (s, a) => this.doguDropdown.Step(1);
+            nextDoguButton = new Button(">");
+            nextDoguButton.ControlEvent += (s, a) => doguDropdown.Step(1);
 
-            this.prevDoguButton = new Button("<");
-            this.prevDoguButton.ControlEvent += (s, a) => this.doguDropdown.Step(-1);
+            prevDoguButton = new Button("<");
+            prevDoguButton.ControlEvent += (s, a) => doguDropdown.Step(-1);
 
-            this.nextDoguCategoryButton = new Button(">");
-            this.nextDoguCategoryButton.ControlEvent += (s, a) => this.doguCategoryDropdown.Step(1);
+            nextDoguCategoryButton = new Button(">");
+            nextDoguCategoryButton.ControlEvent += (s, a) => doguCategoryDropdown.Step(1);
 
-            this.prevDoguCategoryButton = new Button("<");
-            this.prevDoguCategoryButton.ControlEvent += (s, a) => this.doguCategoryDropdown.Step(-1);
+            prevDoguCategoryButton = new Button("<");
+            prevDoguCategoryButton.ControlEvent += (s, a) => doguCategoryDropdown.Step(-1);
 
             ChangeDoguCategory(SelectedCategory);
         }
 
         protected override void ReloadTranslation()
         {
-            this.header = Translation.Get("propsPane", "header");
-
-            this.doguCategoryDropdown.SetDropdownItems(
+            doguCategoryDropdown.SetDropdownItems(
                 Translation.GetArray("doguCategories", Constants.DoguCategories)
             );
 
@@ -77,34 +72,30 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
-            float arrowButtonSize = 30;
+            const float buttonHeight = 30;
             GUILayoutOption[] arrowLayoutOptions = {
-                GUILayout.Width(arrowButtonSize),
-                GUILayout.Height(arrowButtonSize)
+                GUILayout.Width(buttonHeight),
+                GUILayout.Height(buttonHeight)
             };
 
-            float dropdownButtonHeight = arrowButtonSize;
-            float dropdownButtonWidth = 120f;
+            const float dropdownButtonWidth = 120f;
             GUILayoutOption[] dropdownLayoutOptions = new GUILayoutOption[] {
-                GUILayout.Height(dropdownButtonHeight),
+                GUILayout.Height(buttonHeight),
                 GUILayout.Width(dropdownButtonWidth)
             };
 
-            // MiscGUI.Header(this.header);
-            // MiscGUI.WhiteLine();
-
             GUILayout.BeginHorizontal();
-            this.prevDoguCategoryButton.Draw(arrowLayoutOptions);
-            this.doguCategoryDropdown.Draw(dropdownLayoutOptions);
-            this.nextDoguCategoryButton.Draw(arrowLayoutOptions);
+            prevDoguCategoryButton.Draw(arrowLayoutOptions);
+            doguCategoryDropdown.Draw(dropdownLayoutOptions);
+            nextDoguCategoryButton.Draw(arrowLayoutOptions);
             GUILayout.EndHorizontal();
 
             GUI.enabled = itemSelectorEnabled;
             GUILayout.BeginHorizontal();
-            this.doguDropdown.Draw(dropdownLayoutOptions);
-            this.prevDoguButton.Draw(arrowLayoutOptions);
-            this.nextDoguButton.Draw(arrowLayoutOptions);
-            this.addDoguButton.Draw(arrowLayoutOptions);
+            doguDropdown.Draw(dropdownLayoutOptions);
+            prevDoguButton.Draw(arrowLayoutOptions);
+            nextDoguButton.Draw(arrowLayoutOptions);
+            addDoguButton.Draw(arrowLayoutOptions);
             GUILayout.EndHorizontal();
             GUI.enabled = true;
         }
@@ -167,14 +158,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void SpawnObject()
         {
-            string assetName = Constants.DoguDict[SelectedCategory][this.doguDropdown.SelectedItemIndex];
+            string assetName = Constants.DoguDict[SelectedCategory][doguDropdown.SelectedItemIndex];
             if (SelectedCategory == Constants.customDoguCategories[Constants.DoguCategory.BGSmall])
             {
-                this.propManager.SpawnBG(assetName);
+                propManager.SpawnBG(assetName);
             }
             else
             {
-                this.propManager.SpawnObject(assetName);
+                propManager.SpawnObject(assetName);
             }
         }
     }

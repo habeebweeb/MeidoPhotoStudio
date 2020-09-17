@@ -56,18 +56,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 binaryReader.ReadString(); // description
                 binaryReader.ReadInt32(); // idk (as long)
 
-                string menuPropString = String.Empty;
-                string menuPropStringTemp = String.Empty;
-                // string tempString3 = String.Empty;
-                // string slotName = String.Empty;
+                string menuPropString = string.Empty;
+                string menuPropStringTemp = string.Empty;
 
                 try
                 {
                     while (true)
                     {
-                        int numberOfProps = (int)binaryReader.ReadByte();
+                        int numberOfProps = binaryReader.ReadByte();
                         menuPropStringTemp = menuPropString;
-                        menuPropString = String.Empty;
+                        menuPropString = string.Empty;
 
                         if (numberOfProps != 0)
                         {
@@ -81,26 +79,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                                 string header = UTY.GetStringCom(menuPropString);
                                 string[] menuProps = UTY.GetStringList(menuPropString);
 
-                                if (header == "end")
-                                {
-                                    break;
-                                }
+                                if (header == "end") break;
                                 else if (header == "マテリアル変更")
                                 {
                                     int matNo = int.Parse(menuProps[2]);
                                     string materialFile = menuProps[3];
                                     modelInfo.MaterialChanges.Add(new MaterialChange(matNo, materialFile));
                                 }
-                                else if (header == "additem")
-                                {
-                                    modelInfo.ModelFile = menuProps[1];
-                                }
+                                else if (header == "additem") modelInfo.ModelFile = menuProps[1];
                             }
                         }
-                        else
-                        {
-                            break;
-                        }
+                        else break;
                     }
                 }
                 catch
@@ -148,7 +137,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             using (StringReader stringReader = new StringReader(s))
             {
                 IMode mode = IMode.None;
-                string slotname = String.Empty;
                 Material material = null;
                 int num3 = 0;
                 string line;
@@ -157,21 +145,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     string[] array = line.Split(new[] { '\t', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-                    if (array[0] == "アイテム変更" || array[0] == "マテリアル変更")
-                    {
-                        mode = IMode.ItemChange;
-                    }
-                    else if (array[0] == "テクスチャ変更")
-                    {
-                        mode = IMode.TexChange;
-                    }
+                    if (array[0] == "アイテム変更" || array[0] == "マテリアル変更") mode = IMode.ItemChange;
+                    else if (array[0] == "テクスチャ変更") mode = IMode.TexChange;
                     if (mode == IMode.ItemChange)
                     {
-                        if (array[0] == "スロット名")
-                        {
-                            slotname = array[1];
-                            change = true;
-                        }
+                        if (array[0] == "スロット名") change = true;
                         if (change)
                         {
                             if (array[0] == "マテリアル番号")
@@ -180,7 +158,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                                 foreach (Transform transform in go.GetComponentsInChildren<Transform>(true))
                                 {
                                     Renderer component = transform.GetComponent<Renderer>();
-                                    if (component != null && component.materials != null)
+                                    if (component && component.materials != null)
                                     {
                                         Material[] materials = component.materials;
                                         for (int k = 0; k < materials.Length; k++)
@@ -211,10 +189,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                                         )
                                     );
                                 }
-                                else if (array[0] == "数値設定")
-                                {
-                                    material.SetFloat(array[1], float.Parse(array[2]));
-                                }
+                                else if (array[0] == "数値設定") material.SetFloat(array[1], float.Parse(array[2]));
                             }
                         }
                     }
@@ -231,22 +206,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             int matno, string prop, string filename, Dictionary<string, byte[]> matDict, GameObject go
         )
         {
-            TextureResource textureResource = null;
+            TextureResource textureResource;
             byte[] buf = matDict[filename.ToLowerInvariant()];
             textureResource = new TextureResource(2, 2, TextureFormat.ARGB32, null, buf);
             List<Renderer> list = new List<Renderer>(3);
-            go.transform.GetComponentsInChildren<Renderer>(true, list);
+            go.transform.GetComponentsInChildren(true, list);
             foreach (Renderer r in list)
             {
-                if (r != null && r.material != null)
+                if (r && r.material && matno < r.materials.Length)
                 {
-                    if (matno < r.materials.Length)
-                    {
-                        r.materials[matno].SetTexture(prop, null);
-                        Texture2D texture2D = textureResource.CreateTexture2D();
-                        texture2D.name = filename;
-                        r.materials[matno].SetTexture(prop, texture2D);
-                    }
+                    r.materials[matno].SetTexture(prop, null);
+                    Texture2D texture2D = textureResource.CreateTexture2D();
+                    texture2D.name = filename;
+                    r.materials[matno].SetTexture(prop, texture2D);
                 }
             }
         }
@@ -259,7 +231,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     if (menuFileBuffer == null)
                     {
-                        menuFileBuffer = new byte[System.Math.Max(500000, afileBase.GetSize())];
+                        menuFileBuffer = new byte[Math.Max(500000, afileBase.GetSize())];
                     }
                     else if (menuFileBuffer.Length < afileBase.GetSize())
                     {
@@ -491,7 +463,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             using (AFileBase afileBase = GameUty.FileOpen(menu))
             {
-                if (afileBase == null || !afileBase.IsValid())
+                if (afileBase?.IsValid() != true)
                 {
                     Utility.LogWarning($"Could not open menu file '{menu}'");
                     return null;
@@ -501,10 +473,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     Utility.LogWarning($"Mod menu is empty '{menu}'");
                     return null;
                 }
-                else
-                {
-                    menuBuffer = afileBase.ReadAll();
-                }
+                else menuBuffer = afileBase.ReadAll();
             }
 
             ModelInfo modelInfo = new ModelInfo();
@@ -529,9 +498,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         foreach (Transform transform in gameObject.transform.GetComponentsInChildren<Transform>(true))
                         {
                             Renderer renderer = transform.GetComponent<Renderer>();
-                            if (renderer != null && renderer.material != null
-                                && matChange.MaterialIndex < renderer.materials.Length
-                            )
+                            if (renderer && renderer.material && matChange.MaterialIndex < renderer.materials.Length)
                             {
                                 renderer.materials[matChange.MaterialIndex] = ImportCM.LoadMaterial(
                                     matChange.MaterialFile, null, renderer.materials[matChange.MaterialIndex]
@@ -540,10 +507,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         }
                     }
 
-                    if (modItem.IsOfficialMod)
-                    {
-                        ProcModScriptBin(modMenuBuffer, gameObject);
-                    }
+                    if (modItem.IsOfficialMod) ProcModScriptBin(modMenuBuffer, gameObject);
                 }
 
                 return gameObject;
@@ -578,10 +542,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 using (AFileBase afileBase = GameUty.FileOpen(menuFile))
                 {
-                    if (afileBase == null || !afileBase.IsValid() || afileBase.GetSize() == 0) return false;
+                    if (afileBase?.IsValid() != true || afileBase.GetSize() == 0) return false;
                     if (menuFileBuffer == null)
                     {
-                        menuFileBuffer = new byte[System.Math.Max(500000, afileBase.GetSize())];
+                        menuFileBuffer = new byte[Math.Max(500000, afileBase.GetSize())];
                     }
                     else if (menuFileBuffer.Length < afileBase.GetSize())
                     {
@@ -609,16 +573,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 binaryReader.ReadString(); // description
                 binaryReader.ReadInt32(); // idk (as long)
 
-                string menuPropString = String.Empty;
-                string menuPropStringTemp = String.Empty;
+                string menuPropString = string.Empty;
+                string menuPropStringTemp = string.Empty;
 
                 try
                 {
                     while (true)
                     {
-                        int numberOfProps = (int)binaryReader.ReadByte();
+                        int numberOfProps = binaryReader.ReadByte();
                         menuPropStringTemp = menuPropString;
-                        menuPropString = String.Empty;
+                        menuPropString = string.Empty;
 
                         if (numberOfProps != 0)
                         {
@@ -848,10 +812,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             public int MaterialIndex { get; }
             public string MaterialFile { get; }
 
-            public MaterialChange(int matno, string matf)
+            public MaterialChange(int materialIndex, string materialFile)
             {
-                this.MaterialIndex = matno;
-                this.MaterialFile = matf;
+                MaterialIndex = materialIndex;
+                MaterialFile = materialFile;
             }
         }
     }

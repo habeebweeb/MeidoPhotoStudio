@@ -4,15 +4,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class SceneManagerTitleBarPane : BasePane
     {
-        public event System.EventHandler closeChange;
-        private SceneManager sceneManager;
-        private Button kankyoToggle;
-        private Button refreshButton;
-        private Dropdown sortDropdown;
-        private Toggle descendingToggle;
-        private Button closeButton;
-        private string sortLabel;
         private static readonly string[] sortModes = new[] { "sortName", "sortCreated", "sortModified" };
+        private readonly SceneManager sceneManager;
+        private readonly Button kankyoToggle;
+        private readonly Button refreshButton;
+        private readonly Dropdown sortDropdown;
+        private readonly Toggle descendingToggle;
+        private readonly Button closeButton;
+        private string sortLabel;
+        public event System.EventHandler CloseChange;
 
         public SceneManagerTitleBarPane(SceneManager sceneManager)
         {
@@ -43,7 +43,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             };
 
             closeButton = new Button("X");
-            closeButton.ControlEvent += (s, a) => closeChange?.Invoke(this, System.EventArgs.Empty);
+            closeButton.ControlEvent += (s, a) => CloseChange?.Invoke(this, System.EventArgs.Empty);
 
             sortLabel = Translation.Get("sceneManager", "sortLabel");
         }
@@ -59,8 +59,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
-            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
-            buttonStyle.fontSize = Utility.GetPix(12);
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button) { fontSize = Utility.GetPix(12) };
 
             GUILayoutOption buttonHeight = GUILayout.Height(Utility.GetPix(20));
             GUILayout.BeginHorizontal();
@@ -82,18 +81,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             GUILayout.Space(Utility.GetPix(15));
 
-            GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
-            labelStyle.fontSize = buttonStyle.fontSize;
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label) { fontSize = buttonStyle.fontSize };
 
             GUILayout.Label(sortLabel, labelStyle);
 
-            GUIStyle dropdownStyle = new GUIStyle(DropdownHelper.DefaultDropdownStyle);
-            dropdownStyle.fontSize = buttonStyle.fontSize;
+            GUIStyle dropdownStyle = new GUIStyle(DropdownHelper.DefaultDropdownStyle)
+            {
+                fontSize = buttonStyle.fontSize
+            };
 
             sortDropdown.Draw(buttonStyle, dropdownStyle, buttonHeight, GUILayout.Width(Utility.GetPix(100)));
 
-            GUIStyle toggleStyle = new GUIStyle(GUI.skin.toggle);
-            toggleStyle.fontSize = buttonStyle.fontSize;
+            GUIStyle toggleStyle = new GUIStyle(GUI.skin.toggle) { fontSize = buttonStyle.fontSize };
 
             descendingToggle.Draw(toggleStyle);
 

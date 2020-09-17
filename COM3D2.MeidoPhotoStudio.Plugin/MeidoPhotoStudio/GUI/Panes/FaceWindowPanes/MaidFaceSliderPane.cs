@@ -58,21 +58,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             // Tongue Base
             ["tangopen"] = new SliderProp(0f, 1f)
         };
-        private MeidoManager meidoManager;
-        private Dictionary<string, BaseControl> faceControls;
+        private readonly MeidoManager meidoManager;
+        private readonly Dictionary<string, BaseControl> faceControls;
         private bool hasTangOpen = false;
 
         public MaidFaceSliderPane(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
-            this.faceControls = new Dictionary<string, BaseControl>();
+            faceControls = new Dictionary<string, BaseControl>();
 
             foreach (string key in faceKeys)
             {
                 string uiName = Translation.Get("faceBlendValues", key);
                 Slider slider = new Slider(uiName, SliderRange[key]);
                 string myKey = key;
-                slider.ControlEvent += (s, a) => this.SetFaceValue(myKey, slider.Value);
+                slider.ControlEvent += (s, a) => SetFaceValue(myKey, slider.Value);
                 faceControls[key] = slider;
             }
 
@@ -81,7 +81,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 string uiName = Translation.Get("faceBlendValues", key);
                 Toggle toggle = new Toggle(uiName);
                 string myKey = key;
-                toggle.ControlEvent += (s, a) => this.SetFaceValue(myKey, toggle.Value);
+                toggle.ControlEvent += (s, a) => SetFaceValue(myKey, toggle.Value);
                 faceControls[key] = toggle;
             }
         }
@@ -103,8 +103,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void UpdatePane()
         {
-            this.updating = true;
-            Meido meido = this.meidoManager.ActiveMeido;
+            updating = true;
+            Meido meido = meidoManager.ActiveMeido;
             for (int i = 0; i < faceKeys.Length; i++)
             {
                 Slider slider = (Slider)faceControls[faceKeys[i]];
@@ -123,12 +123,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (hash == "toothoff") toggle.Value = !toggle.Value;
             }
             hasTangOpen = meido.Body.Face.morph.hash["tangopen"] != null;
-            this.updating = false;
+            updating = false;
         }
 
         public override void Draw()
         {
-            GUI.enabled = this.meidoManager.HasActiveMeido;
+            GUI.enabled = meidoManager.HasActiveMeido;
             DrawSliders("eyeclose", "eyeclose2");
             DrawSliders("eyeclose3", "eyebig");
             DrawSliders("eyeclose6", "eyeclose5");
@@ -173,7 +173,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void SetFaceValue(string key, float value)
         {
             if (updating) return;
-            this.meidoManager.ActiveMeido.SetFaceBlendValue(key, value);
+            meidoManager.ActiveMeido.SetFaceBlendValue(key, value);
         }
 
         private void SetFaceValue(string key, bool value)

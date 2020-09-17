@@ -5,89 +5,89 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class FogPane : EffectPane<FogEffectManager>
     {
         protected override FogEffectManager EffectManager { get; set; }
-        private Slider distanceSlider;
-        private Slider densitySlider;
-        private Slider heightScaleSlider;
-        private Slider heightSlider;
-        private Slider redSlider;
-        private Slider greenSlider;
-        private Slider blueSlider;
+        private readonly Slider distanceSlider;
+        private readonly Slider densitySlider;
+        private readonly Slider heightScaleSlider;
+        private readonly Slider heightSlider;
+        private readonly Slider redSlider;
+        private readonly Slider greenSlider;
+        private readonly Slider blueSlider;
 
         public FogPane(EffectManager effectManager) : base(effectManager.Get<FogEffectManager>())
         {
-            this.distanceSlider = new Slider(
+            distanceSlider = new Slider(
                 Translation.Get("effectFog", "distance"), 0f, 30f, FogEffectManager.InitialDistance
             );
-            this.densitySlider = new Slider(
+            densitySlider = new Slider(
                 Translation.Get("effectFog", "density"), 0f, 10f, FogEffectManager.InitialDensity
             );
-            this.heightScaleSlider = new Slider(
+            heightScaleSlider = new Slider(
                 Translation.Get("effectFog", "strength"), -5f, 20f, FogEffectManager.InitialHeightScale
             );
-            this.heightSlider = new Slider(
+            heightSlider = new Slider(
                 Translation.Get("effectFog", "height"), -10f, 10f, FogEffectManager.InitialHeight
             );
             Color initialFogColour = FogEffectManager.InitialColour;
-            this.redSlider = new Slider(Translation.Get("backgroundWIndow", "red"), 0f, 1f, initialFogColour.r);
-            this.greenSlider = new Slider(Translation.Get("backgroundWIndow", "green"), 0f, 1f, initialFogColour.g);
-            this.blueSlider = new Slider(Translation.Get("backgroundWIndow", "blue"), 0f, 1f, initialFogColour.b);
-            this.distanceSlider.ControlEvent += (s, a) =>
+            redSlider = new Slider(Translation.Get("backgroundWIndow", "red"), 0f, 1f, initialFogColour.r);
+            greenSlider = new Slider(Translation.Get("backgroundWIndow", "green"), 0f, 1f, initialFogColour.g);
+            blueSlider = new Slider(Translation.Get("backgroundWIndow", "blue"), 0f, 1f, initialFogColour.b);
+            distanceSlider.ControlEvent += (s, a) =>
             {
-                if (this.updating) return;
-                this.EffectManager.Distance = this.distanceSlider.Value;
+                if (updating) return;
+                EffectManager.Distance = distanceSlider.Value;
             };
-            this.densitySlider.ControlEvent += (s, a) =>
+            densitySlider.ControlEvent += (s, a) =>
             {
-                if (this.updating) return;
-                this.EffectManager.Density = this.densitySlider.Value;
+                if (updating) return;
+                EffectManager.Density = densitySlider.Value;
             };
-            this.heightScaleSlider.ControlEvent += (s, a) =>
+            heightScaleSlider.ControlEvent += (s, a) =>
             {
-                if (this.updating) return;
-                this.EffectManager.HeightScale = this.heightScaleSlider.Value;
+                if (updating) return;
+                EffectManager.HeightScale = heightScaleSlider.Value;
             };
-            this.heightSlider.ControlEvent += (s, a) =>
+            heightSlider.ControlEvent += (s, a) =>
             {
-                if (this.updating) return;
-                this.EffectManager.Height = this.heightSlider.Value;
+                if (updating) return;
+                EffectManager.Height = heightSlider.Value;
             };
-            this.redSlider.ControlEvent += (s, a) =>
+            redSlider.ControlEvent += (s, a) =>
             {
-                if (this.updating) return;
-                this.EffectManager.FogColourRed = this.redSlider.Value;
+                if (updating) return;
+                EffectManager.FogColourRed = redSlider.Value;
             };
-            this.greenSlider.ControlEvent += (s, a) =>
+            greenSlider.ControlEvent += (s, a) =>
             {
-                if (this.updating) return;
-                this.EffectManager.FogColourGreen = this.greenSlider.Value;
+                if (updating) return;
+                EffectManager.FogColourGreen = greenSlider.Value;
             };
-            this.blueSlider.ControlEvent += (s, a) =>
+            blueSlider.ControlEvent += (s, a) =>
             {
-                if (this.updating) return;
-                this.EffectManager.FogColourBlue = this.blueSlider.Value;
+                if (updating) return;
+                EffectManager.FogColourBlue = blueSlider.Value;
             };
         }
 
         protected override void TranslatePane()
         {
-            this.distanceSlider.Label = Translation.Get("effectFog", "distance");
-            this.densitySlider.Label = Translation.Get("effectFog", "density");
-            this.heightScaleSlider.Label = Translation.Get("effectFog", "strength");
-            this.heightSlider.Label = Translation.Get("effectFog", "height");
-            this.redSlider.Label = Translation.Get("backgroundWIndow", "red");
-            this.greenSlider.Label = Translation.Get("backgroundWIndow", "green");
-            this.blueSlider.Label = Translation.Get("backgroundWIndow", "blue");
+            distanceSlider.Label = Translation.Get("effectFog", "distance");
+            densitySlider.Label = Translation.Get("effectFog", "density");
+            heightScaleSlider.Label = Translation.Get("effectFog", "strength");
+            heightSlider.Label = Translation.Get("effectFog", "height");
+            redSlider.Label = Translation.Get("backgroundWIndow", "red");
+            greenSlider.Label = Translation.Get("backgroundWIndow", "green");
+            blueSlider.Label = Translation.Get("backgroundWIndow", "blue");
         }
 
         protected override void UpdateControls()
         {
-            this.distanceSlider.Value = EffectManager.Distance;
-            this.densitySlider.Value = EffectManager.Density;
-            this.heightScaleSlider.Value = EffectManager.HeightScale;
-            this.heightSlider.Value = EffectManager.Height;
-            this.redSlider.Value = EffectManager.FogColourRed;
-            this.greenSlider.Value = EffectManager.FogColourGreen;
-            this.blueSlider.Value = EffectManager.FogColourBlue;
+            distanceSlider.Value = EffectManager.Distance;
+            densitySlider.Value = EffectManager.Density;
+            heightScaleSlider.Value = EffectManager.HeightScale;
+            heightSlider.Value = EffectManager.Height;
+            redSlider.Value = EffectManager.FogColourRed;
+            greenSlider.Value = EffectManager.FogColourGreen;
+            blueSlider.Value = EffectManager.FogColourBlue;
         }
 
         protected override void DrawPane()
@@ -95,13 +95,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUILayoutOption sliderWidth = MiscGUI.HalfSlider;
 
             GUILayout.BeginHorizontal();
-            this.distanceSlider.Draw(sliderWidth);
-            this.densitySlider.Draw(sliderWidth);
+            distanceSlider.Draw(sliderWidth);
+            densitySlider.Draw(sliderWidth);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            this.heightScaleSlider.Draw(sliderWidth);
-            this.heightSlider.Draw(sliderWidth);
+            heightScaleSlider.Draw(sliderWidth);
+            heightSlider.Draw(sliderWidth);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();

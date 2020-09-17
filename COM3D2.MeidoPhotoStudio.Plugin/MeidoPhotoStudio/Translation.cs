@@ -21,7 +21,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         static Translation()
         {
-            currentLanguage = Configuration.Config.Bind<string>(
+            currentLanguage = Configuration.Config.Bind(
                 "Translation", "Language",
                 "en",
                 "Directory to pull translations from"
@@ -31,7 +31,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Configuration.Config.ConfigReloaded += OnSettingChange;
         }
 
-        static void OnSettingChange(object sender, EventArgs args) => ReloadTranslation();
+        private static void OnSettingChange(object sender, EventArgs args) => ReloadTranslation();
 
         public static void Initialize(string language)
         {
@@ -93,10 +93,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (!Translations.ContainsKey(category))
             {
-                if (warn)
-                {
-                    Utility.LogWarning($"Could not translate '{text}': category '{category}' was not found");
-                }
+                if (warn) Utility.LogWarning($"Could not translate '{text}': category '{category}' was not found");
                 return false;
             }
 

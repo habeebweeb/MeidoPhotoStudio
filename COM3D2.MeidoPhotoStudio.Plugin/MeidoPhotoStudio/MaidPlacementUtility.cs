@@ -5,17 +5,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal static class MaidPlacementUtility
     {
-        private static readonly float pi = Mathf.PI;
-        private static readonly float tau = Mathf.PI * 2f;
+        private const float pi = Mathf.PI;
+        private const float tau = Mathf.PI * 2f;
         public static readonly string[] placementTypes = {
             "horizontalRow", "verticalRow", "diagonalRow", "diagonalRowInverse", "wave", "waveInverse",
             "v", "vInverse", "circleInner", "circleOuter", "fanInner", "fanOuter"
         };
 
-        public static int AlternatingSequence(int x)
-        {
-            return (int)((x % 2 == 0 ? 1 : -1) * Mathf.Ceil(x / 2f));
-        }
+        public static int AlternatingSequence(int x) => (int)((x % 2 == 0 ? 1 : -1) * Mathf.Ceil(x / 2f));
 
         public static void ApplyPlacement(string placementType, IList<Meido> list)
         {
@@ -100,13 +97,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             int maidCount = list.Count;
 
-            float radius = (0.3f + 0.1f * maidCount);
+            float radius = 0.3f + (0.1f * maidCount);
 
             for (int i = 0; i < maidCount; i++)
             {
                 Maid maid = list[i].Maid;
 
-                float angle = (pi / 2f) + tau * AlternatingSequence(i) / maidCount;
+                float angle = (pi / 2f) + (tau * AlternatingSequence(i) / maidCount);
 
                 float x = Mathf.Cos(angle) * radius;
                 float z = Mathf.Sin(angle) * radius;
@@ -123,7 +120,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             int maidCount = list.Count;
 
-            float radius = (0.2f + 0.2f * maidCount);
+            float radius = 0.2f + (0.2f * maidCount);
 
             list[0].Maid.SetPos(Vector3.zero);
             list[0].Maid.SetRot(Vector3.zero);

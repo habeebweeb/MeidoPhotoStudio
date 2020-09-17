@@ -44,10 +44,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         public event EventHandler<MeidoUpdateEventArgs> UpdateMeido;
         public int StockNo { get; }
-        public Maid Maid { get; private set; }
+        public Maid Maid { get; }
         public TBody Body => Maid.body0;
-        public MeidoDragPointManager IKManager { get; private set; }
-        public Texture2D Portrait { get; private set; }
+        public MeidoDragPointManager IKManager { get; }
+        public Texture2D Portrait { get; }
         public PoseInfo CachedPose { get; private set; } = DefaultPose;
         public string CurrentFaceBlendSet { get; private set; } = defaultFaceBlendSet;
         public int Slot { get; private set; }
@@ -67,15 +67,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => freeLook;
             set
             {
-                if (this.freeLook == value) return;
-                this.freeLook = value;
-                Body.trsLookTarget = this.freeLook ? null : GameMain.Instance.MainCamera.transform;
+                if (freeLook == value) return;
+                freeLook = value;
+                Body.trsLookTarget = freeLook ? null : GameMain.Instance.MainCamera.transform;
                 OnUpdateMeido();
             }
         }
         public bool HeadToCam
         {
-            get => !Body.isLoadedBody ? false : Body.boHeadToCam;
+            get => Body.isLoadedBody && Body.boHeadToCam;
             set
             {
                 if (!Body.isLoadedBody || HeadToCam == value) return;
@@ -87,7 +87,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         public bool EyeToCam
         {
-            get => !Body.isLoadedBody ? false : Body.boEyeToCam;
+            get => Body.isLoadedBody && Body.boEyeToCam;
             set
             {
                 if (!Body.isLoadedBody || EyeToCam == value) return;
@@ -113,7 +113,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     {
                         Body.boEyeToCam = true;
                         Body.boHeadToCam = true;
-                        this.SetPose(this.CachedPose.Pose);
+                        SetPose(CachedPose.Pose);
                     }
                     OnUpdateMeido();
                 }
@@ -168,11 +168,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public Meido(int stockMaidIndex)
         {
-            this.StockNo = stockMaidIndex;
-            this.Maid = GameMain.Instance.CharacterMgr.GetStockMaid(stockMaidIndex);
-            this.Portrait = Maid.GetThumIcon();
+            StockNo = stockMaidIndex;
+            Maid = GameMain.Instance.CharacterMgr.GetStockMaid(stockMaidIndex);
+            Portrait = Maid.GetThumIcon();
             IKManager = new MeidoDragPointManager(this);
-            IKManager.SelectMaid += (s, args) => OnUpdateMeido((MeidoUpdateEventArgs)args);
+            IKManager.SelectMaid += (s, args) => OnUpdateMeido(args);
         }
 
         public void BeginLoad()
@@ -476,7 +476,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Maid.AllProcProp();
         }
 
-        public void DetachAllMpnAttach(bool unload = false)
+        public void DetachAllMpnAttach()
         {
             Maid.ResetProp(MPN.kousoku_lower, false);
             Maid.ResetProp(MPN.kousoku_upper, false);
@@ -504,11 +504,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private CacheBoneDataArray GetCacheBoneData()
         {
-            CacheBoneDataArray cache = this.Maid.gameObject.GetComponent<CacheBoneDataArray>();
+            CacheBoneDataArray cache = Maid.gameObject.GetComponent<CacheBoneDataArray>();
             if (cache == null)
             {
-                cache = this.Maid.gameObject.AddComponent<CacheBoneDataArray>();
-                cache.CreateCache(this.Maid.body0.GetBone("Bip01"));
+                cache = Maid.gameObject.AddComponent<CacheBoneDataArray>();
+                cache.CreateCache(Body.GetBone("Bip01"));
             }
             return cache;
         }
@@ -576,15 +576,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Transform gravityTransform = Maid.gameObject.transform.Find(gravityGoName);
             if (gravityTransform == null)
             {
-                GameObject go = new GameObject();
-                go.name = gravityGoName;
+                GameObject go = new GameObject(gravityGoName);
                 go.transform.SetParent(bone, false);
                 go.transform.SetParent(Maid.transform, true);
                 go.transform.localScale = Vector3.one;
                 go.transform.rotation = Quaternion.identity;
-                GameObject go2 = new GameObject();
+                GameObject go2 = new GameObject(gravityGoName);
                 go2.transform.SetParent(go.transform, false);
-                go2.name = gravityGoName;
                 gravityTransform = go2.transform;
             }
             else

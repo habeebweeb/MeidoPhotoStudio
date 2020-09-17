@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
+using System.Linq;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -32,25 +33,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static int Wrap(int value, int min, int max)
         {
-            max -= 1;
+            max--;
             return value < min ? max : value > max ? min : value;
         }
 
-        public static int GetPix(int num)
-        {
-            return (int)((1f + (Screen.width / 1280f - 1f) * 0.6f) * num);
-        }
+        public static int GetPix(int num) => (int)((1f + (((Screen.width / 1280f) - 1f) * 0.6f)) * num);
 
         public static float Bound(float value, float left, float right)
         {
-            if ((double)left > (double)right) return Mathf.Clamp(value, right, left);
-            else return Mathf.Clamp(value, left, right);
+            return left > (double)right ? Mathf.Clamp(value, right, left) : Mathf.Clamp(value, left, right);
         }
 
         public static int Bound(int value, int left, int right)
         {
-            if (left > right) return Mathf.Clamp(value, right, left);
-            else return Mathf.Clamp(value, left, right);
+            return left > right ? Mathf.Clamp(value, right, left) : Mathf.Clamp(value, left, right);
         }
 
         public static Texture2D MakeTex(int width, int height, Color color)
@@ -68,15 +64,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static FieldInfo GetFieldInfo<T>(string field)
         {
-            BindingFlags bindingFlags = BindingFlags.Instance
-                | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+            const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+                | BindingFlags.Static;
             return typeof(T).GetField(field, bindingFlags);
         }
 
         public static TValue GetFieldValue<TType, TValue>(TType instance, string field)
         {
             FieldInfo fieldInfo = GetFieldInfo<TType>(field);
-            if (fieldInfo == null || !fieldInfo.IsStatic && instance == null) return default(TValue);
+            if (fieldInfo == null || (!fieldInfo.IsStatic && instance == null)) return default;
             return (TValue)fieldInfo.GetValue(instance);
         }
 
@@ -95,16 +91,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             string screenShotDir = Path.Combine(
                 GameMain.Instance.SerializeStorageManager.StoreDirectoryPath, "ScreenShot"
             );
-            if (!Directory.Exists(screenShotDir))
-            {
-                Directory.CreateDirectory(screenShotDir);
-            }
+            if (!Directory.Exists(screenShotDir)) Directory.CreateDirectory(screenShotDir);
             return Path.Combine(screenShotDir, $"img{DateTime.Now:yyyyMMddHHmmss}.png");
         }
 
         public static string TempScreenshotFilename()
         {
-            return Path.Combine(Path.GetTempPath(), $"cm3d2_{System.Guid.NewGuid().ToString()}.png");
+            return Path.Combine(Path.GetTempPath(), $"cm3d2_{Guid.NewGuid()}.png");
         }
 
         public static void ShowMouseExposition(string text, float time = 2f)
@@ -158,9 +151,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             int height = texture.height;
             if (width != maxWidth || height != maxHeight)
             {
-                float scale = Mathf.Min((float)maxWidth / (float)width, (float)maxHeight / (float)height);
-                width = Mathf.RoundToInt((float)width * scale);
-                height = Mathf.RoundToInt((float)height * scale);
+                float scale = Mathf.Min(maxWidth / (float)width, maxHeight / (float)height);
+                width = Mathf.RoundToInt(width * scale);
+                height = Mathf.RoundToInt(height * scale);
                 TextureScale.Bilinear(texture, width, height);
             }
         }
@@ -193,11 +186,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 stream.Read(buffer, 0, 4);
                 if (BitConverter.IsLittleEndian) Array.Reverse(buffer);
-                uint length = System.BitConverter.ToUInt32(buffer, 0);
+                uint length = BitConverter.ToUInt32(buffer, 0);
                 stream.Read(buffer, 0, 4);
                 stream.Seek(length + 4L, SeekOrigin.Current);
             } while (!BytesEqual(buffer, pngEnd));
             return true;
+        }
+
+        public static void WriteToFile(string name, System.Collections.Generic.IEnumerable<string> list)
+        {
+            if (Path.GetExtension(name) != ".txt") name += ".txt";
+            File.WriteAllLines(Path.Combine(Constants.configPath, name), list.ToArray());
         }
     }
 
@@ -214,21 +213,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (str != null) binaryWriter.Write(str);
         }
 
-        public static void WriteVector3(this BinaryWriter binaryWriter, UnityEngine.Vector3 vector3)
+        public static void WriteVector3(this BinaryWriter binaryWriter, Vector3 vector3)
         {
             binaryWriter.Write(vector3.x);
             binaryWriter.Write(vector3.y);
             binaryWriter.Write(vector3.z);
         }
 
-        public static UnityEngine.Vector3 ReadVector3(this BinaryReader binaryReader)
+        public static Vector3 ReadVector3(this BinaryReader binaryReader)
         {
-            return new UnityEngine.Vector3(
+            return new Vector3(
                 binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle()
             );
         }
 
-        public static void WriteQuaternion(this BinaryWriter binaryWriter, UnityEngine.Quaternion quaternion)
+        public static void WriteQuaternion(this BinaryWriter binaryWriter, Quaternion quaternion)
         {
             binaryWriter.Write(quaternion.x);
             binaryWriter.Write(quaternion.y);
@@ -236,16 +235,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             binaryWriter.Write(quaternion.w);
         }
 
-        public static UnityEngine.Quaternion ReadQuaternion(this BinaryReader binaryReader)
+        public static Quaternion ReadQuaternion(this BinaryReader binaryReader)
         {
-            return new UnityEngine.Quaternion
+            return new Quaternion
             (
                 binaryReader.ReadSingle(), binaryReader.ReadSingle(),
                 binaryReader.ReadSingle(), binaryReader.ReadSingle()
             );
         }
 
-        public static void WriteColour(this BinaryWriter binaryWriter, UnityEngine.Color colour)
+        public static void WriteColour(this BinaryWriter binaryWriter, Color colour)
         {
             binaryWriter.Write(colour.r);
             binaryWriter.Write(colour.g);
@@ -253,13 +252,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             binaryWriter.Write(colour.a);
         }
 
-        public static UnityEngine.Color ReadColour(this BinaryReader binaryReader)
+        public static Color ReadColour(this BinaryReader binaryReader)
         {
-            return new Color(
-                binaryReader.ReadSingle(),
-                binaryReader.ReadSingle(),
-                binaryReader.ReadSingle(),
-                binaryReader.ReadSingle()
+            return new Color
+            (
+                binaryReader.ReadSingle(), binaryReader.ReadSingle(),
+                binaryReader.ReadSingle(), binaryReader.ReadSingle()
             );
         }
     }

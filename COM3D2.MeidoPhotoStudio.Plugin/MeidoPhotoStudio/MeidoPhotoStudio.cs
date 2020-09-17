@@ -13,7 +13,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class MeidoPhotoStudio : BaseUnityPlugin
     {
-        private static CameraMain mainCamera = GameMain.Instance.MainCamera;
+        private static readonly CameraMain mainCamera = GameMain.Instance.MainCamera;
         private static event EventHandler<ScreenshotEventArgs> ScreenshotEvent;
         private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
         public const string pluginName = "MeidoPhotoStudio";
@@ -258,7 +258,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             sysShortcut.SetActive(false);
             uiActive = false;
 
-            List<Meido> activeMeidoList = this.meidoManager.ActiveMeidoList;
+            List<Meido> activeMeidoList = meidoManager.ActiveMeidoList;
             bool[] isIK = new bool[activeMeidoList.Count];
             bool[] isVisible = new bool[activeMeidoList.Count];
             for (int i = 0; i < activeMeidoList.Count; i++)
@@ -347,7 +347,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             initialized = true;
 
             meidoManager = new MeidoManager();
-            environmentManager = new EnvironmentManager(meidoManager);
+            environmentManager = new EnvironmentManager();
             messageWindowManager = new MessageWindowManager();
             lightManager = new LightManager();
             propManager = new PropManager(meidoManager);
@@ -408,7 +408,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             SystemDialog sysDialog = GameMain.Instance.SysDlg;
 
-            SystemDialog.OnClick exit = () =>
+            void exit()
             {
                 sysDialog.Close();
                 ResetCalcNearClip();
@@ -420,14 +420,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 effectManager.Deactivate();
                 messageWindowManager.Deactivate();
                 windowManager.Deactivate();
-                InputManager.Deactivate();
+                Input.Deactivate();
 
                 Modal.Close();
 
                 GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
                 dailyPanel?.SetActive(true);
                 Configuration.Config.Save();
-            };
+            }
 
             if (force || sysDialog.IsDecided)
             {

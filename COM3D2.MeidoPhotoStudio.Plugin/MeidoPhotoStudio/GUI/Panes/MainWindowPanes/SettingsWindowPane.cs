@@ -7,14 +7,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class SettingsWindowPane : BaseMainWindowPane
     {
-        private Button reloadTranslationButton;
-        private KeyRebindButton[] rebindButtons;
-        private static readonly string[] actionTranslationKeys;
-        private static readonly string[] actionLabels;
         private static readonly string[] headerTranslationKeys = {
             "controls", "controlsGeneral", "controlsMaids", "controlsCamera", "controlsDragPoint", "controlsScene"
         };
         private static readonly Dictionary<string, string> headers = new Dictionary<string, string>();
+        private static readonly string[] actionTranslationKeys;
+        private static readonly string[] actionLabels;
+        private readonly Button reloadTranslationButton;
+        private readonly KeyRebindButton[] rebindButtons;
 
         static SettingsWindowPane()
         {

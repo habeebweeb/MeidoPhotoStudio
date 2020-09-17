@@ -1,14 +1,13 @@
 using UnityEngine;
 
-
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class SceneManagerScenePane : BasePane
     {
         public static readonly float thumbnailScale = 0.55f;
-        private SceneManager sceneManager;
-        private SceneModalWindow sceneModalWindow;
-        private Button addSceneButton;
+        private readonly SceneManager sceneManager;
+        private readonly SceneModalWindow sceneModalWindow;
+        private readonly Button addSceneButton;
         private Vector2 sceneScrollPos;
 
         public SceneManagerScenePane(SceneManager sceneManager, SceneModalWindow sceneModalWindow)
@@ -16,19 +15,23 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.sceneManager = sceneManager;
             this.sceneModalWindow = sceneModalWindow;
 
-            this.addSceneButton = new Button("+");
-            this.addSceneButton.ControlEvent += (s, a) => sceneManager.SaveScene(overwrite: false);
+            addSceneButton = new Button("+");
+            addSceneButton.ControlEvent += (s, a) => sceneManager.SaveScene(overwrite: false);
         }
 
         public override void Draw()
         {
-            GUIStyle sceneImageStyle = new GUIStyle(GUI.skin.label);
-            sceneImageStyle.alignment = TextAnchor.MiddleCenter;
-            sceneImageStyle.padding = new RectOffset(0, 0, 0, 0);
+            GUIStyle sceneImageStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                padding = new RectOffset(0, 0, 0, 0)
+            };
 
-            GUIStyle addSceneStyle = new GUIStyle(GUI.skin.button);
-            addSceneStyle.alignment = TextAnchor.MiddleCenter;
-            addSceneStyle.fontSize = 60;
+            GUIStyle addSceneStyle = new GUIStyle(GUI.skin.button)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 60
+            };
 
             GUILayout.BeginVertical();
 
@@ -39,7 +42,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUILayoutOption[] sceneLayoutOptions = new[] { GUILayout.Height(sceneHeight), GUILayout.Width(sceneWidth) };
 
             int columns = Mathf.Max(1, (int)(sceneGridWidth / sceneWidth));
-            int rows = (int)Mathf.Ceil((float)sceneManager.SceneList.Count + 1 / (float)columns);
+            int rows = (int)Mathf.Ceil(sceneManager.SceneList.Count + (1 / (float)columns));
 
             sceneScrollPos = GUILayout.BeginScrollView(sceneScrollPos);
 

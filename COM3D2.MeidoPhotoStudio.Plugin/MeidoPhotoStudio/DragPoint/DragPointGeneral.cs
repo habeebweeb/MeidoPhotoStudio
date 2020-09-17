@@ -102,22 +102,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             base.OnMouseDown();
 
-            currentScale = this.MyObject.localScale.x;
-            currentRotation = this.MyObject.rotation;
+            currentScale = MyObject.localScale.x;
+            currentRotation = MyObject.rotation;
         }
 
         protected override void OnDoubleClick()
         {
             if (CurrentDragType == DragType.Scale)
             {
-                this.MyObject.localScale = Vector3.one;
+                MyObject.localScale = Vector3.one;
                 OnScale();
                 OnEndScale();
             }
 
             if (CurrentDragType == DragType.RotLocalY || CurrentDragType == DragType.RotLocalXZ)
             {
-                this.MyObject.rotation = Quaternion.identity;
+                MyObject.rotation = Quaternion.identity;
                 OnRotate();
             }
         }
@@ -183,7 +183,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (CurrentDragType == DragType.Scale)
             {
                 scaling = true;
-                float scale = currentScale + (mouseDelta.y / 200f) * ScaleFactor;
+                float scale = currentScale + (mouseDelta.y / 200f * ScaleFactor);
                 if (scale < 0.1f) scale = 0.1f;
                 MyObject.localScale = new Vector3(scale, scale, scale);
                 OnScale();

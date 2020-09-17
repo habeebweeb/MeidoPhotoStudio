@@ -12,12 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Bloom.HDRBloomMode initialHDRBloomMode;
         public bool Ready { get; private set; }
         public bool Active { get; private set; }
-        private float intensity;
-        public float Intensity
-        {
-            get => intensity;// m_gcBloom.GetValue();
-            set => intensity = value;
-        }
+        public float Intensity { get; set; }
         private int blurIterations;
         public int BlurIterations
         {
@@ -92,7 +87,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (Bloom == null)
             {
                 Ready = true;
-                Bloom = GameMain.Instance.MainCamera.GetOrAddComponent<Bloom>();
+                Bloom = Utility.GetFieldValue<CameraMain, Bloom>(GameMain.Instance.MainCamera, "m_gcBloom");
                 initialIntensity = Intensity = Bloom.bloomIntensity;
                 initialBlurIterations = BlurIterations = Bloom.bloomBlurIterations;
                 initialThresholdColour = BloomThresholdColour = Bloom.bloomThreshholdColor;
@@ -123,8 +118,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SetEffectActive(bool active)
         {
             Bloom.enabled = active;
-            Active = active;
-            if (this.Active)
+            if (Active = active)
             {
                 Bloom.bloomIntensity = Intensity;
                 Bloom.bloomBlurIterations = BlurIterations;
@@ -142,7 +136,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 // 2020/08/15 this stupid shit doesn't even work anymore
                 // TODO: Fix this stupid shit
                 Bloom.enabled = true;
-                Bloom.bloomIntensity = intensity;
+                Bloom.bloomIntensity = Intensity;
             }
         }
     }

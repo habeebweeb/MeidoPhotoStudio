@@ -10,12 +10,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     using Input = InputManager;
     internal class SceneManager : IManager
     {
-        public static bool Busy { get; private set; } = false;
-        public bool Initialized { get; private set; } = false;
-        private MeidoPhotoStudio meidoPhotoStudio;
-        private SceneModalWindow sceneModal;
+        public static bool Busy { get; private set; }
+        public bool Initialized { get; private set; }
+        public static readonly Vector2 sceneDimensions = new Vector2(480, 270);
+        private readonly MeidoPhotoStudio meidoPhotoStudio;
         private int SortDirection => SortDescending ? -1 : 1;
-        public static Vector2 sceneDimensions = new Vector2(480, 270);
         public bool KankyoMode { get; set; } = false;
         private static readonly ConfigEntry<bool> sortDescending;
         public bool SortDescending
@@ -23,7 +22,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => sortDescending.Value;
             set => sortDescending.Value = value;
         }
-        public List<Scene> SceneList { get; private set; } = new List<Scene>();
+        public List<Scene> SceneList { get; } = new List<Scene>();
         public int CurrentDirectoryIndex { get; private set; } = -1;
         public string CurrentDirectoryName => CurrentDirectoryList[CurrentDirectoryIndex];
         public List<string> CurrentDirectoryList
@@ -42,14 +41,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             private set => currentSortMode.Value = value;
         }
         public int CurrentSceneIndex { get; private set; } = -1;
-        public Scene CurrentScene
-        {
-            get
-            {
-                if (SceneList.Count == 0) return null;
-                return SceneList[CurrentSceneIndex];
-            }
-        }
+        public Scene CurrentScene => SceneList.Count == 0 ? null : SceneList[CurrentSceneIndex];
         public enum SortMode
         {
             Name, DateCreated, DateModified
@@ -57,13 +49,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         static SceneManager()
         {
-            sortDescending = Configuration.Config.Bind<bool>(
+            sortDescending = Configuration.Config.Bind(
                 "SceneManager", "SortDescending",
                 false,
                 "Sort scenes descending (Z-A)"
             );
 
-            currentSortMode = Configuration.Config.Bind<SortMode>(
+            currentSortMode = Configuration.Config.Bind(
                 "SceneManager", "SortMode",
                 SortMode.Name,
                 "Scene sorting mode"
@@ -74,11 +66,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Input.Register(MpsKey.LoadScene, KeyCode.A, "Load quick saved scene");
         }
 
-        public SceneManager(MeidoPhotoStudio meidoPhotoStudio)
-        {
-            this.meidoPhotoStudio = meidoPhotoStudio;
-            this.sceneModal = new SceneModalWindow(this);
-        }
+        public SceneManager(MeidoPhotoStudio meidoPhotoStudio) => this.meidoPhotoStudio = meidoPhotoStudio;
 
         public void Activate() { }
 
@@ -104,10 +92,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void DeleteDirectory()
         {
-            if (Directory.Exists(CurrentScenesDirectory))
-            {
-                Directory.Delete(CurrentScenesDirectory, true);
-            }
+            if (Directory.Exists(CurrentScenesDirectory)) Directory.Delete(CurrentScenesDirectory, true);
 
             CurrentDirectoryList.RemoveAt(CurrentDirectoryIndex);
             CurrentDirectoryIndex = Mathf.Clamp(CurrentDirectoryIndex, 0, CurrentDirectoryList.Count - 1);
@@ -118,7 +103,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void ToggleKankyoMode()
         {
-            this.KankyoMode = !this.KankyoMode;
+            KankyoMode = !KankyoMode;
             CurrentDirectoryIndex = 0;
             UpdateSceneList();
         }
@@ -189,6 +174,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 case SortMode.DateModified: comparator = SortByDateModified; break;
                 case SortMode.DateCreated: comparator = SortByDateCreated; break;
+                case SortMode.Name: comparator = SortByName; break;
                 default: comparator = SortByName; break;
             }
             SceneList.Sort(comparator);
@@ -248,8 +234,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             string baseDirectoryName = KankyoMode ? Constants.kankyoDirectory : Constants.sceneDirectory;
             CurrentDirectoryList.Sort((a, b) =>
             {
-                if (a.Equals(baseDirectoryName, StringComparison.InvariantCultureIgnoreCase)) return -1;
-                else return a.CompareTo(b);
+                return a.Equals(baseDirectoryName, StringComparison.InvariantCultureIgnoreCase) ? -1 : a.CompareTo(b);
             });
         }
 
@@ -289,7 +274,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 while (!File.Exists(screenshotPath));
 
                 string scenePrefix = KankyoMode ? "mpskankyo" : "mpsscene";
-                string fileName = $"{scenePrefix}{System.DateTime.Now:yyyyMMddHHmmss}.png";
+                string fileName = $"{scenePrefix}{DateTime.Now:yyyyMMddHHmmss}.png";
                 string savePath = Path.Combine(CurrentScenesDirectory, fileName);
 
                 if (overwrite && CurrentScene != null)
@@ -301,8 +286,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Texture2D screenshot = new Texture2D(1, 1, TextureFormat.ARGB32, false);
                 screenshot.LoadImage(File.ReadAllBytes(screenshotPath));
 
-                int sceneWidth = (int)SceneManager.sceneDimensions.x;
-                int sceneHeight = (int)SceneManager.sceneDimensions.y;
+                int sceneWidth = (int)sceneDimensions.x;
+                int sceneHeight = (int)sceneDimensions.y;
                 Utility.ResizeToFit(screenshot, sceneWidth, sceneHeight);
 
                 using (FileStream fileStream = File.Create(savePath))
@@ -323,7 +308,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 SceneList.Add(new Scene(savePath));
                 SortScenes(CurrentSortMode);
-
             }
 
             Busy = false;
@@ -332,7 +316,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public class Scene
         {
             public const int initialNumberOfMaids = -2;
-            public Texture2D Thumbnail { get; private set; }
+            public Texture2D Thumbnail { get; }
             public FileInfo FileInfo { get; set; }
             public int NumberOfMaids { get; private set; } = initialNumberOfMaids;
 

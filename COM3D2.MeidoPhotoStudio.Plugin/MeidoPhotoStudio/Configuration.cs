@@ -4,7 +4,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal static class Configuration
     {
-        public static ConfigFile Config { get; private set; }
+        public static ConfigFile Config { get; }
 
         static Configuration()
         {

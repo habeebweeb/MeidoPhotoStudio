@@ -6,7 +6,7 @@ using BepInEx.Configuration;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class InputManager
+    internal static class InputManager
     {
         private static InputListener inputListener;
         private static readonly Dictionary<MpsKey, KeyCode> ActionKeys = new Dictionary<MpsKey, KeyCode>();
@@ -70,7 +70,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static void StopListening()
         {
-            if (inputListener == null || !inputListener.gameObject.activeSelf) return;
+            if (!inputListener || !inputListener.gameObject.activeSelf) return;
             inputListener.gameObject.SetActive(false);
             inputListener.KeyChange -= OnKeyChange;
             CurrentKeyCode = KeyCode.None;

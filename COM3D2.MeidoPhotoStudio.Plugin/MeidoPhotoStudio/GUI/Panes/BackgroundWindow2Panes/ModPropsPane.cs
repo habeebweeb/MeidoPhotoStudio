@@ -7,15 +7,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     using static MenuFileUtility;
     internal class ModPropsPane : BasePane
     {
-        private PropManager propManager;
-        private Dropdown propCategoryDropdown;
-        private Toggle modFilterToggle;
-        private Toggle baseFilterToggle;
+        private readonly PropManager propManager;
+        private readonly Dropdown propCategoryDropdown;
+        private readonly Toggle modFilterToggle;
+        private readonly Toggle baseFilterToggle;
         private Vector2 propListScrollPos;
-        private string SelectedCategory
-        {
-            get => MenuFileUtility.MenuCategories[this.propCategoryDropdown.SelectedItemIndex];
-        }
+        private string SelectedCategory => MenuCategories[this.propCategoryDropdown.SelectedItemIndex];
         private List<ModItem> modPropList;
         private string currentCategory;
         private bool modItemsReady = false;
@@ -24,7 +21,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private bool modFilter = false;
         private bool baseFilter = false;
         private int currentListCount;
-        private bool isModsOnly = PropManager.ModItemsOnly;
+        private readonly bool isModsOnly = PropManager.ModItemsOnly;
         private enum FilterType
         {
             None, Mod, Base
@@ -34,59 +31,59 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.propManager = propManager;
 
-            this.modItemsReady = MenuFileUtility.MenuFilesReady || PropManager.ModItemsOnly;
+            modItemsReady = MenuFilesReady || PropManager.ModItemsOnly;
 
-            string[] listItems = Translation.GetArray("clothing", MenuFileUtility.MenuCategories);
+            string[] listItems = Translation.GetArray("clothing", MenuCategories);
 
-            if (!this.modItemsReady)
+            if (!modItemsReady)
             {
                 listItems[0] = Translation.Get("systemMessage", "initializing");
 
-                MenuFileUtility.MenuFilesReadyChange += (s, a) =>
+                MenuFilesReadyChange += (s, a) =>
                 {
-                    this.modItemsReady = true;
-                    this.propCategoryDropdown.SetDropdownItems(
-                        Translation.GetArray("clothing", MenuFileUtility.MenuCategories)
+                    modItemsReady = true;
+                    propCategoryDropdown.SetDropdownItems(
+                        Translation.GetArray("clothing", MenuCategories)
                     );
                 };
             }
 
-            this.propCategoryDropdown = new Dropdown(listItems);
+            propCategoryDropdown = new Dropdown(listItems);
 
-            this.propCategoryDropdown.SelectionChange += (s, a) =>
+            propCategoryDropdown.SelectionChange += (s, a) =>
             {
-                if (!this.modItemsReady) return;
+                if (!modItemsReady) return;
                 ChangePropCategory();
             };
 
             if (!isModsOnly)
             {
-                this.modFilterToggle = new Toggle(Translation.Get("background2Window", "modsToggle"));
-                this.modFilterToggle.ControlEvent += (s, a) => ChangeFilter(FilterType.Mod);
+                modFilterToggle = new Toggle(Translation.Get("background2Window", "modsToggle"));
+                modFilterToggle.ControlEvent += (s, a) => ChangeFilter(FilterType.Mod);
 
-                this.baseFilterToggle = new Toggle(Translation.Get("background2Window", "baseToggle"));
-                this.baseFilterToggle.ControlEvent += (s, a) => ChangeFilter(FilterType.Base);
+                baseFilterToggle = new Toggle(Translation.Get("background2Window", "baseToggle"));
+                baseFilterToggle.ControlEvent += (s, a) => ChangeFilter(FilterType.Base);
             }
         }
 
         protected override void ReloadTranslation()
         {
-            string[] listItems = Translation.GetArray("clothing", MenuFileUtility.MenuCategories);
+            string[] listItems = Translation.GetArray("clothing", MenuCategories);
 
-            if (!this.modItemsReady) listItems[0] = Translation.Get("systemMessage", "initializing");
+            if (!modItemsReady) listItems[0] = Translation.Get("systemMessage", "initializing");
 
-            this.propCategoryDropdown.SetDropdownItems(listItems);
+            propCategoryDropdown.SetDropdownItems(listItems);
 
             if (!isModsOnly)
             {
-                this.modFilterToggle.Label = Translation.Get("background2Window", "modsToggle");
-                this.baseFilterToggle.Label = Translation.Get("background2Window", "baseToggle");
+                modFilterToggle.Label = Translation.Get("background2Window", "modsToggle");
+                baseFilterToggle.Label = Translation.Get("background2Window", "baseToggle");
             }
         }
 
         public override void Draw()
         {
-            float dropdownButtonHeight = 30f;
+            const float dropdownButtonHeight = 30f;
             float dropdownButtonWidth = isModsOnly ? 120f : 90f;
             GUILayoutOption[] dropdownLayoutOptions = new GUILayoutOption[] {
                 GUILayout.Height(dropdownButtonHeight),
@@ -98,35 +95,35 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (isModsOnly)
             {
                 GUILayout.FlexibleSpace();
-                this.propCategoryDropdown.Draw(dropdownLayoutOptions);
+                propCategoryDropdown.Draw(dropdownLayoutOptions);
                 GUILayout.FlexibleSpace();
             }
             else
             {
-                GUI.enabled = this.modItemsReady;
-                this.propCategoryDropdown.Draw(dropdownLayoutOptions);
+                GUI.enabled = modItemsReady;
+                propCategoryDropdown.Draw(dropdownLayoutOptions);
 
-                GUI.enabled = this.shouldDraw;
-                this.modFilterToggle.Draw();
-                this.baseFilterToggle.Draw();
+                GUI.enabled = shouldDraw;
+                modFilterToggle.Draw();
+                baseFilterToggle.Draw();
                 GUI.enabled = true;
             }
 
             GUILayout.EndHorizontal();
 
-            if (this.shouldDraw)
+            if (shouldDraw)
             {
                 float windowHeight = Screen.height * 0.7f;
 
-                int buttonSize = 50;
-                int offsetLeft = 15;
-                int offsetTop = 85;
+                const int buttonSize = 50;
+                const int offsetLeft = 15;
+                const int offsetTop = 85;
 
-                int columns = 4;
+                const int columns = 4;
 
                 Rect positionRect = new Rect(offsetLeft, offsetTop + dropdownButtonHeight, 220, windowHeight);
                 Rect viewRect = new Rect(
-                    0, 0, buttonSize * columns, buttonSize * Mathf.Ceil(currentListCount / (float)columns) + 5
+                    0, 0, buttonSize * columns, (buttonSize * Mathf.Ceil(currentListCount / (float)columns)) + 5
                 );
                 propListScrollPos = GUI.BeginScrollView(positionRect, propListScrollPos, viewRect);
 
@@ -150,14 +147,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void ChangeFilter(FilterType filterType)
         {
-            if (this.updating) return;
+            if (updating) return;
 
             if (modFilterToggle.Value && baseFilterToggle.Value)
             {
-                this.updating = true;
+                updating = true;
                 modFilterToggle.Value = filterType == FilterType.Mod;
                 baseFilterToggle.Value = filterType == FilterType.Base;
-                this.updating = false;
+                updating = false;
             }
 
             modFilter = modFilterToggle.Value;

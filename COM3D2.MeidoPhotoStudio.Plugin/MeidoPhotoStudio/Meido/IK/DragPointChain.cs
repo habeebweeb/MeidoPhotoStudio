@@ -6,8 +6,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class DragPointChain : DragPointMeido
     {
         private readonly TBody.IKCMO IK = new TBody.IKCMO();
+        private readonly Quaternion[] jointRotation = new Quaternion[3];
         private Transform[] ikChain;
-        private Quaternion[] jointRotation = new Quaternion[3];
         private int foot = 1;
         private bool isLower = false;
         private bool isMiddle = false;
@@ -17,17 +17,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void Set(Transform lower)
         {
             base.Set(lower);
-            this.isMune = lower.name.StartsWith("Mune");
-            this.foot = lower.name.EndsWith("Foot") ? -1 : 1;
-            this.isLower = lower.name.EndsWith("Hand") || foot == -1;
-            this.isMiddle = lower.name.EndsWith("Calf") || lower.name.EndsWith("Forearm");
-            this.isUpper = !(isMiddle || isLower) && !isMune;
-            this.ikChain = new Transform[] {
+            isMune = lower.name.StartsWith("Mune");
+            foot = lower.name.EndsWith("Foot") ? -1 : 1;
+            isLower = lower.name.EndsWith("Hand") || foot == -1;
+            isMiddle = lower.name.EndsWith("Calf") || lower.name.EndsWith("Forearm");
+            isUpper = !(isMiddle || isLower) && !isMune;
+            ikChain = new Transform[] {
                 lower.parent,
                 lower.parent,
                 lower
             };
-            if (this.isLower) ikChain[0] = ikChain[0].parent;
+            if (isLower) ikChain[0] = ikChain[0].parent;
         }
 
         private void InitializeRotation()
@@ -65,7 +65,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (isLower) ApplyProperties(true, isBone, false);
                 else ApplyProperties();
             }
-            else ApplyProperties(!isMune, (isBone && !isMune), false);
+            else ApplyProperties(!isMune, isBone && !isMune, false);
         }
 
         protected override void UpdateDragType()

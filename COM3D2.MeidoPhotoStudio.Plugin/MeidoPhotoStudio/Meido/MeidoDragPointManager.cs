@@ -92,12 +92,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         private static EventHandler CubeActiveChange;
         private static EventHandler CubeSmallChange;
-        private bool initialized = false;
-        private Meido meido;
+        private readonly Meido meido;
+        private readonly Dictionary<Bone, DragPointMeido> DragPoints = new Dictionary<Bone, DragPointMeido>();
         private Dictionary<Bone, Transform> BoneTransform = new Dictionary<Bone, Transform>();
-        private Dictionary<Bone, DragPointMeido> DragPoints = new Dictionary<Bone, DragPointMeido>();
         private DragPointBody dragBody;
         private DragPointBody dragCube;
+        private bool initialized = false;
         public event EventHandler<MeidoUpdateEventArgs> SelectMaid;
         private bool isBone = false;
         public bool IsBone
@@ -244,31 +244,31 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             Bone start = right ? Bone.Finger0R : Bone.Finger0L;
             Bone end = right ? Bone.Finger4R : Bone.Finger4L;
-            return SerializeFinger(start, end, right);
+            return SerializeFinger(start, end);
         }
 
         public void DeserializeHand(byte[] handBinary, bool right, bool mirroring = false)
         {
             Bone start = right ? Bone.Finger0R : Bone.Finger0L;
             Bone end = right ? Bone.Finger4R : Bone.Finger4L;
-            DeserializeFinger(start, end, handBinary, right, mirroring);
+            DeserializeFinger(start, end, handBinary, mirroring);
         }
 
         public byte[] SerializeFoot(bool right)
         {
             Bone start = right ? Bone.Toe0R : Bone.Toe0L;
             Bone end = right ? Bone.Toe2R : Bone.Toe2L;
-            return SerializeFinger(start, end, right);
+            return SerializeFinger(start, end);
         }
 
         public void DeserializeFoot(byte[] footBinary, bool right, bool mirroring = false)
         {
             Bone start = right ? Bone.Toe0R : Bone.Toe0L;
             Bone end = right ? Bone.Toe2R : Bone.Toe2L;
-            DeserializeFinger(start, end, footBinary, right, mirroring);
+            DeserializeFinger(start, end, footBinary, mirroring);
         }
 
-        private byte[] SerializeFinger(Bone start, Bone end, bool right)
+        private byte[] SerializeFinger(Bone start, Bone end)
         {
             int joints = BoneTransform[start].name.Split(' ')[2].StartsWith("Finger") ? 4 : 3;
 
@@ -290,7 +290,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return buf;
         }
 
-        private void DeserializeFinger(Bone start, Bone end, byte[] fingerBinary, bool right, bool mirroring = false)
+        private void DeserializeFinger(Bone start, Bone end, byte[] fingerBinary, bool mirroring = false)
         {
             int joints = BoneTransform[start].name.Split(' ')[2].StartsWith("Finger") ? 4 : 3;
 
@@ -379,7 +379,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             dragNeck.Initialize(meido,
                 () => new Vector3(
                     BoneTransform[Bone.Head].position.x,
-                    (BoneTransform[Bone.Head].position.y * 1.2f + BoneTransform[Bone.HeadNub].position.y * 0.8f) / 2f,
+                    ((BoneTransform[Bone.Head].position.y * 1.2f) + (BoneTransform[Bone.HeadNub].position.y * 0.8f)) / 2f,
                     BoneTransform[Bone.Head].position.z
                 ),
                 () => new Vector3(
@@ -555,7 +555,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void OnSetDragPointScale(object sender, EventArgs args)
         {
-            this.SetDragPointScale(meido.Maid.transform.localScale.x);
+            SetDragPointScale(meido.Maid.transform.localScale.x);
         }
 
         private void OnSelectBody(object sender, EventArgs args)
@@ -685,9 +685,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public AttachPointInfo(AttachPoint attachPoint, string maidGuid, int maidIndex)
         {
-            this.AttachPoint = attachPoint;
-            this.MaidGuid = maidGuid;
-            this.MaidIndex = maidIndex;
+            AttachPoint = attachPoint;
+            MaidGuid = maidGuid;
+            MaidIndex = maidIndex;
         }
 
         public void Serialize(BinaryWriter binaryWriter)
@@ -700,7 +700,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             return new AttachPointInfo(
                 (AttachPoint)binaryReader.ReadInt32(),
-                String.Empty,
+                string.Empty,
                 binaryReader.ReadInt32()
             );
         }

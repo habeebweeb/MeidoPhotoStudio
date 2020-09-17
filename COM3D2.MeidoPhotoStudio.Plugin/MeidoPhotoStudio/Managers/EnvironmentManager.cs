@@ -49,8 +49,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => bgVisible;
             set
             {
-                this.bgVisible = value;
-                bgObject.SetActive(this.bgVisible);
+                bgVisible = value;
+                bgObject.SetActive(bgVisible);
             }
         }
 
@@ -62,10 +62,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Input.Register(MpsKey.CameraReset, KeyCode.R, "Reset camera transform");
         }
 
-        public EnvironmentManager(MeidoManager meidoManager)
-        {
-            DragPointLight.environmentManager = this;
-        }
+        public EnvironmentManager() => DragPointLight.EnvironmentManager = this;
 
         public void Serialize(System.IO.BinaryWriter binaryWriter) => Serialize(binaryWriter, false);
 
@@ -73,9 +70,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             binaryWriter.Write(header);
             binaryWriter.Write(currentBGAsset);
-            binaryWriter.WriteVector3(this.bg.position);
-            binaryWriter.WriteQuaternion(this.bg.rotation);
-            binaryWriter.WriteVector3(this.bg.localScale);
+            binaryWriter.WriteVector3(bg.position);
+            binaryWriter.WriteQuaternion(bg.rotation);
+            binaryWriter.WriteVector3(bg.localScale);
 
             binaryWriter.Write(kankyo);
 
@@ -106,9 +103,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else bgAsset = bgList[assetIndex];
 
             ChangeBackground(bgAsset, isCreative);
-            this.bg.position = binaryReader.ReadVector3();
-            this.bg.rotation = binaryReader.ReadQuaternion();
-            this.bg.localScale = binaryReader.ReadVector3();
+            bg.position = binaryReader.ReadVector3();
+            bg.rotation = binaryReader.ReadQuaternion();
+            bg.localScale = binaryReader.ReadVector3();
 
             bool kankyo = binaryReader.ReadBoolean();
 
@@ -216,10 +213,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void ChangeBackground(string assetName, bool creative = false)
         {
             currentBGAsset = assetName;
-            if (creative)
-            {
-                GameMain.Instance.BgMgr.ChangeBgMyRoom(assetName);
-            }
+            if (creative) GameMain.Instance.BgMgr.ChangeBgMyRoom(assetName);
             else
             {
                 GameMain.Instance.BgMgr.ChangeBg(assetName);
@@ -234,7 +228,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void SaveCameraInfo()
         {
-            this.cameraInfo = new CameraInfo(GameMain.Instance.MainCamera);
+            cameraInfo = new CameraInfo(GameMain.Instance.MainCamera);
             StopCameraSpin();
         }
 
@@ -253,8 +247,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             UltimateOrbitCamera uoCamera = Utility.GetFieldValue<CameraMain, UltimateOrbitCamera>(
                 GameMain.Instance.MainCamera, "m_UOCamera"
             );
-            Utility.SetFieldValue<UltimateOrbitCamera, float>(uoCamera, "xVelocity", 0f);
-            Utility.SetFieldValue<UltimateOrbitCamera, float>(uoCamera, "yVelocity", 0f);
+            Utility.SetFieldValue(uoCamera, "xVelocity", 0f);
+            Utility.SetFieldValue(uoCamera, "yVelocity", 0f);
         }
 
         private void ResetCamera()
@@ -267,13 +261,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void OnCubeSmall(object sender, EventArgs args)
         {
-            this.bgDragPoint.DragPointScale = CubeSmall ? DragPointGeneral.smallCube : 1f;
+            bgDragPoint.DragPointScale = CubeSmall ? DragPointGeneral.smallCube : 1f;
         }
 
-        private void OnCubeActive(object sender, EventArgs args)
-        {
-            this.bgDragPoint.gameObject.SetActive(CubeActive);
-        }
+        private void OnCubeActive(object sender, EventArgs args) => bgDragPoint.gameObject.SetActive(CubeActive);
     }
 
     public struct CameraInfo
@@ -284,10 +275,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public float Distance { get; }
         public CameraInfo(CameraMain camera)
         {
-            this.TargetPos = camera.GetTargetPos();
-            this.Pos = camera.GetPos();
-            this.Angle = camera.transform.eulerAngles;
-            this.Distance = camera.GetDistance();
+            TargetPos = camera.GetTargetPos();
+            Pos = camera.GetPos();
+            Angle = camera.transform.eulerAngles;
+            Distance = camera.GetDistance();
         }
     }
 }

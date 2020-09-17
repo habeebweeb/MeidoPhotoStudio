@@ -5,7 +5,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class DragPointLight : DragPointGeneral
     {
-        public static EnvironmentManager environmentManager { private get; set; }
+        public static EnvironmentManager EnvironmentManager { private get; set; }
         private Light light;
         public enum MPSLightType
         {
@@ -21,7 +21,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public bool IsMain { get; set; } = false;
         public MPSLightType SelectedLightType { get; private set; } = MPSLightType.Normal;
         public LightProperty CurrentLightProperty => LightProperties[(int)SelectedLightType];
-        private LightProperty[] LightProperties = new LightProperty[]
+        private readonly LightProperty[] LightProperties = new LightProperty[]
         {
             new LightProperty(),
             new LightProperty(),
@@ -33,8 +33,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => isDisabled;
             set
             {
-                this.isDisabled = value;
-                this.light.gameObject.SetActive(!this.isDisabled);
+                isDisabled = value;
+                light.gameObject.SetActive(!isDisabled);
             }
         }
         private bool isColourMode = false;
@@ -44,49 +44,49 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             set
             {
                 if (!IsMain) return;
-                this.light.color = value ? Color.white : LightColour;
+                light.color = value ? Color.white : LightColour;
                 camera.backgroundColor = value ? LightColour : Color.black;
-                this.isColourMode = value;
-                LightColour = this.isColourMode ? camera.backgroundColor : light.color;
-                environmentManager.BGVisible = !IsColourMode;
+                isColourMode = value;
+                LightColour = isColourMode ? camera.backgroundColor : light.color;
+                EnvironmentManager.BGVisible = !IsColourMode;
             }
         }
         public Quaternion Rotation
         {
             get => CurrentLightProperty.Rotation;
-            set => this.light.transform.rotation = CurrentLightProperty.Rotation = value;
+            set => light.transform.rotation = CurrentLightProperty.Rotation = value;
         }
         public float Intensity
         {
             get => CurrentLightProperty.Intensity;
-            set => this.light.intensity = CurrentLightProperty.Intensity = value;
+            set => light.intensity = CurrentLightProperty.Intensity = value;
         }
         public float Range
         {
             get => CurrentLightProperty.Range;
-            set => this.light.range = CurrentLightProperty.Range = value;
+            set => light.range = CurrentLightProperty.Range = value;
         }
         public float SpotAngle
         {
             get => CurrentLightProperty.SpotAngle;
             set
             {
-                this.light.spotAngle = CurrentLightProperty.SpotAngle = value;
-                this.light.transform.localScale = Vector3.one * value;
+                light.spotAngle = CurrentLightProperty.SpotAngle = value;
+                light.transform.localScale = Vector3.one * value;
             }
         }
         public float ShadowStrength
         {
             get => CurrentLightProperty.ShadowStrength;
-            set => this.light.shadowStrength = CurrentLightProperty.ShadowStrength = value;
+            set => light.shadowStrength = CurrentLightProperty.ShadowStrength = value;
         }
         public float LightColorRed
         {
             get => IsColourMode ? camera.backgroundColor.r : CurrentLightProperty.LightColour.r;
             set
             {
-                Color color = IsColourMode ? camera.backgroundColor : this.light.color;
-                this.LightColour = new Color(value, color.g, color.b);
+                Color color = IsColourMode ? camera.backgroundColor : light.color;
+                LightColour = new Color(value, color.g, color.b);
             }
         }
         public float LightColorGreen
@@ -94,8 +94,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => IsColourMode ? camera.backgroundColor.g : CurrentLightProperty.LightColour.r;
             set
             {
-                Color color = IsColourMode ? camera.backgroundColor : this.light.color;
-                this.LightColour = new Color(color.r, value, color.b);
+                Color color = IsColourMode ? camera.backgroundColor : light.color;
+                LightColour = new Color(color.r, value, color.b);
             }
         }
         public float LightColorBlue
@@ -103,8 +103,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => IsColourMode ? camera.backgroundColor.b : CurrentLightProperty.LightColour.r;
             set
             {
-                Color color = IsColourMode ? camera.backgroundColor : this.light.color;
-                this.LightColour = new Color(color.r, color.g, value);
+                Color color = IsColourMode ? camera.backgroundColor : light.color;
+                LightColour = new Color(color.r, color.g, value);
             }
         }
         public Color LightColour
@@ -114,7 +114,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Color colour = CurrentLightProperty.LightColour = value;
                 if (IsColourMode) camera.backgroundColor = colour;
-                else this.light.color = colour;
+                else light.color = colour;
             }
         }
 
@@ -150,31 +150,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             light.spotAngle = prop.SpotAngle;
             light.shadowStrength = prop.ShadowStrength;
             light.color = prop.LightColour;
-            if (light.type == LightType.Spot)
-            {
-                light.transform.localScale = Vector3.one * prop.SpotAngle;
-            }
-            else if (light.type == LightType.Point)
-            {
-                light.transform.localScale = Vector3.one * prop.Range;
-            }
+            if (light.type == LightType.Spot) light.transform.localScale = Vector3.one * prop.SpotAngle;
+            else if (light.type == LightType.Point) light.transform.localScale = Vector3.one * prop.Range;
         }
 
         public override void Set(Transform myObject)
         {
             base.Set(myObject);
-            this.light = myObject.gameObject.GetOrAddComponent<Light>();
+            light = myObject.gameObject.GetOrAddComponent<Light>();
 
-            this.light.transform.position = LightProperty.DefaultPosition;
-            this.light.transform.rotation = LightProperty.DefaultRotation;
+            light.transform.position = LightProperty.DefaultPosition;
+            light.transform.rotation = LightProperty.DefaultRotation;
 
             SetLightType(MPSLightType.Normal);
-            this.ScaleFactor = 50f;
+            ScaleFactor = 50f;
         }
 
         protected override void OnDestroy()
         {
-            if (!IsMain) GameObject.Destroy(this.light.gameObject);
+            if (!IsMain) Destroy(light.gameObject);
             base.OnDestroy();
         }
 
@@ -221,22 +215,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 name = "point";
             }
 
-            this.light.type = lightType;
-            this.Name = IsMain ? "main" : name;
+            light.type = lightType;
+            Name = IsMain ? "main" : name;
 
             if (IsMain)
             {
-                environmentManager.BGVisible = !(IsColourMode && SelectedLightType == MPSLightType.Normal);
+                EnvironmentManager.BGVisible = !(IsColourMode && SelectedLightType == MPSLightType.Normal);
             }
 
             SetProps();
             ApplyDragType();
         }
 
-        public void SetRotation(float x, float y)
-        {
-            this.Rotation = Quaternion.Euler(x, y, Rotation.eulerAngles.z);
-        }
+        public void SetRotation(float x, float y) => Rotation = Quaternion.Euler(x, y, Rotation.eulerAngles.z);
 
         public void SetProp(LightProp prop, float value)
         {
@@ -272,17 +263,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SetProps();
         }
 
-        public void ResetLightPosition()
-        {
-            this.light.transform.position = LightProperty.DefaultPosition;
-        }
+        public void ResetLightPosition() => light.transform.position = LightProperty.DefaultPosition;
 
         private void SetProps()
         {
-            SetLightProperties(this.light, CurrentLightProperty);
+            SetLightProperties(light, CurrentLightProperty);
             if (IsColourMode)
             {
-                this.light.color = Color.white;
+                light.color = Color.white;
                 camera.backgroundColor = CurrentLightProperty.LightColour;
             }
         }

@@ -90,8 +90,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SetEffectActive(bool active)
         {
             Vignette.enabled = active;
-            Active = active;
-            if (this.Active)
+            if (Active = active)
             {
                 Vignette.intensity = Intensity;
                 Vignette.blur = Blur;

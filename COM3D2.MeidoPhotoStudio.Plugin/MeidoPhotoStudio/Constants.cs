@@ -11,7 +11,7 @@ using wf;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static MenuFileUtility;
-    internal class Constants
+    internal static class Constants
     {
         private static bool beginHandItemInit;
         private static bool beginMpnAttachInit;
@@ -64,14 +64,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static readonly List<string> SceneDirectoryList = new List<string>();
         public static readonly List<string> KankyoDirectoryList = new List<string>();
         public static readonly List<MpnAttachProp> MpnAttachPropList = new List<MpnAttachProp>();
-        public static int CustomPoseGroupsIndex { get; private set; } = -1;
         public static int MyRoomCustomBGIndex { get; private set; } = -1;
-        public static bool HandItemsInitialized { get; private set; } = false;
-        public static bool MpnAttachInitialized { get; private set; } = false;
-        public static bool MenuFilesInitialized { get; private set; } = false;
+        public static bool HandItemsInitialized { get; private set; }
+        public static bool MpnAttachInitialized { get; private set; }
+        public static bool MenuFilesInitialized { get; private set; }
         public static event EventHandler<MenuFilesEventArgs> MenuFilesChange;
-        public static event EventHandler<CustomPoseEventArgs> customPoseChange;
-        public static event EventHandler<CustomPoseEventArgs> customHandChange;
+        public static event EventHandler<CustomPoseEventArgs> CustomPoseChange;
+        public static event EventHandler<CustomPoseEventArgs> CustomHandChange;
         public static event EventHandler<CustomPoseEventArgs> CustomFaceChange;
         public enum DoguCategory
         {
@@ -189,11 +188,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             filename = Utility.SanitizePathPortion(filename);
             directory = Utility.SanitizePathPortion(directory);
             if (string.IsNullOrEmpty(filename)) filename = "custom_pose";
-            if (directory.Equals(Constants.customPoseDirectory, StringComparison.InvariantCultureIgnoreCase))
+            if (directory.Equals(customPoseDirectory, StringComparison.InvariantCultureIgnoreCase))
             {
-                directory = String.Empty;
+                directory = string.Empty;
             }
-            directory = Path.Combine(Constants.customPosePath, directory);
+            directory = Path.Combine(customPosePath, directory);
 
             if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
 
@@ -203,7 +202,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             fullPath = Path.GetFullPath($"{fullPath}.anm");
 
-            if (!fullPath.StartsWith(Constants.customPosePath))
+            if (!fullPath.StartsWith(customPosePath))
             {
                 Utility.LogError($"Could not save pose! Path is invalid: '{fullPath}'");
                 return;
@@ -214,21 +213,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             FileInfo fileInfo = new FileInfo(fullPath);
 
             string category = fileInfo.Directory.Name;
-            string poseGroup = Constants.CustomPoseGroupList.Find(
+            string poseGroup = CustomPoseGroupList.Find(
                 group => string.Equals(category, group, StringComparison.InvariantCultureIgnoreCase)
             );
 
             if (string.IsNullOrEmpty(poseGroup))
             {
-                Constants.CustomPoseGroupList.Add(category);
-                Constants.CustomPoseDict[category] = new List<string>();
+                CustomPoseGroupList.Add(category);
+                CustomPoseDict[category] = new List<string>();
             }
             else category = poseGroup;
 
-            Constants.CustomPoseDict[category].Add(fullPath);
-            Constants.CustomPoseDict[category].Sort();
+            CustomPoseDict[category].Add(fullPath);
+            CustomPoseDict[category].Sort();
 
-            customPoseChange?.Invoke(null, new CustomPoseEventArgs(fullPath, category));
+            CustomPoseChange?.Invoke(null, new CustomPoseEventArgs(fullPath, category));
         }
 
         public static void AddHand(byte[] handBinary, bool right, string filename, string directory)
@@ -236,11 +235,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             filename = Utility.SanitizePathPortion(filename);
             directory = Utility.SanitizePathPortion(directory);
             if (string.IsNullOrEmpty(filename)) filename = "custom_hand";
-            if (directory.Equals(Constants.customHandDirectory, StringComparison.InvariantCultureIgnoreCase))
+            if (directory.Equals(customHandDirectory, StringComparison.InvariantCultureIgnoreCase))
             {
-                directory = String.Empty;
+                directory = string.Empty;
             }
-            directory = Path.Combine(Constants.customHandPath, directory);
+            directory = Path.Combine(customHandPath, directory);
 
             if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
 
@@ -250,7 +249,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             fullPath = Path.GetFullPath($"{fullPath}.xml");
 
-            if (!fullPath.StartsWith(Constants.customHandPath))
+            if (!fullPath.StartsWith(customHandPath))
             {
                 Utility.LogError($"Could not save hand! Path is invalid: '{fullPath}'");
                 return;
@@ -270,21 +269,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             FileInfo fileInfo = new FileInfo(fullPath);
 
             string category = fileInfo.Directory.Name;
-            string handGroup = Constants.CustomHandGroupList.Find(
+            string handGroup = CustomHandGroupList.Find(
                 group => string.Equals(category, group, StringComparison.InvariantCultureIgnoreCase)
             );
 
             if (string.IsNullOrEmpty(handGroup))
             {
-                Constants.CustomHandGroupList.Add(category);
-                Constants.CustomHandDict[category] = new List<string>();
+                CustomHandGroupList.Add(category);
+                CustomHandDict[category] = new List<string>();
             }
             else category = handGroup;
 
-            Constants.CustomHandDict[category].Add(fullPath);
-            Constants.CustomHandDict[category].Sort();
+            CustomHandDict[category].Add(fullPath);
+            CustomHandDict[category].Sort();
 
-            customHandChange?.Invoke(null, new CustomPoseEventArgs(fullPath, category));
+            CustomHandChange?.Invoke(null, new CustomPoseEventArgs(fullPath, category));
         }
 
         public static void InitializeScenes()
@@ -320,7 +319,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             // Get Other poses that'll go into Normal 2 and Ero 2
             string[] com3d2MotionList = GameUty.FileSystem.GetList("motion", AFileSystemBase.ListType.AllFile);
 
-            if (com3d2MotionList != null && com3d2MotionList.Length > 0)
+            if (com3d2MotionList?.Length > 0)
             {
                 HashSet<string> poseSet = new HashSet<string>();
                 foreach (List<string> poses in PoseDict.Values)
@@ -396,7 +395,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 IEnumerable<string> presetList = Directory.GetFiles(directory)
                     .Where(file => Path.GetExtension(file) == ".xml");
 
-                if (presetList.Count() > 0)
+                if (presetList.Any())
                 {
                     string presetCategory = new DirectoryInfo(directory).Name;
                     if (presetCategory != customHandDirectory) CustomHandGroupList.Add(presetCategory);
@@ -482,7 +481,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
 
-            Dictionary<string, string> saveDataDict = MyRoomCustom.CreativeRoomManager.GetSaveDataDic();
+            Dictionary<string, string> saveDataDict = CreativeRoomManager.GetSaveDataDic();
 
             if (saveDataDict != null)
             {
@@ -598,7 +597,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                             int cell = csvParser.GetCellAsInteger(0, cell_y);
                             if (enabledIDs.Contains(cell))
                             {
-                                string dogu = String.Empty;
+                                string dogu = string.Empty;
                                 if (csvParser.IsCellToExistData(3, cell_y))
                                 {
                                     dogu = csvParser.GetCellAsString(3, cell_y);
@@ -644,7 +643,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     DoguDict[category] = new List<string>();
                 }
 
-                string dogu = String.Empty;
+                string dogu = string.Empty;
                 if (!string.IsNullOrEmpty(photoBGObject.create_prefab_name))
                 {
                     dogu = photoBGObject.create_prefab_name;
@@ -674,9 +673,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (HandItemsInitialized) return;
 
-            if (!MenuFileUtility.MenuFilesReady)
+            if (!MenuFilesReady)
             {
-                if (!beginHandItemInit) MenuFileUtility.MenuFilesReadyChange += (s, a) => InitializeHandItems();
+                if (!beginHandItemInit) MenuFilesReadyChange += (s, a) => InitializeHandItems();
                 beginHandItemInit = true;
                 return;
             }
@@ -729,9 +728,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (MpnAttachInitialized) return;
 
-            if (!MenuFileUtility.MenuFilesReady)
+            if (!MenuFilesReady)
             {
-                if (!beginMpnAttachInit) MenuFileUtility.MenuFilesReadyChange += (s, a) => InitializeMpnAttachProps();
+                if (!beginMpnAttachInit) MenuFilesReadyChange += (s, a) => InitializeMpnAttachProps();
                 beginMpnAttachInit = true;
                 return;
             }
@@ -791,7 +790,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private static void InitializeModProps()
         {
-            for (int i = 1; i < MenuFileUtility.MenuCategories.Length; i++)
+            for (int i = 1; i < MenuCategories.Length; i++)
             {
                 ModPropDict[MenuCategories[i]] = new List<ModItem>();
             }
@@ -804,7 +803,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     menuDatabase.SetIndex(i);
                     ModItem modItem = new ModItem();
-                    if (MenuFileUtility.ParseNativeMenuFile(i, modItem))
+                    if (ParseNativeMenuFile(i, modItem))
                     {
                         ModPropDict[modItem.Category].Add(modItem);
                     }
@@ -820,10 +819,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 else
                 {
                     modItem = ModItem.Mod(modMenuFile);
-                    MenuFileUtility.ParseMenuFile(modMenuFile, modItem);
+                    ParseMenuFile(modMenuFile, modItem);
                     cache[modMenuFile] = modItem;
                 }
-                if (MenuFileUtility.ValidBG2MenuFile(modItem)) ModPropDict[modItem.Category].Add(modItem);
+                if (ValidBG2MenuFile(modItem)) ModPropDict[modItem.Category].Add(modItem);
             }
 
             cache.Serialize();
@@ -843,7 +842,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (!PropManager.ModItemsOnly)
             {
-                if (!MenuFileUtility.MenuFilesReady)
+                if (!MenuFilesReady)
                 {
                     Utility.LogMessage("Menu files are not ready yet");
                     return null;
@@ -865,7 +864,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     return res;
                 });
 
-                string previousMenuFile = String.Empty;
+                string previousMenuFile = string.Empty;
                 selectedList.RemoveAll(item =>
                 {
                     if (item.Icon == null)
@@ -921,17 +920,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return null;
         }
 
-        private static CsvParser OpenCsvParser(string nei)
-        {
-            return OpenCsvParser(nei, GameUty.FileSystem);
-        }
-
-        public static void WriteToFile(string name, IEnumerable<string> list)
-        {
-            if (Path.GetExtension(name) != ".txt") name += ".txt";
-            File.WriteAllLines(Path.Combine(configPath, name), list.ToArray());
-        }
-
         private static void OnMenuFilesChange(MenuFilesEventArgs.EventType eventType)
         {
             MenuFilesChange?.Invoke(null, new MenuFilesEventArgs(eventType));
@@ -951,7 +939,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             HandItems, MenuFiles, MpnAttach
         }
-        public MenuFilesEventArgs(EventType type) => this.Type = type;
+        public MenuFilesEventArgs(EventType type) => Type = type;
     }
 
     public class CustomPoseEventArgs : EventArgs
@@ -960,8 +948,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public string Path { get; }
         public CustomPoseEventArgs(string path, string category)
         {
-            this.Path = path;
-            this.Category = category;
+            Path = path;
+            Category = category;
         }
     }
 
@@ -972,8 +960,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public MpnAttachProp(MPN tag, string menuFile)
         {
-            this.Tag = tag;
-            this.MenuFile = menuFile;
+            Tag = tag;
+            MenuFile = menuFile;
         }
     }
 }

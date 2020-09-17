@@ -11,7 +11,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public T AddPane<T>(T pane) where T : BasePane
         {
-            this.Panes.Add(pane);
+            Panes.Add(pane);
             return pane;
         }
 

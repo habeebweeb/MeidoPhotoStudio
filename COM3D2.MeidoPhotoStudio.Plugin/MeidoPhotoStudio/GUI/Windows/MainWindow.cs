@@ -5,12 +5,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class MainWindow : BaseWindow
     {
-        private MeidoManager meidoManager;
-        private PropManager propManager;
-        private LightManager lightManager;
-        private Dictionary<Constants.Window, BaseMainWindowPane> windowPanes;
-        private TabsPane tabsPane;
-        private Button settingsButton;
+        private readonly MeidoManager meidoManager;
+        private readonly Dictionary<Constants.Window, BaseMainWindowPane> windowPanes;
+        private readonly PropManager propManager;
+        private readonly LightManager lightManager;
+        private readonly TabsPane tabsPane;
+        private readonly Button settingsButton;
         private BaseMainWindowPane currentWindowPane;
         public override Rect WindowRect
         {
@@ -63,10 +63,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Activate()
         {
-            this.updating = true;
+            updating = true;
             tabsPane.SelectedTab = Constants.Window.Call;
-            this.updating = false;
-            this.Visible = true;
+            updating = false;
+            Visible = true;
         }
 
         public void AddWindow(Constants.Window id, BaseMainWindowPane window)
@@ -98,10 +98,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void Update()
         {
             base.Update();
-            if (InputManager.GetKeyDown(MpsKey.ToggleUI))
-            {
-                this.Visible = !this.Visible;
-            }
+            if (InputManager.GetKeyDown(MpsKey.ToggleUI)) Visible = !Visible;
         }
 
         public override void Draw()
@@ -139,7 +136,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void ChangeWindow(Constants.Window window)
         {
-            if (this.selectedWindow == window) currentWindowPane.UpdatePanes();
+            if (selectedWindow == window) currentWindowPane.UpdatePanes();
             else tabsPane.SelectedTab = window;
         }
     }

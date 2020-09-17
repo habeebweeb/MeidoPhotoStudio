@@ -5,51 +5,53 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class SceneManagerDirectoryPane : BasePane
     {
         public static readonly int listWidth = 200;
-        private SceneManager sceneManager;
-        private SceneModalWindow sceneModalWindow;
-        private Button createDirectoryButton;
-        private Button deleteDirectoryButton;
-        private TextField directoryTextField;
-        private Button cancelButton;
+        private readonly SceneManager sceneManager;
+        private readonly SceneModalWindow sceneModalWindow;
+        private readonly Button createDirectoryButton;
+        private readonly Button deleteDirectoryButton;
+        private readonly TextField directoryTextField;
+        private readonly Button cancelButton;
+        private readonly Texture2D selectedTexture = Utility.MakeTex(2, 2, new Color(0.5f, 0.5f, 0.5f, 0.4f));
         private Vector2 listScrollPos;
         private bool createDirectoryMode;
-        private Texture2D selectedTexture = Utility.MakeTex(2, 2, new Color(0.5f, 0.5f, 0.5f, 0.4f));
 
         public SceneManagerDirectoryPane(SceneManager sceneManager, SceneModalWindow sceneModalWindow)
         {
             this.sceneManager = sceneManager;
             this.sceneModalWindow = sceneModalWindow;
 
-            this.createDirectoryButton = new Button(Translation.Get("sceneManager", "createDirectoryButton"));
-            this.createDirectoryButton.ControlEvent += (s, a) => createDirectoryMode = true;
+            createDirectoryButton = new Button(Translation.Get("sceneManager", "createDirectoryButton"));
+            createDirectoryButton.ControlEvent += (s, a) => createDirectoryMode = true;
 
-            this.deleteDirectoryButton = new Button(Translation.Get("sceneManager", "deleteDirectoryButton"));
-            this.deleteDirectoryButton.ControlEvent += (s, a) => sceneModalWindow.ShowDirectoryDialogue();
+            deleteDirectoryButton = new Button(Translation.Get("sceneManager", "deleteDirectoryButton"));
+            deleteDirectoryButton.ControlEvent += (s, a) => this.sceneModalWindow.ShowDirectoryDialogue();
 
-            this.directoryTextField = new TextField();
-            this.directoryTextField.ControlEvent += (s, a) =>
+            directoryTextField = new TextField();
+            directoryTextField.ControlEvent += (s, a) =>
             {
                 sceneManager.AddDirectory(directoryTextField.Value);
                 createDirectoryMode = false;
                 directoryTextField.Value = string.Empty;
             };
 
-            this.cancelButton = new Button("X");
-            this.cancelButton.ControlEvent += (s, a) => createDirectoryMode = false;
+            cancelButton = new Button("X");
+            cancelButton.ControlEvent += (s, a) => createDirectoryMode = false;
         }
 
         protected override void ReloadTranslation()
         {
-            this.createDirectoryButton.Label = Translation.Get("sceneManager", "createDirectoryButton");
-            this.deleteDirectoryButton.Label = Translation.Get("sceneManager", "deleteDirectoryButton");
+            createDirectoryButton.Label = Translation.Get("sceneManager", "createDirectoryButton");
+            deleteDirectoryButton.Label = Translation.Get("sceneManager", "deleteDirectoryButton");
         }
 
         public override void Draw()
         {
-            GUIStyle directoryStyle = new GUIStyle(GUI.skin.button);
-            directoryStyle.fontSize = Utility.GetPix(12);
-            directoryStyle.alignment = TextAnchor.MiddleLeft;
-            directoryStyle.margin = new RectOffset(0, 0, 0, 0);
+            GUIStyle directoryStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = Utility.GetPix(12),
+                alignment = TextAnchor.MiddleLeft,
+                margin = new RectOffset(0, 0, 0, 0)
+            };
 
             GUIStyle directorySelectedStyle = new GUIStyle(directoryStyle);
             directorySelectedStyle.normal.textColor = Color.white;
@@ -74,8 +76,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             GUILayout.BeginHorizontal();
 
-            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
-            buttonStyle.fontSize = Utility.GetPix(12);
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button) { fontSize = Utility.GetPix(12) };
 
             GUILayoutOption buttonHeight = GUILayout.Height(Utility.GetPix(20));
 

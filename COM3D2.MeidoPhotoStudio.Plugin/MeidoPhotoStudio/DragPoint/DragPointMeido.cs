@@ -30,8 +30,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             base.Initialize(position, rotation);
             this.meido = meido;
-            this.maid = meido.Maid;
-            this.isPlaying = !meido.Stop;
+            maid = meido.Maid;
+            isPlaying = !meido.Stop;
         }
 
         public override void AddGizmo(float scale = 0.25f, GizmoMode mode = GizmoMode.Local)
@@ -60,6 +60,5 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             IKCtrlData ikData = maid.body0.IKCtrl.GetIKData("左手");
             ikCmo.Porc(upper, middle, lower, CursorPosition(), Vector3.zero, ikData);
         }
-
     }
 }

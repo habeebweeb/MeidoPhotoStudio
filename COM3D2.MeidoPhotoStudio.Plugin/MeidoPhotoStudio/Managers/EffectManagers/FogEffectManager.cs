@@ -6,12 +6,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         public const string header = "EFFECT_FOG";
         private GlobalFog Fog { get; set; }
-        public bool Ready { get; private set; }
+        public bool Ready { get; }
         public bool Active { get; private set; }
-        public static float InitialDistance { get; private set; } = 4f;
-        public static float InitialDensity { get; private set; } = 1f;
-        public static float InitialHeightScale { get; private set; } = 1f;
-        public static float InitialHeight { get; private set; } = 0f;
+        public static float InitialDistance { get; } = 4f;
+        public static float InitialDensity { get; } = 1f;
+        public static float InitialHeightScale { get; } = 1f;
+        public static float InitialHeight { get; }
         public static Color InitialColour { get; private set; } = Color.white;
         private float distance;
         public float Distance
@@ -129,8 +129,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SetEffectActive(bool active)
         {
             Fog.enabled = active;
-            this.Active = active;
-            if (this.Active)
+            if (Active = active)
             {
                 Fog.startDistance = Distance;
                 Fog.globalDensity = Density;

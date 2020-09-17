@@ -93,16 +93,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
-            float arrowButtonSize = 30;
+            const float buttonHeight = 30;
             GUILayoutOption[] arrowLayoutOptions = {
-                GUILayout.Width(arrowButtonSize),
-                GUILayout.Height(arrowButtonSize)
+                GUILayout.Width(buttonHeight),
+                GUILayout.Height(buttonHeight)
             };
 
-            float dropdownButtonHeight = arrowButtonSize;
-            float dropdownButtonWidth = 153f;
+            const float dropdownButtonWidth = 153f;
             GUILayoutOption[] dropdownLayoutOptions = new GUILayoutOption[] {
-                GUILayout.Height(dropdownButtonHeight),
+                GUILayout.Height(buttonHeight),
                 GUILayout.Width(dropdownButtonWidth)
             };
 

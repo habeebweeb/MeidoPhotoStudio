@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
@@ -24,23 +23,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
         protected Vector2 MiddlePosition => new Vector2(
-            Screen.width / 2 - windowRect.width / 2,
-            Screen.height / 2 - windowRect.height / 2
+            (Screen.width / 2) - (windowRect.width / 2), (Screen.height / 2) - (windowRect.height / 2)
         );
 
-        public BaseWindow ModalWindow { get; private set; }
-
-        public BaseWindow() : base() => windowID = ID;
+        protected BaseWindow() => windowID = ID;
 
         public virtual void HandleZoom()
         {
-            if (Input.mouseScrollDelta.y != 0f)
+            if (Input.mouseScrollDelta.y != 0f && Visible)
             {
-                if (Visible)
-                {
-                    Vector2 mousePos = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
-                    if (WindowRect.Contains(mousePos)) Input.ResetInputAxes();
-                }
+                Vector2 mousePos = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
+                if (WindowRect.Contains(mousePos)) Input.ResetInputAxes();
             }
         }
 

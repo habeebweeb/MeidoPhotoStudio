@@ -6,8 +6,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class DragPointFinger : DragPointMeido
     {
         private readonly TBody.IKCMO IK = new TBody.IKCMO();
+        private readonly Quaternion[] jointRotation = new Quaternion[2];
         private Transform[] ikChain;
-        private Quaternion[] jointRotation = new Quaternion[2];
         private bool baseFinger;
         private static readonly Color dragpointColour = new Color(0.1f, 0.4f, 0.95f, defaultAlpha);
 
@@ -16,8 +16,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             base.Set(finger);
             string parentName = finger.parent.name.Split(' ')[2];
             // Base finger names have the form 'FingerN' or 'ToeN' where N is a natural number
-            this.baseFinger = (parentName.Length == 7) || (parentName.Length == 4);
-            this.ikChain = new Transform[2] {
+            baseFinger = (parentName.Length == 7) || (parentName.Length == 4);
+            ikChain = new Transform[2] {
                 finger.parent,
                 finger
             };

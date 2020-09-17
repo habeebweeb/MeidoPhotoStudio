@@ -13,7 +13,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void AddGizmo(float scale = 0.25f, CustomGizmo.GizmoMode mode = CustomGizmo.GizmoMode.Local)
         {
             base.AddGizmo(scale, mode);
-            if (isHead) this.Gizmo.GizmoDrag += (s, a) => meido.HeadToCam = false;
+            if (isHead) Gizmo.GizmoDrag += (s, a) => meido.HeadToCam = false;
         }
 
         public override void Set(Transform spine)

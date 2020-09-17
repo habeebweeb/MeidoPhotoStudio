@@ -9,18 +9,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public event EventHandler SelectionChange;
         public event EventHandler DropdownOpen;
         public event EventHandler DropdownClose;
-        private bool clickedYou = false;
-        private bool showDropdown = false;
-        private string label;
-        private bool isMenu = false;
+        private bool clickedYou;
+        private bool showDropdown;
+        private readonly string label;
+        private readonly bool isMenu;
         public string[] DropdownList { get; private set; }
-        public int DropdownID { get; private set; }
+        public int DropdownID { get; }
         private Vector2 scrollPos;
-        public Vector2 ScrollPos
-        {
-            get => scrollPos;
-            private set => scrollPos = value;
-        }
+        public Vector2 ScrollPos => scrollPos;
         private Rect buttonRect;
         public Rect ButtonRect
         {
@@ -28,18 +24,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             private set => buttonRect = value;
         }
         private Vector2 elementSize;
-        public Vector2 ElementSize
-        {
-            get => elementSize;
-            private set => elementSize = value;
-        }
-        private int selectedItemIndex = 0;
+        public Vector2 ElementSize => elementSize;
+        private int selectedItemIndex;
         public int SelectedItemIndex
         {
             get => selectedItemIndex;
             set
             {
-                this.selectedItemIndex = Mathf.Clamp(value, 0, DropdownList.Length - 1);
+                selectedItemIndex = Mathf.Clamp(value, 0, DropdownList.Length - 1);
                 OnDropdownEvent(SelectionChange);
             }
         }
@@ -69,16 +61,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void SetDropdownItems(string[] itemList, int selectedItemIndex = -1)
         {
-            if (selectedItemIndex < 0) selectedItemIndex = this.SelectedItemIndex;
-            this.elementSize = Vector2.zero;
+            if (selectedItemIndex < 0) selectedItemIndex = SelectedItemIndex;
+            elementSize = Vector2.zero;
 
             // TODO: Calculate scrollpos position maybe
-            if ((selectedItemIndex != this.selectedItemIndex) || (itemList.Length != this.DropdownList?.Length))
+            if ((selectedItemIndex != this.selectedItemIndex) || (itemList.Length != DropdownList?.Length))
             {
-                this.scrollPos = Vector2.zero;
+                scrollPos = Vector2.zero;
             }
-            this.DropdownList = itemList;
-            this.SelectedItemIndex = selectedItemIndex;
+            DropdownList = itemList;
+            SelectedItemIndex = selectedItemIndex;
         }
 
         public void SetDropdownItem(int index, string newItem)
@@ -87,20 +79,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             Vector2 itemSize = DropdownHelper.CalculateElementSize(newItem);
 
-            if (itemSize.x > ElementSize.x) ElementSize = itemSize;
+            if (itemSize.x > ElementSize.x) elementSize = itemSize;
 
             DropdownList[index] = newItem;
         }
 
         public void SetDropdownItem(string newItem)
         {
-            SetDropdownItem(this.SelectedItemIndex, newItem);
+            SetDropdownItem(SelectedItemIndex, newItem);
         }
 
         public void Step(int dir)
         {
             dir = (int)Mathf.Sign(dir);
-            this.SelectedItemIndex = Utility.Wrap(this.SelectedItemIndex + dir, 0, this.DropdownList.Length);
+            SelectedItemIndex = Utility.Wrap(SelectedItemIndex + dir, 0, DropdownList.Length);
         }
 
         public void Draw(GUIStyle buttonStyle, params GUILayoutOption[] layoutOptions)
@@ -128,14 +120,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw(params GUILayoutOption[] layoutOptions)
         {
-            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
-            buttonStyle.alignment = TextAnchor.MiddleLeft;
-            this.Draw(buttonStyle, layoutOptions);
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button) { alignment = TextAnchor.MiddleLeft };
+            Draw(buttonStyle, layoutOptions);
         }
 
         private void OnChangeSelection(object sender, DropdownSelectArgs args)
         {
-            if (args.DropdownID == this.DropdownID)
+            if (args.DropdownID == DropdownID)
             {
                 SelectedItemIndex = args.SelectedItemIndex;
             }
@@ -143,7 +134,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void OnCloseDropdown(object sender, DropdownCloseArgs args)
         {
-            if (args.DropdownID == this.DropdownID)
+            if (args.DropdownID == DropdownID)
             {
                 scrollPos = args.ScrollPos;
                 clickedYou = args.ClickedYou;
@@ -158,13 +149,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             showDropdown = false;
 
-            this.buttonRect = GUILayoutUtility.GetLastRect();
+            buttonRect = GUILayoutUtility.GetLastRect();
             Vector2 rectPos = GUIUtility.GUIToScreenPoint(new Vector2(buttonRect.x, buttonRect.y));
             buttonRect.x = rectPos.x;
             buttonRect.y = rectPos.y;
-            if (this.elementSize == Vector2.zero)
+            if (elementSize == Vector2.zero)
             {
-                this.elementSize = DropdownHelper.CalculateElementSize(this.DropdownList, dropdownStyle);
+                elementSize = DropdownHelper.CalculateElementSize(DropdownList, dropdownStyle);
             }
             DropdownHelper.Set(this, dropdownStyle);
 
@@ -213,7 +204,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             style = style ?? DefaultDropdownStyle;
 
-            return DefaultDropdownStyle.CalcSize(new GUIContent(item));
+            return style.CalcSize(new GUIContent(item));
         }
 
         public static Vector2 CalculateElementSize(string[] list, GUIStyle style = null)
@@ -289,10 +280,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             bool clicked = false;
 
-            if (Event.current.type == EventType.MouseUp)
-            {
-                clicked = true;
-            }
+            if (Event.current.type == EventType.MouseUp) clicked = true;
 
             scrollPos = GUI.BeginScrollView(dropdownScrollRect, scrollPos, dropdownRect);
             int selection = GUI.SelectionGrid(dropdownRect, selectedItemIndex, dropdownList, 1, dropdownStyle);
@@ -323,9 +311,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private static void InitializeStyle()
         {
-            defaultDropdownStyle = new GUIStyle(GUI.skin.button);
-            defaultDropdownStyle.alignment = TextAnchor.MiddleLeft;
-            defaultDropdownStyle.margin = new RectOffset(0, 0, 0, 0);
+            defaultDropdownStyle = new GUIStyle(GUI.skin.button)
+            {
+                alignment = TextAnchor.MiddleLeft,
+                margin = new RectOffset(0, 0, 0, 0)
+            };
             defaultDropdownStyle.padding.top = defaultDropdownStyle.padding.bottom = 2;
             defaultDropdownStyle.normal.background = Utility.MakeTex(2, 2, new Color(0f, 0f, 0f, 0.5f));
             Texture2D whiteBackground = new Texture2D(2, 2);
@@ -338,19 +328,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 = defaultDropdownStyle.hover.textColor
                 = Color.black;
 
-            windowStyle = new GUIStyle(GUI.skin.box);
-            windowStyle.padding = new RectOffset(0, 0, 0, 0);
-            windowStyle.alignment = TextAnchor.UpperRight;
+            windowStyle = new GUIStyle(GUI.skin.box)
+            {
+                padding = new RectOffset(0, 0, 0, 0),
+                alignment = TextAnchor.UpperRight
+            };
             initialized = true;
         }
 
         public class DropdownEventArgs : EventArgs
         {
             public int DropdownID { get; }
-            public DropdownEventArgs(int dropdownID)
-            {
-                this.DropdownID = dropdownID;
-            }
+            public DropdownEventArgs(int dropdownID) => DropdownID = dropdownID;
         }
 
         public class DropdownSelectArgs : DropdownEventArgs
@@ -358,7 +347,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             public int SelectedItemIndex { get; }
             public DropdownSelectArgs(int dropdownID, int selection) : base(dropdownID)
             {
-                this.SelectedItemIndex = selection;
+                SelectedItemIndex = selection;
             }
         }
 
@@ -368,8 +357,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             public bool ClickedYou { get; }
             public DropdownCloseArgs(int dropdownID, Vector2 scrollPos, bool clickedYou = false) : base(dropdownID)
             {
-                this.ScrollPos = scrollPos;
-                this.ClickedYou = clickedYou;
+                ScrollPos = scrollPos;
+                ClickedYou = clickedYou;
             }
         }
     }

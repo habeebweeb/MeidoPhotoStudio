@@ -5,17 +5,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class TabsPane : BasePane
     {
-        private SelectionGrid Tabs;
+        private static readonly string[] tabNames = { "call", "pose", "face", "bg", "bg2" };
+        private readonly SelectionGrid Tabs;
         private Constants.Window selectedTab;
         public Constants.Window SelectedTab
         {
             get => selectedTab;
             set => Tabs.SelectedItemIndex = (int)value;
-
         }
         public event EventHandler TabChange;
-        private new bool updating;
-        private readonly string[] tabNames = { "call", "pose", "face", "bg", "bg2" };
 
         public TabsPane()
         {

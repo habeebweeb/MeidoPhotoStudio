@@ -5,35 +5,35 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal abstract class EffectPane<T> : BasePane where T : IEffectManager
     {
         protected abstract T EffectManager { get; set; }
-        protected Toggle effectToggle;
-        protected Button resetEffectButton;
+        protected readonly Toggle effectToggle;
+        protected readonly Button resetEffectButton;
         private bool enabled;
         public override bool Enabled
         {
             get => enabled;
             set
             {
-                this.enabled = value;
-                this.EffectManager.SetEffectActive(this.enabled);
+                enabled = value;
+                EffectManager.SetEffectActive(enabled);
             }
         }
 
-        public EffectPane(T effectManager) : base()
+        protected EffectPane(T effectManager)
         {
-            this.EffectManager = effectManager;
-            this.resetEffectButton = new Button(Translation.Get("effectsPane", "reset"));
-            this.resetEffectButton.ControlEvent += (s, a) => this.ResetEffect();
-            this.effectToggle = new Toggle(Translation.Get("effectsPane", "onToggle"));
-            this.effectToggle.ControlEvent += (s, a) => this.Enabled = this.effectToggle.Value;
+            EffectManager = effectManager;
+            resetEffectButton = new Button(Translation.Get("effectsPane", "reset"));
+            resetEffectButton.ControlEvent += (s, a) => ResetEffect();
+            effectToggle = new Toggle(Translation.Get("effectsPane", "onToggle"));
+            effectToggle.ControlEvent += (s, a) => Enabled = effectToggle.Value;
         }
 
         protected override void ReloadTranslation()
         {
-            this.updating = true;
-            this.effectToggle.Label = Translation.Get("effectsPane", "onToggle");
-            this.resetEffectButton.Label = Translation.Get("effectsPane", "reset");
+            updating = true;
+            effectToggle.Label = Translation.Get("effectsPane", "onToggle");
+            resetEffectButton.Label = Translation.Get("effectsPane", "reset");
             TranslatePane();
-            this.updating = false;
+            updating = false;
         }
 
         protected abstract void TranslatePane();
@@ -41,10 +41,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void UpdatePane()
         {
             if (!EffectManager.Ready) return;
-            this.updating = true;
-            this.effectToggle.Value = this.EffectManager.Active;
-            this.UpdateControls();
-            this.updating = false;
+            updating = true;
+            effectToggle.Value = EffectManager.Active;
+            UpdateControls();
+            updating = false;
         }
 
         protected abstract void UpdateControls();
@@ -54,7 +54,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUILayout.BeginHorizontal();
             effectToggle.Draw();
             GUILayout.FlexibleSpace();
-            GUI.enabled = this.Enabled;
+            GUI.enabled = Enabled;
             resetEffectButton.Draw();
             GUILayout.EndHorizontal();
             DrawPane();
@@ -65,9 +65,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void ResetEffect()
         {
-            this.EffectManager.Deactivate();
-            this.EffectManager.SetEffectActive(true);
-            this.UpdatePane();
+            EffectManager.Deactivate();
+            EffectManager.SetEffectActive(true);
+            UpdatePane();
         }
     }
 }

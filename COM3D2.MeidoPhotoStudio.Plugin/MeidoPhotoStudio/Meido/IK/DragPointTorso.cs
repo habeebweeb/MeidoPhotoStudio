@@ -7,8 +7,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private static readonly float[] blah = new[] { 0.03f, 0.1f, 0.09f, 0.07f };
         private static readonly float[] something = new[] { 0.08f, 0.15f };
-        private Transform[] spine = new Transform[4];
-        private Quaternion[] spineRotation = new Quaternion[4];
+        private readonly Quaternion[] spineRotation = new Quaternion[4];
+        private readonly Transform[] spine = new Transform[4];
 
         public override void Set(Transform spine1a)
         {

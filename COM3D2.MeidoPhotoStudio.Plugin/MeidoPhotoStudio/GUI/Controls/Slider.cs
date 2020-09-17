@@ -22,50 +22,50 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => value;
             set
             {
-                this.value = Utility.Bound(value, this.Left, this.Right);
+                this.value = Utility.Bound(value, Left, Right);
                 OnControlEvent(EventArgs.Empty);
             }
         }
         private float left;
         public float Left
         {
-            get => this.left;
+            get => left;
             set
             {
-                this.left = value;
-                this.Value = this.value;
+                left = value;
+                this.value = Utility.Bound(value, left, right);
             }
         }
         private float right;
         public float Right
         {
-            get => this.right;
+            get => right;
             set
             {
-                this.right = value;
-                this.Value = this.value;
+                right = value;
+                this.value = Utility.Bound(value, left, right);
             }
         }
 
         public Slider(string label, float left, float right, float value = 0)
         {
             Label = label;
-            Left = left;
-            Right = right;
+            this.left = left;
+            this.right = right;
             this.value = Utility.Bound(value, left, right);
         }
 
-        public Slider(float min, float max, float value = 0f) : this(String.Empty, min, max, value) { }
+        public Slider(float min, float max, float value = 0f) : this(string.Empty, min, max, value) { }
 
         public Slider(string label, SliderProp prop) : this(label, prop.Left, prop.Right, prop.Initial) { }
 
-        public Slider(SliderProp prop) : this(String.Empty, prop.Left, prop.Right, prop.Initial) { }
+        public Slider(SliderProp prop) : this(string.Empty, prop.Left, prop.Right, prop.Initial) { }
 
         public void SetBounds(float left, float right)
         {
             this.left = left;
             this.right = right;
-            this.Value = this.Value;
+            value = Utility.Bound(value, left, right);
         }
 
         public override void Draw(params GUILayoutOption[] layoutOptions)
@@ -100,9 +100,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public SliderProp(float left, float right, float initial = 0f)
         {
-            this.Left = left;
-            this.Right = right;
-            this.Initial = Utility.Bound(initial, left, right);
+            Left = left;
+            Right = right;
+            Initial = Utility.Bound(initial, left, right);
         }
     }
 }

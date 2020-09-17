@@ -7,11 +7,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         protected BaseWindow parent;
         protected List<BaseControl> Controls { get; set; }
-        protected bool updating = false;
+        protected bool updating;
         public virtual bool Visible { get; set; }
         public virtual bool Enabled { get; set; }
 
-        public BasePane()
+        protected BasePane()
         {
             Translation.ReloadTranslationEvent += OnReloadTranslation;
             Controls = new List<BaseControl>();
@@ -27,7 +27,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             ReloadTranslation();
         }
 
-        public void SetParent(BaseWindow window) => this.parent = window;
+        public void SetParent(BaseWindow window) => parent = window;
 
         protected virtual void ReloadTranslation() { }
 

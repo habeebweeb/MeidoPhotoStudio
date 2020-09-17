@@ -8,12 +8,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class MeidoManager : IManager, ISerializable
     {
         public const string header = "MEIDO";
-        private static CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;
+        private static readonly CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;
         private int undress = 0;
         private int numberOfMeidos;
-        public Meido[] meidos { get; private set; }
-        public List<int> SelectMeidoList { get; private set; } = new List<int>();
-        public List<Meido> ActiveMeidoList { get; private set; } = new List<Meido>();
+        public Meido[] Meidos { get; private set; }
+        public List<int> SelectMeidoList { get; } = new List<int>();
+        public List<Meido> ActiveMeidoList { get; } = new List<Meido>();
         public Meido ActiveMeido => ActiveMeidoList.Count > 0 ? ActiveMeidoList[SelectedMeido] : null;
         public bool HasActiveMeido => ActiveMeido != null;
         public event EventHandler<MeidoUpdateEventArgs> UpdateMeido;
@@ -32,7 +32,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => globalGravity;
             set
             {
-                this.globalGravity = value;
+                globalGravity = value;
                 Meido activeMeido = ActiveMeido;
                 int activeMeidoSlot = activeMeido.Slot;
 
@@ -40,8 +40,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     if (meido.Slot != activeMeidoSlot)
                     {
-                        meido.HairGravityActive = value ? activeMeido.HairGravityActive : false;
-                        meido.SkirtGravityActive = value ? activeMeido.SkirtGravityActive : false;
+                        meido.HairGravityActive = value && activeMeido.HairGravityActive;
+                        meido.SkirtGravityActive = value && activeMeido.SkirtGravityActive;
                     }
                 }
             }
@@ -58,17 +58,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GameMain.Instance.CharacterMgr.ResetCharaPosAll();
             numberOfMeidos = characterMgr.GetStockMaidCount();
-            meidos = new Meido[numberOfMeidos];
+            Meidos = new Meido[numberOfMeidos];
 
             for (int stockMaidIndex = 0; stockMaidIndex < numberOfMeidos; stockMaidIndex++)
             {
-                meidos[stockMaidIndex] = new Meido(stockMaidIndex);
+                Meidos[stockMaidIndex] = new Meido(stockMaidIndex);
             }
         }
 
         public void Deactivate()
         {
-            foreach (Meido meido in meidos)
+            foreach (Meido meido in Meidos)
             {
                 meido.UpdateMeido -= OnUpdateMeido;
                 meido.GravityMove -= OnGravityMove;
@@ -128,7 +128,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void CallMeidos()
         {
-            this.BeginCallMeidos?.Invoke(this, EventArgs.Empty);
+            BeginCallMeidos?.Invoke(this, EventArgs.Empty);
 
             bool hadActiveMeidos = HasActiveMeido;
 
@@ -148,9 +148,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private System.Collections.IEnumerator LoadMeidos()
         {
-            foreach (int slot in this.SelectMeidoList)
+            foreach (int slot in SelectMeidoList)
             {
-                Meido meido = meidos[slot];
+                Meido meido = Meidos[slot];
                 ActiveMeidoList.Add(meido);
                 meido.BeginLoad();
             }
@@ -170,7 +170,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public Meido GetMeido(string guid)
         {
             if (string.IsNullOrEmpty(guid)) return null;
-            else return ActiveMeidoList.FirstOrDefault(meido => meido.Maid.status.guid == guid);
+            else return ActiveMeidoList.Find(meido => meido.Maid.status.guid == guid);
         }
 
         public Meido GetMeido(int activeIndex)
@@ -201,13 +201,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 activeMeido.SetMaskMode(maskMode);
             }
 
-            this.UpdateMeido?.Invoke(ActiveMeido, new MeidoUpdateEventArgs(SelectedMeido));
+            UpdateMeido?.Invoke(ActiveMeido, new MeidoUpdateEventArgs(SelectedMeido));
         }
 
         private void OnUpdateMeido(object sender, MeidoUpdateEventArgs args)
         {
-            if (!args.IsEmpty) this.SelectedMeido = args.SelectedMeido;
-            this.UpdateMeido?.Invoke(ActiveMeido, args);
+            if (!args.IsEmpty) SelectedMeido = args.SelectedMeido;
+            UpdateMeido?.Invoke(ActiveMeido, args);
         }
 
         private void OnEndCallMeidos(object sender, EventArgs args)
@@ -235,22 +235,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     public class MeidoUpdateEventArgs : EventArgs
     {
         public static new MeidoUpdateEventArgs Empty { get; } = new MeidoUpdateEventArgs(-1);
-        public bool IsEmpty
-        {
-            get
-            {
-                return (this == MeidoUpdateEventArgs.Empty) ||
-                    (this.SelectedMeido == -1 && !this.FromMeido && this.IsBody);
-            }
-        }
+        public bool IsEmpty => (this == Empty) || (SelectedMeido == -1 && !FromMeido && IsBody);
         public int SelectedMeido { get; }
         public bool IsBody { get; }
         public bool FromMeido { get; }
         public MeidoUpdateEventArgs(int meidoIndex = -1, bool fromMaid = false, bool isBody = true)
         {
-            this.SelectedMeido = meidoIndex;
-            this.IsBody = isBody;
-            this.FromMeido = fromMaid;
+            SelectedMeido = meidoIndex;
+            IsBody = isBody;
+            FromMeido = fromMaid;
         }
     }
 }

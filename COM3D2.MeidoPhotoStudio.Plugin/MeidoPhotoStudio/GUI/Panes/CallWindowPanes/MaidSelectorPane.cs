@@ -5,15 +5,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class MaidSelectorPane : BasePane
     {
-        private MeidoManager meidoManager;
-        public List<int> selectedMaidList { get; private set; }
+        private readonly MeidoManager meidoManager;
         private Vector2 maidListScrollPos;
-        private Button clearMaidsButton;
-        private Button callMaidsButton;
+        private readonly Button clearMaidsButton;
+        private readonly Button callMaidsButton;
         public MaidSelectorPane(MeidoManager meidoManager) : base()
         {
             this.meidoManager = meidoManager;
-            selectedMaidList = new List<int>();
             clearMaidsButton = new Button(Translation.Get("maidCallWindow", "clearButton"));
             clearMaidsButton.ControlEvent += (s, a) => this.meidoManager.SelectMeidoList.Clear();
             Controls.Add(clearMaidsButton);
@@ -34,8 +32,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             clearMaidsButton.Draw();
             callMaidsButton.Draw();
 
-            GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
-            labelStyle.fontSize = 14;
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label) { fontSize = 14 };
             GUIStyle selectLabelStyle = new GUIStyle(labelStyle);
             selectLabelStyle.normal.textColor = Color.black;
             selectLabelStyle.alignment = TextAnchor.UpperRight;
@@ -43,27 +40,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             labelSelectedStyle.normal.textColor = Color.black;
 
             float windowHeight = Screen.height * 0.8f;
-            int buttonHeight = 85;
-            int buttonWidth = 205;
+            const int buttonHeight = 85;
+            const int buttonWidth = 205;
             Rect positionRect = new Rect(5, 115, buttonWidth + 15, windowHeight - 140);
-            Rect viewRect = new Rect(0, 0, buttonWidth - 5, buttonHeight * meidoManager.meidos.Length + 5);
+            Rect viewRect = new Rect(0, 0, buttonWidth - 5, (buttonHeight * meidoManager.Meidos.Length) + 5);
             maidListScrollPos = GUI.BeginScrollView(positionRect, maidListScrollPos, viewRect);
 
-            for (int i = 0; i < meidoManager.meidos.Length; i++)
+            for (int i = 0; i < meidoManager.Meidos.Length; i++)
             {
-                Meido meido = meidoManager.meidos[i];
+                Meido meido = meidoManager.Meidos[i];
                 float y = i * buttonHeight;
-                bool selectedMaid = this.meidoManager.SelectMeidoList.Contains(i);
+                bool selectedMaid = meidoManager.SelectMeidoList.Contains(i);
 
                 if (GUI.Button(new Rect(0, y, buttonWidth, buttonHeight), ""))
                 {
-                    if (selectedMaid) this.meidoManager.SelectMeidoList.Remove(i);
-                    else this.meidoManager.SelectMeidoList.Add(i);
+                    if (selectedMaid) meidoManager.SelectMeidoList.Remove(i);
+                    else meidoManager.SelectMeidoList.Add(i);
                 }
 
                 if (selectedMaid)
                 {
-                    int selectedIndex = this.meidoManager.SelectMeidoList.IndexOf(i) + 1;
+                    int selectedIndex = meidoManager.SelectMeidoList.IndexOf(i) + 1;
                     GUI.DrawTexture(new Rect(5, y + 5, buttonWidth - 10, buttonHeight - 10), Texture2D.whiteTexture);
                     GUI.Label(
                         new Rect(0, y + 5, buttonWidth - 10, buttonHeight), selectedIndex.ToString(), selectLabelStyle
@@ -75,7 +72,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     new Rect(95, y + 30, buttonWidth - 80, buttonHeight),
                     $"{meido.LastName}\n{meido.FirstName}", selectedMaid ? labelSelectedStyle : labelStyle
                 );
-
             }
             GUI.EndScrollView();
         }

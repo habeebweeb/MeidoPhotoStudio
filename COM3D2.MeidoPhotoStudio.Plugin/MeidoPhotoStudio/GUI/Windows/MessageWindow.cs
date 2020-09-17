@@ -5,11 +5,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class MessageWindow : BaseWindow
     {
-        private MessageWindowManager messageWindowManager;
-        private TextField nameTextField;
-        private Slider fontSizeSlider;
-        private TextArea messageTextArea;
-        private Button okButton;
+        private readonly MessageWindowManager messageWindowManager;
+        private readonly TextField nameTextField;
+        private readonly Slider fontSizeSlider;
+        private readonly TextArea messageTextArea;
+        private readonly Button okButton;
         public override Rect WindowRect
         {
             set
@@ -50,10 +50,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 messageWindowManager.CloseMessagePanel();
                 showingMessage = false;
             }
-            else
-            {
-                Visible = !Visible;
-            }
+            else Visible = !Visible;
         }
 
         private void ChangeFontSize(object sender, EventArgs args)
@@ -85,7 +82,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             GUILayout.Label("Font Size", GUILayout.ExpandWidth(false));
             fontSizeSlider.Draw(GUILayout.Width(120), GUILayout.ExpandWidth(false));
-            GUILayout.Label($"{(int)fontSize}pt");
+            GUILayout.Label($"{fontSize}pt");
             GUILayout.EndHorizontal();
 
             messageTextArea.Draw(GUILayout.MinHeight(90));

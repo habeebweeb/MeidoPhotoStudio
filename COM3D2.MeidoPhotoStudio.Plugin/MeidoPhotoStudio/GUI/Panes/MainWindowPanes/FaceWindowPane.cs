@@ -4,10 +4,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class FaceWindowPane : BaseMainWindowPane
     {
-        private MeidoManager meidoManager;
-        private MaidFaceSliderPane maidFaceSliderPane;
-        private MaidFaceBlendPane maidFaceBlendPane;
-        private MaidSwitcherPane maidSwitcherPane;
+        private readonly MeidoManager meidoManager;
+        private readonly MaidFaceSliderPane maidFaceSliderPane;
+        private readonly MaidFaceBlendPane maidFaceBlendPane;
+        private readonly MaidSwitcherPane maidSwitcherPane;
         private readonly SaveFacePane saveFacePane;
         private readonly Toggle saveFaceToggle;
         private bool saveFaceMode = false;
@@ -18,8 +18,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             this.maidSwitcherPane = maidSwitcherPane;
 
-            this.maidFaceSliderPane = AddPane(new MaidFaceSliderPane(this.meidoManager));
-            this.maidFaceBlendPane = AddPane(new MaidFaceBlendPane(this.meidoManager));
+            maidFaceSliderPane = AddPane(new MaidFaceSliderPane(this.meidoManager));
+            maidFaceBlendPane = AddPane(new MaidFaceBlendPane(this.meidoManager));
             saveFacePane = AddPane(new SaveFacePane(this.meidoManager));
 
             saveFaceToggle = new Toggle(Translation.Get("maidFaceWindow", "savePaneToggle"));
@@ -53,10 +53,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void UpdatePanes()
         {
-            if (!this.meidoManager.HasActiveMeido) return;
+            if (!meidoManager.HasActiveMeido) return;
             if (ActiveWindow)
             {
-                this.meidoManager.ActiveMeido.StopBlink();
+                meidoManager.ActiveMeido.StopBlink();
                 base.UpdatePanes();
             }
         }

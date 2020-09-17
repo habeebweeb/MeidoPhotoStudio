@@ -5,8 +5,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class SceneModalWindow : BaseWindow
     {
-        private static Texture2D infoHighlight = Utility.MakeTex(2, 2, new Color(0f, 0f, 0f, 0.8f));
-        private SceneManager sceneManager;
+        private static readonly Texture2D infoHighlight = Utility.MakeTex(2, 2, new Color(0f, 0f, 0f, 0.8f));
+        private readonly SceneManager sceneManager;
         public override Rect WindowRect
         {
             set
@@ -32,10 +32,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        private Button okButton;
-        private Button cancelButton;
-        private Button deleteButton;
-        private Button overwriteButton;
+        private readonly Button okButton;
+        private readonly Button cancelButton;
+        private readonly Button deleteButton;
+        private readonly Button overwriteButton;
         private string deleteDirectoryMessage;
         private string deleteSceneMessage;
         private string directoryDeleteCommit;
@@ -55,21 +55,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             windowRect.x = MiddlePosition.x;
             windowRect.y = MiddlePosition.y;
-            this.okButton = new Button(sceneLoadCommit);
-            this.okButton.ControlEvent += (s, a) => Commit();
+            okButton = new Button(sceneLoadCommit);
+            okButton.ControlEvent += (s, a) => Commit();
 
-            this.cancelButton = new Button("Cancel");
-            this.cancelButton.ControlEvent += (s, a) => Cancel();
+            cancelButton = new Button("Cancel");
+            cancelButton.ControlEvent += (s, a) => Cancel();
 
-            this.deleteButton = new Button("Delete");
-            this.deleteButton.ControlEvent += (s, a) =>
+            deleteButton = new Button("Delete");
+            deleteButton.ControlEvent += (s, a) =>
             {
                 okButton.Label = sceneDeleteCommit;
                 deleteScene = true;
             };
 
-            this.overwriteButton = new Button("Overwrite");
-            this.overwriteButton.ControlEvent += (s, a) =>
+            overwriteButton = new Button("Overwrite");
+            overwriteButton.ControlEvent += (s, a) =>
             {
                 sceneManager.OverwriteScene();
                 Visible = false;
@@ -82,10 +82,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             deleteSceneMessage = Translation.Get("sceneManagerModal", "deleteFileConfirm");
             directoryDeleteCommit = Translation.Get("sceneManagerModal", "deleteDirectoryButton");
             sceneDeleteCommit = Translation.Get("sceneManagerModal", "deleteFileCommit");
-            sceneLoadCommit = Translation.Get("sceneManagerModal", "fileLoadCommit"); ;
+            sceneLoadCommit = Translation.Get("sceneManagerModal", "fileLoadCommit");
             infoKankyo = Translation.Get("sceneManagerModal", "infoKankyo");
-            infoMaidSingular = Translation.Get("sceneManagerModal", "infoMaidSingular"); ;
-            infoMaidPlural = Translation.Get("sceneManagerModal", "infoMaidPlural"); ;
+            infoMaidSingular = Translation.Get("sceneManagerModal", "infoMaidSingular");
+            infoMaidPlural = Translation.Get("sceneManagerModal", "infoMaidPlural");
         }
 
         public override void Draw()
@@ -99,19 +99,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Texture2D thumb = scene.Thumbnail;
 
                 float scale = Mathf.Min(
-                    (WindowRect.width - 20f) / (float)thumb.width, (WindowRect.height - 110f) / (float)thumb.height
+                    (WindowRect.width - 20f) / thumb.width, (WindowRect.height - 110f) / thumb.height
                 );
-                float width = Mathf.Min(thumb.width, (float)thumb.width * scale);
-                float height = Mathf.Min(thumb.height, (float)thumb.height * scale);
+                float width = Mathf.Min(thumb.width, thumb.width * scale);
+                float height = Mathf.Min(thumb.height, thumb.height * scale);
 
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
 
                 MiscGUI.DrawTexture(thumb, GUILayout.Width(width), GUILayout.Height(height));
 
-                GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
-                labelStyle.fontSize = Utility.GetPix(12);
-                labelStyle.alignment = TextAnchor.MiddleCenter;
+                GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = Utility.GetPix(12),
+                    alignment = TextAnchor.MiddleCenter
+                };
                 labelStyle.normal.background = infoHighlight;
 
                 Rect labelBox = GUILayoutUtility.GetLastRect();
@@ -138,8 +140,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             // message
-            string currentMessage = string.Empty;
-            string context = string.Empty;
+            string currentMessage;
+            string context;
 
             if (directoryMode)
             {
@@ -160,9 +162,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
 
-            GUIStyle messageStyle = new GUIStyle(GUI.skin.label);
-            messageStyle.alignment = TextAnchor.MiddleCenter;
-            messageStyle.fontSize = Utility.GetPix(12);
+            GUIStyle messageStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = Utility.GetPix(12)
+            };
 
             GUILayout.FlexibleSpace();
 
@@ -172,8 +176,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             // Buttons
 
-            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
-            buttonStyle.fontSize = Utility.GetPix(12);
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = Utility.GetPix(12)
+            };
 
             GUILayoutOption buttonHeight = GUILayout.Height(Utility.GetPix(20));
 

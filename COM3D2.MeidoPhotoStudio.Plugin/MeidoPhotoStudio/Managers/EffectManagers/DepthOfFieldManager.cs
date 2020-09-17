@@ -105,8 +105,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SetEffectActive(bool active)
         {
             DepthOfField.enabled = active;
-            this.Active = active;
-            if (this.Active)
+            if (Active = active)
             {
                 DepthOfField.focalLength = FocalLength;
                 DepthOfField.focalSize = FocalSize;

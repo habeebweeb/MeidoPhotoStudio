@@ -6,10 +6,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class BackgroundSelectorPane : BasePane
     {
-        private EnvironmentManager environmentManager;
-        private Dropdown bgDropdown;
-        private Button prevBGButton;
-        private Button nextBGButton;
+        private readonly EnvironmentManager environmentManager;
+        private readonly Dropdown bgDropdown;
+        private readonly Button prevBGButton;
+        private readonly Button nextBGButton;
 
         public BackgroundSelectorPane(EnvironmentManager environmentManager)
         {
@@ -23,24 +23,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 bgList.AddRange(Constants.MyRoomCustomBGList.Select(kvp => kvp.Value));
             }
 
-            this.bgDropdown = new Dropdown(bgList.ToArray(), theaterIndex);
-            this.bgDropdown.SelectionChange += (s, a) =>
-            {
-                if (updating) return;
-                int selectedIndex = this.bgDropdown.SelectedItemIndex;
-                bool isCreative = this.bgDropdown.SelectedItemIndex >= Constants.MyRoomCustomBGIndex;
-                string bg = isCreative
-                    ? Constants.MyRoomCustomBGList[selectedIndex - Constants.MyRoomCustomBGIndex].Key
-                    : Constants.BGList[selectedIndex];
+            bgDropdown = new Dropdown(bgList.ToArray(), theaterIndex);
+            bgDropdown.SelectionChange += (s, a) => ChangeBackground();
 
-                environmentManager.ChangeBackground(bg, isCreative);
-            };
+            prevBGButton = new Button("<");
+            prevBGButton.ControlEvent += (s, a) => bgDropdown.Step(-1);
 
-            this.prevBGButton = new Button("<");
-            this.prevBGButton.ControlEvent += (s, a) => this.bgDropdown.Step(-1);
-
-            this.nextBGButton = new Button(">");
-            this.nextBGButton.ControlEvent += (s, a) => this.bgDropdown.Step(1);
+            nextBGButton = new Button(">");
+            nextBGButton.ControlEvent += (s, a) => bgDropdown.Step(1);
         }
 
         protected override void ReloadTranslation()
@@ -52,30 +42,41 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             updating = true;
-            this.bgDropdown.SetDropdownItems(bgList.ToArray());
+            bgDropdown.SetDropdownItems(bgList.ToArray());
             updating = false;
         }
 
         public override void Draw()
         {
-            float arrowButtonSize = 30;
+            const float buttonHeight = 30;
             GUILayoutOption[] arrowLayoutOptions = {
-                GUILayout.Width(arrowButtonSize),
-                GUILayout.Height(arrowButtonSize)
+                GUILayout.Width(buttonHeight),
+                GUILayout.Height(buttonHeight)
             };
 
-            float dropdownButtonHeight = arrowButtonSize;
-            float dropdownButtonWidth = 153f;
+            const float dropdownButtonWidth = 153f;
             GUILayoutOption[] dropdownLayoutOptions = new GUILayoutOption[] {
-                GUILayout.Height(dropdownButtonHeight),
+                GUILayout.Height(buttonHeight),
                 GUILayout.Width(dropdownButtonWidth)
             };
 
             GUILayout.BeginHorizontal();
-            this.prevBGButton.Draw(arrowLayoutOptions);
-            this.bgDropdown.Draw(dropdownLayoutOptions);
-            this.nextBGButton.Draw(arrowLayoutOptions);
+            prevBGButton.Draw(arrowLayoutOptions);
+            bgDropdown.Draw(dropdownLayoutOptions);
+            nextBGButton.Draw(arrowLayoutOptions);
             GUILayout.EndHorizontal();
+        }
+
+        private void ChangeBackground()
+        {
+            if (updating) return;
+            int selectedIndex = bgDropdown.SelectedItemIndex;
+            bool isCreative = bgDropdown.SelectedItemIndex >= Constants.MyRoomCustomBGIndex;
+            string bg = isCreative
+                ? Constants.MyRoomCustomBGList[selectedIndex - Constants.MyRoomCustomBGIndex].Key
+                : Constants.BGList[selectedIndex];
+
+            environmentManager.ChangeBackground(bg, isCreative);
         }
     }
 }

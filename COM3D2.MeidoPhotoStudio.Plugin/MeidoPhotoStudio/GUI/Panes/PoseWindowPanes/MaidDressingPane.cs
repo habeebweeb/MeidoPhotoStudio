@@ -6,9 +6,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal class MaidDressingPane : BasePane
     {
-        private MeidoManager meidoManager;
-        private Dictionary<SlotID, Toggle> ClothingToggles;
-        private Dictionary<SlotID, bool> LoadedSlots;
         public static readonly SlotID[] clothingSlots = {
             // main slots
             SlotID.wear, SlotID.skirt, SlotID.bra, SlotID.panz, SlotID.headset, SlotID.megane,
@@ -17,7 +14,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SlotID.accAshi, SlotID.accHana, SlotID.accHat, SlotID.accHeso, SlotID.accKamiSubL,
             SlotID.accKamiSubR, SlotID.accKami_1_, SlotID.accKami_2_, SlotID.accKami_3_, SlotID.accKubi,
             SlotID.accKubiwa, SlotID.accMiMiL, SlotID.accMiMiR, SlotID.accNipL, SlotID.accNipR,
-            SlotID.accShippo, SlotID.accXXX, 
+            SlotID.accShippo, SlotID.accXXX
             // unused slots
             // SlotID.mizugi, SlotID.onepiece, SlotID.accHead,
         };
@@ -33,11 +30,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SlotID.headset, SlotID.accHat, SlotID.accKamiSubL,
             SlotID.accKamiSubR, SlotID.accKami_1_, SlotID.accKami_2_, SlotID.accKami_3_
         };
-
-        private Toggle detailedClothingToggle;
-        private Toggle curlingFrontToggle;
-        private Toggle curlingBackToggle;
-        private Toggle pantsuShiftToggle;
+        private readonly MeidoManager meidoManager;
+        private readonly Dictionary<SlotID, Toggle> ClothingToggles;
+        private readonly Dictionary<SlotID, bool> LoadedSlots;
+        private readonly Toggle detailedClothingToggle;
+        private readonly Toggle curlingFrontToggle;
+        private readonly Toggle curlingBackToggle;
+        private readonly Toggle pantsuShiftToggle;
         private bool detailedClothing = false;
 
         public MaidDressingPane(MeidoManager meidoManager)
@@ -78,10 +77,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         ? Translation.Get("clothing", "headset")
                         : Translation.Get("clothing", "headwear");
                 }
-                else
-                {
-                    clothingToggle.Label = Translation.Get("clothing", slot.ToString());
-                }
+                else clothingToggle.Label = Translation.Get("clothing", slot.ToString());
             }
 
             detailedClothingToggle.Label = Translation.Get("clothing", "detail");
@@ -92,25 +88,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void ToggleClothing(SlotID slot, bool enabled)
         {
-            if (this.updating) return;
+            if (updating) return;
 
             if (slot == SlotID.body)
             {
-                this.meidoManager.ActiveMeido.SetBodyMask(enabled);
+                meidoManager.ActiveMeido.SetBodyMask(enabled);
                 return;
             }
 
-            TBody body = this.meidoManager.ActiveMeido.Maid.body0;
+            TBody body = meidoManager.ActiveMeido.Maid.body0;
 
             if (!detailedClothing && slot == SlotID.headset)
             {
-                this.updating = true;
+                updating = true;
                 foreach (SlotID wearSlot in headwearSlots)
                 {
                     body.SetMask(wearSlot, enabled);
                     ClothingToggles[wearSlot].Value = enabled;
                 }
-                this.updating = false;
+                updating = false;
             }
             else
             {
@@ -134,11 +130,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (updating) return;
 
-            this.meidoManager.ActiveMeido.SetCurling(curl, enabled);
+            meidoManager.ActiveMeido.SetCurling(curl, enabled);
 
             if (enabled)
             {
-                this.updating = true;
+                updating = true;
                 if (curl == Meido.Curl.front && curlingBackToggle.Value)
                 {
                     curlingBackToggle.Value = false;
@@ -147,17 +143,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     curlingFrontToggle.Value = false;
                 }
-                this.updating = false;
+                updating = false;
             }
         }
 
         public override void UpdatePane()
         {
-            if (!this.meidoManager.HasActiveMeido) return;
+            if (!meidoManager.HasActiveMeido) return;
 
-            this.updating = true;
+            updating = true;
 
-            Meido meido = this.meidoManager.ActiveMeido;
+            Meido meido = meidoManager.ActiveMeido;
             TBody body = meido.Maid.body0;
             foreach (SlotID clothingSlot in clothingSlots)
             {
@@ -192,7 +188,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     hasSlot = body.GetSlotLoaded(clothingSlot);
                 }
 
-                ClothingToggles[clothingSlot].Value = hasSlot ? toggleValue : false;
+                ClothingToggles[clothingSlot].Value = hasSlot && toggleValue;
                 LoadedSlots[clothingSlot] = hasSlot;
             }
 
@@ -200,7 +196,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             curlingBackToggle.Value = meido.CurlingBack;
             pantsuShiftToggle.Value = meido.PantsuShift;
 
-            this.updating = false;
+            updating = false;
         }
 
         private void DrawSlotGroup(params SlotID[] slots)
@@ -209,8 +205,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             for (int i = 0; i < slots.Length; i++)
             {
                 SlotID slot = slots[i];
-                if (!this.Enabled) GUI.enabled = false;
-                else GUI.enabled = LoadedSlots[slot];
+                GUI.enabled = Enabled && LoadedSlots[slot];
                 ClothingToggles[slot].Draw();
                 if (i < slots.Length - 1) GUILayout.FlexibleSpace();
             }
@@ -228,9 +223,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
-            this.Enabled = this.meidoManager.HasActiveMeido;
+            Enabled = meidoManager.HasActiveMeido;
 
-            GUI.enabled = this.Enabled;
+            GUI.enabled = Enabled;
             detailedClothingToggle.Draw();
             MiscGUI.BlackLine();
 
@@ -252,7 +247,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 DrawSlotGroup(SlotID.accHeso, SlotID.accAshi, SlotID.accXXX);
             }
 
-            GUI.enabled = this.Enabled;
+            GUI.enabled = Enabled;
 
             GUILayout.BeginHorizontal();
             curlingFrontToggle.Draw();

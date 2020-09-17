@@ -8,39 +8,39 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public const string header = "TEXTBOX";
         public static readonly SliderProp fontBounds = new SliderProp(25f, 60f);
         private static GameObject sysRoot;
-        private MessageClass msgClass;
-        private MessageWindowMgr msgWnd;
-        private UILabel msgLabel;
-        private UILabel nameLabel;
-        private GameObject msgGameObject;
+        private readonly MessageClass msgClass;
+        private readonly MessageWindowMgr msgWnd;
+        private readonly UILabel msgLabel;
+        private readonly UILabel nameLabel;
+        private readonly GameObject msgGameObject;
         public bool ShowingMessage { get; private set; }
         private string messageName;
         private string messageText;
 
-        static MessageWindowManager() => InputManager.Register(MpsKey.ToggleMessage, KeyCode.M, "Show/hide message box");
+        static MessageWindowManager()
+        {
+            InputManager.Register(MpsKey.ToggleMessage, KeyCode.M, "Show/hide message box");
+        }
 
         public MessageWindowManager()
         {
             sysRoot = GameObject.Find("__GameMain__/SystemUI Root");
-            this.msgWnd = GameMain.Instance.MsgWnd;
-            this.msgGameObject = sysRoot.transform.Find("MessageWindowPanel").gameObject;
-            this.msgClass = new MessageClass(this.msgGameObject, this.msgWnd);
-            this.nameLabel = UTY.GetChildObject(this.msgGameObject, "MessageViewer/MsgParent/SpeakerName/Name", false)
+            msgWnd = GameMain.Instance.MsgWnd;
+            msgGameObject = sysRoot.transform.Find("MessageWindowPanel").gameObject;
+            msgClass = new MessageClass(msgGameObject, msgWnd);
+            nameLabel = UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/SpeakerName/Name", false)
                 .GetComponent<UILabel>();
-            this.msgLabel = UTY.GetChildObject(this.msgGameObject, "MessageViewer/MsgParent/Message", false)
+            msgLabel = UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/Message", false)
                 .GetComponent<UILabel>();
-            Utility.SetFieldValue<MessageClass, UILabel>(this.msgClass, "message_label_", this.msgLabel);
-            Utility.SetFieldValue<MessageClass, UILabel>(this.msgClass, "name_label_", this.nameLabel);
+            Utility.SetFieldValue(msgClass, "message_label_", msgLabel);
+            Utility.SetFieldValue(msgClass, "name_label_", nameLabel);
         }
 
-        public void Activate()
-        {
-            SetPhotoMessageWindowActive(true);
-        }
+        public void Activate() => SetPhotoMessageWindowActive(true);
 
         public void Deactivate()
         {
-            this.msgWnd.CloseMessageWindowPanel();
+            msgWnd.CloseMessageWindowPanel();
             SetPhotoMessageWindowActive(false);
         }
 
@@ -48,7 +48,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             binaryWriter.Write(header);
             binaryWriter.Write(ShowingMessage);
-            binaryWriter.Write(this.msgLabel.fontSize);
+            binaryWriter.Write(msgLabel.fontSize);
             binaryWriter.WriteNullableString(messageName);
             binaryWriter.WriteNullableString(messageText);
         }
@@ -57,7 +57,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             CloseMessagePanel();
             bool showingMessage = binaryReader.ReadBoolean();
-            this.msgLabel.fontSize = binaryReader.ReadInt32();
+            msgLabel.fontSize = binaryReader.ReadInt32();
             messageName = binaryReader.ReadNullableString();
             messageText = binaryReader.ReadNullableString();
             if (showingMessage) ShowMessage(messageName, messageText);
@@ -67,12 +67,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void SetPhotoMessageWindowActive(bool active)
         {
-            UTY.GetChildObject(this.msgGameObject, "MessageViewer/MsgParent/MessageBox", false)
+            UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/MessageBox", false)
                 .SetActive(active);
-            UTY.GetChildObject(this.msgGameObject, "MessageViewer/MsgParent/Hitret", false)
+            UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/Hitret", false)
                 .GetComponent<UISprite>().enabled = !active;
-            this.nameLabel.gameObject.SetActive(active);
-            this.msgLabel.gameObject.SetActive(active);
+            nameLabel.gameObject.SetActive(active);
+            msgLabel.gameObject.SetActive(active);
 
             Transform transform = sysRoot.transform.Find("MessageWindowPanel/MessageViewer/MsgParent/Buttons");
             MessageWindowMgr.MessageWindowUnderButton[] msgButtons = new[]
@@ -87,10 +87,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 transform.Find(msgButton.ToString()).gameObject.SetActive(!active);
             }
-            if (this.msgClass.subtitles_manager_ != null)
+            if (msgClass.subtitles_manager_ != null)
             {
-                this.msgClass.subtitles_manager_.visible = false;
-                this.msgClass.subtitles_manager_ = null;
+                msgClass.subtitles_manager_.visible = false;
+                msgClass.subtitles_manager_ = null;
             }
         }
 
@@ -99,21 +99,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             messageName = name;
             messageText = message;
             ShowingMessage = true;
-            this.msgWnd.OpenMessageWindowPanel();
-            this.msgLabel.ProcessText();
-            this.msgClass.SetText(name, message, "", 0, AudioSourceMgr.Type.System);
-            this.msgClass.FinishChAnime();
+            msgWnd.OpenMessageWindowPanel();
+            msgLabel.ProcessText();
+            msgClass.SetText(name, message, "", 0, AudioSourceMgr.Type.System);
+            msgClass.FinishChAnime();
         }
 
-        public void SetFontSize(int fontSize)
-        {
-            this.msgLabel.fontSize = fontSize;
-        }
+        public void SetFontSize(int fontSize) => msgLabel.fontSize = fontSize;
 
         public void CloseMessagePanel()
         {
             ShowingMessage = false;
-            this.msgWnd.CloseMessageWindowPanel();
+            msgWnd.CloseMessageWindowPanel();
         }
     }
 }

@@ -6,7 +6,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     using static Constants;
     internal class WindowManager : IManager
     {
-        private Dictionary<Window, BaseWindow> Windows = new Dictionary<Window, BaseWindow>();
+        private readonly Dictionary<Window, BaseWindow> Windows = new Dictionary<Window, BaseWindow>();
         public BaseWindow this[Window id]
         {
             get => Windows[id];
