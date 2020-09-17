@@ -36,6 +36,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         private static event EventHandler CubeActiveChange;
         private static event EventHandler CubeSmallChange;
+        private UltimateOrbitCamera ultimateOrbitCamera;
         private GameObject cameraObject;
         private Camera subCamera;
         private GameObject bgObject;
@@ -53,6 +54,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 bgObject.SetActive(bgVisible);
             }
         }
+        private float defaultCameraMoveSpeed;
+        private float defaultCameraZoomSpeed;
+        private float cameraFastMoveSpeed = 0.1f;
+        private float cameraFastZoomSpeed = 2f;
 
         static EnvironmentManager()
         {
@@ -148,9 +153,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bgObject.SetActive(true);
             GameMain.Instance.BgMgr.ChangeBg("Theater");
 
-            UltimateOrbitCamera uoCamera =
+            ultimateOrbitCamera =
                 Utility.GetFieldValue<CameraMain, UltimateOrbitCamera>(GameMain.Instance.MainCamera, "m_UOCamera");
-            uoCamera.enabled = true;
+            ultimateOrbitCamera.enabled = true;
+
+            defaultCameraMoveSpeed = ultimateOrbitCamera.moveSpeed;
+            defaultCameraZoomSpeed = ultimateOrbitCamera.zoomSpeed;
 
             ResetCamera();
             SaveCameraInfo();
@@ -169,16 +177,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Camera mainCamera = GameMain.Instance.MainCamera.camera;
             mainCamera.backgroundColor = Color.black;
 
+            ultimateOrbitCamera.moveSpeed = defaultCameraMoveSpeed;
+            ultimateOrbitCamera.zoomSpeed = defaultCameraZoomSpeed;
+
             bool isNight = GameMain.Instance.CharacterMgr.status.GetFlag("時間帯") == 3;
 
-            if (isNight)
-            {
-                GameMain.Instance.BgMgr.ChangeBg("ShinShitsumu_ChairRot_Night");
-            }
-            else
-            {
-                GameMain.Instance.BgMgr.ChangeBg("ShinShitsumu_ChairRot");
-            }
+            if (isNight) GameMain.Instance.BgMgr.ChangeBg("ShinShitsumu_ChairRot_Night");
+            else GameMain.Instance.BgMgr.ChangeBg("ShinShitsumu_ChairRot");
 
             GameMain.Instance.MainCamera.Reset(CameraMain.CameraType.Target, true);
             GameMain.Instance.MainCamera.SetTargetPos(new Vector3(0.5609447f, 1.380762f, -1.382336f), true);
@@ -208,6 +213,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     ResetCamera();
                 }
             }
+
+            bool shift = Input.Shift;
+            ultimateOrbitCamera.moveSpeed = shift ? cameraFastMoveSpeed : defaultCameraMoveSpeed;
+            ultimateOrbitCamera.zoomSpeed = shift ? cameraFastZoomSpeed : defaultCameraZoomSpeed;
         }
 
         public void ChangeBackground(string assetName, bool creative = false)
