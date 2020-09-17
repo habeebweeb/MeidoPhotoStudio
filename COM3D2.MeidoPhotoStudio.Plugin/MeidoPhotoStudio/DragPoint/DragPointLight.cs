@@ -163,6 +163,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             SetLightType(MPSLightType.Normal);
             ScaleFactor = 50f;
+            DefaultRotation = LightProperty.DefaultRotation;
         }
 
         protected override void OnDestroy()
