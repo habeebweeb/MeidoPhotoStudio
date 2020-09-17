@@ -217,8 +217,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 HairGravityActive = false;
                 SkirtGravityActive = false;
 
-                if (HairGravityValid) hairGravityDragPoint.Move -= OnGravityEvent;
-                if (SkirtGravityValid) skirtGravityDragPoint.Move -= OnGravityEvent;
+                if (HairGravityValid)
+                {
+                    hairGravityDragPoint.Move -= OnGravityEvent;
+                    ApplyGravity(Vector3.zero, skirt: false);
+                }
+                if (SkirtGravityValid)
+                {
+                    skirtGravityDragPoint.Move -= OnGravityEvent;
+                    ApplyGravity(Vector3.zero, skirt: true);
+                }
             }
 
             Body.MuneYureL(1f);
@@ -478,8 +486,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void ApplyGravity(Vector3 position, bool skirt = false)
         {
-            DragPointGravity dragPoint = skirt ? skirtGravityDragPoint : hairGravityDragPoint;
-            if (dragPoint != null) dragPoint.MyObject.localPosition = position;
+            GravityTransformControl control = skirt ? skirtGravityControl : hairGravityControl;
+            if (control != null) control.transform.localPosition = position;
         }
 
         private void BackupBlendSetValuess()
@@ -601,6 +609,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (control != null)
             {
+                if (control.isValid)
+                {
+                    control.transform.localPosition = Vector3.zero;
+                    control.Update();
+                }
                 GameObject.Destroy(control.transform.parent.gameObject);
                 control = null;
             }
