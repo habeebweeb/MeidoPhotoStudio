@@ -690,6 +690,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     }
                     tempWriter.Write(value);
                 }
+                // hair/skirt gravity
+                tempWriter.Write(HairGravityActive);
+                if (HairGravityActive) tempWriter.WriteVector3(hairGravityControl.transform.localPosition);
+                tempWriter.Write(SkirtGravityActive);
+                if (SkirtGravityActive) tempWriter.WriteVector3(skirtGravityControl.transform.localPosition);
+
                 // zurashi and mekure
                 tempWriter.Write(CurlingFront);
                 tempWriter.Write(CurlingBack);
@@ -794,6 +800,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     Body.SetMask(clothingSlot, value);
                 }
             }
+            // hair/skirt gravity
+            bool hairGravityActive = binaryReader.ReadBoolean();
+            if (hairGravityActive)
+            {
+                HairGravityActive = true;
+                ApplyGravity(binaryReader.ReadVector3(), skirt: false);
+            }
+            bool skirtGravityActive = binaryReader.ReadBoolean();
+            if (skirtGravityActive)
+            {
+                SkirtGravityActive = true;
+                ApplyGravity(binaryReader.ReadVector3(), skirt: true);
+            }
+
             // zurashi and mekure
             bool curlingFront = binaryReader.ReadBoolean();
             bool curlingBack = binaryReader.ReadBoolean();

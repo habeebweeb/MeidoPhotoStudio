@@ -91,6 +91,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 meido.Serialize(binaryWriter);
             }
+            // Global hair/skirt gravity
+            binaryWriter.Write(GlobalGravity);
         }
 
         public void Deserialize(System.IO.BinaryReader binaryReader)
@@ -109,6 +111,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Meido meido = ActiveMeidoList[i];
                 meido.Deserialize(binaryReader, dataVersion, isMMScene);
             }
+            // Global hair/skirt gravity
+            GlobalGravity = binaryReader.ReadBoolean();
         }
 
         private void UnloadMeidos()
