@@ -12,6 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private float currentScale;
         private bool scaling;
         private Quaternion currentRotation;
+        public Quaternion DefaultRotation { get; set; } = Quaternion.identity;
         public float ScaleFactor { get; set; } = 1f;
         public bool ConstantScale { get; set; }
         public static readonly Color moveColour = new Color(0.2f, 0.5f, 0.95f, defaultAlpha);
@@ -117,7 +118,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (CurrentDragType == DragType.RotLocalY || CurrentDragType == DragType.RotLocalXZ)
             {
-                MyObject.rotation = Quaternion.identity;
+                MyObject.rotation = DefaultRotation;
                 OnRotate();
             }
         }

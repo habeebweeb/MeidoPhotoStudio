@@ -64,6 +64,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void Set(Transform myObject)
         {
             base.Set(myObject);
+            DefaultRotation = MyObject.rotation;
             meshRenderers = new List<Renderer>(MyObject.GetComponentsInChildren<SkinnedMeshRenderer>());
             meshRenderers.AddRange(MyObject.GetComponentsInChildren<MeshRenderer>());
         }
