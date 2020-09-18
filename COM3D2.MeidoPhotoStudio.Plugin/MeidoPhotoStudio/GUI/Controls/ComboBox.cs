@@ -30,26 +30,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void SetDropdownItem(string newItem) => BaseDropDown.SetDropdownItem(newItem);
 
-        public void Draw(float buttonSize, GUIStyle textFieldStyle, params GUILayoutOption[] layoutOptions)
-        {
-            GUILayout.BeginHorizontal();
-            textField.Draw(textFieldStyle, layoutOptions);
-            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button) { alignment = TextAnchor.MiddleCenter };
-            BaseDropDown.Draw(buttonStyle, GUILayout.Width(buttonSize), GUILayout.Height(buttonSize));
-            GUILayout.EndHorizontal();
-        }
-
-        public void Draw(float buttonSize, params GUILayoutOption[] layoutOptions)
-        {
-            Draw(buttonSize, new GUIStyle(GUI.skin.textField), layoutOptions);
-        }
-
         public override void Draw(params GUILayoutOption[] layoutOptions)
+        {
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button) { alignment = TextAnchor.MiddleCenter };
+            Draw(buttonStyle, layoutOptions);
+        }
+
+        public void Draw(GUIStyle style, params GUILayoutOption[] layoutOptions)
         {
             GUILayout.BeginHorizontal();
             textField.Draw(new GUIStyle(GUI.skin.textField), layoutOptions);
-            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button) { alignment = TextAnchor.MiddleCenter };
-            BaseDropDown.Draw(buttonStyle, GUILayout.ExpandWidth(false));
+            BaseDropDown.Draw(style, GUILayout.ExpandWidth(false));
             GUILayout.EndHorizontal();
         }
     }

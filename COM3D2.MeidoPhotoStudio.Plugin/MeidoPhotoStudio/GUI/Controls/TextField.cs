@@ -11,7 +11,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public string Value { get; set; } = string.Empty;
         public void Draw(GUIStyle textFieldStyle, params GUILayoutOption[] layoutOptions)
         {
-            if (!Visible) return;
             GUI.SetNextControlName(controlName);
             Value = GUILayout.TextField(Value, textFieldStyle, layoutOptions);
             if (Event.current.isKey && Event.current.keyCode == KeyCode.Return) OnControlEvent(EventArgs.Empty);

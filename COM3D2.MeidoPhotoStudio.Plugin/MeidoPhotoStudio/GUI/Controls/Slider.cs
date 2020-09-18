@@ -55,8 +55,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.value = Utility.Bound(value, left, right);
         }
 
-        public Slider(float min, float max, float value = 0f) : this(string.Empty, min, max, value) { }
-
         public Slider(string label, SliderProp prop) : this(label, prop.Left, prop.Right, prop.Initial) { }
 
         public Slider(SliderProp prop) : this(string.Empty, prop.Left, prop.Right, prop.Initial) { }
@@ -70,7 +68,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw(params GUILayoutOption[] layoutOptions)
         {
-            if (!Visible) return;
             GUIStyle sliderStyle = new GUIStyle(GUI.skin.horizontalSlider);
             sliderStyle.margin.bottom = 0;
             if (hasLabel)
