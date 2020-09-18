@@ -715,8 +715,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
 
-            OnMenuFilesChange(MenuFilesEventArgs.EventType.HandItems);
             HandItemsInitialized = true;
+            OnMenuFilesChange(MenuFilesEventArgs.EventType.HandItems);
         }
 
         private static void InitializeMpnAttachProps()
@@ -750,8 +750,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
 
-            OnMenuFilesChange(MenuFilesEventArgs.EventType.MpnAttach);
             MpnAttachInitialized = true;
+            OnMenuFilesChange(MenuFilesEventArgs.EventType.MpnAttach);
         }
 
         private static void InitializeMyRoomProps()
