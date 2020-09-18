@@ -114,7 +114,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            GUI.enabled = faceListEnabled;
+            GUI.enabled = GUI.enabled && faceListEnabled;
             facePrevButton.Draw(arrowLayoutOptions);
             faceBlendDropdown.Draw(dropdownLayoutOptions);
             faceNextButton.Draw(arrowLayoutOptions);
