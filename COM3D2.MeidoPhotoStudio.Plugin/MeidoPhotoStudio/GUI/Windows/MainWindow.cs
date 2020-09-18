@@ -77,6 +77,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             windowPanes[id] = window;
             windowPanes[id].SetTabsPane(tabsPane);
+            windowPanes[id].SetParent(this);
             Panes.Add(windowPanes[id]);
         }
 

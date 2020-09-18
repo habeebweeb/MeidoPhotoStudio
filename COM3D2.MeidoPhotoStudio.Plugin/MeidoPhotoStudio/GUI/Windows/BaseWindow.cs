@@ -6,7 +6,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private static int id = 765;
         private static int ID => id++;
-        public readonly int windowID;
+        public readonly int windowID = ID;
         protected Rect windowRect = new Rect(0f, 0f, 480f, 270f);
         public virtual Rect WindowRect
         {
@@ -25,8 +25,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected Vector2 MiddlePosition => new Vector2(
             (Screen.width / 2) - (windowRect.width / 2), (Screen.height / 2) - (windowRect.height / 2)
         );
-
-        protected BaseWindow() => windowID = ID;
 
         public virtual void HandleZoom()
         {

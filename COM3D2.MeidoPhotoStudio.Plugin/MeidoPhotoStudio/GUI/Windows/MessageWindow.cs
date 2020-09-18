@@ -29,18 +29,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             windowRect.y = Screen.height - WindowRect.height;
             this.messageWindowManager = messageWindowManager;
             nameTextField = new TextField();
-            Controls.Add(nameTextField);
 
             fontSizeSlider = new Slider(MessageWindowManager.fontBounds);
             fontSizeSlider.ControlEvent += ChangeFontSize;
-            Controls.Add(fontSizeSlider);
 
             messageTextArea = new TextArea();
-            Controls.Add(messageTextArea);
 
             okButton = new Button("OK");
             okButton.ControlEvent += ShowMessage;
-            Controls.Add(okButton);
         }
 
         public void ToggleVisibility()

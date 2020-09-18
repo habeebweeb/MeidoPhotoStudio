@@ -81,6 +81,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
+        public float buttonSize = 54f;
         public override void Draw()
         {
             const float dropdownButtonHeight = 30f;
@@ -113,17 +114,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (shouldDraw)
             {
-                float windowHeight = Screen.height * 0.7f;
+                Rect windowRect = parent.WindowRect;
+                float windowHeight = windowRect.height;
+                float windowWidth = windowRect.width;
 
-                const int buttonSize = 50;
-                const int offsetLeft = 15;
-                const int offsetTop = 85;
-
+                // const float buttonSize = 50f;
+                const float offsetTop = 80f;
                 const int columns = 4;
+                float buttonSize = (windowWidth / columns) - 10f;
 
-                Rect positionRect = new Rect(offsetLeft, offsetTop + dropdownButtonHeight, 220, windowHeight);
+                Rect positionRect = new Rect(
+                    5f, offsetTop + dropdownButtonHeight, windowWidth - 10f, windowHeight - 145f
+                );
                 Rect viewRect = new Rect(
-                    0, 0, buttonSize * columns, (buttonSize * Mathf.Ceil(currentListCount / (float)columns)) + 5
+                    0f, 0f, buttonSize * columns, (buttonSize * Mathf.Ceil(currentListCount / (float)columns)) + 5
                 );
                 propListScrollPos = GUI.BeginScrollView(positionRect, propListScrollPos, viewRect);
 
@@ -141,7 +145,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
 
                 GUI.EndScrollView();
-                GUILayout.Space(windowHeight);
             }
         }
 

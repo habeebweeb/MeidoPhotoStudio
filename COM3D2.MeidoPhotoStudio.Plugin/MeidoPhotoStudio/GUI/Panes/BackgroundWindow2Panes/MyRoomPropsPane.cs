@@ -44,18 +44,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
 
-            float windowHeight = Screen.height * 0.6f;
+            Rect windowRect = parent.WindowRect;
 
-            const int buttonSize = 64;
-            const int offsetLeft = 15;
-            const int offsetTop = 85;
+            float windowHeight = windowRect.height;
+            float windowWidth = windowRect.width;
+
+            const float offsetTop = 80f;
             const int columns = 3;
+            float buttonSize = (windowWidth / columns) - 10f;
 
             int listCount = myRoomPropList.Count;
 
-            Rect positionRect = new Rect(offsetLeft, offsetTop + dropdownButtonHeight, 220, windowHeight);
+            Rect positionRect = new Rect(
+                5f, offsetTop + dropdownButtonHeight, windowWidth - 10f, windowHeight - 145f
+            );
             Rect viewRect = new Rect(
-                0, 0, buttonSize * columns, (buttonSize * Mathf.Ceil(listCount / (float)columns)) + 5
+                0f, 0f, buttonSize * columns, (buttonSize * Mathf.Ceil(listCount / (float)columns)) + 5f
             );
             propListScrollPos = GUI.BeginScrollView(positionRect, propListScrollPos, viewRect);
 
@@ -70,7 +74,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             GUI.EndScrollView();
-            GUILayout.Space(windowHeight);
         }
 
         private void ChangePropCategory(string category)

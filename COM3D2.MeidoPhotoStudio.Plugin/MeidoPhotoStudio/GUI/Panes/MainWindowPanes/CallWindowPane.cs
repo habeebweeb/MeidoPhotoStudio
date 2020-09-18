@@ -15,13 +15,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             placementDropdown = new Dropdown(
                 Translation.GetArray("placementDropdown", MaidPlacementUtility.placementTypes)
             );
-            Controls.Add(placementDropdown);
 
             placementOKButton = new Button(Translation.Get("maidCallWindow", "okButton"));
             placementOKButton.ControlEvent += (o, a) => this.meidoManager.PlaceMeidos(
                 MaidPlacementUtility.placementTypes[placementDropdown.SelectedItemIndex]
             );
-            Controls.Add(placementOKButton);
 
             maidSelectorPane = AddPane(new MaidSelectorPane(this.meidoManager));
         }

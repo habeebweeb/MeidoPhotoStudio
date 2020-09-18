@@ -53,6 +53,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DropdownHelper.DropdownClose += OnCloseDropdown;
         }
 
+        // TODO: I don't think this works the way I think it does
         ~Dropdown()
         {
             DropdownHelper.SelectionChange -= OnChangeSelection;
