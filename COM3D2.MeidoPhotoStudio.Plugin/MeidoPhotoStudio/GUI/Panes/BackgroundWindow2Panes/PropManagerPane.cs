@@ -13,6 +13,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Toggle shadowCastingToggle;
         private readonly Button deletePropButton;
         private readonly Button copyPropButton;
+        private string propManagerHeader;
+
         private int CurrentDoguIndex => propManager.CurrentDoguIndex;
 
         public PropManagerPane(PropManager propManager)
@@ -72,6 +74,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             deletePropButton = new Button(Translation.Get("propManagerPane", "deleteButton"));
             deletePropButton.ControlEvent += (s, a) => this.propManager.RemoveDogu(CurrentDoguIndex);
+
+            propManagerHeader = Translation.Get("propManagerPane", "header");
         }
 
         protected override void ReloadTranslation()
@@ -81,6 +85,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             shadowCastingToggle.Label = Translation.Get("propManagerPane", "shadowCastingToggle");
             copyPropButton.Label = Translation.Get("propManagerPane", "copyButton");
             deletePropButton.Label = Translation.Get("propManagerPane", "deleteButton");
+            propManagerHeader = Translation.Get("propManagerPane", "header");
         }
 
         public override void Draw()
@@ -97,6 +102,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GUILayout.Width(dropdownButtonWidth)
             };
 
+            MpsGui.Header(propManagerHeader);
             MpsGui.WhiteLine();
 
             GUI.enabled = propManager.DoguCount > 0;

@@ -20,8 +20,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Toggle savePoseToggle;
         private readonly Toggle saveHandToggle;
         private readonly Button flipButton;
-        private bool savePoseMode = false;
-        private bool saveHandMode = false;
+        private bool savePoseMode;
+        private bool saveHandMode;
         private string handPresetHeader;
         private string flipIKHeader;
 
@@ -82,6 +82,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             maidSwitcherPane.Draw();
             maidPosePane.Draw();
 
+            maidIKPane.Draw();
+
+            MpsGui.WhiteLine();
+
             scrollPos = GUILayout.BeginScrollView(scrollPos);
 
             GUI.enabled = meidoManager.HasActiveMeido;
@@ -98,14 +102,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             maidDressingPane.Draw();
 
-            MpsGui.WhiteLine();
-
-            maidIKPane.Draw();
-
-            MpsGui.WhiteLine();
-
-            gravityControlPane.Draw();
-
             GUI.enabled = meidoManager.HasActiveMeido;
             MpsGui.Header(handPresetHeader);
             MpsGui.WhiteLine();
@@ -114,6 +110,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (saveHandMode) saveHandPane.Draw();
             else handPresetPane.Draw();
+
+            gravityControlPane.Draw();
 
             copyPosePane.Draw();
 

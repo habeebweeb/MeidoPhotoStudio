@@ -70,12 +70,14 @@
         "headToCamToggle": "Head",
         "eyeToCamToggle": "Eye",
         "xSlider": "Look X",
-        "ySlider": "Look Y"
+        "ySlider": "Look Y",
+        "bindLabel": "Bind"
     },
     "attachMpnPropPane": {
         "attachButton": "Attach",
         "detachButton": "Detach",
-        "detachAllButton": "Detach All"
+        "detachAllButton": "Detach All",
+        "header": "SM Restraints"
     },
     "clothing": {
         "noCategory": " --- ",
@@ -207,8 +209,6 @@
         "blue": "Blue"
     },
     "propsPane": {
-        "props1Label": "Props 1",
-        "props2Label": "Props 2",
         "props1AddButton": "Add",
         "props2AddButton": "Add",
         "header": "Props"
@@ -225,6 +225,7 @@
         "header": "Mod Props"
     },
     "propManagerPane": {
+        "header": "Manage Props",
         "dragPointToggle": "Cube",
         "gizmoToggle": "Gizmo",
         "shadowCastingToggle": "Shadow",
@@ -250,11 +251,12 @@
         "header": "Lights",
         "add": "+",
         "delete": "Del",
-        "resetPosition": "R Pos",
-        "resetProperties": "R Props",
+        "resetPosition": "Position",
+        "resetProperties": "Properties",
         "clear": "Clear",
         "colour": "Colour",
-        "disable": "On"
+        "disable": "On",
+        "resetLabel": "Reset"
     },
     "lightType": {
         "main": "Main",

@@ -47,6 +47,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             MpsGui.Header("Effects");
             MpsGui.WhiteLine();
             effectToggles.Draw();
+            MpsGui.BlackLine();
             currentEffectPane.Draw();
         }
     }

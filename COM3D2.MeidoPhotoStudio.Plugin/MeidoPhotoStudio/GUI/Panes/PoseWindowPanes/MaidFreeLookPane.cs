@@ -9,6 +9,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Slider lookYSlider;
         private readonly Toggle headToCamToggle;
         private readonly Toggle eyeToCamToggle;
+        private string bindLabel;
 
         public MaidFaceLookPane(MeidoManager meidoManager)
         {
@@ -24,6 +25,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             eyeToCamToggle = new Toggle(Translation.Get("freeLookPane", "eyeToCamToggle"));
             eyeToCamToggle.ControlEvent += (s, a) => SetHeadToCam(eyeToCamToggle.Value, eye: true);
+
+            bindLabel = Translation.Get("freeLookPane", "bindLabel");
         }
 
         protected override void ReloadTranslation()
@@ -32,6 +35,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             lookYSlider.Label = Translation.Get("freeLookPane", "ySlider");
             headToCamToggle.Label = Translation.Get("freeLookPane", "headToCamToggle");
             eyeToCamToggle.Label = Translation.Get("freeLookPane", "eyeToCamToggle");
+            bindLabel = Translation.Get("freeLookPane", "bindLabel");
         }
 
         public void SetHeadToCam(bool value, bool eye = false)
@@ -87,6 +91,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUI.enabled = meidoManager.HasActiveMeido;
 
             GUILayout.BeginHorizontal();
+            GUILayout.Label(bindLabel, GUILayout.ExpandWidth(false));
             eyeToCamToggle.Draw();
             headToCamToggle.Draw();
             GUILayout.EndHorizontal();

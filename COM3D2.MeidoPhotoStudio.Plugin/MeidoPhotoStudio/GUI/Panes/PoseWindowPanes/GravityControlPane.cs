@@ -28,6 +28,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bool enabled = meidoManager.HasActiveMeido;
             GUI.enabled = enabled;
 
+            MpsGui.Header("Gravity Control");
+            MpsGui.WhiteLine();
+
             Meido meido = meidoManager.ActiveMeido;
             GUILayout.BeginHorizontal();
 
@@ -37,9 +40,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUI.enabled = enabled && meido.SkirtGravityValid;
             skirtToggle.Draw();
 
-            GUI.enabled = true;
             GUILayout.EndHorizontal();
 
+            GUI.enabled = enabled;
             globalToggle.Draw();
 
             GUI.enabled = true;

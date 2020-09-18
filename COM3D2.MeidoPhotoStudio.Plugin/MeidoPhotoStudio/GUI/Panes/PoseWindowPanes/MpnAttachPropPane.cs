@@ -13,6 +13,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Button attachPropButton;
         private readonly Button detachPropButton;
         private readonly Button detachAllButton;
+        private string header;
 
         public MpnAttachPropPane(MeidoManager meidoManager)
         {
@@ -38,6 +39,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             detachAllButton = new Button(Translation.Get("attachMpnPropPane", "detachAllButton"));
             detachAllButton.ControlEvent += (s, a) => DetachAll();
+
+            header = Translation.Get("attachMpnPropPane", "header");
         }
 
         protected override void ReloadTranslation()
@@ -45,6 +48,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             attachPropButton.Label = Translation.Get("attachMpnPropPane", "attachButton");
             detachPropButton.Label = Translation.Get("attachMpnPropPane", "detachButton");
             detachAllButton.Label = Translation.Get("attachMpnPropPane", "detachAllButton");
+            header = Translation.Get("attachMpnPropPane", "header");
             SetDropdownList();
         }
 
@@ -53,6 +57,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUI.enabled = meidoManager.HasActiveMeido && Constants.MpnAttachInitialized;
 
             GUILayoutOption noExpand = GUILayout.ExpandWidth(false);
+
+            MpsGui.Header(header);
+            MpsGui.WhiteLine();
 
             GUILayout.BeginHorizontal();
             previousPropButton.Draw(noExpand);

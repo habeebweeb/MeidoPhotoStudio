@@ -21,6 +21,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Toggle disableToggle;
         private MPSLightType currentLightType;
         private string lightHeader;
+        private string resetLabel;
+
         private static readonly Dictionary<LightProp, SliderProp> LightSliderProp =
             new Dictionary<LightProp, SliderProp>()
             {
@@ -42,8 +44,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public LightsPane(LightManager lightManager)
         {
-            lightHeader = Translation.Get("lightsPane", "header");
-
             this.lightManager = lightManager;
             this.lightManager.Rotate += (s, a) => UpdateRotation();
             this.lightManager.Scale += (s, a) => UpdateScale();
@@ -95,12 +95,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             resetPositionButton = new Button(Translation.Get("lightsPane", "resetPosition"));
             resetPositionButton.ControlEvent += (s, a) => ResetLightPosition();
+
+            lightHeader = Translation.Get("lightsPane", "header");
+            resetLabel = Translation.Get("lightsPane", "resetLabel");
+
         }
 
         protected override void ReloadTranslation()
         {
             updating = true;
-            lightHeader = Translation.Get("lightsPane", "header");
             lightTypeGrid.SetItems(Translation.GetArray("lightType", lightTypes));
             lightDropdown.SetDropdownItems(lightManager.LightNameList);
             deleteLightButton.Label = Translation.Get("lightsPane", "delete");
@@ -114,6 +117,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             colorToggle.Label = Translation.Get("lightsPane", "colour");
             resetPropsButton.Label = Translation.Get("lightsPane", "resetProperties");
             resetPositionButton.Label = Translation.Get("lightsPane", "resetPosition");
+            lightHeader = Translation.Get("lightsPane", "header");
+            resetLabel = Translation.Get("lightsPane", "resetLabel");
             updating = false;
         }
 
@@ -233,24 +238,26 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             bool isMain = lightManager.SelectedLightIndex == 0;
 
+            GUILayoutOption noExpandWidth = GUILayout.ExpandWidth(false);
+
             MpsGui.Header(lightHeader);
             MpsGui.WhiteLine();
 
             GUILayout.BeginHorizontal();
             lightDropdown.Draw(GUILayout.Width(84));
-            addLightButton.Draw(GUILayout.ExpandWidth(false));
+            addLightButton.Draw(noExpandWidth);
 
             GUILayout.FlexibleSpace();
             GUI.enabled = !isMain;
-            deleteLightButton.Draw(GUILayout.ExpandWidth(false));
+            deleteLightButton.Draw(noExpandWidth);
             GUI.enabled = true;
-            clearLightsButton.Draw(GUILayout.ExpandWidth(false));
+            clearLightsButton.Draw(noExpandWidth);
             GUILayout.EndHorizontal();
 
             bool isDisabled = !isMain && lightManager.CurrentLight.IsDisabled;
             GUILayout.BeginHorizontal();
             GUI.enabled = !isDisabled;
-            lightTypeGrid.Draw(GUILayout.ExpandWidth(false));
+            lightTypeGrid.Draw(noExpandWidth);
             if (!isMain)
             {
                 GUI.enabled = true;
@@ -297,8 +304,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            resetPropsButton.Draw(GUILayout.ExpandWidth(false));
-            resetPositionButton.Draw(GUILayout.ExpandWidth(false));
+            GUILayout.Label(resetLabel, noExpandWidth);
+            resetPropsButton.Draw(noExpandWidth);
+            resetPositionButton.Draw(noExpandWidth);
             GUILayout.EndHorizontal();
 
             GUI.enabled = true;
