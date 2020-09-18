@@ -99,9 +99,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 DrawSetting(key);
             }
 
+            GUI.enabled = !InputManager.Listening;
+
+            // Translation settings
             MpsGui.WhiteLine();
             reloadTranslationButton.Draw();
+
             GUILayout.EndScrollView();
+
+            GUI.enabled = true;
         }
 
         private void DrawSetting(MpsKey key)

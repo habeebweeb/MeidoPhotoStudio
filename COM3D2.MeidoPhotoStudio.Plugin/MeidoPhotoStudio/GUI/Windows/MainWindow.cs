@@ -119,7 +119,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GUILayout.BeginHorizontal();
             GUILayout.Label(MeidoPhotoStudio.pluginString, labelStyle);
             GUILayout.FlexibleSpace();
+            GUI.enabled = !InputManager.Listening;
             settingsButton.Draw(GUILayout.ExpandWidth(false));
+            GUI.enabled = true;
             GUILayout.EndHorizontal();
 
             GUI.DragWindow();

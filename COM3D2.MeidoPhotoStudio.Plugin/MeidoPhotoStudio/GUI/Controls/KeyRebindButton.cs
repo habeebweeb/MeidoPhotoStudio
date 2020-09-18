@@ -39,6 +39,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void StartListening()
         {
             listening = true;
+            button.Label = string.Empty;
             InputManager.StartListening();
             InputManager.KeyChange += KeyChange;
         }
@@ -46,7 +47,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void KeyChange(object sender, EventArgs args)
         {
             listening = false;
-            KeyCode = InputManager.CurrentKeyCode;
+            if (InputManager.CurrentKeyCode != KeyCode.Escape) KeyCode = InputManager.CurrentKeyCode;
+            else KeyCode = KeyCode;
             InputManager.KeyChange -= KeyChange;
             OnControlEvent(EventArgs.Empty);
         }
