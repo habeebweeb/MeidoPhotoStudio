@@ -169,6 +169,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void ChangePoseGroup()
         {
+            poseListEnabled = CurrentPoseList.Count > 0;
             if (previousPoseGroup == SelectedPoseGroup)
             {
                 poseDropdown.SelectedItemIndex = 0;

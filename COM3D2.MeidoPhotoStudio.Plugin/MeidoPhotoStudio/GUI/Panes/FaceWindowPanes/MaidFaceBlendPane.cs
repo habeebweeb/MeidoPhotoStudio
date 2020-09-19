@@ -48,8 +48,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             );
             faceBlendCategoryDropdown.SelectionChange += (s, a) =>
             {
-                faceBlendDropdown.SetDropdownItems(UIFaceList(), 0);
                 faceListEnabled = CurrentFaceList.Count > 0;
+                faceBlendDropdown.SetDropdownItems(UIFaceList(), 0);
             };
 
             prevCategoryButton = new Button("<");
@@ -61,7 +61,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             faceBlendDropdown = new Dropdown(UIFaceList());
             faceBlendDropdown.SelectionChange += (s, a) =>
             {
-                if (updating) return;
+                if (!faceListEnabled || updating) return;
                 this.meidoManager.ActiveMeido.SetFaceBlendSet(SelectedFace, facePresetMode);
             };
 
