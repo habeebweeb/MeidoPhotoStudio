@@ -272,9 +272,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (pose.StartsWith(Constants.customPosePath))
             {
-                byte[] poseBuffer = File.ReadAllBytes(pose);
-                string hash = Path.GetFileName(pose).GetHashCode().ToString();
-                Body.CrossFade(hash, poseBuffer, loop: true, fade: 0f);
+                string poseFilename = Path.GetFileNameWithoutExtension(pose);
+                try
+                {
+                    byte[] poseBuffer = File.ReadAllBytes(pose);
+                    string hash = Path.GetFileName(pose).GetHashCode().ToString();
+                    Body.CrossFade(hash, poseBuffer, loop: true, fade: 0f);
+                }
+                catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
+                {
+                    Utility.LogWarning($"{poseFilename}: Could not open because {e.Message}");
+                    Constants.InitializeCustomPoses();
+                    return;
+                }
+                catch (Exception e)
+                {
+                    Utility.LogWarning($"{poseFilename}: Could not apply pose because {e.Message}");
+                    return;
+                }
             }
             else
             {
@@ -317,20 +332,40 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void SetHandPreset(string filename, bool right)
         {
-            XDocument handDocument = XDocument.Load(filename);
-            XElement handElement = handDocument.Element("FingerData");
-            if (handElement.IsEmpty || handElement.Element("GameVersion").IsEmpty
-                || handElement.Element("RightData").IsEmpty || handElement.Element("BinaryData").IsEmpty
-            ) return;
+            string faceFilename = Path.GetFileNameWithoutExtension(filename);
+            try
+            {
+                XDocument handDocument = XDocument.Load(filename);
+                XElement handElement = handDocument.Element("FingerData");
 
-            Stop = true;
+                if (handElement?.Elements().Any(element => element?.IsEmpty ?? true) ?? true)
+                {
+                    Utility.LogWarning($"{faceFilename}: Could not apply hand preset because it is invalid.");
+                    return;
+                }
 
-            bool rightData = bool.Parse(handElement.Element("RightData").Value);
-            string base64Data = handElement.Element("BinaryData").Value;
+                Stop = true;
 
-            byte[] handData = Convert.FromBase64String(base64Data);
+                bool rightData = bool.Parse(handElement.Element("RightData").Value);
+                string base64Data = handElement.Element("BinaryData").Value;
 
-            IKManager.DeserializeHand(handData, right, rightData != right);
+                byte[] handData = Convert.FromBase64String(base64Data);
+
+                IKManager.DeserializeHand(handData, right, rightData != right);
+            }
+            catch (System.Xml.XmlException e)
+            {
+                Utility.LogWarning($"{faceFilename}: Hand preset data is malformed because {e.Message}");
+            }
+            catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
+            {
+                Utility.LogWarning($"{faceFilename}: Could not open hand preset because {e.Message}");
+                Constants.InitializeHandPresets();
+            }
+            catch (Exception e)
+            {
+                Utility.LogWarning($"{faceFilename}: Could not parse hand preset because {e.Message}");
+            }
         }
 
         public byte[] SerializePose(bool frameBinary = false)
@@ -359,25 +394,62 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (custom)
             {
-                XDocument faceDocument = XDocument.Load(blendSet);
-                XElement faceDataElement = faceDocument.Element("FaceData");
-                if (faceDataElement.IsEmpty) return;
-
-                HashSet<string> hashKeys = new HashSet<string>(faceKeys.Concat(faceToggleKeys));
-
-                foreach (XElement element in faceDataElement.Elements())
+                string blendSetFileName = Path.GetFileNameWithoutExtension(blendSet);
+                try
                 {
-                    string key;
-                    if ((key = (string)element.Attribute("name")) != null && !hashKeys.Contains(key)) continue;
-
-                    if (float.TryParse(element.Value, out float value))
+                    XDocument faceDocument = XDocument.Load(blendSet, LoadOptions.SetLineInfo);
+                    XElement faceDataElement = faceDocument.Element("FaceData");
+                    if (faceDataElement?.IsEmpty ?? true)
                     {
-                        try
-                        {
-                            SetFaceBlendValue(key, value);
-                        }
-                        catch { }
+                        Utility.LogWarning($"{blendSetFileName}: Could not apply face preset because it is invalid.");
+                        return;
                     }
+
+                    HashSet<string> hashKeys = new HashSet<string>(faceKeys.Concat(faceToggleKeys));
+
+                    foreach (XElement element in faceDataElement.Elements())
+                    {
+                        System.Xml.IXmlLineInfo info = element;
+                        int line = info.HasLineInfo() ? info.LineNumber : -1;
+                        string key;
+
+                        if ((key = (string)element.Attribute("name")) == null)
+                        {
+                            Utility.LogWarning($"{blendSetFileName}: Could not read face blend key at line {line}.");
+                            continue;
+                        }
+
+                        if (!hashKeys.Contains(key))
+                        {
+                            Utility.LogWarning($"{blendSetFileName}: Invalid face blend key '{key}' at line {line}.");
+                            continue;
+                        }
+
+                        if (float.TryParse(element.Value, out float value))
+                        {
+                            try { SetFaceBlendValue(key, value); }
+                            catch { }
+                        }
+                        else Utility.LogWarning(
+                            $"{blendSetFileName}: Could not parse value '{element.Value}' of '{key}' at line {line}"
+                        );
+                    }
+                }
+                catch (System.Xml.XmlException e)
+                {
+                    Utility.LogWarning($"{blendSetFileName}: Face preset data is malformed because {e.Message}");
+                    return;
+                }
+                catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
+                {
+                    Utility.LogWarning($"{blendSetFileName}: Could not open face preset because {e.Message}");
+                    Constants.InitializeCustomFaceBlends();
+                    return;
+                }
+                catch (Exception e)
+                {
+                    Utility.LogWarning($"{blendSetFileName}: Could not parse face preset because {e.Message}");
+                    return;
                 }
             }
             else
@@ -386,7 +458,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 CurrentFaceBlendSet = blendSet;
 
-                BackupBlendSetValuess();
+                BackupBlendSetValues();
 
                 Maid.FaceAnime(blendSet, 0f);
             }
@@ -402,10 +474,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else
             {
                 hash = Utility.GP01FbFaceHash(morph, hash);
-                try
-                {
-                    morph.dicBlendSet[CurrentFaceBlendSet][(int)morph.hash[hash]] = value;
-                }
+                try { morph.dicBlendSet[CurrentFaceBlendSet][(int)morph.hash[hash]] = value; }
                 catch { }
             }
         }
@@ -490,7 +559,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (control != null) control.transform.localPosition = position;
         }
 
-        private void BackupBlendSetValuess()
+        private void BackupBlendSetValues()
         {
             float[] values = Body.Face.morph.dicBlendSet[CurrentFaceBlendSet];
             BlendSetValueBackup = new float[values.Length];
@@ -527,7 +596,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 initialized = true;
             }
 
-            if (BlendSetValueBackup == null) BackupBlendSetValuess();
+            if (BlendSetValueBackup == null) BackupBlendSetValues();
 
             if (HairGravityValid) hairGravityDragPoint.Move += OnGravityEvent;
             if (SkirtGravityValid) skirtGravityDragPoint.Move += OnGravityEvent;
