@@ -14,6 +14,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private static readonly string[] actionTranslationKeys;
         private static readonly string[] actionLabels;
         private readonly Button reloadTranslationButton;
+        private readonly Button reloadAllPresetsButton;
         private readonly KeyRebindButton[] rebindButtons;
 
         static SettingsWindowPane()
@@ -26,9 +27,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public SettingsWindowPane()
         {
-            reloadTranslationButton = new Button("Reload Translation");
-            reloadTranslationButton.ControlEvent += (s, a) => Translation.ReinitializeTranslation();
-
             rebindButtons = new KeyRebindButton[actionTranslationKeys.Length];
 
             for (int i = 0; i < rebindButtons.Length; i++)
@@ -45,6 +43,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 headers[headerTranslationKeys[i]] = Translation.Get("settingsHeaders", headerTranslationKeys[i]);
             }
+
+            reloadTranslationButton = new Button(Translation.Get("settingsLabels", "reloadTranslation"));
+            reloadTranslationButton.ControlEvent += (s, a) => Translation.ReinitializeTranslation();
+
+            reloadAllPresetsButton = new Button(Translation.Get("settingsLabels", "reloadAllPresets"));
+            reloadAllPresetsButton.ControlEvent += (s, a) =>
+            {
+                Constants.InitializeCustomFaceBlends();
+                Constants.InitializeHandPresets();
+                Constants.InitializeCustomPoses();
+            };
         }
 
         protected override void ReloadTranslation()
@@ -58,6 +67,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 headers[headerTranslationKeys[i]] = Translation.Get("settingsHeaders", headerTranslationKeys[i]);
             }
+
+            reloadTranslationButton.Label = Translation.Get("settingsLabels", "reloadTranslation");
+            reloadAllPresetsButton.Label = Translation.Get("settingsLabels", "reloadAllPresets");
         }
 
         public override void Draw()
@@ -104,6 +116,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             // Translation settings
             MpsGui.WhiteLine();
             reloadTranslationButton.Draw();
+
+            reloadAllPresetsButton.Draw();
 
             GUILayout.EndScrollView();
 

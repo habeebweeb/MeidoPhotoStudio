@@ -411,6 +411,10 @@
         "loadScene": "Quick Load",
         "openSceneManager": "Open Scene Manager"
     },
+    "settingsLabels": {
+        "reloadTranslation": "Reload Translation",
+        "reloadAllPresets": "Reload Presets"
+    },
     "settingsHeaders": {
         "controls": "Controls",
         "controlsGeneral": "General",
