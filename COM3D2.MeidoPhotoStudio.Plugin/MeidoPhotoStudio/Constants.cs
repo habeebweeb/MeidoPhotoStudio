@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -171,7 +171,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (string.IsNullOrEmpty(faceGroup))
             {
                 CustomFaceGroupList.Add(category);
-                CustomHandDict[category] = new List<string>();
+                CustomFaceDict[category] = new List<string>();
             }
             else category = faceGroup;
 

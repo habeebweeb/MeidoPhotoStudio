@@ -134,8 +134,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void SaveFaceEnd(object sender, CustomPoseEventArgs args)
         {
-            faceBlendSourceGrid.SelectedItemIndex = 1;
-            faceBlendCategoryDropdown.SelectedItemIndex = Constants.CustomHandGroupList.IndexOf(args.Category);
+                updating = true;
+                faceBlendSourceGrid.SelectedItemIndex = 1;
+                faceBlendCategoryDropdown.SetDropdownItems(
+                    CurrentFaceGroupList.ToArray(), CurrentFaceGroupList.IndexOf(args.Category)
+                );
+                updating = false;
+                faceBlendDropdown.SetDropdownItems(UIFaceList(), CurrentFaceList.IndexOf(args.Path));
         }
     }
 }
