@@ -38,6 +38,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             string rootTranslationPath = Path.Combine(Constants.configPath, Constants.translationDirectory);
             string currentTranslationPath = Path.Combine(rootTranslationPath, language);
 
+            Translations = new Dictionary<string, Dictionary<string, string>>(
+                StringComparer.InvariantCultureIgnoreCase
+            );
+
             if (!Directory.Exists(currentTranslationPath))
             {
                 Utility.LogWarning(
@@ -45,10 +49,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 );
                 return;
             }
-
-            Translations = new Dictionary<string, Dictionary<string, string>>(
-                StringComparer.InvariantCultureIgnoreCase
-            );
 
             foreach (string prop in props)
             {
