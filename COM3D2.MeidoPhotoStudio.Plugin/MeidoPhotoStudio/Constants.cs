@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -69,9 +69,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static bool MpnAttachInitialized { get; private set; }
         public static bool MenuFilesInitialized { get; private set; }
         public static event EventHandler<MenuFilesEventArgs> MenuFilesChange;
-        public static event EventHandler<CustomPoseEventArgs> CustomPoseChange;
-        public static event EventHandler<CustomPoseEventArgs> CustomHandChange;
-        public static event EventHandler<CustomPoseEventArgs> CustomFaceChange;
+        public static event EventHandler<PresetChangeEventArgs> CustomPoseChange;
+        public static event EventHandler<PresetChangeEventArgs> CustomHandChange;
+        public static event EventHandler<PresetChangeEventArgs> CustomFaceChange;
         public enum DoguCategory
         {
             Other, Mob, Desk, HandItem, BGSmall
@@ -178,7 +178,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             CustomFaceDict[category].Add(fullPath);
             CustomFaceDict[category].Sort();
 
-            CustomFaceChange?.Invoke(null, new CustomPoseEventArgs(fullPath, category));
+            CustomFaceChange?.Invoke(null, new PresetChangeEventArgs(fullPath, category));
         }
 
         public static void AddPose(byte[] anmBinary, string filename, string directory)
@@ -227,7 +227,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             CustomPoseDict[category].Add(fullPath);
             CustomPoseDict[category].Sort();
 
-            CustomPoseChange?.Invoke(null, new CustomPoseEventArgs(fullPath, category));
+            CustomPoseChange?.Invoke(null, new PresetChangeEventArgs(fullPath, category));
         }
 
         public static void AddHand(byte[] handBinary, bool right, string filename, string directory)
@@ -255,10 +255,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 return;
             }
 
+            int gameVersion = Misc.GAME_VERSION; // get game version from user's Assembly-CSharp
+
             XDocument finalXml = new XDocument(new XDeclaration("1.0", "utf-8", "true"),
                 new XComment("CM3D2 FingerData"),
                 new XElement("FingerData",
-                    new XElement("GameVersion", Misc.GAME_VERSION),
+                    new XElement("GameVersion", gameVersion),
                     new XElement("RightData", right),
                     new XElement("BinaryData", Convert.ToBase64String(handBinary))
                 )
@@ -283,7 +285,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             CustomHandDict[category].Add(fullPath);
             CustomHandDict[category].Sort();
 
-            CustomHandChange?.Invoke(null, new CustomPoseEventArgs(fullPath, category));
+            CustomHandChange?.Invoke(null, new PresetChangeEventArgs(fullPath, category));
         }
 
         public static void InitializeScenes()
@@ -362,6 +364,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 PoseGroupList.AddRange(new[] { "normal2", "ero2" });
             }
 
+            InitializeCustomPoses();
+        }
+
+        public static void InitializeCustomPoses()
+        {
             void GetPoses(string directory)
             {
                 List<string> poseList = Directory.GetFiles(directory)
@@ -375,15 +382,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
 
+            CustomPoseGroupList.Clear();
+            CustomPoseDict.Clear();
+
             CustomPoseGroupList.Add(customPoseDirectory);
             CustomPoseDict[customPoseDirectory] = new List<string>();
 
             GetPoses(customPosePath);
+            foreach (string directory in Directory.GetDirectories(customPosePath)) GetPoses(directory);
 
-            foreach (string directory in Directory.GetDirectories(customPosePath))
-            {
-                GetPoses(directory);
-            }
+            CustomPoseChange?.Invoke(null, PresetChangeEventArgs.Empty);
         }
 
         public static void InitializeHandPresets()
@@ -401,15 +409,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
 
+            CustomHandGroupList.Clear();
+            CustomHandDict.Clear();
+
             CustomHandGroupList.Add(customHandDirectory);
             CustomHandDict[customHandDirectory] = new List<string>();
 
             GetPresets(customHandPath);
+            foreach (string directory in Directory.GetDirectories(customHandPath)) GetPresets(directory);
 
-            foreach (string directory in Directory.GetDirectories(customHandPath))
-            {
-                GetPresets(directory);
-            }
+            CustomHandChange?.Invoke(null, PresetChangeEventArgs.Empty);
         }
 
         public static void InitializeFaceBlends()
@@ -423,6 +432,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 FaceDict[kvp.Key] = kvp.Value.Select(data => data.setting_name).ToList();
             }
 
+            InitializeCustomFaceBlends();
+        }
+
+        public static void InitializeCustomFaceBlends()
+        {
             void GetFacePresets(string directory)
             {
                 List<string> presetList = Directory.GetFiles(directory)
@@ -436,15 +450,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
 
+            CustomFaceGroupList.Clear();
+            CustomFaceDict.Clear();
+
             CustomFaceGroupList.Add(customFaceDirectory);
             CustomFaceDict[customFaceDirectory] = new List<string>();
 
             GetFacePresets(customFacePath);
+            foreach (string directory in Directory.GetDirectories(customFacePath)) GetFacePresets(directory);
 
-            foreach (string directory in Directory.GetDirectories(customFacePath))
-            {
-                GetFacePresets(directory);
-            }
+            CustomFaceChange?.Invoke(null, PresetChangeEventArgs.Empty);
         }
 
         public static void InitializeBGs()
@@ -933,11 +948,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public MenuFilesEventArgs(EventType type) => Type = type;
     }
 
-    public class CustomPoseEventArgs : EventArgs
+    public class PresetChangeEventArgs : EventArgs
     {
         public string Category { get; }
         public string Path { get; }
-        public CustomPoseEventArgs(string path, string category)
+        public static new PresetChangeEventArgs Empty { get; } = new PresetChangeEventArgs(string.Empty, string.Empty);
+        public PresetChangeEventArgs(string path, string category)
         {
             Path = path;
             Category = category;

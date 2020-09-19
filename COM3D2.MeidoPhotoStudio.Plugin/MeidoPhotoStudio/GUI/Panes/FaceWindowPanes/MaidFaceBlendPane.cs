@@ -29,7 +29,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public MaidFaceBlendPane(MeidoManager meidoManager)
         {
-            Constants.CustomFaceChange += SaveFaceEnd;
+            Constants.CustomFaceChange += OnPresetChange;
             this.meidoManager = meidoManager;
 
             faceBlendSourceGrid = new SelectionGrid(Translation.GetArray("maidFaceWindow", tabTranslations));
@@ -132,8 +132,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 ).ToArray();
         }
 
-        private void SaveFaceEnd(object sender, CustomPoseEventArgs args)
+        private void OnPresetChange(object sender, PresetChangeEventArgs args)
         {
+            if (args == PresetChangeEventArgs.Empty)
+            {
+                if (facePresetMode)
+                {
+                    updating = true;
+                    faceBlendCategoryDropdown.SetDropdownItems(CurrentFaceGroupList.ToArray(), 0);
+                    faceBlendDropdown.SetDropdownItems(UIFaceList(), 0);
+                    updating = false;
+                }
+            }
+            else
+            {
                 updating = true;
                 faceBlendSourceGrid.SelectedItemIndex = 1;
                 faceBlendCategoryDropdown.SetDropdownItems(
@@ -141,6 +153,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 );
                 updating = false;
                 faceBlendDropdown.SetDropdownItems(UIFaceList(), CurrentFaceList.IndexOf(args.Path));
+            }
         }
     }
 }

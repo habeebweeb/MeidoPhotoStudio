@@ -31,7 +31,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public MaidPoseSelectorPane(MeidoManager meidoManager)
         {
-            Constants.CustomPoseChange += SavePoseEnd;
+            Constants.CustomPoseChange += OnPresetChange;
             this.meidoManager = meidoManager;
 
             poseModeGrid = new SelectionGrid(Translation.GetArray("posePane", tabTranslations));
@@ -141,17 +141,30 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             updating = false;
         }
 
-        private void SavePoseEnd(object sender, CustomPoseEventArgs args)
+        private void OnPresetChange(object sender, PresetChangeEventArgs args)
         {
-            updating = true;
-            poseModeGrid.SelectedItemIndex = 1;
-            poseGroupDropdown.SetDropdownItems(
-                CurrentPoseGroupList.ToArray(), CurrentPoseGroupList.IndexOf(args.Category)
-            );
-            updating = false;
+            if (args == PresetChangeEventArgs.Empty)
+            {
+                if (poseModeGrid.SelectedItemIndex == 1)
+                {
+                    updating = true;
+                    poseGroupDropdown.SetDropdownItems(CurrentPoseGroupList.ToArray(), 0);
+                    poseDropdown.SetDropdownItems(UIPoseList(), 0);
+                    updating = false;
+                }
+            }
+            else
+            {
+                updating = true;
+                poseModeGrid.SelectedItemIndex = 1;
+                poseGroupDropdown.SetDropdownItems(
+                    CurrentPoseGroupList.ToArray(), CurrentPoseGroupList.IndexOf(args.Category)
+                );
+                updating = false;
 
-            poseDropdown.SetDropdownItems(UIPoseList(), CurrentPoseDict[args.Category].IndexOf(args.Path));
-            poseListEnabled = true;
+                poseDropdown.SetDropdownItems(UIPoseList(), CurrentPoseList.IndexOf(args.Path));
+                poseListEnabled = true;
+            }
         }
 
         private void SetPoseMode()

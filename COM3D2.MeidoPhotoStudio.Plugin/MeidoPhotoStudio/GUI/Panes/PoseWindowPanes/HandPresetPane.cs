@@ -24,7 +24,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public HandPresetPane(MeidoManager meidoManager)
         {
-            Constants.CustomHandChange += SaveHandEnd;
+            Constants.CustomHandChange += OnPresetChange;
             this.meidoManager = meidoManager;
 
             presetCategoryDropdown = new Dropdown(Constants.CustomHandGroupList.ToArray());
@@ -108,19 +108,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             meidoManager.ActiveMeido.SetHandPreset(CurrentPreset, right);
         }
 
-        private void SaveHandEnd(object sender, CustomPoseEventArgs args)
+        private void OnPresetChange(object sender, PresetChangeEventArgs args)
         {
-            presetCategoryDropdown.SetDropdownItems(
-                Constants.CustomHandGroupList.ToArray(), Constants.CustomHandGroupList.IndexOf(args.Category)
-            );
-            presetDropdown.SetDropdownItems(UIPresetList(), CurrentPresetList.IndexOf(args.Path));
+            if (args == PresetChangeEventArgs.Empty)
+            {
+                presetCategoryDropdown.SetDropdownItems(Constants.CustomHandGroupList.ToArray(), 0);
+                presetDropdown.SetDropdownItems(UIPresetList(), 0);
+            }
+            else
+            {
+                presetCategoryDropdown.SetDropdownItems(
+                    Constants.CustomHandGroupList.ToArray(), Constants.CustomHandGroupList.IndexOf(args.Category)
+                );
+                presetDropdown.SetDropdownItems(UIPresetList(), CurrentPresetList.IndexOf(args.Path));
+            }
         }
 
         private string[] UIPresetList()
         {
             return CurrentPresetList.Count == 0
                 ? new[] { Translation.Get("handPane", "noPresetsMessage") }
-                : CurrentPresetList.Select(file => Path.GetFileNameWithoutExtension(file)).ToArray();
+                : CurrentPresetList.Select(Path.GetFileNameWithoutExtension).ToArray();
         }
     }
 }
