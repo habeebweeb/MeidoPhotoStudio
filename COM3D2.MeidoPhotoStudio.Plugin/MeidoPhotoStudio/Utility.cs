@@ -23,7 +23,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static void LogInfo(object data) => Logger.LogInfo(data);
 
-        public static void LogMessage(object data) => Logger.LogInfo(data);
+        public static void LogMessage(object data) => Logger.LogMessage(data);
 
         public static void LogWarning(object data) => Logger.LogWarning(data);
 
