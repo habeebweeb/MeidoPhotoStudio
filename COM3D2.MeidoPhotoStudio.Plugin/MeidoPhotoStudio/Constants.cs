@@ -309,27 +309,40 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static void InitializePoses()
         {
             // Load Poses
-            string poseListJson = File.ReadAllText(Path.Combine(configPath, "Database\\mm_pose_list.json"));
-            foreach (SerializePoseList poseList in JsonConvert.DeserializeObject<List<SerializePoseList>>(poseListJson))
+            string poseListPath = Path.Combine(configPath, "Database\\mm_pose_list.json");
+            try
             {
-                PoseDict[poseList.UIName] = poseList.PoseList;
-                PoseGroupList.Add(poseList.UIName);
+                string poseListJson = File.ReadAllText(poseListPath);
+                foreach (SerializePoseList poseList in JsonConvert.DeserializeObject<List<SerializePoseList>>(poseListJson))
+                {
+                    PoseDict[poseList.UIName] = poseList.PoseList;
+                    PoseGroupList.Add(poseList.UIName);
+                }
             }
-
+            catch (IOException e)
+            {
+                Utility.LogError($"Could not open pose database because {e.Message}");
+                Utility.LogMessage("Pose list will be serverely limited.");
+            }
+            catch (Exception e)
+            {
+                Utility.LogError($"Could not parse pose database because {e.Message}");
+            }
             // Get Other poses that'll go into Normal 2 and Ero 2
             string[] com3d2MotionList = GameUty.FileSystem.GetList("motion", AFileSystemBase.ListType.AllFile);
 
             if (com3d2MotionList?.Length > 0)
             {
                 HashSet<string> poseSet = new HashSet<string>();
-                foreach (List<string> poses in PoseDict.Values)
+                foreach (List<string> poses in PoseDict.Values) poseSet.UnionWith(poses);
+
+                string[] newCategories = new[] { "normal", "normal2", "ero2" };
+
+                foreach (string category in newCategories)
                 {
-                    poseSet.UnionWith(poses);
+                    if (!PoseDict.ContainsKey(category)) PoseDict[category] = new List<string>();
                 }
 
-                List<string> editPoseList = new List<string>();
-                List<string> otherPoseList = new List<string>();
-                List<string> eroPoseList = new List<string>();
                 foreach (string path in com3d2MotionList)
                 {
                     if (Path.GetExtension(path) == ".anm")
@@ -337,10 +350,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         string file = Path.GetFileNameWithoutExtension(path);
                         if (!poseSet.Contains(file))
                         {
-                            if (file.StartsWith("edit_"))
-                            {
-                                editPoseList.Add(file);
-                            }
+                            if (file.StartsWith("edit_")) PoseDict["normal"].Add(file);
                             else if (file != "dance_cm3d2_001_zoukin" && file != "dance_cm3d2_001_mop"
                                 && file != "aruki_1_idougo_f" && file != "sleep2" && file != "stand_akire2"
                                 && !file.EndsWith("_3_") && !file.EndsWith("_5_") && !file.StartsWith("vr_")
@@ -351,17 +361,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                                 && !file.Contains("_man_")
                             )
                             {
-                                if (path.Contains(@"\sex\")) eroPoseList.Add(file);
-                                else otherPoseList.Add(file);
+                                if (path.Contains(@"\sex\")) PoseDict["ero2"].Add(file);
+                                else PoseDict["normal2"].Add(file);
                             }
                         }
                     }
                 }
-                PoseDict["normal"].AddRange(editPoseList);
-                PoseDict["normal2"] = otherPoseList;
-                PoseDict["ero2"] = eroPoseList;
 
-                PoseGroupList.AddRange(new[] { "normal2", "ero2" });
+                foreach (string category in newCategories)
+                {
+                    if (PoseDict[category].Count > 0) PoseGroupList.Add(category);
+                    else PoseDict.Remove(category);
+                }
             }
 
             InitializeCustomPoses();
@@ -538,15 +549,23 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             List<string> DoguList = DoguDict[customDoguCategories[DoguCategory.Other]];
 
-            string ignoreListPath = Path.Combine(configPath, "Database\\bg_ignore_list.json");
-            string ignoreListJson = File.ReadAllText(ignoreListPath);
-            string[] ignoreList = JsonConvert.DeserializeObject<string[]>(ignoreListJson);
-
             // bg object extend
             HashSet<string> doguHashSet = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-
             doguHashSet.UnionWith(BGList);
-            doguHashSet.UnionWith(ignoreList);
+
+            try
+            {
+                string ignoreListPath = Path.Combine(configPath, "Database\\bg_ignore_list.json");
+                string ignoreListJson = File.ReadAllText(ignoreListPath);
+                string[] ignoreList = JsonConvert.DeserializeObject<string[]>(ignoreListJson);
+                doguHashSet.UnionWith(ignoreList);
+            }
+            catch (IOException e)
+            {
+                Utility.LogWarning($"Could not open ignored BG database because {e.Message}");
+            }
+            catch { }
+
             foreach (List<string> doguList in DoguDict.Values)
             {
                 doguHashSet.UnionWith(doguList);
@@ -566,10 +585,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             // Get cherry picked dogu that I can't find in the game files
-            string doguExtendPath = Path.Combine(configPath, "Database\\extra_dogu.json");
-            string doguExtendJson = File.ReadAllText(doguExtendPath);
-
-            DoguList.AddRange(JsonConvert.DeserializeObject<IEnumerable<string>>(doguExtendJson));
+            try
+            {
+                string doguExtendPath = Path.Combine(configPath, "Database\\extra_dogu.json");
+                string doguExtendJson = File.ReadAllText(doguExtendPath);
+                DoguList.AddRange(JsonConvert.DeserializeObject<IEnumerable<string>>(doguExtendJson));
+            }
+            catch (IOException e)
+            {
+                Utility.LogError($"Could not open extra prop database because {e.Message}");
+            }
+            catch (Exception e)
+            {
+                Utility.LogError($"Could not parse extra prop database because {e.Message}");
+            }
 
             foreach (string path in GameUty.FileSystemOld.GetList("bg", AFileSystemBase.ListType.AllFile))
             {
@@ -692,13 +721,26 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             MenuDataBase menuDataBase = GameMain.Instance.MenuDataBase;
 
-            string ignoreListJson = File.ReadAllText(Path.Combine(configPath, "Database\\bg_ignore_list.json"));
-            string[] ignoreList = JsonConvert.DeserializeObject<IEnumerable<string>>(ignoreListJson).ToArray();
-
             HashSet<string> doguHashSet = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
             doguHashSet.UnionWith(BGList);
-            doguHashSet.UnionWith(ignoreList);
+
+            try
+            {
+                string ignoreListPath = Path.Combine(configPath, "Database\\bg_ignore_list.json");
+                string ignoreListJson = File.ReadAllText(ignoreListPath);
+                string[] ignoreList = JsonConvert.DeserializeObject<string[]>(ignoreListJson);
+                doguHashSet.UnionWith(ignoreList);
+            }
+            catch (IOException e)
+            {
+                Utility.LogWarning($"Could not open ignored BG database because {e.Message}");
+            }
+            catch (Exception e)
+            {
+                Utility.LogError($"Could not parse ignored BG database because {e.Message}");
+            }
+
             foreach (List<string> doguList in DoguDict.Values)
             {
                 doguHashSet.UnionWith(doguList);
