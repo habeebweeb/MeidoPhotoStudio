@@ -11,6 +11,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected const int jointLower = 2;
         protected Meido meido;
         protected Maid maid;
+        protected IKCtrlData IkCtrlData => meido.Body.IKCtrl.GetIKData("左手");
         protected bool isPlaying;
         private bool isBone;
         public bool IsBone
@@ -55,9 +56,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             iKCmo.Init(upper, middle, lower, maid.body0);
         }
 
-        protected void Porc(TBody.IKCMO ikCmo, Transform upper, Transform middle, Transform lower)
+        protected void Porc(TBody.IKCMO ikCmo, IKCtrlData ikData, Transform upper, Transform middle, Transform lower)
         {
-            IKCtrlData ikData = maid.body0.IKCtrl.GetIKData("左手");
             ikCmo.Porc(upper, middle, lower, CursorPosition(), Vector3.zero, ikData);
         }
     }

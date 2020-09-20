@@ -5,11 +5,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     using Input = InputManager;
     internal class DragPointFinger : DragPointMeido
     {
+        private static readonly Color dragpointColour = new Color(0.1f, 0.4f, 0.95f, defaultAlpha);
         private readonly TBody.IKCMO IK = new TBody.IKCMO();
         private readonly Quaternion[] jointRotation = new Quaternion[2];
+        private IKCtrlData ikCtrlData;
         private Transform[] ikChain;
         private bool baseFinger;
-        private static readonly Color dragpointColour = new Color(0.1f, 0.4f, 0.95f, defaultAlpha);
 
         public override void Set(Transform myObject)
         {
@@ -21,6 +22,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 myObject.parent,
                 myObject
             };
+            ikCtrlData = IkCtrlData;
         }
 
         private void SetRotation(int joint)
@@ -61,7 +63,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (CurrentDragType == DragType.MoveXZ)
             {
-                Porc(IK, ikChain[jointUpper], ikChain[jointUpper], ikChain[jointMiddle]);
+                Porc(IK, ikCtrlData, ikChain[jointUpper], ikChain[jointUpper], ikChain[jointMiddle]);
                 if (!baseFinger)
                 {
                     SetRotation(jointUpper);

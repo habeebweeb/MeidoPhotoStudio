@@ -7,6 +7,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private readonly TBody.IKCMO IK = new TBody.IKCMO();
         private readonly Quaternion[] jointRotation = new Quaternion[3];
+        private IKCtrlData ikCtrlData;
         private Transform[] ikChain;
         private int foot = 1;
         private bool isLower;
@@ -28,6 +29,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 myObject
             };
             if (isLower) ikChain[0] = ikChain[0].parent;
+
+            ikCtrlData = IkCtrlData;
         }
 
         private void InitializeRotation()
@@ -115,7 +118,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 int upperJoint = altRotation ? jointMiddle : jointUpper;
 
-                Porc(IK, ikChain[upperJoint], ikChain[jointMiddle], ikChain[jointLower]);
+                Porc(IK, ikCtrlData, ikChain[upperJoint], ikChain[jointMiddle], ikChain[jointLower]);
 
                 InitializeRotation();
             }
