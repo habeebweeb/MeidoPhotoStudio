@@ -9,32 +9,51 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     internal static class Translation
     {
+        private const string settingsHeader = "Translation";
         private static readonly string[] props = { "ui", "props", "bg", "face" };
         private static Dictionary<string, Dictionary<string, string>> Translations;
         private static readonly ConfigEntry<string> currentLanguage;
+        private static readonly ConfigEntry<bool> suppressWarnings;
+        private static bool forceSuppressWarnings;
+        private static bool suppressWarningsCached;
+        public static bool SuppressWarnings
+        {
+            get => suppressWarningsCached;
+            set
+            {
+                suppressWarningsCached = value;
+                suppressWarnings.Value = value;
+            }
+        }
         public static string CurrentLanguage
         {
             get => currentLanguage.Value;
-            private set => currentLanguage.Value = value;
+            set => currentLanguage.Value = value;
         }
         public static event EventHandler ReloadTranslationEvent;
 
         static Translation()
         {
             currentLanguage = Configuration.Config.Bind(
-                "Translation", "Language",
+                settingsHeader, "Language",
                 "en",
                 "Directory to pull translations from"
                 + "\nTranslations are found in the 'Translations' folder"
             );
 
-            Configuration.Config.ConfigReloaded += OnSettingChange;
-        }
+            suppressWarnings = Configuration.Config.Bind(
+                settingsHeader, "SuppressWarnings",
+                false,
+                "Suppress translation warnings from showing up in the console"
+            );
 
-        private static void OnSettingChange(object sender, EventArgs args) => ReloadTranslation();
+            suppressWarningsCached = !suppressWarnings.Value;
+        }
 
         public static void Initialize(string language)
         {
+            forceSuppressWarnings = false;
+
             string rootTranslationPath = Path.Combine(Constants.configPath, Constants.translationDirectory);
             string currentTranslationPath = Path.Combine(rootTranslationPath, language);
 
@@ -44,9 +63,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (!Directory.Exists(currentTranslationPath))
             {
-                Utility.LogWarning(
+                Utility.LogError(
                     $"No translations found for '{language}' in '{currentTranslationPath}'"
                 );
+                forceSuppressWarnings = true;
                 return;
             }
 
@@ -71,26 +91,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
                 catch
                 {
+                    forceSuppressWarnings = true;
                     Utility.LogError($"Could not find translation file '{translationFile}'");
                 }
             }
         }
 
-        public static void ReinitializeTranslation() => Configuration.Config.Reload();
-
-        public static void ReloadTranslation()
+        public static void ReinitializeTranslation()
         {
             Initialize(CurrentLanguage);
-            OnReloadTranslation();
-        }
-
-        public static void OnReloadTranslation()
-        {
             ReloadTranslationEvent?.Invoke(null, EventArgs.Empty);
         }
 
         public static bool Has(string category, string text, bool warn = false)
         {
+            warn = !forceSuppressWarnings && !SuppressWarnings && warn;
             if (!Translations.ContainsKey(category))
             {
                 if (warn) Utility.LogWarning($"Could not translate '{text}': category '{category}' was not found");
