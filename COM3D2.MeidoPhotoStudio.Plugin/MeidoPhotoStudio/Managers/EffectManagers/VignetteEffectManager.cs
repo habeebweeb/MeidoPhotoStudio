@@ -67,6 +67,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 initialBlurSpread = Vignette.blurSpread;
                 initialChromaticAberration = Vignette.chromaticAberration;
             }
+            SetEffectActive(false);
         }
 
         public void Deactivate()

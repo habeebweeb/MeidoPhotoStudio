@@ -37,10 +37,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             currentEffectPane.UpdatePane();
         }
 
-        public override void UpdatePane()
-        {
-            currentEffectPane.UpdatePane();
-        }
+        public override void UpdatePane() => currentEffectPane.UpdatePane();
 
         public override void Draw()
         {

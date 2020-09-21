@@ -12,43 +12,47 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Slider blueSlider;
         private readonly Toggle hdrToggle;
 
-        public BloomPane(EffectManager effectManager) : base(effectManager.Get<BloomEffectManager>())
+        public BloomPane(EffectManager effectManager) : base(effectManager)
         {
-            Bloom bloom = GameMain.Instance.MainCamera.GetComponent<Bloom>();
-
             intensitySlider = new Slider(
-                Translation.Get("effectBloom", "intensity"), 0f, 5.7f, bloom.bloomIntensity
+                Translation.Get("effectBloom", "intensity"), 0f, 100f, EffectManager.BloomValue
             );
             intensitySlider.ControlEvent += (s, a) =>
             {
                 if (updating) return;
-                EffectManager.Intensity = intensitySlider.Value;
+                EffectManager.BloomValue = intensitySlider.Value;
             };
-            blurSlider = new Slider(Translation.Get("effectBloom", "blur"), 0f, 15f, bloom.bloomBlurIterations);
+            blurSlider = new Slider(Translation.Get("effectBloom", "blur"), 0f, 15f, EffectManager.BlurIterations);
             blurSlider.ControlEvent += (s, a) =>
             {
                 if (updating) return;
                 EffectManager.BlurIterations = (int)blurSlider.Value;
             };
-            redSlider = new Slider(Translation.Get("backgroundWindow", "red"), 1f, 0.5f, 1f);
+            redSlider = new Slider(
+                Translation.Get("backgroundWindow", "red"), 1f, 0.5f, EffectManager.BloomThresholdColorRed
+            );
             redSlider.ControlEvent += (s, a) =>
             {
                 if (updating) return;
                 EffectManager.BloomThresholdColorRed = redSlider.Value;
             };
-            greenSlider = new Slider(Translation.Get("backgroundWindow", "green"), 1f, 0.5f, 1f);
+            greenSlider = new Slider(
+                Translation.Get("backgroundWindow", "green"), 1f, 0.5f, EffectManager.BloomThresholdColorGreen
+            );
             greenSlider.ControlEvent += (s, a) =>
             {
                 if (updating) return;
                 EffectManager.BloomThresholdColorGreen = greenSlider.Value;
             };
-            blueSlider = new Slider(Translation.Get("backgroundWindow", "blue"), 1f, 0.5f, 1f);
+            blueSlider = new Slider(
+                Translation.Get("backgroundWindow", "blue"), 1f, 0.5f, EffectManager.BloomThresholdColorBlue
+            );
             blueSlider.ControlEvent += (s, a) =>
             {
                 if (updating) return;
                 EffectManager.BloomThresholdColorBlue = blueSlider.Value;
             };
-            hdrToggle = new Toggle(Translation.Get("effectBloom", "hdrToggle"));
+            hdrToggle = new Toggle(Translation.Get("effectBloom", "hdrToggle"), EffectManager.BloomHDR);
             hdrToggle.ControlEvent += (s, a) =>
             {
                 if (updating) return;
@@ -68,7 +72,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void UpdateControls()
         {
-            intensitySlider.Value = EffectManager.Intensity;
+            intensitySlider.Value = EffectManager.BloomValue;
             blurSlider.Value = EffectManager.BlurIterations;
             redSlider.Value = EffectManager.BloomThresholdColorRed;
             greenSlider.Value = EffectManager.BloomThresholdColorGreen;

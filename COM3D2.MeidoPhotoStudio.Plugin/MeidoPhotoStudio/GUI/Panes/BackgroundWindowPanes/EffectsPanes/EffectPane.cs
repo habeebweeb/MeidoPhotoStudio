@@ -18,13 +18,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        protected EffectPane(T effectManager)
+        protected EffectPane(EffectManager effectManager)
         {
-            EffectManager = effectManager;
+            EffectManager = effectManager.Get<T>();
             resetEffectButton = new Button(Translation.Get("effectsPane", "reset"));
             resetEffectButton.ControlEvent += (s, a) => ResetEffect();
             effectToggle = new Toggle(Translation.Get("effectsPane", "onToggle"));
-            effectToggle.ControlEvent += (s, a) => Enabled = effectToggle.Value;
+            effectToggle.ControlEvent += (s, a) =>
+            {
+                if (updating) return;
+                Enabled = effectToggle.Value;
+            };
         }
 
         protected override void ReloadTranslation()
@@ -41,6 +45,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public override void UpdatePane()
         {
             if (!EffectManager.Ready) return;
+            if (EffectManager.Active != effectToggle.Value) EffectManager.SetEffectActive(effectToggle.Value);
             updating = true;
             effectToggle.Value = EffectManager.Active;
             UpdateControls();

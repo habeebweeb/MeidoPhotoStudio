@@ -13,21 +13,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Slider greenSlider;
         private readonly Slider blueSlider;
 
-        public FogPane(EffectManager effectManager) : base(effectManager.Get<FogEffectManager>())
+        public FogPane(EffectManager effectManager) : base(effectManager)
         {
             distanceSlider = new Slider(
-                Translation.Get("effectFog", "distance"), 0f, 30f, FogEffectManager.InitialDistance
+                Translation.Get("effectFog", "distance"), 0f, 30f, EffectManager.Distance
             );
             densitySlider = new Slider(
-                Translation.Get("effectFog", "density"), 0f, 10f, FogEffectManager.InitialDensity
+                Translation.Get("effectFog", "density"), 0f, 10f, EffectManager.Density
             );
             heightScaleSlider = new Slider(
-                Translation.Get("effectFog", "strength"), -5f, 20f, FogEffectManager.InitialHeightScale
+                Translation.Get("effectFog", "strength"), -5f, 20f, EffectManager.HeightScale
             );
             heightSlider = new Slider(
-                Translation.Get("effectFog", "height"), -10f, 10f, FogEffectManager.InitialHeight
+                Translation.Get("effectFog", "height"), -10f, 10f, EffectManager.Height
             );
-            Color initialFogColour = FogEffectManager.InitialColour;
+            Color initialFogColour = EffectManager.FogColour;
             redSlider = new Slider(Translation.Get("backgroundWIndow", "red"), 0f, 1f, initialFogColour.r);
             greenSlider = new Slider(Translation.Get("backgroundWIndow", "green"), 0f, 1f, initialFogColour.g);
             blueSlider = new Slider(Translation.Get("backgroundWIndow", "blue"), 0f, 1f, initialFogColour.b);

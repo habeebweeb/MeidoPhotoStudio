@@ -11,18 +11,40 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Slider blurSlider;
         private readonly Toggle thicknessToggle;
 
-        public DepthOfFieldPane(EffectManager effectManager) : base(effectManager.Get<DepthOfFieldEffectManager>())
+        public DepthOfFieldPane(EffectManager effectManager) : base(effectManager)
         {
-            focalLengthSlider = new Slider(Translation.Get("effectDof", "focalLength"), 0f, 10f);
-            focalSizeSlider = new Slider(Translation.Get("effectDof", "focalArea"), 0f, 2f);
-            apertureSlider = new Slider(Translation.Get("effectDof", "aperture"), 0f, 60f);
-            blurSlider = new Slider(Translation.Get("effectDof", "blur"), 0f, 10f);
-            thicknessToggle = new Toggle(Translation.Get("effectDof", "thicknessToggle"));
-            focalLengthSlider.ControlEvent += (s, a) => EffectManager.FocalLength = focalLengthSlider.Value;
-            focalSizeSlider.ControlEvent += (s, a) => EffectManager.FocalSize = focalSizeSlider.Value;
-            apertureSlider.ControlEvent += (s, a) => EffectManager.Aperture = apertureSlider.Value;
-            blurSlider.ControlEvent += (s, a) => EffectManager.MaxBlurSize = blurSlider.Value;
-            thicknessToggle.ControlEvent += (s, a) => EffectManager.VisualizeFocus = thicknessToggle.Value;
+            focalLengthSlider = new Slider(
+                Translation.Get("effectDof", "focalLength"), 0f, 10f, EffectManager.FocalLength
+            );
+            focalSizeSlider = new Slider(Translation.Get("effectDof", "focalArea"), 0f, 2f, EffectManager.FocalSize);
+            apertureSlider = new Slider(Translation.Get("effectDof", "aperture"), 0f, 60f, EffectManager.Aperture);
+            blurSlider = new Slider(Translation.Get("effectDof", "blur"), 0f, 10f, EffectManager.MaxBlurSize);
+            thicknessToggle = new Toggle(Translation.Get("effectDof", "thicknessToggle"), EffectManager.VisualizeFocus);
+            focalLengthSlider.ControlEvent += (s, a) =>
+            {
+                if (updating) return;
+                EffectManager.FocalLength = focalLengthSlider.Value;
+            };
+            focalSizeSlider.ControlEvent += (s, a) =>
+            {
+                if (updating) return;
+                EffectManager.FocalSize = focalSizeSlider.Value;
+            };
+            apertureSlider.ControlEvent += (s, a) =>
+            {
+                if (updating) return;
+                EffectManager.Aperture = apertureSlider.Value;
+            };
+            blurSlider.ControlEvent += (s, a) =>
+            {
+                if (updating) return;
+                EffectManager.MaxBlurSize = blurSlider.Value;
+            };
+            thicknessToggle.ControlEvent += (s, a) =>
+            {
+                if (updating) return;
+                EffectManager.VisualizeFocus = thicknessToggle.Value;
+            };
         }
 
         protected override void TranslatePane()

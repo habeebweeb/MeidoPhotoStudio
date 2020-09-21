@@ -8,11 +8,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private GlobalFog Fog { get; set; }
         public bool Ready { get; }
         public bool Active { get; private set; }
-        public static float InitialDistance { get; } = 4f;
-        public static float InitialDensity { get; } = 1f;
-        public static float InitialHeightScale { get; } = 1f;
-        public static float InitialHeight { get; }
-        public static Color InitialColour { get; private set; } = Color.white;
+        private readonly float initialDistance = 4f;
+        private readonly float initialDensity = 1f;
+        private readonly float initialHeightScale = 1f;
+        private readonly float initialHeight = 0f;
+        private readonly Color initialColour = Color.white;
         private float distance;
         public float Distance
         {
@@ -98,32 +98,33 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Fog = GameMain.Instance.MainCamera.GetOrAddComponent<GlobalFog>();
                 if (Fog.fogShader == null) Fog.fogShader = Shader.Find("Hidden/GlobalFog");
-                Distance = InitialDistance;
-                Density = InitialDensity;
-                HeightScale = InitialHeightScale;
-                Height = InitialHeight;
-                FogColour = InitialColour;
+                Distance = initialDistance;
+                Density = initialDensity;
+                HeightScale = initialHeightScale;
+                Height = initialHeight;
+                FogColour = initialColour;
             }
+            SetEffectActive(false);
         }
 
         public void Deactivate()
         {
-            Distance = InitialDistance;
-            Density = InitialDensity;
-            HeightScale = InitialHeightScale;
-            Height = InitialHeight;
-            FogColour = InitialColour;
+            Distance = initialDistance;
+            Density = initialDensity;
+            HeightScale = initialHeightScale;
+            Height = initialHeight;
+            FogColour = initialColour;
             Fog.enabled = false;
             Active = false;
         }
 
         public void Reset()
         {
-            Fog.startDistance = InitialDistance;
-            Fog.globalDensity = InitialDensity;
-            Fog.heightScale = InitialHeightScale;
-            Fog.height = InitialHeight;
-            Fog.globalFogColor = InitialColour;
+            Fog.startDistance = initialDistance;
+            Fog.globalDensity = initialDensity;
+            Fog.heightScale = initialHeightScale;
+            Fog.height = initialHeight;
+            Fog.globalFogColor = initialColour;
         }
 
         public void SetEffectActive(bool active)

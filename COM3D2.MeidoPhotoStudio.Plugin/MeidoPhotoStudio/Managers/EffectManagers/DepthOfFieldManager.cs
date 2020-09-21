@@ -81,6 +81,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     DepthOfField.dx11BokehTexture = Resources.Load("Textures/hexShape") as Texture2D;
                 }
             }
+            SetEffectActive(false);
         }
 
         public void Deactivate()
