@@ -68,6 +68,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.meidoManager = meidoManager;
             this.meidoManager.BeginCallMeidos += DetachProps;
             this.meidoManager.EndCallMeidos += OnEndCall;
+            Activate();
         }
 
         public void Serialize(BinaryWriter binaryWriter)
@@ -253,6 +254,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 Vector3 localPosition = new Vector3(0f, 0.96f, 0f);
                 dogu.transform.Rotate(dogu.transform.right, 90f);
+                dogu.transform.localPosition = localPosition;
 
                 switch (assetName)
                 {
@@ -266,8 +268,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         localPosition.y = 0.85f;
                         dogu.transform.localScale = new Vector3(0.03f, 0.18f, 0.124f);
                         break;
+                    default:
+                        GameObject.Destroy(dogu);
+                        dogu = null;
+                        break;
                 }
-                dogu.transform.localPosition = localPosition;
             }
             else if (assetName.IndexOf(':') >= 0)
             {

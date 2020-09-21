@@ -10,7 +10,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public BaseWindow this[Window id]
         {
             get => Windows[id];
-            set => Windows[id] = value;
+            set
+            {
+                Windows[id] = value;
+                Windows[id].Activate();
+            }
         }
 
         public WindowManager() => InputManager.Register(MpsKey.ToggleUI, KeyCode.Tab, "Show/hide all UI");

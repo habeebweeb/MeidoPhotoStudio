@@ -56,8 +56,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
         private float defaultCameraMoveSpeed;
         private float defaultCameraZoomSpeed;
-        private float cameraFastMoveSpeed = 0.1f;
-        private float cameraFastZoomSpeed = 2f;
+        private const float cameraFastMoveSpeed = 0.1f;
+        private const float cameraFastZoomSpeed = 2f;
 
         static EnvironmentManager()
         {
@@ -67,7 +67,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Input.Register(MpsKey.CameraReset, KeyCode.R, "Reset camera transform");
         }
 
-        public EnvironmentManager() => DragPointLight.EnvironmentManager = this;
+        public EnvironmentManager()
+        {
+            DragPointLight.EnvironmentManager = this;
+            Activate();
+        }
 
         public void Serialize(System.IO.BinaryWriter binaryWriter) => Serialize(binaryWriter, false);
 

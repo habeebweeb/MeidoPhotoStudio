@@ -8,24 +8,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public const string header = "EFFECT";
         public const string footer = "END_EFFECT";
         private readonly Dictionary<Type, IEffectManager> EffectManagers = new Dictionary<Type, IEffectManager>();
-        private readonly BloomEffectManager bloomEffectManager;
-
-        public EffectManager()
-        {
-            // Not going to add more effects because SceneCapture does it better anyway
-            bloomEffectManager = AddManager<BloomEffectManager>();
-            AddManager<DepthOfFieldEffectManager>();
-            AddManager<VignetteEffectManager>();
-            AddManager<FogEffectManager>();
-        }
 
         public T Get<T>() where T : IEffectManager
             => EffectManagers.ContainsKey(typeof(T)) ? (T)EffectManagers[typeof(T)] : default;
 
-        private T AddManager<T>() where T : IEffectManager, new()
+        public T AddManager<T>() where T : IEffectManager, new()
         {
             T manager = new T();
             EffectManagers[typeof(T)] = manager;
+            manager.Activate();
             return manager;
         }
 
@@ -69,10 +60,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (IEffectManager effectManager in EffectManagers.Values) effectManager.Deactivate();
         }
 
-        public void Update()
-        {
-            // Bloom is the only effect that needs to update because I'm dumb/lazy
-            bloomEffectManager.Update();
-        }
+        public void Update() { }
     }
 }

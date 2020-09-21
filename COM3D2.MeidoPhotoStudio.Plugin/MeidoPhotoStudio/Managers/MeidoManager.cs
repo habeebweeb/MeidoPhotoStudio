@@ -49,6 +49,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         static MeidoManager() => InputManager.Register(MpsKey.MeidoUndressing, KeyCode.H, "All maid undressing");
 
+        public MeidoManager() => Activate();
+
         public void ChangeMaid(int index) => OnUpdateMeido(null, new MeidoUpdateEventArgs(index));
 
         public void Activate()

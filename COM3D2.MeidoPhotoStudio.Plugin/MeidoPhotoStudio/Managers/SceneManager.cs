@@ -62,7 +62,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Input.Register(MpsKey.LoadScene, KeyCode.A, "Load quick saved scene");
         }
 
-        public SceneManager(MeidoPhotoStudio meidoPhotoStudio) => this.meidoPhotoStudio = meidoPhotoStudio;
+        public SceneManager(MeidoPhotoStudio meidoPhotoStudio)
+        {
+            this.meidoPhotoStudio = meidoPhotoStudio;
+            Activate();
+        }
 
         public void Activate() { }
 

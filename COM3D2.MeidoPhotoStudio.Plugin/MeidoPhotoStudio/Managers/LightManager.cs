@@ -41,6 +41,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public event EventHandler ListModified;
         public event EventHandler Select;
 
+        public LightManager() => Activate();
+
         public void Serialize(System.IO.BinaryWriter binaryWriter)
         {
             binaryWriter.Write(header);

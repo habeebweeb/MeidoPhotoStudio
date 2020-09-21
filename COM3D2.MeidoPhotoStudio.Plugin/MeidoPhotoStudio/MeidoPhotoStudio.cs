@@ -350,8 +350,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             messageWindowManager = new MessageWindowManager();
             lightManager = new LightManager();
             propManager = new PropManager(meidoManager);
-            effectManager = new EffectManager();
             sceneManager = new SceneManager(this);
+
+            effectManager = new EffectManager();
+            effectManager.AddManager<BloomEffectManager>();
+            effectManager.AddManager<DepthOfFieldEffectManager>();
+            effectManager.AddManager<FogEffectManager>();
+            effectManager.AddManager<VignetteEffectManager>();
+
+            meidoManager.BeginCallMeidos += (s, a) => uiActive = false;
+            meidoManager.EndCallMeidos += (s, a) => uiActive = true;
 
             MaidSwitcherPane maidSwitcherPane = new MaidSwitcherPane(meidoManager);
 
@@ -373,9 +381,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 [Constants.Window.Message] = new MessageWindow(messageWindowManager),
                 [Constants.Window.Save] = sceneWindow
             };
-
-            meidoManager.BeginCallMeidos += (s, a) => uiActive = false;
-            meidoManager.EndCallMeidos += (s, a) => uiActive = true;
         }
 
         private void Activate()
@@ -383,19 +388,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (!GameMain.Instance.SysDlg.IsDecided) return;
 
             if (!initialized) Initialize();
+            else
+            {
+                meidoManager.Activate();
+                environmentManager.Activate();
+                propManager.Activate();
+                lightManager.Activate();
+                effectManager.Activate();
+                messageWindowManager.Activate();
+                windowManager.Activate();
+            }
 
             SetNearClipPlane();
 
             uiActive = true;
             active = true;
-
-            meidoManager.Activate();
-            environmentManager.Activate();
-            propManager.Activate();
-            lightManager.Activate();
-            effectManager.Activate();
-            windowManager.Activate();
-            messageWindowManager.Activate();
 
             GameObject dailyPanel = GameObject.Find("UI Root").transform.Find("DailyPanel").gameObject;
             dailyPanel.SetActive(false);
