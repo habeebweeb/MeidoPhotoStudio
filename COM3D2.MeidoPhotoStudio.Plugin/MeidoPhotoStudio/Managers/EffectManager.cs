@@ -46,6 +46,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     case FogEffectManager.header:
                         Get<FogEffectManager>().Deserialize(binaryReader);
                         break;
+                    case SepiaToneEffectManger.header:
+                        Get<SepiaToneEffectManger>().Deserialize(binaryReader);
+                        break;
+                    case BlurEffectManager.header:
+                        Get<BlurEffectManager>().Deserialize(binaryReader);
+                        break;
                 }
             }
         }

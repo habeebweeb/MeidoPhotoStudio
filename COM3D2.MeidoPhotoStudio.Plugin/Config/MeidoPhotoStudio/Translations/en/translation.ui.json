@@ -126,7 +126,8 @@
     "gravityControlPane": {
         "hairToggle": "Hair",
         "skirtToggle": "Skirt",
-        "globalToggle": "Global"
+        "globalToggle": "Global",
+        "gravityHeader": "Gravity Control"
     },
     "handPane": {
         "header": "Hand Preset",
@@ -195,7 +196,7 @@
         "hohol": "Blush 3"
     },
     "faceSave": {
-        "categoryHeader": "Cateogory",
+        "categoryHeader": "Category",
         "nameHeader": "Name",
         "saveButton": "Add",
         "deleteButton": "D"
@@ -300,6 +301,10 @@
     "effectSepia": {
         "toggle": "Sepia",
         "blur": "Blur"
+    },
+    "otherEffectsPane": {
+        "sepiaToggle": "Sepia",
+        "blurSlider": "Blur"
     },
     "background2Window": {
         "envButton": "Environments",

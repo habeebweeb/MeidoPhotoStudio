@@ -357,6 +357,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             effectManager.AddManager<DepthOfFieldEffectManager>();
             effectManager.AddManager<FogEffectManager>();
             effectManager.AddManager<VignetteEffectManager>();
+            effectManager.AddManager<SepiaToneEffectManger>();
+            effectManager.AddManager<BlurEffectManager>();
 
             meidoManager.BeginCallMeidos += (s, a) => uiActive = false;
             meidoManager.EndCallMeidos += (s, a) => uiActive = true;
