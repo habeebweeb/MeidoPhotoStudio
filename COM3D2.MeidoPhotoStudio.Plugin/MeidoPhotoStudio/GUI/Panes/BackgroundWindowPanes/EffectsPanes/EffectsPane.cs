@@ -5,8 +5,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class EffectsPane : BasePane
     {
         private readonly Dictionary<string, BasePane> effectPanes = new Dictionary<string, BasePane>();
-        private readonly SelectionGrid effectToggles;
         private readonly List<string> effectList = new List<string>();
+        private readonly SelectionGrid effectToggles;
         private BasePane currentEffectPane;
 
         public BasePane this[string effectUI]
