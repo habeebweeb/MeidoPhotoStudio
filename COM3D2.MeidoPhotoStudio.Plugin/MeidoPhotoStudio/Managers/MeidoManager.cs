@@ -33,6 +33,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             set
             {
                 globalGravity = value;
+
+                if (!HasActiveMeido) return;
+
                 Meido activeMeido = ActiveMeido;
                 int activeMeidoSlot = activeMeido.Slot;
 
