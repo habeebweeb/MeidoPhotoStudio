@@ -8,6 +8,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly LightsPane lightsPane;
         private readonly EffectsPane effectsPane;
         private readonly DragPointPane dragPointPane;
+        private readonly OtherEffectsPane otherEffectsPane;
         private readonly Button sceneManagerButton;
 
         public BGWindowPane(
@@ -29,6 +30,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 ["vignette"] = new VignettePane(effectManager),
                 ["fog"] = new FogPane(effectManager)
             });
+
+            otherEffectsPane = AddPane(new OtherEffectsPane(effectManager));
         }
 
         protected override void ReloadTranslation()
@@ -45,6 +48,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             scrollPos = GUILayout.BeginScrollView(scrollPos);
             lightsPane.Draw();
             effectsPane.Draw();
+            otherEffectsPane.Draw();
             GUILayout.EndScrollView();
         }
 
