@@ -6,7 +6,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         public const string header = "EFFECT_FOG";
         private GlobalFog Fog { get; set; }
-        public bool Ready { get; }
+        public bool Ready { get; private set; }
         public bool Active { get; private set; }
         private readonly float initialDistance = 4f;
         private readonly float initialDensity = 1f;
@@ -96,6 +96,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (Fog == null)
             {
+                Ready = true;
                 Fog = GameMain.Instance.MainCamera.GetOrAddComponent<GlobalFog>();
                 if (Fog.fogShader == null) Fog.fogShader = Shader.Find("Hidden/GlobalFog");
                 Distance = initialDistance;
