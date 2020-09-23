@@ -8,6 +8,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Toggle hairToggle;
         private readonly Toggle skirtToggle;
         private readonly Toggle globalToggle;
+        private string header;
 
         public GravityControlPane(MeidoManager meidoManager)
         {
@@ -21,6 +22,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             globalToggle = new Toggle(Translation.Get("gravityControlPane", "globalToggle"));
             globalToggle.ControlEvent += (s, a) => SetGlobalGravity(globalToggle.Value);
+
+            header = Translation.Get("gravityControlPane", "gravityHeader");
+        }
+
+        protected override void ReloadTranslation()
+        {
+            hairToggle.Label = Translation.Get("gravityControlPane", "hairToggle");
+            skirtToggle.Label = Translation.Get("gravityControlPane", "skirtToggle");
+            globalToggle.Label = Translation.Get("gravityControlPane", "globalToggle");
+            header = Translation.Get("gravityControlPane", "gravityHeader");
         }
 
         public override void Draw()
@@ -28,7 +39,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bool enabled = meidoManager.HasActiveMeido;
             GUI.enabled = enabled;
 
-            MpsGui.Header("Gravity Control");
+            MpsGui.Header(header);
             MpsGui.WhiteLine();
 
             Meido meido = meidoManager.ActiveMeido;
