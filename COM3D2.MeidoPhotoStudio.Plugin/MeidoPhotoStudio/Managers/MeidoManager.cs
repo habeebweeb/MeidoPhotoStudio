@@ -139,8 +139,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             BeginCallMeidos?.Invoke(this, EventArgs.Empty);
 
-            bool hadActiveMeidos = HasActiveMeido;
-
             UnloadMeidos();
 
             if (SelectMeidoList.Count == 0)
@@ -156,12 +154,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private System.Collections.IEnumerator LoadMeidos()
         {
-            foreach (int slot in SelectMeidoList)
-            {
-                Meido meido = Meidos[slot];
-                ActiveMeidoList.Add(meido);
-                meido.BeginLoad();
-            }
+            foreach (int slot in SelectMeidoList) ActiveMeidoList.Add(Meidos[slot]);
 
             for (int i = 0; i < ActiveMeidoList.Count; i++) ActiveMeidoList[i].Load(i);
 

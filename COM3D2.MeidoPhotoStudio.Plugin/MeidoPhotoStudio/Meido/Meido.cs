@@ -54,7 +54,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public bool Loading { get; private set; }
         public string FirstName => Maid.status.firstName;
         public string LastName => Maid.status.lastName;
-        public bool Busy => Maid.IsBusy && Loading;
+        public bool Busy => Maid.IsBusy || Loading;
         public bool CurlingFront => Maid.IsItemChange("skirt", "めくれスカート")
             || Maid.IsItemChange("onepiece", "めくれスカート");
         public bool CurlingBack => Maid.IsItemChange("skirt", "めくれスカート後ろ")
@@ -171,19 +171,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             IKManager.SelectMaid += (s, args) => OnUpdateMeido(args);
         }
 
-        public void BeginLoad()
+        public void Load(int slot)
         {
+            if (Busy) return;
+
+            Slot = slot;
+
             FreeLook = false;
             Maid.Visible = true;
             Body.boHeadToCam = true;
             Body.boEyeToCam = true;
             Body.SetBoneHitHeightY(-1000f);
-        }
-
-        public void Load(int slot)
-        {
-            Slot = slot;
-            Loading = true;
 
             if (!Body.isLoadedBody)
             {
@@ -191,16 +189,46 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Maid.AllProcPropSeqStart();
             }
 
-            GameMain.Instance.StartCoroutine(Load());
+            StartLoad(OnBodyLoad);
         }
 
-        private IEnumerator Load()
+        private void StartLoad(Action callback)
         {
+            if (Loading) return;
+            GameMain.Instance.StartCoroutine(Load(callback));
+        }
+
+        private IEnumerator Load(Action callback)
+        {
+            Loading = true;
             while (Maid.IsBusy) yield return null;
-
             yield return new WaitForEndOfFrame();
+            callback();
+            Loading = false;
+        }
 
-            OnBodyLoad();
+        private void OnBodyLoad()
+        {
+            if (!initialized)
+            {
+                DefaultEyeRotL = Body.quaDefEyeL;
+                DefaultEyeRotR = Body.quaDefEyeR;
+
+                InitializeGravityControls();
+
+                initialized = true;
+            }
+
+            if (BlendSetValueBackup == null) BackupBlendSetValues();
+
+            if (HairGravityValid) hairGravityDragPoint.Move += OnGravityEvent;
+            if (SkirtGravityValid) skirtGravityDragPoint.Move += OnGravityEvent;
+
+            IKManager.Initialize();
+
+            IK = true;
+            Stop = false;
+            Bone = false;
         }
 
         public void Unload()
@@ -581,32 +609,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 cache.CreateCache(Body.GetBone("Bip01"));
             }
             return cache;
-        }
-
-        private void OnBodyLoad()
-        {
-            if (!initialized)
-            {
-                TMorph faceMorph = Body.Face.morph;
-                DefaultEyeRotL = Body.quaDefEyeL;
-                DefaultEyeRotR = Body.quaDefEyeR;
-
-                InitializeGravityControls();
-
-                initialized = true;
-            }
-
-            if (BlendSetValueBackup == null) BackupBlendSetValues();
-
-            if (HairGravityValid) hairGravityDragPoint.Move += OnGravityEvent;
-            if (SkirtGravityValid) skirtGravityDragPoint.Move += OnGravityEvent;
-
-            IKManager.Initialize();
-
-            IK = true;
-            Stop = false;
-            Bone = false;
-            Loading = false;
         }
 
         private void InitializeGravityControls()
