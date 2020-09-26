@@ -12,6 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private int undress;
         private int numberOfMeidos;
         public Meido[] Meidos { get; private set; }
+        public HashSet<int> SelectedMeidoSet { get; } = new HashSet<int>();
         public List<int> SelectMeidoList { get; } = new List<int>();
         public List<Meido> ActiveMeidoList { get; } = new List<Meido>();
         public Meido ActiveMeido => ActiveMeidoList.Count > 0 ? ActiveMeidoList[SelectedMeido] : null;
@@ -25,6 +26,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => selectedMeido;
             private set => selectedMeido = Utility.Bound(value, 0, ActiveMeidoList.Count - 1);
         }
+        public int EditMaidIndex { get; private set; }
         public bool Busy => ActiveMeidoList.Any(meido => meido.Busy);
         private bool globalGravity;
         public bool GlobalGravity
@@ -76,8 +78,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 meido.GravityMove -= OnGravityMove;
                 meido.Deactivate();
             }
-            SelectMeidoList.Clear();
+
             ActiveMeidoList.Clear();
+            ClearSelectList();
         }
 
         public void Update()
@@ -167,6 +170,26 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             yield return new WaitForEndOfFrame();
 
             OnEndCallMeidos(this, EventArgs.Empty);
+        }
+
+        public void SelectMeido(int index)
+        {
+            if (SelectedMeidoSet.Contains(index))
+            {
+                SelectedMeidoSet.Remove(index);
+                SelectMeidoList.Remove(index);
+            }
+            else
+            {
+                SelectedMeidoSet.Add(index);
+                SelectMeidoList.Add(index);
+            }
+        }
+
+        public void ClearSelectList()
+        {
+            SelectedMeidoSet.Clear();
+            SelectMeidoList.Clear();
         }
 
         public Meido GetMeido(string guid)

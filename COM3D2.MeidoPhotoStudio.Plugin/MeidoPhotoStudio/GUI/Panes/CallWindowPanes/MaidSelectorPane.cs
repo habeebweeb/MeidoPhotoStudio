@@ -12,7 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.meidoManager = meidoManager;
             clearMaidsButton = new Button(Translation.Get("maidCallWindow", "clearButton"));
-            clearMaidsButton.ControlEvent += (s, a) => this.meidoManager.SelectMeidoList.Clear();
+            clearMaidsButton.ControlEvent += (s, a) => this.meidoManager.ClearSelectList();
 
             callMaidsButton = new Button(Translation.Get("maidCallWindow", "callButton"));
             callMaidsButton.ControlEvent += (s, a) => this.meidoManager.CallMeidos();
@@ -49,13 +49,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Meido meido = meidoManager.Meidos[i];
                 float y = i * buttonHeight;
-                bool selectedMaid = meidoManager.SelectMeidoList.Contains(i);
+                bool selectedMaid = meidoManager.SelectedMeidoSet.Contains(i);
 
-                if (GUI.Button(new Rect(0f, y, buttonWidth, buttonHeight), ""))
-                {
-                    if (selectedMaid) meidoManager.SelectMeidoList.Remove(i);
-                    else meidoManager.SelectMeidoList.Add(i);
-                }
+                if (GUI.Button(new Rect(0f, y, buttonWidth, buttonHeight), string.Empty)) meidoManager.SelectMeido(i);
 
                 if (selectedMaid)
                 {
