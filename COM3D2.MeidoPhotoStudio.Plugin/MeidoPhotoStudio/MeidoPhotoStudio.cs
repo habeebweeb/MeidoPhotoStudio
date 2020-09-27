@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -44,13 +44,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             ScreenshotEvent += OnScreenshotEvent;
             DontDestroyOnLoad(this);
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged += OnSceneChanged;
         }
 
         private void Start()
         {
             Constants.Initialize();
             Translation.Initialize(Translation.CurrentLanguage);
-            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
+        {
+            currentScene = (Constants.Scene)scene.buildIndex;
+        }
+
+        private void OnSceneChanged(Scene current, Scene next)
+        {
+            if (active) Deactivate(true);
+            ResetCalcNearClip();
         }
 
         public byte[] SerializeScene(bool kankyo = false)
@@ -331,13 +343,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (DropdownHelper.Visible) DropdownHelper.HandleDropdown();
                 if (Modal.Visible) Modal.Draw();
             }
-        }
-
-        private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
-        {
-            currentScene = (Constants.Scene)scene.buildIndex;
-            if (active) Deactivate(true);
-            ResetCalcNearClip();
         }
 
         private void Initialize()
