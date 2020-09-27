@@ -236,11 +236,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Body.quaDefEyeL = DefaultEyeRotL;
                 Body.quaDefEyeR = DefaultEyeRotR;
 
-                HairGravityActive = false;
-                SkirtGravityActive = false;
+                if (HairGravityControl)
+                {
+                    HairGravityControl.Move -= OnGravityEvent;
+                    HairGravityActive = false;
+                }
 
-                SkirtGravityControl.Move -= OnGravityEvent;
-                HairGravityControl.Move -= OnGravityEvent;
+                if (SkirtGravityControl)
+                {
+                    SkirtGravityControl.Move -= OnGravityEvent;
+                    SkirtGravityActive = false;
+                }
 
                 ApplyGravity(Vector3.zero, skirt: false);
                 ApplyGravity(Vector3.zero, skirt: true);
