@@ -305,6 +305,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     Utility.LogWarning($"{poseFilename}: Could not apply pose because {e.Message}");
                     return;
                 }
+                SetMune(false, left: true);
+                SetMune(false, left: false);
             }
             else
             {
@@ -319,10 +321,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     Maid.GetAnimation()[pose].time = float.Parse(poseComponents[1]);
                     Maid.GetAnimation()[pose].speed = 0f;
                 }
+                SetPoseMune();
             }
 
             Maid.SetAutoTwistAll(true);
-            SetPoseMune();
         }
 
         public void CopyPose(Meido fromMeido)
