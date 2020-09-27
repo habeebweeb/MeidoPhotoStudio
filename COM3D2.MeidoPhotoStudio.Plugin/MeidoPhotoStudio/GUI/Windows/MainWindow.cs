@@ -18,6 +18,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 value.width = 240f;
                 value.height = Screen.height * 0.9f;
+                if (MeidoPhotoStudio.EditMode) value.height *= 0.85f;
                 value.x = Mathf.Clamp(value.x, 0, Screen.width - value.width);
                 value.y = Mathf.Clamp(value.y, -value.height + 30, Screen.height - 50);
                 windowRect = value;

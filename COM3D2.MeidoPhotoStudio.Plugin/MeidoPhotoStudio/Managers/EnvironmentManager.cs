@@ -155,7 +155,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             cameraObject.SetActive(true);
 
             bgObject.SetActive(true);
-            GameMain.Instance.BgMgr.ChangeBg("Theater");
 
             ultimateOrbitCamera =
                 Utility.GetFieldValue<CameraMain, UltimateOrbitCamera>(GameMain.Instance.MainCamera, "m_UOCamera");
@@ -164,7 +163,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             defaultCameraMoveSpeed = ultimateOrbitCamera.moveSpeed;
             defaultCameraZoomSpeed = ultimateOrbitCamera.zoomSpeed;
 
-            ResetCamera();
+            if (!MeidoPhotoStudio.EditMode)
+            {
+                ResetCamera();
+                ChangeBackground("Theater");
+            }
+
             SaveCameraInfo();
 
             CubeSmallChange += OnCubeSmall;
@@ -184,15 +188,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             ultimateOrbitCamera.moveSpeed = defaultCameraMoveSpeed;
             ultimateOrbitCamera.zoomSpeed = defaultCameraZoomSpeed;
 
-            bool isNight = GameMain.Instance.CharacterMgr.status.GetFlag("時間帯") == 3;
+            if (MeidoPhotoStudio.EditMode) ChangeBackground("Theater");
+            else
+            {
+                bool isNight = GameMain.Instance.CharacterMgr.status.GetFlag("時間帯") == 3;
 
-            if (isNight) GameMain.Instance.BgMgr.ChangeBg("ShinShitsumu_ChairRot_Night");
-            else GameMain.Instance.BgMgr.ChangeBg("ShinShitsumu_ChairRot");
+                if (isNight) ChangeBackground("ShinShitsumu_ChairRot_Night");
+                else ChangeBackground("ShinShitsumu_ChairRot");
 
-            GameMain.Instance.MainCamera.Reset(CameraMain.CameraType.Target, true);
-            GameMain.Instance.MainCamera.SetTargetPos(new Vector3(0.5609447f, 1.380762f, -1.382336f), true);
-            GameMain.Instance.MainCamera.SetDistance(1.6f, true);
-            GameMain.Instance.MainCamera.SetAroundAngle(new Vector2(245.5691f, 6.273283f), true);
+                GameMain.Instance.MainCamera.Reset(CameraMain.CameraType.Target, true);
+                GameMain.Instance.MainCamera.SetTargetPos(new Vector3(0.5609447f, 1.380762f, -1.382336f), true);
+                GameMain.Instance.MainCamera.SetDistance(1.6f, true);
+                GameMain.Instance.MainCamera.SetAroundAngle(new Vector2(245.5691f, 6.273283f), true);
+            }
+
             bg.localScale = Vector3.one;
             CubeSmallChange -= OnCubeSmall;
             CubeActiveChange -= OnCubeActive;

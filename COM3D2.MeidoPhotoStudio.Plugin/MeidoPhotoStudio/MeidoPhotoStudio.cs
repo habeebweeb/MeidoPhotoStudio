@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,6 +21,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public const int sceneVersion = 1000;
         public const int kankyoMagic = -765;
         public static string pluginString = $"{pluginName} {pluginVersion}";
+        public static bool EditMode => currentScene == Constants.Scene.Edit;
         private WindowManager windowManager;
         private SceneManager sceneManager;
         private MeidoManager meidoManager;
@@ -29,7 +30,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private LightManager lightManager;
         private PropManager propManager;
         private EffectManager effectManager;
-        private Constants.Scene currentScene;
+        private static Constants.Scene currentScene;
         private bool initialized;
         private bool active;
         private bool uiActive;
@@ -229,7 +230,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void Update()
         {
-            if (currentScene == Constants.Scene.Daily)
+            if (currentScene == Constants.Scene.Daily || currentScene == Constants.Scene.Edit)
             {
                 if (Input.GetKeyDown(MpsKey.Activate))
                 {
@@ -411,8 +412,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             uiActive = true;
             active = true;
 
-            GameObject dailyPanel = GameObject.Find("UI Root").transform.Find("DailyPanel").gameObject;
-            dailyPanel.SetActive(false);
+            if (!EditMode)
+            {
+                GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
+                if (dailyPanel) dailyPanel.SetActive(false);
+            }
+            else meidoManager.CallMeidos();
         }
 
         private void Deactivate(bool force = false)
@@ -437,20 +442,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 Modal.Close();
 
-                GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
-                dailyPanel?.SetActive(true);
+                if (!EditMode)
+                {
+                    GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
+                    dailyPanel?.SetActive(true);
+                }
+
                 Configuration.Config.Save();
             }
 
-            if (force || sysDialog.IsDecided)
+            if (sysDialog.IsDecided || EditMode || force)
             {
                 uiActive = false;
                 active = false;
-                if (force)
-                {
-                    sysDialog.Close();
-                    exit();
-                }
+
+                if (EditMode || force) exit();
                 else
                 {
                     string exitMessage = string.Format(Translation.Get("systemMessage", "exitConfirm"), pluginName);

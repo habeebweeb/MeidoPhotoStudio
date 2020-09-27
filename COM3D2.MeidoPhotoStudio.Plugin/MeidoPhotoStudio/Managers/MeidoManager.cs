@@ -68,6 +68,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Meidos[stockMaidIndex] = new Meido(stockMaidIndex);
             }
+
+            if (MeidoPhotoStudio.EditMode)
+            {
+                Maid editMaid = GameMain.Instance.CharacterMgr.GetMaid(0);
+                EditMaidIndex = Array.FindIndex(Meidos, meido => meido.Maid.status.guid == editMaid.status.guid);
+            }
+
+            ClearSelectList();
         }
 
         public void Deactivate()
@@ -81,6 +89,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             ActiveMeidoList.Clear();
             ClearSelectList();
+
+            if (MeidoPhotoStudio.EditMode)
+            {
+                Meido meido = Meidos[EditMaidIndex];
+                meido.Maid.Visible = true;
+                meido.Stop = false;
+                meido.EyeToCam = true;
+            }
         }
 
         public void Update()
@@ -139,6 +155,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             BeginCallMeidos?.Invoke(this, EventArgs.Empty);
 
+            bool moreThanEditMaid = ActiveMeidoList.Count > 1;
+
             UnloadMeidos();
 
             if (SelectMeidoList.Count == 0)
@@ -147,9 +165,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 return;
             }
 
-            GameMain.Instance.MainCamera.FadeOut(
-                0.01f, f_bSkipable: false, f_dg: () => GameMain.Instance.StartCoroutine(LoadMeidos())
-            );
+            void callMeidos() => GameMain.Instance.StartCoroutine(LoadMeidos());
+
+            if (MeidoPhotoStudio.EditMode && !moreThanEditMaid && SelectMeidoList.Count == 1) callMeidos();
+            else GameMain.Instance.MainCamera.FadeOut(0.01f, f_bSkipable: false, f_dg: callMeidos);
         }
 
         private System.Collections.IEnumerator LoadMeidos()
@@ -169,8 +188,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (SelectedMeidoSet.Contains(index))
             {
-                SelectedMeidoSet.Remove(index);
-                SelectMeidoList.Remove(index);
+                if (!MeidoPhotoStudio.EditMode || index != EditMaidIndex)
+                {
+                    SelectedMeidoSet.Remove(index);
+                    SelectMeidoList.Remove(index);
+                }
             }
             else
             {
@@ -183,6 +205,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             SelectedMeidoSet.Clear();
             SelectMeidoList.Clear();
+            if (MeidoPhotoStudio.EditMode)
+            {
+                SelectedMeidoSet.Add(EditMaidIndex);
+                SelectMeidoList.Add(EditMaidIndex);
+            }
         }
 
         public Meido GetMeido(string guid)
