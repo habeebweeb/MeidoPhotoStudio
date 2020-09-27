@@ -329,12 +329,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void CopyPose(Meido fromMeido)
         {
-            byte[] poseBinary = fromMeido.SerializePose();
-            string tag = $"copy_{fromMeido.Maid.status.guid}";
-            Body.CrossFade(tag, poseBinary, false, true, false, 0f);
-            Maid.SetAutoTwistAll(true);
-            Maid.transform.rotation = fromMeido.Maid.transform.rotation;
-            SetPoseMune();
+            GetCacheBoneData().SetFrameBinary(fromMeido.SerializePose(frameBinary: true));
+            SetMune(fromMeido.Body.GetMuneYureL() != 0f, left: true);
+            SetMune(fromMeido.Body.GetMuneYureR() != 0f, left: false);
         }
 
         public void SetMune(bool enabled, bool left = false)
