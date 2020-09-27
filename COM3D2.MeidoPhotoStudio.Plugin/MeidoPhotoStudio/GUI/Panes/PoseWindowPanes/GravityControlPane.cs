@@ -45,10 +45,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Meido meido = meidoManager.ActiveMeido;
             GUILayout.BeginHorizontal();
 
-            GUI.enabled = enabled && meido.HairGravityValid;
+            GUI.enabled = enabled && meido.HairGravityControl.Valid;
             hairToggle.Draw();
 
-            GUI.enabled = enabled && meido.SkirtGravityValid;
+            GUI.enabled = enabled && meido.SkirtGravityControl.Valid;
             skirtToggle.Draw();
 
             GUILayout.EndHorizontal();
