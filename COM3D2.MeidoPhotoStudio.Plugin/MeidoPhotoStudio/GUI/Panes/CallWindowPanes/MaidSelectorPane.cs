@@ -65,7 +65,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     );
                 }
 
-                GUI.DrawTexture(new Rect(5f, y, buttonHeight, buttonHeight), meido.Portrait);
+                if (meido.Portrait) GUI.DrawTexture(new Rect(5f, y, buttonHeight, buttonHeight), meido.Portrait);
                 GUI.Label(
                     new Rect(95f, y + 30f, buttonWidth - 80f, buttonHeight),
                     $"{meido.LastName}\n{meido.FirstName}", selectedMaid ? labelSelectedStyle : labelStyle

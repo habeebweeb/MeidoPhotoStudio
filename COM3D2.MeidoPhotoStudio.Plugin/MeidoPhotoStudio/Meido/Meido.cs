@@ -217,12 +217,62 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             HairGravityControl.Move += OnGravityEvent;
             SkirtGravityControl.Move += OnGravityEvent;
+            if (MeidoPhotoStudio.EditMode) AllProcPropSeqStartPatcher.SequenceStart += ReinitializeBody;
 
             IKManager.Initialize();
 
             IK = true;
             Stop = false;
             Bone = false;
+        }
+
+        private void ReinitializeBody(object sender, ProcStartEventArgs args)
+        {
+            if (Loading || !Body.isLoadedBody) return;
+
+            if (args.maid.status.guid == Maid.status.guid)
+            {
+                MPN[] gravityControlProps = new[] {
+                    MPN.skirt, MPN.onepiece, MPN.mizugi, MPN.panz, MPN.set_maidwear, MPN.set_mywear, MPN.set_underwear,
+                    MPN.hairf, MPN.hairr, MPN.hairs, MPN.hairt
+                };
+
+                // Change body
+                if (Maid.GetProp(MPN.body).boDut)
+                {
+                    IKManager.Destroy();
+                    StartLoad(() =>
+                    {
+                        IKManager.Initialize();
+                        Stop = false;
+                    });
+                }
+                // Change face
+                else if (Maid.GetProp(MPN.head).boDut)
+                {
+                    SetFaceBlendSet(defaultFaceBlendSet);
+                    StartLoad(() =>
+                    {
+                        DefaultEyeRotL = Body.quaDefEyeL;
+                        DefaultEyeRotR = Body.quaDefEyeR;
+                        BackupBlendSetValues();
+                    });
+                }
+                // Gravity control clothing/hair change
+                else if (gravityControlProps.Any(prop => Maid.GetProp(prop).boDut))
+                {
+                    if (HairGravityControl) GameObject.Destroy(HairGravityControl.gameObject);
+                    if (SkirtGravityControl) GameObject.Destroy(SkirtGravityControl.gameObject);
+
+                    StartLoad(() =>
+                    {
+                        InitializeGravityControls();
+                        OnUpdateMeido();
+                    });
+                }
+                // Clothing/accessory changes
+                else StartLoad(() => OnUpdateMeido());
+            }
         }
 
         public void Unload()
@@ -253,6 +303,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 SetFaceBlendSet(defaultFaceBlendSet);
             }
+
+            AllProcPropSeqStartPatcher.SequenceStart -= ReinitializeBody;
 
             Body.MuneYureL(1f);
             Body.MuneYureR(1f);

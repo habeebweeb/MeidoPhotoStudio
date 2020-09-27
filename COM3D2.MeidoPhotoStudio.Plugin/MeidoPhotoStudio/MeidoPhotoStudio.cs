@@ -43,6 +43,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void Awake()
         {
+            HarmonyLib.Harmony.CreateAndPatchAll(typeof(AllProcPropSeqStartPatcher));
             ScreenshotEvent += OnScreenshotEvent;
             DontDestroyOnLoad(this);
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
