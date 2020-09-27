@@ -424,9 +424,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return faceData;
         }
 
-        public void SetFaceBlendSet(string blendSet, bool custom = false)
+        public void SetFaceBlendSet(string blendSet)
         {
-            if (custom)
+            if (blendSet.StartsWith(Constants.customFacePath))
             {
                 string blendSetFileName = Path.GetFileNameWithoutExtension(blendSet);
                 try

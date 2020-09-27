@@ -62,7 +62,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             faceBlendDropdown.SelectionChange += (s, a) =>
             {
                 if (!faceListEnabled || updating) return;
-                this.meidoManager.ActiveMeido.SetFaceBlendSet(SelectedFace, facePresetMode);
+                this.meidoManager.ActiveMeido.SetFaceBlendSet(SelectedFace);
             };
 
             facePrevButton = new Button("<");
