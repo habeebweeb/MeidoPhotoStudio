@@ -322,7 +322,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             Maid.SetAutoTwistAll(true);
-            SetMune();
+            SetPoseMune();
         }
 
         public void CopyPose(Meido fromMeido)
@@ -332,17 +332,29 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Body.CrossFade(tag, poseBinary, false, true, false, 0f);
             Maid.SetAutoTwistAll(true);
             Maid.transform.rotation = fromMeido.Maid.transform.rotation;
-            SetMune();
+            SetPoseMune();
         }
 
-        public void SetMune(bool drag = false)
+        public void SetMune(bool enabled, bool left = false)
+        {
+            float value = enabled ? 1f : 0f;
+            if (left)
+            {
+                Body.MuneYureL(value);
+                Body.jbMuneL.enabled = enabled;
+            }
+            else
+            {
+                Body.MuneYureR(value);
+                Body.jbMuneR.enabled = enabled;
+            }
+        }
+
+        private void SetPoseMune()
         {
             bool momiOrPaizuri = CachedPose.Pose.Contains("_momi") || CachedPose.Pose.Contains("paizuri_");
-            float onL = (drag || momiOrPaizuri) ? 0f : 1f;
-            Body.MuneYureL(onL);
-            Body.MuneYureR(onL);
-            Body.jbMuneL.enabled = !drag;
-            Body.jbMuneR.enabled = !drag;
+            SetMune(!momiOrPaizuri, left: true);
+            SetMune(!momiOrPaizuri, left: false);
         }
 
         public void SetHandPreset(string filename, bool right)
@@ -386,7 +398,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public byte[] SerializePose(bool frameBinary = false)
         {
             CacheBoneDataArray cache = GetCacheBoneData();
-            return frameBinary ? cache.GetFrameBinary(true, true) : cache.GetAnmBinary(true, true);
+            bool muneL = Body.GetMuneYureL() == 0f;
+            bool muneR = Body.GetMuneYureR() == 0f;
+            return frameBinary ? cache.GetFrameBinary(muneL, muneR) : cache.GetAnmBinary(true, true);
         }
 
         public Dictionary<string, float> SerializeFace()
@@ -742,18 +756,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Maid.transform.rotation = binaryReader.ReadQuaternion();
             Maid.transform.localScale = binaryReader.ReadVector3();
             // pose
+
+            KeyValuePair<bool, bool> muneSetting = new KeyValuePair<bool, bool>(true, true);
             if (mmScene) IKManager.Deserialize(binaryReader);
             else
             {
                 int poseBufferLength = binaryReader.ReadInt32();
                 byte[] poseBuffer = binaryReader.ReadBytes(poseBufferLength);
-                GetCacheBoneData().SetFrameBinary(poseBuffer);
+                muneSetting = GetCacheBoneData().SetFrameBinary(poseBuffer);
             }
 
-            Body.MuneYureL(0f);
-            Body.MuneYureR(0f);
-            Body.jbMuneL.enabled = true;
-            Body.jbMuneR.enabled = true;
+            SetMune(!muneSetting.Key, left: true);
+            SetMune(!muneSetting.Value, left: false);
 
             CachedPose = PoseInfo.Deserialize(binaryReader);
             // eye direction

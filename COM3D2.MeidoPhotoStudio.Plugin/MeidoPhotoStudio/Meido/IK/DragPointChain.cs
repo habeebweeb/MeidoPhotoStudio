@@ -14,20 +14,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private bool isMiddle;
         private bool isUpper;
         private bool isMune;
+        private bool isMuneL;
 
         public override void Set(Transform myObject)
         {
             base.Set(myObject);
-            isMune = myObject.name.StartsWith("Mune");
-            foot = myObject.name.EndsWith("Foot") ? -1 : 1;
-            isLower = myObject.name.EndsWith("Hand") || foot == -1;
-            isMiddle = myObject.name.EndsWith("Calf") || myObject.name.EndsWith("Forearm");
+
+            string name = myObject.name;
+
+            isMune = name.StartsWith("Mune");
+            isMuneL = isMune && name[5] == 'L'; // Mune_L_Sub
+            foot = name.EndsWith("Foot") ? -1 : 1;
+            isLower = name.EndsWith("Hand") || foot == -1;
+            isMiddle = name.EndsWith("Calf") || name.EndsWith("Forearm");
             isUpper = !(isMiddle || isLower) && !isMune;
+
             ikChain = new Transform[] {
                 myObject.parent,
                 myObject.parent,
                 myObject
             };
+
             if (isLower) ikChain[0] = ikChain[0].parent;
 
             ikCtrlData = IkCtrlData;
@@ -96,7 +103,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             base.OnMouseDown();
 
-            if (isMune) meido.SetMune(true);
+            if (isMune) meido.SetMune(false, isMuneL);
 
             InitializeRotation();
 
@@ -105,7 +112,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void OnDoubleClick()
         {
-            if (isMune && CurrentDragType == DragType.RotY) meido.SetMune();
+            if (isMune && CurrentDragType == DragType.RotY) meido.SetMune(true, isMuneL);
         }
 
         protected override void Drag()
