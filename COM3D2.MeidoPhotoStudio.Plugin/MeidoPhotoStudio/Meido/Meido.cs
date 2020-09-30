@@ -402,6 +402,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void CopyPose(Meido fromMeido)
         {
+            Stop = true;
             GetCacheBoneData().SetFrameBinary(fromMeido.SerializePose(frameBinary: true));
             SetMune(fromMeido.Body.GetMuneYureL() != 0f, left: true);
             SetMune(fromMeido.Body.GetMuneYureR() != 0f, left: false);
