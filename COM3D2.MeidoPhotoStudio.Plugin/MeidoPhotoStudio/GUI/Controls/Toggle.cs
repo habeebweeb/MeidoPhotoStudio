@@ -34,5 +34,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bool value = GUILayout.Toggle(Value, Label, toggleStyle, layoutOptions);
             if (value != Value) Value = value;
         }
+
+        public void Draw(Rect rect)
+        {
+            bool value = GUI.Toggle(rect, Value, Label);
+            if (value != Value) Value = value;
+        }
     }
 }
