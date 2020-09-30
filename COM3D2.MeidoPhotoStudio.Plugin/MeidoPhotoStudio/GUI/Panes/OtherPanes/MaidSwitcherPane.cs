@@ -7,16 +7,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly MeidoManager meidoManager;
         private readonly Button previousButton;
         private readonly Button nextButton;
+        private readonly Toggle editToggle;
 
         public MaidSwitcherPane(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
+            this.meidoManager.UpdateMeido += (s, a) => UpdatePane();
 
             previousButton = new Button("<");
             previousButton.ControlEvent += (s, a) => ChangeMaid(-1);
 
             nextButton = new Button(">");
             nextButton.ControlEvent += (s, a) => ChangeMaid(1);
+
+            editToggle = new Toggle("Edit", true);
+            editToggle.ControlEvent += (s, a) => SetEditMaid();
         }
 
         public override void Draw()
@@ -60,6 +65,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             Rect previousRect = GUILayoutUtility.GetLastRect();
 
+            if (MeidoPhotoStudio.EditMode) editToggle.Draw(new Rect(previousRect.x + 4f, previousRect.y, 40f, 20f));
+
             Rect labelRect = new Rect(previousRect.width - 45f, previousRect.y, 40f, 20f);
             GUIStyle slotStyle = new GUIStyle()
             {
@@ -72,6 +79,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (meidoManager.HasActiveMeido) GUI.Label(labelRect, $"{meidoManager.ActiveMeido.Slot + 1}", slotStyle);
         }
 
+        public override void UpdatePane()
+        {
+            if (meidoManager.HasActiveMeido)
+            {
+                this.updating = true;
+                editToggle.Value = meidoManager.ActiveMeido.IsEditMaid;
+                this.updating = false;
+            }
+        }
+
         private void ChangeMaid(int dir)
         {
             int selected = Utility.Wrap(
@@ -79,6 +96,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             );
 
             meidoManager.ChangeMaid(selected);
+        }
+
+        private void SetEditMaid()
+        {
+            if (updating) return;
+
+            if (!editToggle.Value)
+            {
+                updating = true;
+                editToggle.Value = true;
+                updating = false;
+                return;
+            }
+
+            if (meidoManager.HasActiveMeido)
+            {
+                meidoManager.SetEditMaid(meidoManager.ActiveMeido);
+            }
         }
     }
 }

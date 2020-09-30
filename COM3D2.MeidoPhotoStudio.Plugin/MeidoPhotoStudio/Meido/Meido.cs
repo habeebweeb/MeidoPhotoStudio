@@ -12,6 +12,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class Meido : ISerializable
     {
         private bool initialized;
+        private float[] BlendSetValueBackup;
         public DragPointGravity HairGravityControl { get; private set; }
         public DragPointGravity SkirtGravityControl { get; private set; }
         public bool HairGravityActive
@@ -36,7 +37,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
         }
-        private float[] BlendSetValueBackup;
         public const int meidoDataVersion = 1000;
         public static readonly PoseInfo DefaultPose =
             new PoseInfo(Constants.PoseGroupList[0], Constants.PoseDict[Constants.PoseGroupList[0]][0]);
@@ -65,7 +65,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public Maid Maid { get; }
         public TBody Body => Maid.body0;
         public MeidoDragPointManager IKManager { get; }
-        public Texture2D Portrait { get; }
+        public Texture2D Portrait => Maid.GetThumIcon();
+        public bool IsEditMaid { get; set; }
         public PoseInfo CachedPose { get; private set; } = DefaultPose;
         public string CurrentFaceBlendSet { get; private set; } = defaultFaceBlendSet;
         public int Slot { get; private set; }
@@ -160,7 +161,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             StockNo = stockMaidIndex;
             Maid = GameMain.Instance.CharacterMgr.GetStockMaid(stockMaidIndex);
-            Portrait = Maid.GetThumIcon();
             IKManager = new MeidoDragPointManager(this);
             IKManager.SelectMaid += (s, args) => OnUpdateMeido(args);
         }
@@ -241,22 +241,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (Maid.GetProp(MPN.body).boDut)
                 {
                     IKManager.Destroy();
-                    StartLoad(() =>
-                    {
-                        IKManager.Initialize();
-                        Stop = false;
-                    });
+                    StartLoad(reinitializeBody);
                 }
                 // Change face
                 else if (Maid.GetProp(MPN.head).boDut)
                 {
                     SetFaceBlendSet(defaultFaceBlendSet);
-                    StartLoad(() =>
-                    {
-                        DefaultEyeRotL = Body.quaDefEyeL;
-                        DefaultEyeRotR = Body.quaDefEyeR;
-                        BackupBlendSetValues();
-                    });
+                    StartLoad(reinitializeFace);
                 }
                 // Gravity control clothing/hair change
                 else if (gravityControlProps.Any(prop => Maid.GetProp(prop).boDut))
@@ -264,14 +255,38 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     if (HairGravityControl) GameObject.Destroy(HairGravityControl.gameObject);
                     if (SkirtGravityControl) GameObject.Destroy(SkirtGravityControl.gameObject);
 
-                    StartLoad(() =>
-                    {
-                        InitializeGravityControls();
-                        OnUpdateMeido();
-                    });
+                    StartLoad(reinitializeGravity);
                 }
                 // Clothing/accessory changes
+                // Includes null_mpn too but any button click results in null_mpn bodut I think
                 else StartLoad(() => OnUpdateMeido());
+
+                void reinitializeBody()
+                {
+                    IKManager.Initialize();
+                    Stop = false;
+
+                    // Maid animation needs to be set again for custom parts edit
+                    GameObject uiRoot = GameObject.Find("UI Root");
+
+                    var customPartsWindow = UTY.GetChildObject(uiRoot, "Window/CustomPartsWindow")
+                        .GetComponent<SceneEditWindow.CustomPartsWindow>();
+
+                    Utility.SetFieldValue(customPartsWindow, "animation", Maid.GetAnimation());
+                }
+
+                void reinitializeFace()
+                {
+                    DefaultEyeRotL = Body.quaDefEyeL;
+                    DefaultEyeRotR = Body.quaDefEyeR;
+                    BackupBlendSetValues();
+                }
+
+                void reinitializeGravity()
+                {
+                    InitializeGravityControls();
+                    OnUpdateMeido();
+                }
             }
         }
 

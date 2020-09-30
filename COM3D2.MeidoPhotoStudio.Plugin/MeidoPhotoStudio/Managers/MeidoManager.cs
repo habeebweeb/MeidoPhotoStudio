@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Linq;
 using UnityEngine;
 
@@ -11,11 +12,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private static readonly CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;
         private int undress;
         private int numberOfMeidos;
+        private int tempEditMaidIndex = -1;
         public Meido[] Meidos { get; private set; }
         public HashSet<int> SelectedMeidoSet { get; } = new HashSet<int>();
         public List<int> SelectMeidoList { get; } = new List<int>();
         public List<Meido> ActiveMeidoList { get; } = new List<Meido>();
         public Meido ActiveMeido => ActiveMeidoList.Count > 0 ? ActiveMeidoList[SelectedMeido] : null;
+        public Meido EditMeido => tempEditMaidIndex >= 0 ? Meidos[tempEditMaidIndex] : Meidos[EditMaidIndex];
         public bool HasActiveMeido => ActiveMeido != null;
         public event EventHandler<MeidoUpdateEventArgs> UpdateMeido;
         public event EventHandler EndCallMeidos;
@@ -64,6 +67,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             numberOfMeidos = characterMgr.GetStockMaidCount();
             Meidos = new Meido[numberOfMeidos];
 
+            tempEditMaidIndex = -1;
+
             for (int stockMaidIndex = 0; stockMaidIndex < numberOfMeidos; stockMaidIndex++)
             {
                 Meidos[stockMaidIndex] = new Meido(stockMaidIndex);
@@ -73,6 +78,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Maid editMaid = GameMain.Instance.CharacterMgr.GetMaid(0);
                 EditMaidIndex = Array.FindIndex(Meidos, meido => meido.Maid.status.guid == editMaid.status.guid);
+                EditMeido.IsEditMaid = true;
+
+                var editOkCancel = UTY.GetChildObject(GameObject.Find("UI Root"), "OkCancel")
+                    .GetComponent<EditOkCancel>();
+
+                // Ensure MPS resets editor state before setting maid
+                EditOkCancel.OnClick newEditOnClick = () => SetEditMaid(Meidos[EditMaidIndex]);
+                newEditOnClick += OkCancelDelegate();
+
+                Utility.SetFieldValue(editOkCancel, "m_dgOnClickOk", newEditOnClick);
+
+                // Only for setting custom parts placement animation just in case body was changed before activating MPS
+                SetEditMaid(Meidos[EditMaidIndex]);
             }
 
             ClearSelectList();
@@ -88,7 +106,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             ActiveMeidoList.Clear();
-            ClearSelectList();
 
             if (MeidoPhotoStudio.EditMode)
             {
@@ -96,7 +113,23 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 meido.Maid.Visible = true;
                 meido.Stop = false;
                 meido.EyeToCam = true;
+
+                SetEditMaid(meido);
+
+                // Restore original OK button functionality
+                GameObject okButton = UTY.GetChildObjectNoError(GameObject.Find("UI Root"), "OkCancel");
+                if (okButton)
+                {
+                    EditOkCancel editOkCancel = okButton.GetComponent<EditOkCancel>();
+                    Utility.SetFieldValue(editOkCancel, "m_dgOnClickOk", OkCancelDelegate());
+                }
             }
+        }
+
+        private EditOkCancel.OnClick OkCancelDelegate()
+        {
+            return (EditOkCancel.OnClick)Delegate
+                .CreateDelegate(typeof(EditOkCancel.OnClick), SceneEdit.Instance, "OnEditOk");
         }
 
         public void Update()
@@ -212,6 +245,54 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
+        public void SetEditMaid(Meido meido)
+        {
+            if (!MeidoPhotoStudio.EditMode) return;
+
+            EditMeido.IsEditMaid = false;
+
+            tempEditMaidIndex = meido.Maid.status.guid == Meidos[EditMaidIndex].Maid.status.guid
+                ? -1
+                : Array.FindIndex(Meidos, maid => maid.Maid.status.guid == meido.Maid.status.guid);
+
+            EditMeido.IsEditMaid = true;
+
+            Maid newEditMaid = EditMeido.Maid;
+
+            GameObject uiRoot = GameObject.Find("UI Root");
+
+            var presetCtrl = UTY.GetChildObjectNoError(uiRoot, "PresetPanel")?.GetComponent<PresetCtrl>();
+            var presetButton = UTY.GetChildObjectNoError(uiRoot, "PresetButtonPanel")?.GetComponent<PresetButtonCtrl>();
+            var profileCtrl = UTY.GetChildObjectNoError(uiRoot, "ProfilePanel")?.GetComponent<ProfileCtrl>();
+            var customPartsWindow = UTY.GetChildObjectNoError(uiRoot, "Window/CustomPartsWindow")
+                ?.GetComponent<SceneEditWindow.CustomPartsWindow>();
+
+            if (!(presetCtrl || presetButton || profileCtrl || customPartsWindow)) return;
+
+            // Preset application
+            Utility.SetFieldValue(presetCtrl, "m_maid", newEditMaid);
+
+            // Preset saving
+            Utility.SetFieldValue(presetButton, "m_maid", newEditMaid);
+
+            // Maid profile (name, description, experience etc)
+            Utility.SetFieldValue(profileCtrl, "m_maidStatus", newEditMaid.status);
+
+            // Accessory/Parts placement
+            Utility.SetFieldValue(customPartsWindow, "maid", newEditMaid);
+
+            // Stopping maid animation and head movement when customizing parts placement
+            Utility.SetFieldValue(customPartsWindow, "animation", newEditMaid.GetAnimation());
+
+            // Clothing/body in general and maybe other things
+            Utility.SetFieldValue(SceneEdit.Instance, "m_maid", newEditMaid);
+
+            // Body status, parts colours and maybe more
+            Utility.GetFieldValue<CharacterMgr, Maid[]>(
+                GameMain.Instance.CharacterMgr, "m_gcActiveMaid"
+            )[0] = newEditMaid;
+        }
+
         public Meido GetMeido(string guid)
         {
             return string.IsNullOrEmpty(guid) ? null : ActiveMeidoList.Find(meido => meido.Maid.status.guid == guid);
@@ -261,6 +342,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 meido.UpdateMeido += OnUpdateMeido;
                 meido.GravityMove += OnGravityMove;
+            }
+
+            if (MeidoPhotoStudio.EditMode && tempEditMaidIndex >= 0 && !SelectedMeidoSet.Contains(tempEditMaidIndex))
+            {
+                SetEditMaid(Meidos[EditMaidIndex]);
             }
         }
 
