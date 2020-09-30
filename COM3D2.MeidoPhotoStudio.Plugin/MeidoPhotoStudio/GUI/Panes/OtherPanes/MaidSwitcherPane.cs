@@ -5,60 +5,79 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     internal class MaidSwitcherPane : BasePane
     {
         private readonly MeidoManager meidoManager;
-        private readonly Button PreviousButton;
-        private readonly Button NextButton;
+        private readonly Button previousButton;
+        private readonly Button nextButton;
+
         public MaidSwitcherPane(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
-            PreviousButton = new Button("<");
-            PreviousButton.ControlEvent += (s, a) => ChangeMaid(-1);
 
-            NextButton = new Button(">");
-            NextButton.ControlEvent += (s, a) => ChangeMaid(1);
+            previousButton = new Button("<");
+            previousButton.ControlEvent += (s, a) => ChangeMaid(-1);
+
+            nextButton = new Button(">");
+            nextButton.ControlEvent += (s, a) => ChangeMaid(1);
         }
 
         public override void Draw()
         {
-            GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
-            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
-            GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
-            boxStyle.padding.top = -15;
-            buttonStyle.margin.top = 20;
-            labelStyle.alignment = TextAnchor.UpperLeft;
+            const float boxSize = 70;
+            const int margin = (int)(boxSize / 2.8f);
 
-            GUILayout.BeginHorizontal();
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
+            buttonStyle.margin.top = margin;
+
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label);
+            labelStyle.margin.top = margin;
+
+            GUIStyle boxStyle = new GUIStyle(GUI.skin.box) { margin = new RectOffset(0, 0, 0, 0) };
+            GUIStyle horizontalStyle = new GUIStyle { padding = new RectOffset(4, 4, 0, 0) };
+
+            GUILayoutOption[] buttonOptions = new[] { GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(false) };
+            GUILayoutOption[] boxLayoutOptions = new[] { GUILayout.Height(boxSize), GUILayout.Width(boxSize) };
 
             GUI.enabled = meidoManager.HasActiveMeido;
+            Meido meido = meidoManager.ActiveMeido;
 
-            PreviousButton.Draw(buttonStyle, GUILayout.Height(40), GUILayout.ExpandWidth(false));
+            GUILayout.BeginHorizontal(horizontalStyle, GUILayout.Height(boxSize));
 
-            if (meidoManager.HasActiveMeido && meidoManager.ActiveMeido.Portrait)
-                MpsGui.DrawTexture(meidoManager.ActiveMeido.Portrait, GUILayout.Width(70), GUILayout.Height(70));
-            else
-                GUILayout.Box("", boxStyle, GUILayout.Height(70), GUILayout.Width(70));
+            previousButton.Draw(buttonStyle, buttonOptions);
 
-            GUILayout.BeginVertical();
-            GUILayout.Space(30);
-            string label = "";
-            if (meidoManager.HasActiveMeido)
-            {
-                Meido meido = meidoManager.ActiveMeido;
-                label = $"{meido.LastName}\n{meido.FirstName}";
-            }
+            GUILayout.Space(20);
+
+            if (meidoManager.HasActiveMeido && meido.Portrait) MpsGui.DrawTexture(meido.Portrait, boxLayoutOptions);
+            else GUILayout.Box(GUIContent.none, boxStyle, boxLayoutOptions);
+
+            string label = meidoManager.HasActiveMeido ? $"{meido.LastName}\n{meido.FirstName}" : string.Empty;
+
             GUILayout.Label(label, labelStyle, GUILayout.ExpandWidth(false));
-            GUILayout.EndVertical();
 
-            NextButton.Draw(buttonStyle, GUILayout.Height(40), GUILayout.ExpandWidth(false));
+            GUILayout.FlexibleSpace();
+
+            nextButton.Draw(buttonStyle, buttonOptions);
 
             GUILayout.EndHorizontal();
+
+            Rect previousRect = GUILayoutUtility.GetLastRect();
+
+            Rect labelRect = new Rect(previousRect.width - 45f, previousRect.y, 40f, 20f);
+            GUIStyle slotStyle = new GUIStyle()
+            {
+                alignment = TextAnchor.UpperRight,
+                fontSize = 13
+            };
+            slotStyle.padding.right = 5;
+            slotStyle.normal.textColor = Color.white;
+
+            if (meidoManager.HasActiveMeido) GUI.Label(labelRect, $"{meidoManager.ActiveMeido.Slot + 1}", slotStyle);
         }
 
         private void ChangeMaid(int dir)
         {
-            dir = (int)Mathf.Sign(dir);
             int selected = Utility.Wrap(
-                meidoManager.SelectedMeido + dir, 0, meidoManager.ActiveMeidoList.Count
+                meidoManager.SelectedMeido + (int)Mathf.Sign(dir), 0, meidoManager.ActiveMeidoList.Count
             );
+
             meidoManager.ChangeMaid(selected);
         }
     }
