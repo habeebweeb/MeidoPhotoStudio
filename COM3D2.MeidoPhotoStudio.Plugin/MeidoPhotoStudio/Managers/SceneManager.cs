@@ -271,7 +271,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 while (!File.Exists(screenshotPath));
 
                 string scenePrefix = KankyoMode ? "mpskankyo" : "mpsscene";
-                string fileName = $"{scenePrefix}{DateTime.Now:yyyyMMddHHmmss}.png";
+                string fileName = $"{scenePrefix}{Utility.Timestamp}.png";
                 string savePath = Path.Combine(CurrentScenesDirectory, fileName);
 
                 if (overwrite && CurrentScene != null)

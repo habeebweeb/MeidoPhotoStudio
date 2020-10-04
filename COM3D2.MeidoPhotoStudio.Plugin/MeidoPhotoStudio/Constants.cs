@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -136,7 +136,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             string fullPath = Path.Combine(directory, filename);
 
-            if (File.Exists($"{fullPath}.xml")) fullPath += $"_{DateTime.Now:yyyyMMddHHmmss}";
+            if (File.Exists($"{fullPath}.xml")) fullPath += $"_{Utility.Timestamp}";
 
             fullPath = Path.GetFullPath($"{fullPath}.xml");
 
@@ -198,7 +198,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             string fullPath = Path.Combine(directory, filename);
 
-            if (File.Exists($"{fullPath}.anm")) fullPath += $"_{DateTime.Now:yyyyMMddHHmmss}";
+            if (File.Exists($"{fullPath}.anm")) fullPath += $"_{Utility.Timestamp}";
 
             fullPath = Path.GetFullPath($"{fullPath}.anm");
 
@@ -245,7 +245,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             string fullPath = Path.Combine(directory, filename);
 
-            if (File.Exists($"{fullPath}.xml")) fullPath += $"_{DateTime.Now:yyyyMMddHHmmss}";
+            if (File.Exists($"{fullPath}.xml")) fullPath += $"_{Utility.Timestamp}";
 
             fullPath = Path.GetFullPath($"{fullPath}.xml");
 

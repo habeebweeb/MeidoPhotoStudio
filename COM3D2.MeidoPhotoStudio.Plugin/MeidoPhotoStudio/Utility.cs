@@ -20,6 +20,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             Control, Shift, Alt
         }
+        public static string Timestamp => $"{DateTime.Now:yyyyMMddHHmmss}";
 
         public static void LogInfo(object data) => Logger.LogInfo(data);
 
@@ -92,7 +93,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GameMain.Instance.SerializeStorageManager.StoreDirectoryPath, "ScreenShot"
             );
             if (!Directory.Exists(screenShotDir)) Directory.CreateDirectory(screenShotDir);
-            return Path.Combine(screenShotDir, $"img{DateTime.Now:yyyyMMddHHmmss}.png");
+            return Path.Combine(screenShotDir, $"img{Timestamp}.png");
         }
 
         public static string TempScreenshotFilename()
