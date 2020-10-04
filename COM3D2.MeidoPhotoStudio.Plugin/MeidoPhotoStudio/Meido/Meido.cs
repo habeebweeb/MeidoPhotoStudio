@@ -828,6 +828,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Maid.transform.position = binaryReader.ReadVector3();
             Maid.transform.rotation = binaryReader.ReadQuaternion();
             Maid.transform.localScale = binaryReader.ReadVector3();
+            IKManager.SetDragPointScale(Maid.transform.localScale.x);
             // pose
 
             KeyValuePair<bool, bool> muneSetting = new KeyValuePair<bool, bool>(true, true);

@@ -565,12 +565,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SelectMaid?.Invoke(this, new MeidoUpdateEventArgs(meido.Slot, fromMaid: true, isBody: false));
         }
 
-        private void SetDragPointScale(float scale)
+        public void SetDragPointScale(float scale)
         {
-            foreach (DragPointMeido dragPoint in DragPoints.Values)
-            {
-                dragPoint.DragPointScale = scale;
-            }
+            foreach (DragPointMeido dragPoint in DragPoints.Values) dragPoint.DragPointScale = scale;
             dragBody.DragPointScale = scale;
         }
 
