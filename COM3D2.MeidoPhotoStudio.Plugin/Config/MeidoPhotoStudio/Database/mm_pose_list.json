@@ -21,6 +21,7 @@
     {
         "uiName": "normal",
         "poseList": [
+            "maid_stand01",
             "pose_taiki_f",
             "pose_01_f",
             "pose_02_f",

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -308,6 +308,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static void InitializePoses()
         {
+            void AddDefaultPose()
+            {
+                if (!PoseDict.ContainsKey("normal")) PoseDict["normal"] = new List<string>() { "maid_stand01" };
+                if (!PoseGroupList.Contains("normal")) PoseGroupList.Insert(0, "normal");
+            }
             // Load Poses
             string poseListPath = Path.Combine(configPath, "Database\\mm_pose_list.json");
             try
@@ -323,12 +328,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Utility.LogError($"Could not open pose database because {e.Message}");
                 Utility.LogMessage("Pose list will be serverely limited.");
+                AddDefaultPose();
             }
             catch (Exception e)
             {
                 Utility.LogError($"Could not parse pose database because {e.Message}");
+                AddDefaultPose();
             }
-            // Get Other poses that'll go into Normal 2 and Ero 2
+
+            // Get Other poses that'll go into Normal, Normal 2 and Ero 2
             string[] com3d2MotionList = GameUty.FileSystem.GetList("motion", AFileSystemBase.ListType.AllFile);
 
             if (com3d2MotionList?.Length > 0)
@@ -336,7 +344,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 HashSet<string> poseSet = new HashSet<string>();
                 foreach (List<string> poses in PoseDict.Values) poseSet.UnionWith(poses);
 
-                string[] newCategories = new[] { "normal", "normal2", "ero2" };
+                string[] newCategories = new[] { "normal2", "ero2" };
 
                 foreach (string category in newCategories)
                 {
@@ -370,7 +378,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 foreach (string category in newCategories)
                 {
-                    if (PoseDict[category].Count > 0) PoseGroupList.Add(category);
+                    if (PoseDict[category].Count > 0)
+                    {
+                        if (!PoseGroupList.Contains(category)) PoseGroupList.Add(category);
+                    }
                     else PoseDict.Remove(category);
                 }
             }
