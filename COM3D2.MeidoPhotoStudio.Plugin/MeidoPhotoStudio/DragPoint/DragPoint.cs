@@ -163,7 +163,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             ApplyColour(new Color(r, g, b, a));
         }
 
-        protected Vector3 MouseDelta() => Input.mousePosition - startMousePosition;
+        protected Vector3 MouseDelta() => Utility.MousePosition - startMousePosition;
 
         protected bool OtherDragType()
         {
@@ -174,10 +174,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected Vector3 CursorPosition()
         {
-            Vector3 mousePosition = Input.mousePosition;
-            return camera.ScreenToWorldPoint(
-                new Vector3(mousePosition.x, mousePosition.y, screenPoint.z)
-            ) + startOffset - newOffset;
+            Vector3 mousePosition = Utility.MousePosition;
+            return camera.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, screenPoint.z))
+                + startOffset - newOffset;
         }
 
         protected virtual void Update()
@@ -206,7 +205,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 OnMouseDown();
             }
 
-            if (collider.enabled && Input.mousePosition != startMousePosition) Drag();
+            if (collider.enabled) Drag();
         }
 
         protected abstract void UpdateDragType();

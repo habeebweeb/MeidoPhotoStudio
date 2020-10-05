@@ -14,6 +14,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         internal static readonly Regex guidRegEx = new Regex(
             @"^[a-f0-9]{8}(\-[a-f0-9]{4}){3}\-[a-f0-9]{12}$", RegexOptions.IgnoreCase
         );
+        internal static readonly GameObject mousePositionGo;
+        internal static readonly MousePosition mousePosition;
         public static readonly BepInEx.Logging.ManualLogSource Logger
             = BepInEx.Logging.Logger.CreateLogSource(MeidoPhotoStudio.pluginName);
         public enum ModKey
@@ -21,6 +23,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Control, Shift, Alt
         }
         public static string Timestamp => $"{DateTime.Now:yyyyMMddHHmmss}";
+        public static Vector3 MousePosition => mousePosition.Position;
+
+        static Utility()
+        {
+            mousePositionGo = new GameObject();
+            mousePosition = mousePositionGo.AddComponent<MousePosition>();
+        }
 
         public static void LogInfo(object data) => Logger.LogInfo(data);
 
@@ -200,6 +209,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             File.WriteAllLines(Path.Combine(Constants.configPath, name), list.ToArray());
         }
     }
+
+    internal class MousePosition : MonoBehaviour
+    {
+        private Vector3 mousePosition;
+        public Vector3 Position => mousePosition;
+
+        private void Awake()
+        {
+            DontDestroyOnLoad(this);
+            mousePosition = Input.mousePosition;
+        }
+
+        private void Update()
+        {
+            mousePosition.x += Input.GetAxis("Mouse X") * 20;
+            mousePosition.y += Input.GetAxis("Mouse Y") * 20;
+
+            if (Input.GetMouseButtonUp(0) || Input.GetMouseButtonDown(0)) mousePosition = Input.mousePosition;
+        }
+    }
+
 
     internal static class BinaryExtensions
     {
