@@ -190,9 +190,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected virtual void OnMouseDown()
         {
             screenPoint = camera.WorldToScreenPoint(transform.position);
-            startMousePosition = Input.mousePosition;
+            startMousePosition = Utility.MousePosition;
             startOffset = transform.position - camera.ScreenToWorldPoint(
-                new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z)
+                new Vector3(startMousePosition.x, startMousePosition.y, screenPoint.z)
             );
             newOffset = transform.position - MyObject.position;
         }
