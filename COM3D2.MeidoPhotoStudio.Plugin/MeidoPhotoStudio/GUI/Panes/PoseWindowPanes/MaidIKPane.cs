@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MaidIKPane : BasePane
+    public class MaidIKPane : BasePane
     {
         private readonly MeidoManager meidoManager;
         private readonly Toggle ikToggle;

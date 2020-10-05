@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class CallWindowPane : BaseMainWindowPane
+    public class CallWindowPane : BaseMainWindowPane
     {
         private readonly MeidoManager meidoManager;
         private readonly MaidSelectorPane maidSelectorPane;

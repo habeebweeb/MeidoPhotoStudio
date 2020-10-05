@@ -5,7 +5,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static DragPointLight;
-    internal class LightsPane : BasePane
+    public class LightsPane : BasePane
     {
         private static readonly string[] lightTypes = { "normal", "spot", "point" };
         private readonly LightManager lightManager;

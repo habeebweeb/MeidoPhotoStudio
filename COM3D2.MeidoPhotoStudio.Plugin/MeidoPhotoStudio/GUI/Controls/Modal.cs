@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal static class Modal
+    public static class Modal
     {
         private static BaseWindow currentModal;
         public static bool Visible

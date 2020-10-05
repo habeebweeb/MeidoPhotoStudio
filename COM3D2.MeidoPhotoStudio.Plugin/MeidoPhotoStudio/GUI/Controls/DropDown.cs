@@ -4,7 +4,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using DropdownSelectArgs = DropdownHelper.DropdownSelectArgs;
     using DropdownCloseArgs = DropdownHelper.DropdownCloseArgs;
-    internal class Dropdown : BaseControl
+    public class Dropdown : BaseControl
     {
         public event EventHandler SelectionChange;
         public event EventHandler DropdownOpen;
@@ -166,7 +166,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
-    internal static class DropdownHelper
+    public static class DropdownHelper
     {
         public static event EventHandler<DropdownSelectArgs> SelectionChange;
         public static event EventHandler<DropdownCloseArgs> DropdownClose;

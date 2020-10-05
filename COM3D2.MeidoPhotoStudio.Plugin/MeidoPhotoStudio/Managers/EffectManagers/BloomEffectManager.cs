@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class BloomEffectManager : IEffectManager
+    public class BloomEffectManager : IEffectManager
     {
         public const string header = "EFFECT_BLOOM";
         private const float bloomDefIntensity = 5.7f;

@@ -8,7 +8,7 @@ using BepInEx.Configuration;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
-    internal class SceneManager : IManager
+    public class SceneManager : IManager
     {
         public static bool Busy { get; private set; }
         public bool Initialized { get; private set; }

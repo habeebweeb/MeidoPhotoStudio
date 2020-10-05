@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MainWindow : BaseWindow
+    public class MainWindow : BaseWindow
     {
         private readonly MeidoManager meidoManager;
         private readonly Dictionary<Constants.Window, BaseMainWindowPane> windowPanes;

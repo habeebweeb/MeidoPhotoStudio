@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal abstract class BaseWindow : BaseWindowPane
+    public abstract class BaseWindow : BaseWindowPane
     {
         private static int id = 765;
         private static int ID => id++;

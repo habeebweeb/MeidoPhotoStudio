@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class AttachPropPane : BasePane
+    public class AttachPropPane : BasePane
     {
         private readonly PropManager propManager;
         private readonly MeidoManager meidoManager;

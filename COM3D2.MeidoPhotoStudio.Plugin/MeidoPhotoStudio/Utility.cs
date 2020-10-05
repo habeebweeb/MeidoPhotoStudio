@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal static class Utility
+    public static class Utility
     {
         internal static readonly byte[] pngHeader = { 137, 80, 78, 71, 13, 10, 26, 10 };
         internal static readonly byte[] pngEnd = System.Text.Encoding.ASCII.GetBytes("IEND");
@@ -210,7 +210,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
-    internal class MousePosition : MonoBehaviour
+    public class MousePosition : MonoBehaviour
     {
         private Vector3 mousePosition;
         public Vector3 Position => mousePosition;
@@ -231,7 +231,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     }
 
 
-    internal static class BinaryExtensions
+    public static class BinaryExtensions
     {
         public static string ReadNullableString(this BinaryReader binaryReader)
         {

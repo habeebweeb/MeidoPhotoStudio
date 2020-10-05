@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class BackgroundSelectorPane : BasePane
+    public class BackgroundSelectorPane : BasePane
     {
         private readonly EnvironmentManager environmentManager;
         private readonly Dropdown bgDropdown;

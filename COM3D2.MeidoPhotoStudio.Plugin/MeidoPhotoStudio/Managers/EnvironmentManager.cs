@@ -5,7 +5,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
-    internal class EnvironmentManager : IManager, ISerializable
+    public class EnvironmentManager : IManager, ISerializable
     {
         public const string header = "ENVIRONMENT";
         private static bool cubeActive;

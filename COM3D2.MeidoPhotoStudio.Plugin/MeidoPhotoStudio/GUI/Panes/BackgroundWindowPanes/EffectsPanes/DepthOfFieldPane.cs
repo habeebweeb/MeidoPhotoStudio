@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class DepthOfFieldPane : EffectPane<DepthOfFieldEffectManager>
+    public class DepthOfFieldPane : EffectPane<DepthOfFieldEffectManager>
     {
         protected override DepthOfFieldEffectManager EffectManager { get; set; }
         private readonly Slider focalLengthSlider;

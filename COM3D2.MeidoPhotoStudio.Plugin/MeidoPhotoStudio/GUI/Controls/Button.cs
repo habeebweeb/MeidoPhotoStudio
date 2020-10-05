@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class Button : BaseControl
+    public class Button : BaseControl
     {
         public string Label { get; set; }
         public Button(string label) => Label = label;

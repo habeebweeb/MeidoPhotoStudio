@@ -6,7 +6,7 @@ using BepInEx.Configuration;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal static class InputManager
+    public static class InputManager
     {
         private static InputListener inputListener;
         private static readonly Dictionary<MpsKey, KeyCode> ActionKeys = new Dictionary<MpsKey, KeyCode>();
@@ -132,7 +132,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
-    internal enum MpsKey
+    public enum MpsKey
     {
         // MeidoPhotoStudio
         Activate, Screenshot, ToggleUI, ToggleMessage,

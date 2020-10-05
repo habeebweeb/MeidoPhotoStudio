@@ -3,7 +3,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
-    internal class DragPointSpine : DragPointMeido
+    public class DragPointSpine : DragPointMeido
     {
         private Quaternion spineRotation;
         private bool isHip;

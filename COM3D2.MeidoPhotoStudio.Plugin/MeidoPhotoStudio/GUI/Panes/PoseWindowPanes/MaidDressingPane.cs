@@ -4,7 +4,7 @@ using static TBody;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MaidDressingPane : BasePane
+    public class MaidDressingPane : BasePane
     {
         public static readonly SlotID[] clothingSlots = {
             // main slots

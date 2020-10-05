@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MpnAttachPropPane : BasePane
+    public class MpnAttachPropPane : BasePane
     {
         private readonly MeidoManager meidoManager;
         private readonly Dropdown mpnAttachDropdown;

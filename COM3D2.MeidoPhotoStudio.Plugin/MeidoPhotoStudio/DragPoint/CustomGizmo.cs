@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class CustomGizmo : GizmoRender
+    public class CustomGizmo : GizmoRender
     {
         private static readonly Camera camera = GameMain.Instance.MainCamera.camera;
         private Transform target;

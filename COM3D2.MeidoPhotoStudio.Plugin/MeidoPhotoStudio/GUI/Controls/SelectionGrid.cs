@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class SelectionGrid : BaseControl
+    public class SelectionGrid : BaseControl
     {
         private SimpleToggle[] toggles;
         private int selectedItemIndex;

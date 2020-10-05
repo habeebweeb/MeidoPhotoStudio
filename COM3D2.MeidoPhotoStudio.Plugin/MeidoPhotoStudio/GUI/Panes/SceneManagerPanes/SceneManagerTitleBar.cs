@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class SceneManagerTitleBarPane : BasePane
+    public class SceneManagerTitleBarPane : BasePane
     {
         private static readonly string[] sortModes = new[] { "sortName", "sortCreated", "sortModified" };
         private readonly SceneManager sceneManager;

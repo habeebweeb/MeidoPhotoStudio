@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class FogPane : EffectPane<FogEffectManager>
+    public class FogPane : EffectPane<FogEffectManager>
     {
         protected override FogEffectManager EffectManager { get; set; }
         private readonly Slider distanceSlider;

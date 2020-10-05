@@ -4,7 +4,7 @@ using HarmonyLib;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     // TODO: Extend this further to potentially reduce the need for coroutines that wait for maid proc state
-    internal static class AllProcPropSeqStartPatcher
+    public static class AllProcPropSeqStartPatcher
     {
         public static event EventHandler<ProcStartEventArgs> SequenceStart;
 
@@ -16,7 +16,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
-    internal class ProcStartEventArgs : EventArgs
+    public class ProcStartEventArgs : EventArgs
     {
         public readonly Maid maid;
         public ProcStartEventArgs(Maid maid) => this.maid = maid;

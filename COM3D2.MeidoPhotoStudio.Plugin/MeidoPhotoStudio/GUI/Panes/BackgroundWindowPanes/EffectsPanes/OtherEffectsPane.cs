@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class OtherEffectsPane : BasePane
+    public class OtherEffectsPane : BasePane
     {
         private readonly EffectManager effectManager;
         private readonly SepiaToneEffectManger sepiaToneEffectManger;

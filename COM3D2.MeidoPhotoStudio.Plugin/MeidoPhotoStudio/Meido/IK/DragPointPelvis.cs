@@ -3,7 +3,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
-    internal class DragPointPelvis : DragPointMeido
+    public class DragPointPelvis : DragPointMeido
     {
         private Quaternion pelvisRotation;
 

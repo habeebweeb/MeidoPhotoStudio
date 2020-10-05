@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class SceneManagerScenePane : BasePane
+    public class SceneManagerScenePane : BasePane
     {
         public static readonly float thumbnailScale = 0.55f;
         private readonly SceneManager sceneManager;

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class EffectsPane : BasePane
+    public class EffectsPane : BasePane
     {
         private readonly Dictionary<string, BasePane> effectPanes = new Dictionary<string, BasePane>();
         private readonly List<string> effectList = new List<string>();

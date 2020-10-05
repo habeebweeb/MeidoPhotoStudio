@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal abstract class EffectPane<T> : BasePane where T : IEffectManager
+    public abstract class EffectPane<T> : BasePane where T : IEffectManager
     {
         protected abstract T EffectManager { get; set; }
         protected readonly Toggle effectToggle;

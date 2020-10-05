@@ -6,13 +6,13 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal enum AttachPoint
+    public enum AttachPoint
     {
         None, Head, Neck, UpperArmL, UpperArmR, ForearmL, ForearmR, MuneL, MuneR, HandL, HandR,
         Pelvis, ThighL, ThighR, CalfL, CalfR, FootL, FootR
     }
 
-    internal class MeidoDragPointManager
+    public class MeidoDragPointManager
     {
         private enum Bone
         {
@@ -669,7 +669,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
-    internal struct AttachPointInfo
+    public struct AttachPointInfo
     {
         public AttachPoint AttachPoint { get; }
         public string MaidGuid { get; }

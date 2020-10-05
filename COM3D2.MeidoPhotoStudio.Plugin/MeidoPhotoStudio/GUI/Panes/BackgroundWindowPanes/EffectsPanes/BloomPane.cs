@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class BloomPane : EffectPane<BloomEffectManager>
+    public class BloomPane : EffectPane<BloomEffectManager>
     {
         protected override BloomEffectManager EffectManager { get; set; }
         private readonly Slider intensitySlider;

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class SaveHandPane : BasePane
+    public class SaveHandPane : BasePane
     {
         private readonly MeidoManager meidoManager;
         private readonly ComboBox categoryComboBox;

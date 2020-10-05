@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class GravityControlPane : BasePane
+    public class GravityControlPane : BasePane
     {
         private readonly MeidoManager meidoManager;
         private readonly Toggle hairToggle;

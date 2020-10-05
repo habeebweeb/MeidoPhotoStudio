@@ -1,6 +1,6 @@
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal interface IEffectManager : IManager, ISerializable
+    public interface IEffectManager : IManager, ISerializable
     {
         bool Ready { get; }
         bool Active { get; }

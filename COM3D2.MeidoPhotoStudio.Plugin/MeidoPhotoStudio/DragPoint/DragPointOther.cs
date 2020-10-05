@@ -4,7 +4,7 @@ using UnityEngine.Rendering;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class DragPointBody : DragPointGeneral
+    public class DragPointBody : DragPointGeneral
     {
         public bool IsCube;
         private bool isIK;
@@ -30,7 +30,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
-    internal class DragPointBG : DragPointGeneral
+    public class DragPointBG : DragPointGeneral
     {
         protected override void ApplyDragType()
         {
@@ -39,7 +39,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
-    internal class DragPointDogu : DragPointGeneral
+    public class DragPointDogu : DragPointGeneral
     {
         private List<Renderer> meshRenderers;
         public AttachPointInfo attachPointInfo = AttachPointInfo.Empty;

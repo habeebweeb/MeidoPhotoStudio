@@ -4,7 +4,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static Constants;
-    internal class WindowManager : IManager
+    public class WindowManager : IManager
     {
         private readonly Dictionary<Window, BaseWindow> Windows = new Dictionary<Window, BaseWindow>();
         public BaseWindow this[Window id]

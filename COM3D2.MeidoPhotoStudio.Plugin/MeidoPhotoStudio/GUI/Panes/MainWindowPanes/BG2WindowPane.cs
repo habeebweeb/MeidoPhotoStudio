@@ -1,6 +1,6 @@
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class BG2WindowPane : BaseMainWindowPane
+    public class BG2WindowPane : BaseMainWindowPane
     {
         private static readonly string[] tabNames = { "props", "myRoom", "mod" };
         private readonly MeidoManager meidoManager;

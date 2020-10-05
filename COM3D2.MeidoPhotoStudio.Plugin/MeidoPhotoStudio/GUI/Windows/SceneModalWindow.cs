@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class SceneModalWindow : BaseWindow
+    public class SceneModalWindow : BaseWindow
     {
         private static readonly Texture2D infoHighlight = Utility.MakeTex(2, 2, new Color(0f, 0f, 0f, 0.8f));
         private readonly SceneManager sceneManager;

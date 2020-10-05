@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MaidSwitcherPane : BasePane
+    public class MaidSwitcherPane : BasePane
     {
         private readonly MeidoManager meidoManager;
         private readonly Button previousButton;

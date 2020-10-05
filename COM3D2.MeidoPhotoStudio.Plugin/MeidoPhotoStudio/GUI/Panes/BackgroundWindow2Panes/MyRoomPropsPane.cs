@@ -4,7 +4,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static MenuFileUtility;
-    internal class MyRoomPropsPane : BasePane
+    public class MyRoomPropsPane : BasePane
     {
         private readonly PropManager propManager;
         private readonly Dropdown propCategoryDropdown;

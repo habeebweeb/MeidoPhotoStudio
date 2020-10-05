@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class DragPointPane : BasePane
+    public class DragPointPane : BasePane
     {
         private string header;
         private readonly Toggle propsCubeToggle;

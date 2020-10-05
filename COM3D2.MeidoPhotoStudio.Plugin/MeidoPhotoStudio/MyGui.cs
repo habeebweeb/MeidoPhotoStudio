@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal static class MpsGui
+    public static class MpsGui
     {
         public static readonly GUILayoutOption HalfSlider = GUILayout.Width(98);
         public static readonly Texture2D white = Utility.MakeTex(2, 2, Color.white);

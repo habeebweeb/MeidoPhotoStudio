@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class PropsPane : BasePane
+    public class PropsPane : BasePane
     {
         private readonly PropManager propManager;
         private string currentCategory;

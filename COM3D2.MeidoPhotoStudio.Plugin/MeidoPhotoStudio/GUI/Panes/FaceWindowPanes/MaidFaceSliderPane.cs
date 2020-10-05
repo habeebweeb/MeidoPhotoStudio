@@ -4,7 +4,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static Meido;
-    internal class MaidFaceSliderPane : BasePane
+    public class MaidFaceSliderPane : BasePane
     {
         // TODO: Consider placing in external file to be user editable
         private static readonly Dictionary<string, SliderProp> SliderRange = new Dictionary<string, SliderProp>()

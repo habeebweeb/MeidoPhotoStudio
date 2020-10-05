@@ -9,7 +9,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static MenuFileUtility;
 
-    internal class MenuFileCache
+    public class MenuFileCache
     {
         private const int cacheVersion = 765;
         public static readonly string cachePath = Path.Combine(Constants.configPath, "cache.dat");

@@ -6,7 +6,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     using static CustomGizmo;
     using Input = InputManager;
 
-    internal abstract class DragPointGeneral : DragPoint
+    public abstract class DragPointGeneral : DragPoint
     {
         public const float smallCube = 0.5f;
         private float currentScale;

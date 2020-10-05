@@ -3,7 +3,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
-    internal class DragPointTorso : DragPointMeido
+    public class DragPointTorso : DragPointMeido
     {
         private static readonly float[] blah = new[] { 0.03f, 0.1f, 0.09f, 0.07f };
         private static readonly float[] something = new[] { 0.08f, 0.15f };

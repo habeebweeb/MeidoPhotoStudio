@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class SceneManagerDirectoryPane : BasePane
+    public class SceneManagerDirectoryPane : BasePane
     {
         public static readonly int listWidth = 200;
         private readonly SceneManager sceneManager;

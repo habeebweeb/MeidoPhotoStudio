@@ -3,7 +3,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
-    internal class DragPointChain : DragPointMeido
+    public class DragPointChain : DragPointMeido
     {
         private readonly TBody.IKCMO IK = new TBody.IKCMO();
         private readonly Quaternion[] jointRotation = new Quaternion[3];

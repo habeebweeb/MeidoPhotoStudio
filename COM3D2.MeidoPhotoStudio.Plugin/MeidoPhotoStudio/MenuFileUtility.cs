@@ -9,7 +9,7 @@ using UnityEngine.Rendering;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal static class MenuFileUtility
+    public static class MenuFileUtility
     {
         private static byte[] menuFileBuffer;
         public const string noCategory = "noCategory";

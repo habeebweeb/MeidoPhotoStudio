@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class PropManagerPane : BasePane
+    public class PropManagerPane : BasePane
     {
         private readonly PropManager propManager;
         private readonly Dropdown propDropdown;

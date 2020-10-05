@@ -2,7 +2,7 @@ using BepInEx.Configuration;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal static class Configuration
+    public static class Configuration
     {
         public static ConfigFile Config { get; }
 

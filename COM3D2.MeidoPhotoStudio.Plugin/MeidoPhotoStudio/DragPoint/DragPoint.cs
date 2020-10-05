@@ -4,7 +4,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static CustomGizmo;
-    internal abstract class DragPoint : MonoBehaviour
+    public abstract class DragPoint : MonoBehaviour
     {
         public const float defaultAlpha = 0.75f;
         private static GameObject dragPointParent;

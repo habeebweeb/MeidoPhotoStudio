@@ -7,7 +7,7 @@ using BepInEx.Configuration;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal static class Translation
+    public static class Translation
     {
         private const string settingsHeader = "Translation";
         private static readonly string[] props = { "ui", "props", "bg", "face" };

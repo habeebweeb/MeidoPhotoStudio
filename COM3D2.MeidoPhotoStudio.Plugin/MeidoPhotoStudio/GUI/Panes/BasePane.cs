@@ -2,7 +2,7 @@ using System;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal abstract class BasePane
+    public abstract class BasePane
     {
         protected BaseWindow parent;
         protected bool updating;

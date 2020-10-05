@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class Slider : BaseControl
+    public class Slider : BaseControl
     {
         private bool hasLabel;
         private string label;

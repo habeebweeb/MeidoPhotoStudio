@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class DepthOfFieldEffectManager : IEffectManager
+    public class DepthOfFieldEffectManager : IEffectManager
     {
         public const string header = "EFFECT_DOF";
         private DepthOfFieldScatter DepthOfField { get; set; }

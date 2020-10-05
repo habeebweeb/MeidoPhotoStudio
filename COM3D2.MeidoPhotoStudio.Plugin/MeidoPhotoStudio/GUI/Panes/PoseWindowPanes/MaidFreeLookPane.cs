@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MaidFaceLookPane : BasePane
+    public class MaidFaceLookPane : BasePane
     {
         private readonly MeidoManager meidoManager;
         private readonly Slider lookXSlider;

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class ComboBox : BaseControl
+    public class ComboBox : BaseControl
     {
         private readonly TextField textField = new TextField();
         public Dropdown BaseDropDown { get; }

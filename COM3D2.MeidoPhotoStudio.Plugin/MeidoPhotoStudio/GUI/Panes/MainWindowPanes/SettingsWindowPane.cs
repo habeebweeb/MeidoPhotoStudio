@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class SettingsWindowPane : BaseMainWindowPane
+    public class SettingsWindowPane : BaseMainWindowPane
     {
         private static readonly string[] headerTranslationKeys = {
             "controls", "controlsGeneral", "controlsMaids", "controlsCamera", "controlsDragPoint", "controlsScene"

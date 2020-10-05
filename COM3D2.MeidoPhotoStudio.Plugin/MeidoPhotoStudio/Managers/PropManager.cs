@@ -9,7 +9,7 @@ using BepInEx.Configuration;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static MenuFileUtility;
-    internal class PropManager : IManager, ISerializable
+    public class PropManager : IManager, ISerializable
     {
         public const string header = "PROP";
         public const int propDataVersion = 1000;

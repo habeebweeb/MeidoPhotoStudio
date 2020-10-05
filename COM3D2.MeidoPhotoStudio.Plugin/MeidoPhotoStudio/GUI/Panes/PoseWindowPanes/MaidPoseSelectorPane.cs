@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MaidPoseSelectorPane : BasePane
+    public class MaidPoseSelectorPane : BasePane
     {
         private static readonly string[] tabTranslations = new[] { "baseTab", "customTab" };
         private readonly MeidoManager meidoManager;

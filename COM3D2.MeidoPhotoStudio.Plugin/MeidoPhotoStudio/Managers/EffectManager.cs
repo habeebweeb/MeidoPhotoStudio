@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class EffectManager : IManager, ISerializable
+    public class EffectManager : IManager, ISerializable
     {
         public const string header = "EFFECT";
         public const string footer = "END_EFFECT";

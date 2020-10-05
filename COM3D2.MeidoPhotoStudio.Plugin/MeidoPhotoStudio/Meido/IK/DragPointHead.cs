@@ -4,7 +4,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
-    internal class DragPointHead : DragPointMeido
+    public class DragPointHead : DragPointMeido
     {
         private Quaternion headRotation;
         private Vector3 eyeRotationL;

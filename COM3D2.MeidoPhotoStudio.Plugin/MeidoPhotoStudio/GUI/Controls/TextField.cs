@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class TextField : BaseControl
+    public class TextField : BaseControl
     {
         private static int textFieldID = 961;
         private static int ID => ++textFieldID;

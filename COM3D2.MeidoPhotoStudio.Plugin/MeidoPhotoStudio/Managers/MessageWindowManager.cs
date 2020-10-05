@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MessageWindowManager : IManager, ISerializable
+    public class MessageWindowManager : IManager, ISerializable
     {
         public const string header = "TEXTBOX";
         public static readonly SliderProp fontBounds = new SliderProp(25f, 60f);

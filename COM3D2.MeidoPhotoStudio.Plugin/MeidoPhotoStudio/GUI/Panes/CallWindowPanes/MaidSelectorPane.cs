@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class MaidSelectorPane : BasePane
+    public class MaidSelectorPane : BasePane
     {
         private readonly MeidoManager meidoManager;
         private Vector2 maidListScrollPos;

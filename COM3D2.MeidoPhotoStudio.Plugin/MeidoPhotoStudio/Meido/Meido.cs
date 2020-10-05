@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class Meido : ISerializable
+    public class Meido : ISerializable
     {
         private bool initialized;
         private float[] BlendSetValueBackup;

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class TabsPane : BasePane
+    public class TabsPane : BasePane
     {
         private static readonly string[] tabNames = { "call", "pose", "face", "bg", "bg2" };
         private readonly SelectionGrid Tabs;

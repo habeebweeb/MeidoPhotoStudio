@@ -3,7 +3,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static TBody;
-    internal class DragPointGravity : DragPointGeneral
+    public class DragPointGravity : DragPointGeneral
     {
         private static readonly SlotID[] skirtSlots = { SlotID.skirt, SlotID.onepiece, SlotID.mizugi, SlotID.panz };
         private static readonly SlotID[] hairSlots = { SlotID.hairF, SlotID.hairR, SlotID.hairS, SlotID.hairT };

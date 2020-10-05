@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class CopyPosePane : BasePane
+    public class CopyPosePane : BasePane
     {
         private readonly MeidoManager meidoManager;
         private readonly Button copyButton;

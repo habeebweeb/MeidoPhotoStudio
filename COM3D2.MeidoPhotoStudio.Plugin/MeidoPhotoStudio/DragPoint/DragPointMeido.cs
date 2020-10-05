@@ -4,7 +4,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static CustomGizmo;
-    internal abstract class DragPointMeido : DragPoint
+    public abstract class DragPointMeido : DragPoint
     {
         protected const int jointUpper = 0;
         protected const int jointMiddle = 1;

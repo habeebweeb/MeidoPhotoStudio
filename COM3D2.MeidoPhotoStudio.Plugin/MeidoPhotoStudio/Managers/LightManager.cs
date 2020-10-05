@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class LightManager : IManager, ISerializable
+    public class LightManager : IManager, ISerializable
     {
         public const string header = "LIGHT";
         private static bool cubeActive = true;

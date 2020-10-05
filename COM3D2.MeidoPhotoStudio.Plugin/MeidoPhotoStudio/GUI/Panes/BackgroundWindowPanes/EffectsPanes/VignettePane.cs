@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class VignettePane : EffectPane<VignetteEffectManager>
+    public class VignettePane : EffectPane<VignetteEffectManager>
     {
         protected override VignetteEffectManager EffectManager { get; set; }
         private readonly Slider intensitySlider;

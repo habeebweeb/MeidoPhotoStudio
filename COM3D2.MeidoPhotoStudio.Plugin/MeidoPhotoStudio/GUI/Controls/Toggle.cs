@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class Toggle : BaseControl
+    public class Toggle : BaseControl
     {
         private bool value;
         public bool Value

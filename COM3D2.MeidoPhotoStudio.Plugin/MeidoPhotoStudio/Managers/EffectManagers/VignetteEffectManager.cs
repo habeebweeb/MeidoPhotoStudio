@@ -1,6 +1,6 @@
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class VignetteEffectManager : IEffectManager
+    public class VignetteEffectManager : IEffectManager
     {
         public const string header = "EFFECT_VIGNETTE";
         private Vignetting Vignette { get; set; }

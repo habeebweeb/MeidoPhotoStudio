@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class SepiaToneEffectManger : IEffectManager
+    public class SepiaToneEffectManger : IEffectManager
     {
         public const string header = "EFFECT_SEPIA";
         private SepiaToneEffect SepiaTone { get; set; }

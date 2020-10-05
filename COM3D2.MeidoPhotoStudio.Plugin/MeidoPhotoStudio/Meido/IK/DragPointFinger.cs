@@ -3,7 +3,7 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
-    internal class DragPointFinger : DragPointMeido
+    public class DragPointFinger : DragPointMeido
     {
         private static readonly Color dragpointColour = new Color(0.1f, 0.4f, 0.95f, defaultAlpha);
         private readonly TBody.IKCMO IK = new TBody.IKCMO();

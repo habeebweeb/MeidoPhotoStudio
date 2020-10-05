@@ -11,7 +11,7 @@ using wf;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static MenuFileUtility;
-    internal static class Constants
+    public static class Constants
     {
         private static bool beginHandItemInit;
         private static bool beginMpnAttachInit;

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    internal class SceneWindow : BaseWindow
+    public class SceneWindow : BaseWindow
     {
         private const float resizeHandleSize = 15f;
         private readonly SceneManager sceneManager;
