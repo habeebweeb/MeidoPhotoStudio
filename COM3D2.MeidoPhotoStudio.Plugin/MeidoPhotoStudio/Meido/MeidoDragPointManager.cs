@@ -64,6 +64,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             [AttachPoint.FootL] = Bone.FootL,
             [AttachPoint.FootR] = Bone.FootR,
         };
+        private static readonly Bone[] SpineBones =
+        {
+            Bone.Neck, Bone.Spine, Bone.Spine0a, Bone.Spine1, Bone.Spine1a, Bone.Hip, Bone.ThighL, Bone.ThighR
+        };
         private static bool cubeActive;
         public static bool CubeActive
         {
@@ -109,10 +113,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (isBone != value)
                 {
                     isBone = value;
-                    foreach (DragPointMeido dragPoint in DragPoints.Values)
-                    {
-                        dragPoint.IsBone = isBone;
-                    }
+                    foreach (DragPointMeido dragPoint in DragPoints.Values) dragPoint.IsBone = isBone;
+                    foreach (Bone bone in SpineBones) DragPoints[bone].gameObject.SetActive(isBone);
                 }
             }
         }
@@ -126,10 +128,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (active != value)
                 {
                     active = value;
-                    foreach (DragPointMeido dragPoint in DragPoints.Values)
-                    {
-                        dragPoint.gameObject.SetActive(active);
-                    }
+                    foreach (DragPointMeido dragPoint in DragPoints.Values) dragPoint.gameObject.SetActive(active);
+                    foreach (Bone bone in SpineBones) DragPoints[bone].gameObject.SetActive(active && IsBone);
                     DragPointHead head = (DragPointHead)DragPoints[Bone.Head];
                     head.gameObject.SetActive(true);
                     head.IsIK = !active;
@@ -466,9 +466,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DragPoints[Bone.CalfR] = legDragPointR[0];
             DragPoints[Bone.FootR] = legDragPointR[1];
 
-            InitializeSpineDragPoint(
-                Bone.Neck, Bone.Spine, Bone.Spine0a, Bone.Spine1, Bone.Spine1a, Bone.Hip, Bone.ThighL, Bone.ThighR
-            );
+            InitializeSpineDragPoint(SpineBones);
 
             InitializeFingerDragPoint(Bone.Finger0L, Bone.Finger4R);
             InitializeFingerDragPoint(Bone.Toe0L, Bone.Toe2R);
@@ -537,6 +535,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 dragPoint.Set(spine);
                 dragPoint.AddGizmo();
                 DragPoints[bone] = dragPoint;
+                DragPoints[bone].gameObject.SetActive(false);
             }
         }
 
