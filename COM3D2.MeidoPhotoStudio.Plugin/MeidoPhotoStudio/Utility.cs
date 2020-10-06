@@ -223,13 +223,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void Update()
         {
-            mousePosition.x += Input.GetAxis("Mouse X") * 20;
-            mousePosition.y += Input.GetAxis("Mouse Y") * 20;
-
-            if (Input.GetMouseButtonUp(0) || Input.GetMouseButtonDown(0)) mousePosition = Input.mousePosition;
+            if (Input.GetMouseButton(0))
+            {
+                mousePosition.x += Input.GetAxis("Mouse X") * 20;
+                mousePosition.y += Input.GetAxis("Mouse Y") * 20;
+            }
+            else mousePosition = Input.mousePosition;
         }
     }
-
 
     public static class BinaryExtensions
     {
