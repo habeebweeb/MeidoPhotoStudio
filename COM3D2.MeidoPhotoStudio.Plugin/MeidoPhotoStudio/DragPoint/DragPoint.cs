@@ -206,7 +206,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 OnMouseDown();
             }
 
-            if (collider.enabled) Drag();
+            if (collider.enabled && startMousePosition != Utility.MousePosition) Drag();
         }
 
         protected abstract void UpdateDragType();

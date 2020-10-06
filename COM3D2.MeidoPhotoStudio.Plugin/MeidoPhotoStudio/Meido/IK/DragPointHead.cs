@@ -74,7 +74,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void Drag()
         {
-            if (IsIK) return;
+            if (IsIK || CurrentDragType == DragType.Select) return;
 
             if (!(CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY) && isPlaying)
             {
