@@ -7,6 +7,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     using Input = InputManager;
     public class EnvironmentManager : IManager, ISerializable
     {
+        private static readonly BgMgr bgMgr = GameMain.Instance.BgMgr;
         public const string header = "ENVIRONMENT";
         private static bool cubeActive;
         public static bool CubeActive
@@ -134,15 +135,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Activate()
         {
-            bgObject = GameObject.Find("__GameMain__/BG");
-            bg = bgObject.transform;
+            BgMgrPatcher.ChangeBgBegin += OnChangeBegin;
+            BgMgrPatcher.ChangeBgEnd += OnChangeEnd;
 
-            bgDragPoint = DragPoint.Make<DragPointBG>(PrimitiveType.Cube, Vector3.one * 0.12f);
-            bgDragPoint.Initialize(() => bg.position, () => Vector3.zero);
-            bgDragPoint.Set(bg);
-            bgDragPoint.AddGizmo();
-            bgDragPoint.ConstantScale = true;
-            bgDragPoint.gameObject.SetActive(CubeActive);
+            bgObject = bgMgr.Parent;
 
             cameraObject = new GameObject("subCamera");
             subCamera = cameraObject.AddComponent<Camera>();
@@ -168,6 +164,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 ResetCamera();
                 ChangeBackground("Theater");
             }
+            else UpdateBG();
 
             SaveCameraInfo();
 
@@ -177,24 +174,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Deactivate()
         {
-            if (bgDragPoint != null) GameObject.Destroy(bgDragPoint.gameObject);
+            BgMgrPatcher.ChangeBgBegin -= OnChangeBegin;
+            BgMgrPatcher.ChangeBgEnd -= OnChangeEnd;
+            DestroyDragPoint();
             GameObject.Destroy(cameraObject);
             GameObject.Destroy(subCamera);
 
             BGVisible = true;
+
             Camera mainCamera = GameMain.Instance.MainCamera.camera;
             mainCamera.backgroundColor = Color.black;
 
             ultimateOrbitCamera.moveSpeed = defaultCameraMoveSpeed;
             ultimateOrbitCamera.zoomSpeed = defaultCameraZoomSpeed;
 
-            if (MeidoPhotoStudio.EditMode) ChangeBackground("Theater");
+            if (MeidoPhotoStudio.EditMode) bgMgr.ChangeBg("Theater");
             else
             {
                 bool isNight = GameMain.Instance.CharacterMgr.status.GetFlag("時間帯") == 3;
 
-                if (isNight) ChangeBackground("ShinShitsumu_ChairRot_Night");
-                else ChangeBackground("ShinShitsumu_ChairRot");
+                if (isNight) bgMgr.ChangeBg("ShinShitsumu_ChairRot_Night");
+                else bgMgr.ChangeBg("ShinShitsumu_ChairRot");
 
                 GameMain.Instance.MainCamera.Reset(CameraMain.CameraType.Target, true);
                 GameMain.Instance.MainCamera.SetTargetPos(new Vector3(0.5609447f, 1.380762f, -1.382336f), true);
@@ -202,7 +202,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 GameMain.Instance.MainCamera.SetAroundAngle(new Vector2(245.5691f, 6.273283f), true);
             }
 
-            bg.localScale = Vector3.one;
+            if (bgMgr.BgObject) bgMgr.BgObject.transform.localScale = Vector3.one;
+
             CubeSmallChange -= OnCubeSmall;
             CubeActiveChange -= OnCubeActive;
         }
@@ -234,11 +235,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void ChangeBackground(string assetName, bool creative = false)
         {
-            currentBGAsset = assetName;
-            if (creative) GameMain.Instance.BgMgr.ChangeBgMyRoom(assetName);
+            if (creative) bgMgr.ChangeBgMyRoom(assetName);
             else
             {
-                GameMain.Instance.BgMgr.ChangeBg(assetName);
+                bgMgr.ChangeBg(assetName);
                 if (assetName == "KaraokeRoom")
                 {
                     bg.transform.position = bgObject.transform.position;
@@ -246,6 +246,38 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     bg.transform.localRotation = Quaternion.Euler(new Vector3(0f, 90f, 0f));
                 }
             }
+        }
+
+        private void AttachDragPoint(Transform bgObject)
+        {
+            bgDragPoint = DragPoint.Make<DragPointBG>(PrimitiveType.Cube, Vector3.one * 0.12f);
+            bgDragPoint.Initialize(() => bgObject.position, () => Vector3.zero);
+            bgDragPoint.Set(bgObject);
+            bgDragPoint.AddGizmo();
+            bgDragPoint.ConstantScale = true;
+            bgDragPoint.gameObject.SetActive(CubeActive);
+        }
+
+        private void OnChangeBegin(object sender, EventArgs args) => DestroyDragPoint();
+
+        private void OnChangeEnd(object sender, EventArgs args) => UpdateBG();
+
+        private void UpdateBG()
+        {
+            if (!bgMgr.BgObject) return;
+
+            currentBGAsset = bgMgr.GetBGName();
+            if (currentBGAsset.StartsWith("マイルーム:"))
+            {
+                currentBGAsset = currentBGAsset.Replace("マイルーム:", string.Empty);
+            }
+            bg = bgMgr.BgObject.transform;
+            AttachDragPoint(bg);
+        }
+
+        private void DestroyDragPoint()
+        {
+            if (bgDragPoint) GameObject.Destroy(bgDragPoint.gameObject);
         }
 
         private void SaveCameraInfo()
@@ -286,7 +318,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bgDragPoint.DragPointScale = CubeSmall ? DragPointGeneral.smallCube : 1f;
         }
 
-        private void OnCubeActive(object sender, EventArgs args) => bgDragPoint.gameObject.SetActive(CubeActive);
+        private void OnCubeActive(object sender, EventArgs args)
+        {
+            bgDragPoint.gameObject.SetActive(CubeActive);
+        }
     }
 
     public struct CameraInfo
