@@ -110,7 +110,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static void Initialize()
         {
-            InitializeScenes();
+            InitializeSceneDirectories();
             InitializePoses();
             InitializeHandPresets();
             InitializeFaceBlends();
@@ -176,7 +176,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else category = faceGroup;
 
             CustomFaceDict[category].Add(fullPath);
-            CustomFaceDict[category].Sort();
+            CustomFaceDict[category].Sort(LexicographicStringComparer.Comparison);
+
+            CustomFaceGroupList.Sort(LexicographicStringComparer.Comparison);
 
             CustomFaceChange?.Invoke(null, new PresetChangeEventArgs(fullPath, category));
         }
@@ -225,7 +227,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else category = poseGroup;
 
             CustomPoseDict[category].Add(fullPath);
-            CustomPoseDict[category].Sort();
+            CustomPoseDict[category].Sort(LexicographicStringComparer.Comparison);
+
+            CustomPoseGroupList.Sort(LexicographicStringComparer.Comparison);
 
             CustomPoseChange?.Invoke(null, new PresetChangeEventArgs(fullPath, category));
         }
@@ -283,12 +287,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else category = handGroup;
 
             CustomHandDict[category].Add(fullPath);
-            CustomHandDict[category].Sort();
+            CustomHandDict[category].Sort(LexicographicStringComparer.Comparison);
+
+            CustomHandGroupList.Sort(LexicographicStringComparer.Comparison);
 
             CustomHandChange?.Invoke(null, new PresetChangeEventArgs(fullPath, category));
         }
 
-        public static void InitializeScenes()
+        public static void InitializeSceneDirectories()
         {
             SceneDirectoryList.Clear();
             KankyoDirectoryList.Clear();
@@ -304,6 +310,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 KankyoDirectoryList.Add(new DirectoryInfo(directory).Name);
             }
+
+            SceneDirectoryList.Sort(LexicographicStringComparer.Comparison);
+            KankyoDirectoryList.Sort(LexicographicStringComparer.Comparison);
         }
 
         public static void InitializePoses()
@@ -351,6 +360,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     if (!PoseDict.ContainsKey(category)) PoseDict[category] = new List<string>();
                 }
 
+                // TODO: Try to group these poses into more than "normal2" and "ero2"
                 foreach (string path in com3d2MotionList)
                 {
                     if (Path.GetExtension(path) == ".anm")
@@ -413,6 +423,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GetPoses(customPosePath);
             foreach (string directory in Directory.GetDirectories(customPosePath)) GetPoses(directory);
 
+            CustomPoseGroupList.Sort(LexicographicStringComparer.Comparison);
+
             CustomPoseChange?.Invoke(null, PresetChangeEventArgs.Empty);
         }
 
@@ -439,6 +451,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             GetPresets(customHandPath);
             foreach (string directory in Directory.GetDirectories(customHandPath)) GetPresets(directory);
+
+            CustomHandGroupList.Sort(LexicographicStringComparer.Comparison);
 
             CustomHandChange?.Invoke(null, PresetChangeEventArgs.Empty);
         }
@@ -480,6 +494,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             GetFacePresets(customFacePath);
             foreach (string directory in Directory.GetDirectories(customFacePath)) GetFacePresets(directory);
+
+            CustomFaceGroupList.Sort(LexicographicStringComparer.Comparison);
 
             CustomFaceChange?.Invoke(null, PresetChangeEventArgs.Empty);
         }
