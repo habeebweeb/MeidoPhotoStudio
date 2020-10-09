@@ -135,11 +135,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 Constants.Window newWindow = args.IsBody ? Constants.Window.Pose : Constants.Window.Face;
                 ChangeWindow(newWindow);
             }
-            else
-            {
-                currentWindowPane.UpdatePanes();
-                Visible = true;
-            }
+            else currentWindowPane.UpdatePanes();
         }
 
         private void ChangeWindow(Constants.Window window)
