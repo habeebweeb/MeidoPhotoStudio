@@ -53,6 +53,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             gameObject.SetActive(false);
         }
 
+        protected override void ResetPosition() => Control.transform.localPosition = DefaultPosition;
+
         protected override void ApplyDragType()
         {
             ApplyProperties(Moving, Moving, false);
