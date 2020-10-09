@@ -3,8 +3,8 @@
         "call": "Call",
         "pose": "Pose",
         "face": "Face",
-        "bg": "BG",
-        "bg2": "BG2"
+        "bg": "Env",
+        "bg2": "Props"
     },
     "maidCallWindow": {
         "okButton": "OK",
