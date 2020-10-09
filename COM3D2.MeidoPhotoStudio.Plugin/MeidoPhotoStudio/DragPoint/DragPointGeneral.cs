@@ -14,6 +14,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Quaternion currentRotation;
         public Quaternion DefaultRotation { get; set; } = Quaternion.identity;
         public Vector3 DefaultPosition { get; set; } = Vector3.zero;
+        public Vector3 DefaultScale { get; set; } = Vector3.one;
         public float ScaleFactor { get; set; } = 1f;
         public bool ConstantScale { get; set; }
         public static readonly Color moveColour = new Color(0.2f, 0.5f, 0.95f, defaultAlpha);
@@ -112,23 +113,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (Scaling)
             {
-                MyObject.localScale = Vector3.one;
+                MyObject.localScale = DefaultScale;
                 OnScale();
                 OnEndScale();
             }
 
             if (Rotating)
             {
-                MyObject.rotation = DefaultRotation;
+                ResetRotation();
                 OnRotate();
             }
 
             if (Moving)
             {
-                MyObject.position = DefaultPosition;
+                ResetPosition();
                 OnMove();
             }
         }
+
+        protected virtual void ResetPosition() => MyObject.position = DefaultPosition;
+
+        protected virtual void ResetRotation() => MyObject.rotation = DefaultRotation;
 
         protected override void OnMouseUp()
         {
