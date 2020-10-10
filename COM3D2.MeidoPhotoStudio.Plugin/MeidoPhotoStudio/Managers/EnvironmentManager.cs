@@ -236,16 +236,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void ChangeBackground(string assetName, bool creative = false)
         {
             if (creative) bgMgr.ChangeBgMyRoom(assetName);
-            else
-            {
-                bgMgr.ChangeBg(assetName);
-                if (assetName == "KaraokeRoom")
-                {
-                    bg.transform.position = bgObject.transform.position;
-                    bg.transform.localPosition = new Vector3(1f, 0f, 4f);
-                    bg.transform.localRotation = Quaternion.Euler(new Vector3(0f, 90f, 0f));
-                }
-            }
+            else bgMgr.ChangeBg(assetName);
         }
 
         private void AttachDragPoint(Transform bgObject)
