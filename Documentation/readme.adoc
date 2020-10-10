@@ -1,0 +1,230 @@
+= Readme
+Discord - habeebweeb#6577
+:toc:
+:toclevels: 4
+
+:pluginname: MeidoPhotoStudio
+:photomode: Studio Mode
+:config: BepInEx\config{backslash}{pluginname}
+
+{pluginname} is an alternative to {photomode}.
+
+Source can be found https://git.coder.horse/habeebweeb/COM3D2.MeidoPhotoStudio[here]
+
+A <<manual#, full manual>> is also included which goes into more depth.
+
+== Installation
+
+=== Requirements
+
+{pluginname} is a BepInEx plugin. Get the latest release https://github.com/BepInEx/BepInEx/releases[here].
+
+=== Installation
+
+Move the contents of the `BepInEx` folder into `COM3D2\BepInEx`
+
+== File System
+
+{pluginname} reads and writes data from `{config}`.
+
+[horizontal]
+Translations:: Contains translation files.
+
+Environments:: Contains saved environments.
+
+Scenes:: Contains saved scenes.
+
+Presets:: Contains poses and hand and face presets
++
+Sample presets are included.
+
+Database:: Contains databases for extra content.
++
+Each database file has comments at the top to describe their use.
+
+`cache.dat`:: Cache file for menu files.
+
+`MeidoPhotoStudio.cfg`:: Configuration file.
+
+`mpstempscene`:: A save file that's made when pressing `Ctrl + S`
+
+
+Environments, scenes, and each preset folder can have folders within them to allow for grouping.
+
+== Hotkeys
+
+=== Main
+[%header, cols="1a, 3"]
+|===
+
+| Key | Action
+
+| `F6`
+| Activate/deactivate {pluginname} (Only in daily and edit mode)
+
+| `Tab`
+| Toggle main window
+
+| `M`
+| Toggle message box
+
+| `H`
+| Undress all maids
+
+| `F8`
+| Hide/show <<manual#scene-manager, scene manager>>
+
+|===
+
+=== Camera
+
+[%header, cols="2a, 3"]
+|===
+
+| Key | Action
+
+| `Q + R`
+| Reset camera
+
+| `Q + S`
+| Save camera
+
+| `Q + A`
+| Load saved camera
+
+| `Shift + Scroll`
+| Zoom camera faster
+
+| `Shift + Middle Drag`
+| Pan camera faster
+
+|===
+
+=== Drag Handles
+
+==== General
+[%header, cols="2a, 3"]
+|===
+
+| Key | Action
+
+| `A + Left Click`
+| Select object
+
+| `D + Left Click`
+| Delete object
+
+| `C + Drag`
+| Scale object
+
+| `C + Double Click`
+| Reset object scale
+
+|===
+
+==== Movement
+
+[%header, cols="2a, 3"]
+|===
+
+| Key | Action
+
+| `Z + Drag`
+| Move object along XZ plane
+
+| `Z + Control + Drag`
+| Move object along the y axis
+
+|===
+
+==== Rotation
+
+[%header, cols="2a, 3"]
+|===
+
+| Key | Action
+
+| `X + Drag`
+| Rotate object along XZ axis
+
+| `Z + Shift + Drag`
+| Rotate object along the *world* Y axis
+
+| `X + Shift + Drag`
+| Rotate object along its *local* Y axis
+
+| `X + Double Click`
+| Reset object rotation
+
+|===
+
+==== Maid
+
+[%header, cols="2a, 3a"]
+|===
+
+| Key | Action
+
+| `Drag`
+| 
+
+* Move arms and legs
+    ** Moving from the hand/foot will move the arm/leg like a chain
+    ** Moving from the elbow/knee will rotate the arm/leg using the shoulder/hip as the pivot point
+* Move shoulders
+
+
+| `Alt + Drag`
+| 
+
+.All along XZ axis
+- Rotate torso
+- Rotate pelvis
+- Rotate head
+- Rotate hands/feet
+
+| `Alt + Shift + Drag`
+| 
+
+.All along local y axis
+- Rotate torso
+- Rotate pelvis
+- Rotate head
+- Rotate hands/feet
+- Rotate arms/legs (when dragging on elbow/knee respectively)
+
+| `Control + Alt + Drag`
+|
+
+- Move both eyes (When dragging on face)
+- Move each breast
+
+| `Control + Alt + Shift + Drag`
+| 
+
+--
+Move eyes in opposite directions
+****
+Cross eyed, ahegao etc.
+****
+--
+
+| `Control + Alt + Double Click`
+| Reset eyes and breasts position
+
+| `Control + Drag`
+| Rotate forearm/calf using elbow/knee as pivot point
+
+| `Space`
+| Rotate fingers/toes
+
+| `Shift + Space`
+| Rotate base of fingers/toes along local y axis
+
+| `A + Left Click`
+|
+
+- Make selected maid the active maid and switch to pose tab (When clicking on torso)
+- Make selected maid the active maid and switch to face tab (When clicking on face)
+
+|===

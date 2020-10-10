@@ -1,0 +1,953 @@
+= MeidoPhotoStudio Manual
+Discord - habeebweeb#6577
+:toc: left
+:toclevels: 4
+:icons: font
+:imagesdir: screenshots
+:data-uri:
+:figure-caption!: 
+:table-caption!:
+
+:gamename: Custom Order Maid 3D 2
+:oldgamename: Custom Maid 3D 2
+:myroom: My Room Custom
+:pluginname: Meido Photo Studio
+:photomode: Studio Mode
+:config: BepInEx\config{backslash}{pluginname}
+:configdatabase: {config}\Database
+:configpreset: {config}\Presets
+:timestamp: yyyyMMddHHmmss
+
+////
+Screenshots are taken with ShareX (https://getsharex.com/)
+
+MeidoPhotoStudio screenshots are to be taken with a grey background (#7A7A7AFF)
+
+Using Runtime Unity Editor (https://github.com/ManlyMarco/RuntimeUnityEditor), set the main light to colour mode and set
+LightProperty[0]'s colour and apply it with SetProps()
+////
+
+== {pluginname} GUI
+
+{pluginname}'s GUI consists of 3 windows
+
+- Main window
+- Message window
+- Scene/environment management window
+
+:mainimage: main
+
+== Main Window
+
+{pluginname}'s main window is divided up into different tabs.
+
+image::{mainimage}/tabs.png[]
+
+At the bottom of the main window, there is plugin information and a settings button
+
+image::{mainimage}/settings/settings_button.jpg[]
+
+[NOTE]
+====
+UI text content varies based on the translation files used.
+
+This manual will assume the included english translations are used.
+====
+
+.Hotkeys
+[%header, cols="1a, 3a"]
+|===
+
+| Key | Action
+
+| `Tab`
+| Toggle main window
+
+| `A + Left Click`
+|
+
+--
+- Switch to the <<Pose Tab, pose tab>> when clicking a maid's torso or <<Drag Handle Cube Toggles, drag handle cube>>
+- Switch to the <<Face Tab, face tab>> when clicking a maid's face
+- Switch to the <<Background Tab, bg tab>> when clicking a light's drag handle
+- Switch to the <<Props Tab, prop tab>> when clicking a prop's drag handle
+--
+
+|===
+
+:callimage: {mainimage}/call
+
+=== Call Tab
+
+image::{callimage}/call.png[]
+
+<1> Maid placement presets
+<2> Call selected maids or clear the list of selected maids
+<3> List of maids
+
+==== Calling Maids
+
+.Maids selected in the order of Muku, Majime and Rindere
+image::{callimage}/call_list.png[]
+
+The maid selection list will call maids in the order that they are selected.
+
+Once maids are selected, click the _Call_ button to begin loading them into the scene.
+
+.Majime has been deselected
+image::{callimage}/call_list_deselect.png[]
+
+Maids can be deselected and the order will update accordingly. Maids need to be recalled when changing selections to see
+the changes.
+
+The clear button will clear the selections made.
+
+==== Maid Placement Presets
+
+.Maids placed in the inverse diagonal preset
+image::{callimage}/placement.png[]
+
+When calling maids for the first time in a session, {pluginname} will place them all in the same position.
+
+Placement presets will place maids based on the selected preset
+
+:poseimage: {mainimage}/pose
+
+=== Pose Tab
+
+image:{poseimage}/pose.png[]
+image:{poseimage}/pose_2.png[]
+
+<.> Maid switcher
+<.> Pose selector
+<.> IK toggles
+<.> Free look
+<.> SM accessories
+<.> Clothing toggles
+<.> Hand presets
+<.> Gravity control
+<.> Copy IK
+<.> Flip IK
+<.> Pose saving
+<.> Hand preset saving
+
+[#maid-switcher]
+==== Maid Switcher
+
+image::{poseimage}/maid_switcher/switcher.png[]
+
+The maid switcher is used to switch between the active maids in the scene.
+
+<1> Edit the active maid (Only available in edit mode)
+
+
+<2> Active maid's active slot number
++
+This corresponds to the order the maids were selected in the <<_calling_maids, call tab>>.
+
+==== Pose Pane
+
+===== Pose Selector
+
+image::{poseimage}/pose/pose_selector.png[]
+
+<1> Pose source
++
+--
+The tabs consists of _Base_ poses that can be found in the game and _Custom_ poses that can be created in the game and
+exported as `.anm` files.
+
+The poses in the _Base_ pose source are populated from two sources
+
+- A database file called `{configdatabase}\mm_pose_list.json` and
+- Directly from the game arc files and categorized in `Normal`, `Normal 2` and `Ero 2`
+
+Poses in the _Custom_ pose source are populated from `{configpreset}\Custom Poses`
+--
+
+<2> Pose category
++
+The pose category represents a folder of poses.
+
+<3> Pose
++
+The pose itself. Changing the selected pose will apply the pose to the active maid.
+
+NOTE: Changing the pose source or pose category will apply the first pose in the list to the active maid immediately.
+
+===== Pose Save
+
+image::{poseimage}/pose/pose_save.png[]
+
+<1> Pose category
++
+This corresponds to the folder the pose file will be saved in
+
+<2> Pose name
++
+--
+This corresponds to the filename of the pose file.
+
+NOTE: If a pose file with the same filename already exists in the folder, a timestamp in the format `{timestamp}` will
+be appended to the new file.
+--
+
+Poses are saved to `{configpreset}\Custom Poses`
+
+TIP: Pose presets are saved in the same format as {photomode} so presets shared online are compatible with {pluginname}!
+
+==== IK Pane
+
+image::{poseimage}/ik/ik.png[]
+
+<1> IK toggle
++
+Enables/disables all IK for the active maid. The maid cannot be moved/rotated/scaled nor posed. The maid can still be
+selected while IK is disabled.
+
+<2> Pose release toggle
++
+When a maid is posed, the animation the maid is playing stops. Releasing the maid will replay their animation.
+
+<3> Maid bone IK mode toggle
++
+See <<_ik>>
+
+==== Free Look Pane
+
+image::{poseimage}/free_look/free_look.png[]
+
+<.> Free look toggle and sliders
++
+When free look is off, the maid will look at the camera. When free look is on, the maid will look in the direction
+specified by the sliders.
+
+<.> Look bindings
++
+--
+Toggling the bindings will affect how the maid looks in a direction.
+
+Binding the eyes will move the eyes with the head. Unbinding the eyes will keep the maid's eyes centred
+
+Binding the head will rotate the head. Unbinding the head will lock the head's rotation.
+
+.Unbinding the head makes the eyes look towards the direction without rotating the head
+image::{poseimage}/free_look/head_unbind.png[]
+--
+
+==== SM Accessories
+
+image::{poseimage}/sm_restraints/sm_restraints.png[]
+
+<1> Dropdown for SM accessories
+<2> Attach/Detach (All) buttons
++
+--
+Detaching an accessory can be done by selecting the attached accessory in the dropdown (or another accessory from the
+same category) and clicking _Detach_.
+
+[NOTE]
+====
+The selection of attachable accessories is limited in {pluginname} because only the more complex attachable accessories are
+listed. +
+These accessories can attach to multiple points which cannot be handled by {pluginname}'s 
+<<Attach Prop, prop attachment feature>>
+====
+--
+
+==== Clothing Toggles
+
+image:{poseimage}/clothing/clothing.png[]
+
+<1> Toggles between simple and detailed clothing toggles.
+
+<2> Toggles the active maid's clothing
++
+When _Detailed Clothing_ is disabled, the _headdress_ toggle will treat all headwear as one thing (excluding eye
+accessories).
+
+<3> Toggles for more of the active maid's clothing (accessible when _Detailed Clothing_ is enabled)
+
+<4> Toggles the curling and shift of the active maid's skirt and panties
++
+--
+- Curl front will shift the front of the active maid's skirt up
+- Curl rear will shift the back of the active maid's skirt up (Only one can be curled at a time)
+- Shift will shift the active maid's panties over
+--
+
+==== Hand Pane
+
+===== Hand Preset Application
+
+image::{poseimage}/hand/hand.png[]
+
+<1> Hand preset category
+<2> Hand preset
+<3> Which hand to apply the preset to
+
+NOTE: Selecting a category or preset does not apply the preset immediately.
+
+===== Hand Preset Save
+
+image::{poseimage}/hand/hand_save.png[]
+
+<1> Pose category
++
+This corresponds to the folder the hand file will be saved in.
+
+<2> Pose name
++
+--
+This corresponds to the filename of the hand preset file.
+
+NOTE: If a hand preset file with the same filename already exists in the folder, a timestamp in the format {timestamp}
+will be appended to the new file.
+--
+
+<3> Which hand to make a preset of
+
+Hand presets are saved to `{configpreset}\Hand Presets`
+
+TIP: Hand presets are saved in the same format as {photomode} so presets shared online are compatible with {pluginname}!
+
+==== Gravity Control Pane
+
+image::{poseimage}/gravity/gravity.png[]
+
+<1> Toggle hair and skirt gravity control for active maid
+<2> Apply hair and/or skirt gravity to all maids
++
+Moving any gravity control from any maid will apply the changes to all the maids.
+
+Gravity controls are moved in the same way as <<_props, props>>
+
+.Both gravity controls active
+image::{poseimage}/gravity/gravity_example.png[]
+
+TIP: Disable <<_ik_pane, maid IK>> to move drag handles within maid body
+
+==== Other IK
+
+image::{poseimage}/other_ik/copy_ik.jpg[]
+
+Other maid's pose can be copied to the active maid.
+
+The active maid's pose is flipped horizontally.
+
+:faceimage: {mainimage}/face
+
+=== Face Tab
+
+image::{faceimage}/face.jpg[]
+
+<.> Maid switcher
+<.> Face preset selector
+<.> Face sliders
+<.> Face toggles
+<.> Save face preset pane
+
+==== Maid Switcher
+
+See <<maid-switcher>>
+
+==== Face Preset Selector
+
+image::{faceimage}/face/face.jpg[]
+
+<1> Face preset source
++
+--
+The tabs consists of _Base_ face preset that can be found in the game and _Custom_ face presets that can be created in 
+{pluginname} and exported as `.xml` files.
+
+The face presets in the _Base_ face preset source are populated from the game arc files
+
+face presets in the _Custom_ pose source are populated from `{configpreset}\Face Presets`
+--
+
+<2> Face preset category
++
+The face preset category represents a folder of poses.
+
+<3> Face preset
++
+The face preset itself. Changing the selected face preset will apply the preset to the active maid.
+
+NOTE: Changing the face preset source or preset category will apply the first preset in the list to the active maid
+immediately.
+
+==== Face Sliders
+
+image::{faceimage}/sliders/sliders.jpg[]
+ 
+Changes face blend values for the active maid.
+
+NOTE: Tongue Base is not available for some maid faces and the slider will not show up for those maids.
+
+==== Face Toggles
+
+image::{faceimage}/toggles/toggles.jpg[]
+ 
+Toggles face blend values for the active maid
+
+==== Face Save
+
+image::{faceimage}/face/face_save.jpg[]
+
+<1> Toggles the pane
+
+<2> Face preset category
++
+This corresponds to the folder the face preset file will be saved in
+
+<3> Face preset name
++
+--
+This corresponds to the filename of the preset file.
+
+NOTE: If a face preset file with the same filename already exists in the folder, a timestamp in the format `{timestamp}`
+will be appended to the new file.
+--
+
+Face presets are saved to `{configpreset}\Face Presets`
+
+[WARNING]
+====
+Face presets from other plugins are not compatible with {pluginname}.
+
+Since {gamename} does not have a native way of saving face presets, {pluginname} saves face presets in its own format.
+====
+
+TIP: The format {pluginname} saves face presets in is very simple so other plugin face presets could be converted.
+
+:bgimage: {mainimage}/bg
+
+=== Background Tab
+
+image::{bgimage}/bg.jpg[]
+
+<.> Scene manager button
+<.> Environment switcher
+<.> drag handle cube toggle
+<.> Lights
+<.> Effects
+
+==== Scene Manager
+
+image::{bgimage}/scene_manager/scene_manager.jpg[]
+
+Toggles the scene manager visibility.
+
+See <<scene-manager>>
+
+==== Environment Switcher
+
+image::{bgimage}/bg/bg_switcher.jpg[]
+
+Switch to environments available in the game.
+
+.The environments are listed in this order
+. {gamename}
+. {oldgamename} (If linked)
+. {myroom}
+
+==== Drag Handle Cube Toggles
+
+image::{bgimage}/cube/cube.jpg[]
+
+Toggles cube drag handles and properties for objects.
+
+[horizontal]
+Props:: Toggle the visibility of the cube for all props
+Small:: Makes all cubes smaller when enabled
+Maid:: Toggle the visibility of the cube for all maids
+BG:: Toggle the visibility of the cube for the environment
+
+==== Lights
+
+See <<Lights>>
+
+==== Effects
+
+See <<Effects>>
+
+:propimage: {mainimage}/prop
+
+=== Props Tab
+
+image:{propimage}/props.jpg[]
+image:{propimage}/props_2.jpg[]
+image:{propimage}/props_3.jpg[]
+
+<.> Prop sources
+<.> Miscellaneous props
+<.> Prop manager
+<.> Attach point manager
+<.> {myroom} props
+<.> Menu file props
+
+==== Prop Sources
+
+Props can be spawned from three different sources
+
+- Photo mode or game files directly
+- {myroom} props
+- Menu file (mod) props
+
+===== Miscellaneous Props
+
+image::{propimage}/prop_source/studio.jpg[]
+
+<1> Prop category
++
+--
+The prop categories include
+
+- All of {photomode}'s prop categories
++
+NOTE: This includes props added through https://github.com/Neerhom/COM3D2.ModLoader[COM3D2.ModLoader] plugin like the
+'Mirrors' category
+- Props 1 which includes all `.asset_bg` files (including certain backgrounds. See <<Database Files>>)
+- Props 2 which includes mob silhouettes and salon bg stage light
+- Desk items
+- Hand items
+- Smaller Backgrounds
+--
+
+<2> The prop itself
+
+<3> Add prop to scene
+
+===== {myroom} Props
+
+image::{propimage}/prop_source/myroom.jpg[]
+
+<1> Prop category
++ 
+These include all the categories of props in {myroom}.
+
+<2> Prop icons
++
+Clicking an icon will spawn the prop
+
+===== Mod (Menu File) Props
+
+Mod props come from mods placed in the `COM3D2\Mod` folder.
+
+image::{propimage}/prop_source/mod.jpg[]
+
+<1> The clothing category
++
+The categories are limited to clothing and accessories
+
+<2> Prop icons
++
+Clicking an icon will spawn the prop
+
+<3> Prop filters
++
+- Mods filter only shows clothing/accessories in the `COM3D2\Mod` folder
+- COM3D2 filter only shows clothing/accessories from the game
+
+NOTE: Clothing/accessories from {oldgamename} will show up as well if {oldgamename} is linked.
+
+==== Prop Manager
+
+image::{propimage}/manager/manager.jpg[]
+
+<1> The prop to manage
++
+TIP: You can also select props to manage by holding `A` and clicking on the prop's drag handle.
+<2> Prop properties and actions
++
+--
+Cube:: Toggle the drag handle for the prop.
+
+WARNING: If <<Drag Handle Cube Toggles, drag handle cube toggle>> is disabled, prop drag handles will not be visible
+regardless of the setting in the prop manager.
+
+Gizmo:: Toggle the gizmo for the prop.
+Shadow:: Toggle the shadow for the prop.
+Copy:: Make a copy of the prop.
+Delete:: Delete the prop.
+
+TIP: You can also delete props by holding `D` and clicking on the prop's drag handle.
+--
+
+==== Attach Prop
+
+image::{propimage}/attach/attach.jpg[]
+
+<1> The current prop that's being managed. See <<Prop Manager>>
++
+The attach prop pane uses the current prop in the prop manager to attach to maids
+
+<2> The maid to attach/detach props to/from
+
+<3> Keep the prop's position when attaching/detaching props to/from maids.
+
+<4> The point on the maid to attach/detach the prop to/from.
+
+NOTE: This pane is only enabled when there is at least one maid and one prop in the scene.
+
+=== Settings Panel
+
+image::{mainimage}/settings/settings.jpg[]
+
+<1> Controls rebinding
++
+All hotkeys can be rebound except for maid drag handles which use modifier keys (`Control, Alt, Shift`) as hotkeys.
+
+<2> Reload translations and presets
+
+:messageimage: message
+
+== Message Window
+
+image::{messageimage}/message_example.jpg[]
+
+.Hotkeys
+[%header, cols="1a, 3a"]
+|===
+
+| Key | Action
+
+| `M`
+| 
+
+- Hide message box when visible
+- Toggle message input window when message box is hidden
+
+|===
+
+=== Message Input Window
+
+image::{messageimage}/message.jpg[]
+
+<1> Name to put in the name field
+<2> Font size of the main message body
+<3> Message body
+
+:sceneimage: scene_manager
+
+[#scene-manager]
+== Scene/Environment Management
+
+{pluginname} saves scenes inside a `.png` image file. {pluginname}'s scene manager was designed to look similar to
+{photomode}'s scene manager while being more flexible.
+
+.Hotkeys
+[%header, cols="1a, 3"]
+|===
+
+| Key | Action
+
+| `F8`
+| Hide/show the scene manager
+
+| `Control + S`
+| Save a quick scene
+
+| `Control + A`
+| Load a quick scene
+
+|===
+
+image::{sceneimage}/manager.jpg[]
+
+<.> Folders where scenes are stored
++
+--
+The first folder is the root scene folder and subsequent folders are sub-folders of the root folder
+
+Scenes folders are stored in `{config}\Scenes`
+--
+
+<.> Shows a text input field for making a new sub folder when clicked and a delete button 
++
+The delete button will be enabled when a non root-folder is selected (ie. folders after the _Scenes_ folder).
+
+<.> Switches to the environment manager.
++
+NOTE: Environments are just scenes that do not load maids, message box and camera position
+
+<.> Refreshes the list of folders and the scenes inside
+
+<.> Scene sorting modes and descending toggle
++
+.Available sorting modes
+- Name
+- Date created
+- Date modified
+
+<.> Save scene button
++
+--
+Saves the scene to the currently selected folder.
+
+The filename used is `mpsscene` with a timestamp in the format `{timestamp}` and `.png`
+
+NOTE: Quick scenes are saved in `{config}` as a file named `mpstempscene` without a file extension.
+--
+
+<.> A saved scene
++
+Clicking the scene will open the <<Scene Management, scene management window>>
+
+<.> Resize handle
+
+=== Scene Management
+
+image::{sceneimage}/management.jpg[]
+
+<.> Delete the scene (A confirmation will be shown)
+<.> Overwrite the scene
+<.> Load the scene (Any unsaved changes will be lost)
+<.> Scene's filename
+<.> The number of maids in the scene
+
+:dragimage: drag_handle
+
+== Drag Handles
+
+Aside from the UI, a lot of the interaction with {pluginname} is done through the manipulation of drag handles.
+
+=== General Drag Handle
+
+.Different drag modes
+image::{dragimage}/handles.jpg[]
+
+<.> Move mode
+<.> Rotate mode
+<.> Scale mode
+<.> Select mode
+<.> Delete mode
+
+==== Move Mode
+
+Moves the attached object along the floor or up and down.
+
+.Hotkeys
+[%header, cols="2a, 3"]
+|===
+
+| Key | Action
+
+| `Z + Drag`
+| Move object along XZ plane
+
+| `Z + Control + Drag`
+| Move object along the y axis
+
+|===
+
+==== Rotate Mode
+
+Rotates the attached object.
+
+For certain object types, a rotation gizmo is also visible.
+
+.Hotkeys
+[%header, cols="2a, 3"]
+|===
+
+| Key | Action
+
+| `X + Drag`
+| Rotate object along XZ axis
+
+| `Z + Shift + Drag`
+| Rotate object along the *world* Y axis
+
+| `X + Shift + Drag`
+| Rotate object along its *local* Y axis
+
+| `X + Double Click`
+| Reset object rotation
+
+|===
+
+==== Scale Mode
+
+Scales the attached object.
+
+For certain types of lights, scaling will change a property of the light.
+
+.Hotkeys
+[%header, cols="2a, 3"]
+|===
+
+| Key | Action
+
+| `C + Drag`
+| Scale object
+
+| `C + Double Click`
+| Reset object scale
+
+|===
+
+==== Select Mode
+
+Makes the attached object the focus for further editing in the UI.
+
+Selecting an object will switch the <<Main Window, main window>> to the appropriate tab where the object can be edited.
+
+.Hotkeys
+[%header, cols="2a, 3"]
+|===
+
+| Key | Action
+
+| `A + Left Click`
+| Select object
+
+|===
+
+==== Delete Mode
+
+Deletes the attached object.
+
+.Hotkeys
+[%header, cols="2a, 3"]
+|===
+| Key | Action
+
+| `D + Left Click`
+| Delete object
+
+|===
+
+:dragimagemaid: {dragimage}\maid
+:dragimagemaidnorm: {dragimagemaid}\normal
+:dragimagemaidbone: {dragimagemaid}\bone
+
+=== Maid Drag Handles
+
+Maids themselves have drag handles. 
+
+Holding specific hotkeys and dragging over the general area of the drag handle will perform its specific function.
+
+There are two IK modes, <<Normal IK Mode, normal>> and <<Bone IK Mode, bone>>.
+
+[NOTE]
+--
+For general IK (except for the cube drag handle) and normal IK, drag handles are not visible in game.
+
+Drag handles are visible in the manual for demonstration purposes.
+--
+
+==== General IK
+
+image::{dragimagemaid}\general.jpg[]
+
+Maids have two general drag handles, a capsule shaped one on the torso and a cube at the feet.
+
+NOTE: Cube drag handle is only available when it is <<Drag Handle Cube Toggles, enabled>>.
+
+See <<General Drag Handle>> for more information.
+
+==== Normal IK Mode
+
+[#normal-no-hotkeys]
+===== No Hotkeys
+
+image::{dragimagemaidnorm}\none.jpg[]
+
+When no hotkeys are pressed, drag handles for the joints of the arms and legs are available.
+
+Dragging the hand/foot will move the entire arm/leg like a chain.
+
+Dragging the elbow/knee will rotate the entire arm/leg with the shoulder/thigh as the pivot point.
+
+===== Control
+
+image::{dragimagemaidnorm}\ctrl.jpg[]
+
+`Control` rotates the forearm/calf with the elbow/knee as the pivot point.
+
+This is useful for when you want to move only the forearm/calf without moving the entire limb.
+
+===== Control + Alt (+ Shift)
+
+image::{dragimagemaidnorm}\ctrl_alt.jpg[]
+
+`Control + Alt` does different things based on which drag handle is being manipulated.
+
+Face::
++
+--
+Moves the eyes.
+
+[NOTE]
+====
+`Control + Alt + Shift` moves the eyes in inverse directions.
+
+.Cross eyed
+image::{dragimagemaidnorm}\inverse.jpg[]
+
+====
+--
+
+Breasts:: Moves the breasts
+
+``Double Click``ing while holding the hotkeys will reset the position.
+
+
+===== Alt
+
+image::{dragimagemaidnorm}\alt.jpg[]
+
+`Alt` rotates the head, torso, pelvis, hand and feet around a pivot point.
+
+===== Alt + Shift
+
+image::{dragimagemaidnorm}\alt_shift.jpg[]
+
+`Alt + Shift` concerns the same parts as `<<Alt>>` as well as the entire arm and leg but instead rotates them along
+their *local* Y axis.
+
+==== Bone IK Mode
+
+Drag handles in bone IK mode are visible and performs different actions based on which hotkeys are pressed.
+
+The hotkeys for bone IK mode are the same as <<Normal IK Mode, normal IK mode>> but instead replaces the handles forgizmos instead.
+
+===== No Hotkeys
+
+image::{dragimagemaidbone}\none.jpg[]
+
+For the arm and leg drag handles, they work the same way as <<normal-no-hotkeys, normal IK mode>>.
+
+Drag handles along the spine will rotate around a pivot point.
+
+The pelvis drag handle changes the maid's *local* rotation.
+
+[NOTE] 
+====
+Modifying a maid's *local* position/rotation affects the position/rotation of the maid's pose.
+
+An example of where this is useful is making a pose where the maid is sitting on the floor. For many poses the default
+local position is located somewhere where the maid's feet touch the ground. Moving the local position closer to the
+floor will keep the maid's actual position while making the pose make sense.
+
+.Compare the local position (black cube) to the world position (blue cube)
+image::{dragimagemaidbone}\local.jpg[]
+====
+
+===== Shift
+
+image::{dragimagemaidbone}\shift.jpg[]
+
+`Shift` rotates the spine parts along their *local* Y axis.
+
+A gizmo replaces the pelvis drag handle.
+
+== Lights
+
+== Effects
+
+== Database Files
+
+== FAQ
