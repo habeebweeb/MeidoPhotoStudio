@@ -535,10 +535,10 @@ namespace COM3D2.MeidoPhotoStudio.Converter
             {
                 // bloom
                 binaryWriter.Write(Plugin.BloomEffectManager.header);
-                binaryWriter.Write(float.Parse(strArray4[2])); // intensity
+                binaryWriter.Write(float.Parse(strArray4[2]) / 5.7f * 100f); // intensity
                 binaryWriter.Write((int)float.Parse(strArray4[3])); // blur iterations
                 binaryWriter.WriteColour(new Color( // bloom threshold colour
-                    float.Parse(strArray4[4]), float.Parse(strArray4[5]), float.Parse(strArray4[6]), 1f
+                    1f - float.Parse(strArray4[4]), 1f - float.Parse(strArray4[5]), 1f - float.Parse(strArray4[6]), 1f
                 ));
                 binaryWriter.Write(int.Parse(strArray4[7]) == 1); // hdr
                 binaryWriter.Write(int.Parse(strArray4[1]) == 1); // active
