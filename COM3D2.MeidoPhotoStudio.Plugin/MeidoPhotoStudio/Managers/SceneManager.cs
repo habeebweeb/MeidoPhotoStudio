@@ -173,7 +173,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (!Directory.Exists(CurrentScenesDirectory)) CurrentDirectoryIndex = 0;
 
-            Constants.InitializeSceneDirectories();
+            if (KankyoMode) Constants.InitializeKankyoDirectories();
+            else Constants.InitializeSceneDirectories();
+
             UpdateSceneList();
         }
 

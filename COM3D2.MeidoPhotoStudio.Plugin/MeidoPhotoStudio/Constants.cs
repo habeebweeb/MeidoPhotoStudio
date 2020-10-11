@@ -111,6 +111,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static void Initialize()
         {
             InitializeSceneDirectories();
+            InitializeKankyoDirectories();
             InitializePoses();
             InitializeHandPresets();
             InitializeFaceBlends();
@@ -297,22 +298,31 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static void InitializeSceneDirectories()
         {
             SceneDirectoryList.Clear();
-            KankyoDirectoryList.Clear();
-
             SceneDirectoryList.Add(sceneDirectory);
             foreach (string directory in Directory.GetDirectories(scenesPath))
             {
                 SceneDirectoryList.Add(new DirectoryInfo(directory).Name);
             }
+            SceneDirectoryList.Sort((a, b) => KeepAtTop(a, b, sceneDirectory));
+        }
 
+        public static void InitializeKankyoDirectories()
+        {
+            KankyoDirectoryList.Clear();
             KankyoDirectoryList.Add(kankyoDirectory);
             foreach (string directory in Directory.GetDirectories(kankyoPath))
             {
                 KankyoDirectoryList.Add(new DirectoryInfo(directory).Name);
             }
+            KankyoDirectoryList.Sort((a, b) => KeepAtTop(a, b, kankyoDirectory));
+        }
 
-            SceneDirectoryList.Sort(LexicographicStringComparer.Comparison);
-            KankyoDirectoryList.Sort(LexicographicStringComparer.Comparison);
+        private static int KeepAtTop(string a, string b, string topItem)
+        {
+            if (a == b) return 0;
+            if (a == topItem) return -1;
+            if (b == topItem) return 1;
+            else return LexicographicStringComparer.Comparison(a, b);
         }
 
         public static void InitializePoses()
