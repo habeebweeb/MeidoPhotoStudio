@@ -173,13 +173,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 CustomFaceGroupList.Add(category);
                 CustomFaceDict[category] = new List<string>();
+                CustomFaceGroupList.Sort((a, b) => KeepAtTop(a, b, customFaceDirectory));
             }
             else category = faceGroup;
 
             CustomFaceDict[category].Add(fullPath);
             CustomFaceDict[category].Sort(LexicographicStringComparer.Comparison);
-
-            CustomFaceGroupList.Sort(LexicographicStringComparer.Comparison);
 
             CustomFaceChange?.Invoke(null, new PresetChangeEventArgs(fullPath, category));
         }
@@ -224,13 +223,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 CustomPoseGroupList.Add(category);
                 CustomPoseDict[category] = new List<string>();
+                CustomPoseGroupList.Sort((a, b) => KeepAtTop(a, b, customPoseDirectory));
             }
             else category = poseGroup;
 
             CustomPoseDict[category].Add(fullPath);
             CustomPoseDict[category].Sort(LexicographicStringComparer.Comparison);
-
-            CustomPoseGroupList.Sort(LexicographicStringComparer.Comparison);
 
             CustomPoseChange?.Invoke(null, new PresetChangeEventArgs(fullPath, category));
         }
@@ -284,13 +282,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 CustomHandGroupList.Add(category);
                 CustomHandDict[category] = new List<string>();
+                CustomHandGroupList.Sort((a, b) => KeepAtTop(a, b, customHandDirectory));
             }
             else category = handGroup;
 
             CustomHandDict[category].Add(fullPath);
             CustomHandDict[category].Sort(LexicographicStringComparer.Comparison);
-
-            CustomHandGroupList.Sort(LexicographicStringComparer.Comparison);
 
             CustomHandChange?.Invoke(null, new PresetChangeEventArgs(fullPath, category));
         }
@@ -433,7 +430,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GetPoses(customPosePath);
             foreach (string directory in Directory.GetDirectories(customPosePath)) GetPoses(directory);
 
-            CustomPoseGroupList.Sort(LexicographicStringComparer.Comparison);
+            CustomPoseGroupList.Sort((a, b) => KeepAtTop(a, b, customPoseDirectory));
 
             CustomPoseChange?.Invoke(null, PresetChangeEventArgs.Empty);
         }
@@ -462,7 +459,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GetPresets(customHandPath);
             foreach (string directory in Directory.GetDirectories(customHandPath)) GetPresets(directory);
 
-            CustomHandGroupList.Sort(LexicographicStringComparer.Comparison);
+            CustomHandGroupList.Sort((a, b) => KeepAtTop(a, b, customHandDirectory));
 
             CustomHandChange?.Invoke(null, PresetChangeEventArgs.Empty);
         }
@@ -505,7 +502,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GetFacePresets(customFacePath);
             foreach (string directory in Directory.GetDirectories(customFacePath)) GetFacePresets(directory);
 
-            CustomFaceGroupList.Sort(LexicographicStringComparer.Comparison);
+            CustomFaceGroupList.Sort((a, b) => KeepAtTop(a, b, customFaceDirectory));
 
             CustomFaceChange?.Invoke(null, PresetChangeEventArgs.Empty);
         }
