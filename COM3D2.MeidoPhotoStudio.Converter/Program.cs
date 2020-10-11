@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
         private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio.converter";
         public const string pluginName = "MeidoPhotoStudio Converter";
         public const string pluginVersion = "0.0.0";
-        private readonly byte[] noThumb = Convert.FromBase64String(
+        private static readonly byte[] noThumb = Convert.FromBase64String(
             "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7D" +
             "AcdvqGQAAAFOSURBVFhH3dJbjoMwEETRLIRP9r+zrCGpqJABY+x+2Ua5ys9EcteJNK/3sj7ws7E+j2ln8Q9+O7eE2Vjpq4kdJTsLTZRl" +
             "jBMLTZFdDTkLDZYVAQUWGia7Wy+z0ABZZfqWhbrK6rs1Fuoka442WChcJllss1CgTDgnYqEQmXxLykJOmWpIwUJmmXZFx0IGmWFCzUKq" +
@@ -638,7 +638,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                 // MM uses spotAngle for both range and spotAngle based on which light type is used
                 float intensity = float.Parse(strArray3[24]);
                 float spotAngle = float.Parse(strArray3[25]);
-                float range = lightType == 2 ? spotAngle / 5f : spotAngle; ;
+                float range = spotAngle / 5f;
                 float shadowStrength = 0.098f;
                 if (strArray4 != null) shadowStrength = float.Parse(strArray4[0]);
 
@@ -647,7 +647,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                     if (i == lightType || (i == 0 && lightType == 3))
                     {
                         SerializeLightProperty(
-                            binaryWriter, lightRotation, lightColour, intensity, spotAngle, range, shadowStrength
+                            binaryWriter, lightRotation, lightColour, intensity, range, spotAngle, shadowStrength
                         );
                     }
                     else SerializeDefaultLight(binaryWriter);
@@ -684,14 +684,14 @@ namespace COM3D2.MeidoPhotoStudio.Converter
 
                     float intensity = float.Parse(lightProperties[6]);
                     float spotAngle = float.Parse(lightProperties[7]);
-                    float range = lightType == 2 ? spotAngle / 5f : spotAngle;
+                    float range = spotAngle / 5f;
                     float shadowStrength = 0.098f;
                     for (int j = 0; j < 3; j++)
                     {
                         if (j == lightType)
                         {
                             SerializeLightProperty(
-                                binaryWriter, lightRotation, lightColour, intensity, spotAngle, range, shadowStrength
+                                binaryWriter, lightRotation, lightColour, intensity, range, spotAngle, shadowStrength
                             );
                         }
                         else SerializeDefaultLight(binaryWriter);
