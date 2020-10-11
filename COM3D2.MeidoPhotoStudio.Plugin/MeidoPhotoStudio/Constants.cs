@@ -410,14 +410,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             void GetPoses(string directory)
             {
-                List<string> poseList = Directory.GetFiles(directory)
-                    .Where(file => Path.GetExtension(file) == ".anm").ToList();
+                IEnumerable<string> poseList = Directory.GetFiles(directory)
+                    .Where(file => Path.GetExtension(file) == ".anm");
 
-                if (poseList.Count > 0)
+                if (poseList.Any())
                 {
                     string poseGroupName = new DirectoryInfo(directory).Name;
                     if (poseGroupName != customPoseDirectory) CustomPoseGroupList.Add(poseGroupName);
-                    CustomPoseDict[poseGroupName] = poseList;
+                    CustomPoseDict[poseGroupName] = poseList.ToList();
+                    CustomPoseDict[poseGroupName].Sort(LexicographicStringComparer.Comparison);
                 }
             }
 
@@ -446,7 +447,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 {
                     string presetCategory = new DirectoryInfo(directory).Name;
                     if (presetCategory != customHandDirectory) CustomHandGroupList.Add(presetCategory);
-                    CustomHandDict[presetCategory] = new List<string>(presetList);
+                    CustomHandDict[presetCategory] = presetList.ToList();
+                    CustomHandDict[presetCategory].Sort(LexicographicStringComparer.Comparison);
                 }
             }
 
@@ -482,14 +484,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             void GetFacePresets(string directory)
             {
-                List<string> presetList = Directory.GetFiles(directory)
+                IEnumerable<string> presetList = Directory.GetFiles(directory)
                     .Where(file => Path.GetExtension(file) == ".xml").ToList();
 
-                if (presetList.Count > 0)
+                if (presetList.Any())
                 {
                     string faceGroupName = new DirectoryInfo(directory).Name;
                     if (faceGroupName != customFaceDirectory) CustomFaceGroupList.Add(faceGroupName);
-                    CustomFaceDict[faceGroupName] = presetList;
+                    CustomFaceDict[faceGroupName] = presetList.ToList();
+                    CustomFaceDict[faceGroupName].Sort(LexicographicStringComparer.Comparison);
                 }
             }
 
