@@ -85,7 +85,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                 windowRect.height = 200f;
                 windowRect.x = Mathf.Clamp(windowRect.x, 0, Screen.width - windowRect.width);
                 windowRect.y = Mathf.Clamp(windowRect.y, 0, Screen.height - windowRect.height);
-                windowRect = GUI.Window(0xEA4040, windowRect, GUIFunc, "MeidoPhotoStudio Converter");
+                windowRect = GUI.Window(0xEA4040, windowRect, GUIFunc, pluginName);
             }
         }
 
@@ -361,7 +361,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                     {
                         // MM gravity affects all maids
                         gravityEnabled = true;
-                        tempWriter.WriteVector3(softG * 5f);
+                        tempWriter.WriteVector3(softG * 90f);
                     }
 
                     // MM doesn't serialize skirt gravity
