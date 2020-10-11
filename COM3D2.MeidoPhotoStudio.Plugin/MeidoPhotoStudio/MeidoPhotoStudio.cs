@@ -22,6 +22,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public const int kankyoMagic = -765;
         public static string pluginString = $"{pluginName} {pluginVersion}";
         public static bool EditMode => currentScene == Constants.Scene.Edit;
+        public static event EventHandler<ScreenshotEventArgs> NotifyRawScreenshot;
         private WindowManager windowManager;
         private SceneManager sceneManager;
         private MeidoManager meidoManager;
@@ -300,17 +301,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             yield return new WaitForEndOfFrame();
 
-            // Take Screenshot
-            int[] defaultSuperSize = new[] { 1, 2, 4 };
-            int selectedSuperSize = args.SuperSize < 1
-                ? defaultSuperSize[(int)GameMain.Instance.CMSystem.ScreenShotSuperSize]
-                : args.SuperSize;
+            if (args.InMemory)
+            {
+                Texture2D rawScreenshot = new Texture2D(Screen.width, Screen.height, TextureFormat.ARGB32, false);
+                rawScreenshot.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0, false);
+                rawScreenshot.Apply();
+                NotifyRawScreenshot?.Invoke(null, new ScreenshotEventArgs() { Screenshot = rawScreenshot });
+            }
+            else
+            {
+                // Take Screenshot
+                int[] defaultSuperSize = new[] { 1, 2, 4 };
+                int selectedSuperSize = args.SuperSize < 1
+                    ? defaultSuperSize[(int)GameMain.Instance.CMSystem.ScreenShotSuperSize]
+                    : args.SuperSize;
 
-            string path = string.IsNullOrEmpty(args.Path)
-                ? Utility.ScreenshotFilename()
-                : args.Path;
+                string path = string.IsNullOrEmpty(args.Path)
+                    ? Utility.ScreenshotFilename()
+                    : args.Path;
 
-            Application.CaptureScreenshot(path, selectedSuperSize);
+                Application.CaptureScreenshot(path, selectedSuperSize);
+            }
             GameMain.Instance.SoundMgr.PlaySe("se022.ogg", false);
 
             yield return new WaitForEndOfFrame();
@@ -496,5 +507,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public string Path { get; set; } = string.Empty;
         public int SuperSize { get; set; } = -1;
         public bool HideMaids { get; set; }
+        public bool InMemory { get; set; } = false;
+        public Texture2D Screenshot { get; set; }
     }
 }

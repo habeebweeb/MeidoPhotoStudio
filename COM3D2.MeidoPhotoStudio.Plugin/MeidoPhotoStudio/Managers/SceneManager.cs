@@ -11,12 +11,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     public class SceneManager : IManager
     {
         public static bool Busy { get; private set; }
-        public bool Initialized { get; private set; }
         public static readonly Vector2 sceneDimensions = new Vector2(480, 270);
+        private static readonly ConfigEntry<bool> sortDescending;
+        private static readonly ConfigEntry<SortMode> currentSortMode;
         private readonly MeidoPhotoStudio meidoPhotoStudio;
         private int SortDirection => SortDescending ? -1 : 1;
+        public bool Initialized { get; private set; }
         public bool KankyoMode { get; set; }
-        private static readonly ConfigEntry<bool> sortDescending;
         public bool SortDescending
         {
             get => sortDescending.Value;
@@ -30,7 +31,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public string CurrentBasePath => KankyoMode ? Constants.kankyoPath : Constants.scenesPath;
         public string CurrentScenesDirectory
             => CurrentDirectoryIndex == 0 ? CurrentBasePath : Path.Combine(CurrentBasePath, CurrentDirectoryName);
-        private static readonly ConfigEntry<SortMode> currentSortMode;
         public SortMode CurrentSortMode
         {
             get => currentSortMode.Value;
@@ -111,8 +111,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SaveScene(bool overwrite = false)
         {
             if (Busy) return;
+            Busy = true;
+
             if (!Directory.Exists(CurrentScenesDirectory)) Directory.CreateDirectory(CurrentScenesDirectory);
-            meidoPhotoStudio.StartCoroutine(SaveSceneToFile(overwrite));
+
+            MeidoPhotoStudio.NotifyRawScreenshot += SaveScene;
+
+            MeidoPhotoStudio.TakeScreenshot(new ScreenshotEventArgs() { InMemory = true });
+
+            void SaveScene(object sender, ScreenshotEventArgs args)
+            {
+                MeidoPhotoStudio.NotifyRawScreenshot -= SaveScene;
+                meidoPhotoStudio.StartCoroutine(SaveSceneToFile(args.Screenshot, overwrite));
+            }
         }
 
         public void SelectDirectory(int directoryIndex)
@@ -255,7 +266,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             meidoPhotoStudio.ApplyScene(Path.Combine(Constants.configPath, "mpstempscene"));
         }
 
-        private System.Collections.IEnumerator SaveSceneToFile(bool overwrite = false)
+        private System.Collections.IEnumerator SaveSceneToFile(Texture2D screenshot, bool overwrite = false)
         {
             Busy = true;
 
@@ -263,29 +274,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (sceneData != null)
             {
-                string screenshotPath = Utility.TempScreenshotFilename();
-
-                MeidoPhotoStudio.TakeScreenshot(screenshotPath, 1, KankyoMode);
-
-                do yield return new WaitForSecondsRealtime(0.2f);
-                while (!File.Exists(screenshotPath));
-
                 string scenePrefix = KankyoMode ? "mpskankyo" : "mpsscene";
                 string fileName = $"{scenePrefix}{Utility.Timestamp}.png";
                 string savePath = Path.Combine(CurrentScenesDirectory, fileName);
 
-                if (overwrite && CurrentScene != null)
-                {
-                    savePath = CurrentScene.FileInfo.FullName;
-                }
+                if (overwrite && CurrentScene != null) savePath = CurrentScene.FileInfo.FullName;
                 else overwrite = false;
 
-                Texture2D screenshot = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-                screenshot.LoadImage(File.ReadAllBytes(screenshotPath));
-
-                int sceneWidth = (int)sceneDimensions.x;
-                int sceneHeight = (int)sceneDimensions.y;
-                Utility.ResizeToFit(screenshot, sceneWidth, sceneHeight);
+                Utility.ResizeToFit(screenshot, (int)sceneDimensions.x, (int)sceneDimensions.y);
 
                 using (FileStream fileStream = File.Create(savePath))
                 {
@@ -308,6 +304,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             Busy = false;
+            yield break;
         }
 
         public class Scene
