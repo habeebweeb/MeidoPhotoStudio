@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,8 +93,16 @@ namespace COM3D2.MeidoPhotoStudio.Converter
         {
             if (GUILayout.Button("Convert ModifiedMM")) ProcessModifedMM();
             if (GUILayout.Button("Convert ModifiedMM (Scene Manager)")) ProcessModifiedMMPng();
+
             GUILayout.Space(30f);
+
             if (GUILayout.Button("Convert modifedMM quickSave")) ProcessQuickSave();
+
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button("Close (Reopening requires restart)")) Destroy(this);
+
+            GUI.DragWindow();
         }
 
         private void ProcessModifiedMMPng()
