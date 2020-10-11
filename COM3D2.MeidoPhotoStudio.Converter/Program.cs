@@ -11,41 +11,23 @@ using MyRoomCustom;
 
 namespace COM3D2.MeidoPhotoStudio.Converter
 {
+    using static Plugin.BinaryExtensions;
+
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class SceneConverter : BaseUnityPlugin
     {
         private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio.converter";
         public const string pluginName = "MeidoPhotoStudio Converter";
         public const string pluginVersion = "0.0.0";
-        private readonly byte[] noThumb = {
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00,
-            0x00, 0x32, 0x00, 0x00, 0x00, 0x32, 0x08, 0x02, 0x00, 0x00, 0x00, 0x91, 0x5D, 0x1F, 0xE6, 0x00, 0x00, 0x00,
-            0x01, 0x73, 0x52, 0x47, 0x42, 0x00, 0xAE, 0xCE, 0x1C, 0xE9, 0x00, 0x00, 0x00, 0x04, 0x67, 0x41, 0x4D, 0x41,
-            0x00, 0x00, 0xB1, 0x8F, 0x0B, 0xFC, 0x61, 0x05, 0x00, 0x00, 0x00, 0x09, 0x70, 0x48, 0x59, 0x73, 0x00, 0x00,
-            0x0E, 0xC3, 0x00, 0x00, 0x0E, 0xC3, 0x01, 0xC7, 0x6F, 0xA8, 0x64, 0x00, 0x00, 0x01, 0x4E, 0x49, 0x44, 0x41,
-            0x54, 0x58, 0x47, 0xDD, 0xD2, 0x5B, 0x8E, 0x83, 0x30, 0x10, 0x44, 0xD1, 0x2C, 0x84, 0x4F, 0xF6, 0xBF, 0xB3,
-            0xAC, 0x21, 0xA9, 0xA8, 0x90, 0x01, 0x63, 0xEC, 0x7E, 0xD9, 0x46, 0xB9, 0xCA, 0xCF, 0x44, 0x72, 0xD7, 0x89,
-            0x34, 0xAF, 0xF7, 0xB2, 0x3E, 0xF0, 0xB3, 0xB1, 0x3E, 0x8F, 0x69, 0x67, 0xF1, 0x0F, 0x7E, 0x3B, 0xB7, 0x84,
-            0xD9, 0x58, 0xE9, 0xAB, 0x89, 0x1D, 0x25, 0x3B, 0x0B, 0x4D, 0x94, 0x65, 0x8C, 0x13, 0x0B, 0x4D, 0x91, 0x5D,
-            0x0D, 0x39, 0x0B, 0x0D, 0x96, 0x15, 0x01, 0x05, 0x16, 0x1A, 0x26, 0xBB, 0x5B, 0x2F, 0xB3, 0xD0, 0x00, 0x59,
-            0x65, 0xFA, 0x96, 0x85, 0xBA, 0xCA, 0xEA, 0xBB, 0x35, 0x16, 0xEA, 0x24, 0x6B, 0x8E, 0x36, 0x58, 0x28, 0x5C,
-            0x26, 0x59, 0x6C, 0xB3, 0x50, 0xA0, 0x4C, 0x38, 0x27, 0x62, 0xA1, 0x10, 0x99, 0x7C, 0x4B, 0xCA, 0x42, 0x4E,
-            0x99, 0x6A, 0x48, 0xC1, 0x42, 0x66, 0x99, 0x76, 0x45, 0xC7, 0x42, 0x06, 0x99, 0x61, 0x42, 0xCD, 0x42, 0xAA,
-            0x27, 0xB6, 0xFB, 0x16, 0x16, 0x12, 0xBE, 0x32, 0x1F, 0x37, 0xB2, 0x50, 0xF3, 0xA1, 0xE7, 0xB2, 0x9D, 0x85,
-            0x2A, 0x6F, 0x9D, 0x67, 0x5D, 0x2C, 0x54, 0x7C, 0xEE, 0xBF, 0xE9, 0x65, 0xA1, 0xEC, 0x42, 0xC8, 0xC1, 0x00,
-            0x16, 0x4A, 0x47, 0xA2, 0xAE, 0xC5, 0xB0, 0x10, 0xEE, 0x04, 0x9E, 0xFA, 0x6B, 0x56, 0x3A, 0x12, 0x75, 0xED,
-            0x4F, 0xFF, 0xE5, 0x8B, 0xCF, 0xFD, 0x37, 0x5D, 0xAC, 0xCA, 0x5B, 0xE7, 0x59, 0x3B, 0xAB, 0xF9, 0xD0, 0x73,
-            0xD9, 0xC8, 0x12, 0xBE, 0x32, 0x1F, 0xB7, 0xB0, 0x54, 0x4F, 0x6C, 0xF7, 0xD5, 0xAC, 0xDE, 0x3F, 0x03, 0xA9,
-            0x59, 0x06, 0x13, 0xD3, 0xAE, 0x28, 0x58, 0x66, 0x13, 0x53, 0x0D, 0x49, 0x59, 0x4E, 0x13, 0x93, 0x6F, 0x89,
-            0x58, 0x21, 0x26, 0x26, 0x9C, 0x6B, 0xB3, 0x02, 0x4D, 0x4C, 0xB2, 0xD8, 0x60, 0x85, 0x9B, 0x58, 0x73, 0xB4,
-            0xC6, 0xEA, 0x64, 0x62, 0xF5, 0xDD, 0x5B, 0x56, 0x57, 0x13, 0xAB, 0x4C, 0x97, 0x59, 0x03, 0x4C, 0xEC, 0x6E,
-            0xBD, 0xC0, 0x1A, 0x66, 0x62, 0x45, 0x40, 0xCE, 0x1A, 0x6C, 0x62, 0x57, 0xC3, 0x89, 0x35, 0xC5, 0xC4, 0x32,
-            0xC6, 0xCE, 0x9A, 0x68, 0x62, 0x47, 0xC9, 0xC6, 0x9A, 0x6E, 0x62, 0x09, 0xF3, 0x63, 0x3D, 0xC4, 0xC4, 0xE8,
-            0xD9, 0x58, 0xCF, 0xFA, 0x2C, 0xEB, 0x17, 0xC3, 0x4F, 0x1F, 0x0A, 0xB7, 0x49, 0x8A, 0x9E, 0x00, 0x00, 0x00,
-            0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
-        };
-        private const string converterDirectoryName = "Converter";
-        private static Dictionary<string, PlacementData.Data> myrAssetNameToData
+        private readonly byte[] noThumb = Convert.FromBase64String(
+            "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7D" +
+            "AcdvqGQAAAFOSURBVFhH3dJbjoMwEETRLIRP9r+zrCGpqJABY+x+2Ua5ys9EcteJNK/3sj7ws7E+j2ln8Q9+O7eE2Vjpq4kdJTsLTZRl" +
+            "jBMLTZFdDTkLDZYVAQUWGia7Wy+z0ABZZfqWhbrK6rs1Fuoka442WChcJllss1CgTDgnYqEQmXxLykJOmWpIwUJmmXZFx0IGmWFCzUKq" +
+            "J7b7FhYSvjIfN7JQ86Hnsp2FKm+dZ10sVHzuv+lloexCyMEAFkpHoq7FsBDuBJ76a1Y6EnXtT//li8/9N12sylvnWTur+dBz2cgSvjIf" +
+            "t7BUT2z31azePwOpWQYT064oWGYTUw1JWU4Tk2+JWCEmJpxrswJNTLLYYIWbWHO0xupkYvXdW1ZXE6tMl1kDTOxuvcAaZmJFQM4abGJX" +
+            "w4k1xcQyxs6aaGJHycaabmIJ82M9xMTo2VjP+izrF8NPHwq3SYqeAAAAAElFTkSuQmCC"
+        );
+        private static readonly Dictionary<string, PlacementData.Data> myrAssetNameToData
             = new Dictionary<string, PlacementData.Data>(StringComparer.InvariantCultureIgnoreCase);
         private static readonly string[] faceKeys = {
             "eyeclose", "eyeclose2", "eyeclose3", "eyeclose6", "hitomih", "hitomis", "mayuha",
@@ -65,30 +47,24 @@ namespace COM3D2.MeidoPhotoStudio.Converter
         {
             71, 44, 40, 41, 42, 43, 57, 68, 69, 46, 49, 47, 50, 52, 55, 53, 56, 92, 94, 93, 95, 45, 48, 51, 54
         };
-        public const int sceneVersion = 1000;
-        public const int meidoDataVersion = 1000;
-        public const int propDataVersion = 1000;
-        public const int kankyoMagic = -765;
         private static BepInEx.Logging.ManualLogSource Log;
-        private static readonly int faceToggleIndex = Array.IndexOf(faceKeys, "tangopen") + 1;
-        private static string configPath = Path.Combine(Paths.ConfigPath, converterDirectoryName);
-        private bool active = false;
+        private static readonly string scenesPath = Plugin.Constants.scenesPath;
+        private static readonly Vector3 DefaultSoftG = new Vector3(0f, -3f / 1000f, 0f);
+        private bool active;
         private Rect windowRect = new Rect(30f, 30f, 300f, 200f);
 
         private void Awake()
         {
             DontDestroyOnLoad(this);
 
-            if (!Directory.Exists(configPath)) Directory.CreateDirectory(configPath);
+            if (!Directory.Exists(scenesPath)) Directory.CreateDirectory(scenesPath);
             Log = Logger;
         }
 
         private void Start()
         {
-            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
-            List<PlacementData.Data> dataList = PlacementData.GetAllDatas(false);
-
-            foreach (var data in dataList)
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            foreach (var data in PlacementData.GetAllDatas(false))
             {
                 string assetName = string.IsNullOrEmpty(data.assetName) ? data.resourceName : data.assetName;
                 myrAssetNameToData[assetName] = data;
@@ -107,8 +83,8 @@ namespace COM3D2.MeidoPhotoStudio.Converter
             {
                 windowRect.width = 300f;
                 windowRect.height = 200f;
-                windowRect.x = UnityEngine.Mathf.Clamp(windowRect.x, 0, Screen.width - windowRect.width);
-                windowRect.y = UnityEngine.Mathf.Clamp(windowRect.y, 0, Screen.height - windowRect.height);
+                windowRect.x = Mathf.Clamp(windowRect.x, 0, Screen.width - windowRect.width);
+                windowRect.y = Mathf.Clamp(windowRect.y, 0, Screen.height - windowRect.height);
                 windowRect = GUI.Window(0xEA4040, windowRect, GUIFunc, "MeidoPhotoStudio Converter");
             }
         }
@@ -119,7 +95,6 @@ namespace COM3D2.MeidoPhotoStudio.Converter
             if (GUILayout.Button("Convert ModifiedMM (Scene Manager)")) ProcessModifiedMMPng();
             GUILayout.Space(30f);
             if (GUILayout.Button("Convert modifedMM quickSave")) ProcessQuickSave();
-            // GUILayout.Button("Convert MultipleMaids");
         }
 
         private void ProcessModifiedMMPng()
@@ -131,7 +106,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
 
         private string GetModifiedMMSceneData(string pngPath)
         {
-            return String.Empty;
+            return string.Empty;
         }
 
         private void ProcessQuickSave()
@@ -152,7 +127,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                     if (!string.IsNullOrEmpty(sceneData))
                     {
                         byte[] convertedSceneData = ProcessScene(sceneData, false);
-                        string path = Path.Combine(configPath, $"mmtempscene_{GetMMDateString(sceneData)}.png");
+                        string path = Path.Combine(scenesPath, $"mmtempscene_{GetMMDateString(sceneData)}.png");
                         SaveSceneToFile(path, convertedSceneData, noThumb);
                     }
                 }
@@ -170,13 +145,13 @@ namespace COM3D2.MeidoPhotoStudio.Converter
 
             if (sceneSection != null)
             {
-                foreach (IniKey key in sceneSection.Keys)
+                foreach (IniKey iniKey in sceneSection.Keys)
                 {
-                    if (key.Key.StartsWith("ss")) continue;
+                    if (iniKey.Key.StartsWith("ss")) continue;
 
-                    int sceneIndex = int.Parse(key.Key.Substring(1));
+                    int sceneIndex = int.Parse(iniKey.Key.Substring(1));
                     bool kankyo = sceneIndex >= 10000;
-                    string sceneData = key.Value;
+                    string sceneData = iniKey.Value;
 
                     if (!string.IsNullOrEmpty(sceneData))
                     {
@@ -187,11 +162,11 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                             : sceneIndex == 9999
                                 ? "mmtempscene" : $"mmscene{sceneIndex}";
 
-                        string path = Path.Combine(configPath, $"{prefix}_{GetMMDateString(sceneData)}.png");
+                        string path = Path.Combine(scenesPath, $"{prefix}_{GetMMDateString(sceneData)}.png");
 
                         byte[] thumbnail = noThumb;
 
-                        string screenshotKey = $"s{key.Key}";
+                        string screenshotKey = $"s{iniKey.Key}";
                         if (sceneSection.HasKey(screenshotKey))
                         {
                             string screenshotBase64 = sceneSection[screenshotKey].Value;
@@ -250,9 +225,9 @@ namespace COM3D2.MeidoPhotoStudio.Converter
             using (BinaryWriter binaryWriter = new BinaryWriter(deflateStream, System.Text.Encoding.UTF8))
             {
                 binaryWriter.Write("MPS_SCENE");
-                binaryWriter.Write(sceneVersion);
+                binaryWriter.Write(Plugin.MeidoPhotoStudio.sceneVersion);
 
-                binaryWriter.Write(kankyo ? kankyoMagic : int.Parse(strArray3[1]));
+                binaryWriter.Write(kankyo ? Plugin.MeidoPhotoStudio.kankyoMagic : int.Parse(strArray3[1]));
 
                 SerializeEnvironment(strArray3, binaryWriter, kankyo);
                 SerializeLights(strArray3, strArray4, strArray5, strArray7, binaryWriter);
@@ -262,7 +237,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                 if (!kankyo)
                 {
                     SerializeMessage(strArray3, binaryWriter);
-                    SerializeMaid(strArray2, binaryWriter);
+                    SerializeMaid(strArray2, strArray3, binaryWriter);
                 }
 
                 binaryWriter.Write("END");
@@ -273,13 +248,13 @@ namespace COM3D2.MeidoPhotoStudio.Converter
             }
         }
 
-        private static void SerializeMaid(string[] strArray2, BinaryWriter binaryWriter)
+        private static void SerializeMaid(string[] strArray2, string[] strArray3, BinaryWriter binaryWriter)
         {
-            binaryWriter.Write("MEIDO");
+            binaryWriter.Write(Plugin.MeidoManager.header);
             // MM scene converted to MPS
             binaryWriter.Write(true);
 
-            binaryWriter.Write(meidoDataVersion);
+            binaryWriter.Write(Plugin.Meido.meidoDataVersion);
 
             int numberOfMaids = strArray2.Length;
 
@@ -293,6 +268,8 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                 Certain body rotations would be missing as well particularly the toes.
                 Other data like free look and attached items like hand/vag/anl would be missing.
             */
+
+            bool gravityEnabled = false;
 
             for (int i = 0; i < numberOfMaids; i++)
             {
@@ -329,7 +306,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
 
                     // cached pose stuff
                     tempWriter.Write("normal");
-                    tempWriter.Write("pose_taiki_f");
+                    tempWriter.Write("maid_stand01");
                     tempWriter.Write(false);
 
                     // eye rotation delta
@@ -348,20 +325,24 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                         ));
                     }
 
+                    // head/eye to camera
+                    // MM does not changes these values so they're always true
+                    tempWriter.Write(true);
+                    tempWriter.Write(true);
+
                     string[] faceValues = maidData[63].Split(',');
 
                     tempWriter.Write("MPS_FACE");
                     for (int j = 0; j < faceKeys.Length - 2; j++)
                     {
                         tempWriter.Write(faceKeys[j]);
-                        if (j >= faceToggleIndex) tempWriter.Write(float.Parse(faceValues[j]) > 0f);
-                        else tempWriter.Write(float.Parse(faceValues[j]));
+                        tempWriter.Write(float.Parse(faceValues[j]));
                     }
 
                     if (faceValues.Length > 65)
                     {
                         tempWriter.Write(faceKeys[faceKeys.Length - 1]);
-                        tempWriter.Write(float.Parse(faceValues[faceValues.Length - 1]) > 0f);
+                        tempWriter.Write(float.Parse(faceValues[faceValues.Length - 1]));
                     }
                     tempWriter.Write("END_FACE");
 
@@ -369,6 +350,22 @@ namespace COM3D2.MeidoPhotoStudio.Converter
 
                     // MM does not serialize clothing
                     for (int j = 0; j < 29; j++) tempWriter.Write(true);
+
+                    Vector3 softG = new Vector3(
+                        float.Parse(strArray3[12]), float.Parse(strArray3[13]), float.Parse(strArray3[14])
+                    );
+
+                    bool hairGravityActive = softG != DefaultSoftG;
+                    tempWriter.Write(hairGravityActive);
+                    if (hairGravityActive)
+                    {
+                        // MM gravity affects all maids
+                        gravityEnabled = true;
+                        tempWriter.WriteVector3(softG * 5f);
+                    }
+
+                    // MM doesn't serialize skirt gravity
+                    tempWriter.Write(false);
 
                     // MM does not serialize curling
                     tempWriter.Write(false);
@@ -398,7 +395,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                         }
                         else
                         {
-                            if (mpnIndex > 13) actualIndex += 1;
+                            if (mpnIndex > 13) actualIndex++;
                             string kousokuMenu = mpnAttachProps[actualIndex];
                             if (mpnAttachProps[actualIndex][7] == 'u') kousokuUpperMenu = kousokuMenu;
                             else kousokuLowerMenu = kousokuMenu;
@@ -417,13 +414,15 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                     binaryWriter.Write(memoryStream.ToArray());
                 }
             }
+
+            binaryWriter.Write(gravityEnabled);
         }
 
         private static void SerializeProp(string[] strArray3, string[] strArray6, BinaryWriter binaryWriter)
         {
-            binaryWriter.Write("PROP");
+            binaryWriter.Write(Plugin.PropManager.header);
 
-            binaryWriter.Write(propDataVersion);
+            binaryWriter.Write(Plugin.PropManager.propDataVersion);
 
             bool hasWProp = strArray3.Length > 37 && !string.IsNullOrEmpty(strArray3[37]);
             int numberOfProps = hasWProp ? 1 : 0;
@@ -460,7 +459,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                 {
                     string[] assetParts = strArray6[i].Split(',');
                     string assetName = assetParts[0].Replace(' ', '_');
-                    bool shadowCasting = assetName.EndsWith(".menu") ? true : false;
+                    bool shadowCasting = assetName.EndsWith(".menu");
 
                     if (assetName.StartsWith("creative_"))
                     {
@@ -522,12 +521,12 @@ namespace COM3D2.MeidoPhotoStudio.Converter
 
         private static void SerializeEffect(string[] strArray4, BinaryWriter binaryWriter)
         {
-            binaryWriter.Write("EFFECT");
+            binaryWriter.Write(Plugin.EffectManager.header);
 
             if (strArray4 != null)
             {
                 // bloom
-                binaryWriter.Write("EFFECT_BLOOM");
+                binaryWriter.Write(Plugin.BloomEffectManager.header);
                 binaryWriter.Write(float.Parse(strArray4[2])); // intensity
                 binaryWriter.Write((int)float.Parse(strArray4[3])); // blur iterations
                 binaryWriter.WriteColour(new Color( // bloom threshold colour
@@ -537,7 +536,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                 binaryWriter.Write(int.Parse(strArray4[1]) == 1); // active
 
                 // vignetting
-                binaryWriter.Write("EFFECT_VIGNETTE");
+                binaryWriter.Write(Plugin.VignetteEffectManager.header);
                 binaryWriter.Write(float.Parse(strArray4[9])); // intensity
                 binaryWriter.Write(float.Parse(strArray4[10])); // blur
                 binaryWriter.Write(float.Parse(strArray4[11])); // blur spread
@@ -545,14 +544,17 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                 binaryWriter.Write(int.Parse(strArray4[8]) == 1); // active
 
                 // bokashi 
-                // TODO: implement bokashi in MPS
-                float bokashi = float.Parse(strArray4[13]);
+                binaryWriter.Write(Plugin.BlurEffectManager.header);
+                float blurSize = float.Parse(strArray4[13]);
+                binaryWriter.Write(blurSize);
+                binaryWriter.Write(blurSize > 0f);
 
-                // TODO: implement sepia in MPS too
+                binaryWriter.Write(Plugin.SepiaToneEffectManger.header);
+                binaryWriter.Write(int.Parse(strArray4[29]) == 1);
 
                 if (strArray4.Length > 15)
                 {
-                    binaryWriter.Write("EFFECT_DOF");
+                    binaryWriter.Write(Plugin.DepthOfFieldEffectManager.header);
                     binaryWriter.Write(float.Parse(strArray4[16])); // focal length
                     binaryWriter.Write(float.Parse(strArray4[17])); // focal size
                     binaryWriter.Write(float.Parse(strArray4[18])); // aperture
@@ -560,7 +562,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                     binaryWriter.Write(int.Parse(strArray4[20]) == 1); // visualize focus
                     binaryWriter.Write(int.Parse(strArray4[15]) == 1); // active
 
-                    binaryWriter.Write("EFFECT_FOG");
+                    binaryWriter.Write(Plugin.FogEffectManager.header);
                     binaryWriter.Write(float.Parse(strArray4[22])); // fog distance
                     binaryWriter.Write(float.Parse(strArray4[23])); // density
                     binaryWriter.Write(float.Parse(strArray4[24])); // height scale
@@ -572,12 +574,12 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                 }
             }
 
-            binaryWriter.Write("END_EFFECT");
+            binaryWriter.Write(Plugin.EffectManager.footer);
         }
 
         private static void SerializeMessage(string[] strArray3, BinaryWriter binaryWriter)
         {
-            binaryWriter.Write("TEXTBOX");
+            binaryWriter.Write(Plugin.MessageWindowManager.header);
 
             bool showingMessage = false;
             string name = "Maid";
@@ -600,7 +602,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
         private static void SerializeLights(string[] strArray3, string[] strArray4, string[] strArray5, string[] strArray7, BinaryWriter binaryWriter)
         {
             // Lights
-            binaryWriter.Write("LIGHT");
+            binaryWriter.Write(Plugin.LightManager.header);
 
             int numberOfLights = 1;
             numberOfLights += strArray5 == null ? 0 : strArray5.Length - 1;
@@ -654,7 +656,6 @@ namespace COM3D2.MeidoPhotoStudio.Converter
                 // lightKage[0] is the only value that's serialized
             }
 
-
             if (strArray5 != null)
             {
                 int otherLights = strArray5.Length - 1;
@@ -701,13 +702,11 @@ namespace COM3D2.MeidoPhotoStudio.Converter
 
         private static void SerializeEnvironment(string[] data, BinaryWriter binaryWriter, bool kankyo)
         {
-            binaryWriter.Write("ENVIRONMENT");
-
-            int bgIndex;
+            binaryWriter.Write(Plugin.EnvironmentManager.header);
 
             string bgAsset = "Theater";
 
-            if (!int.TryParse(data[2], out bgIndex))
+            if (!int.TryParse(data[2], out _))
             {
                 bgAsset = data[2].Replace(" ", "_");
             }
@@ -777,39 +776,6 @@ namespace COM3D2.MeidoPhotoStudio.Converter
             binaryWriter.WriteColour(colour);
         }
     }
-
-    public static class BinaryExtensions
-    {
-        public static void WriteVector3(this BinaryWriter binaryWriter, Vector3 vector3)
-        {
-            binaryWriter.Write(vector3.x);
-            binaryWriter.Write(vector3.y);
-            binaryWriter.Write(vector3.z);
-        }
-
-        public static void WriteQuaternion(this BinaryWriter binaryWriter, Quaternion quaternion)
-        {
-            binaryWriter.Write(quaternion.x);
-            binaryWriter.Write(quaternion.y);
-            binaryWriter.Write(quaternion.z);
-            binaryWriter.Write(quaternion.w);
-        }
-
-        public static void WriteColour(this BinaryWriter binaryWriter, UnityEngine.Color colour)
-        {
-            binaryWriter.Write(colour.r);
-            binaryWriter.Write(colour.g);
-            binaryWriter.Write(colour.b);
-            binaryWriter.Write(colour.a);
-        }
-
-        public static void WriteNullableString(this BinaryWriter binaryWriter, string str)
-        {
-            binaryWriter.Write(str != null);
-            if (str != null) binaryWriter.Write(str);
-        }
-    }
-
 
     public static class Utility
     {
