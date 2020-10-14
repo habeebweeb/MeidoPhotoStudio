@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,6 +11,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
+    [BepInDependency("org.bepinex.plugins.unityinjectorloader", BepInDependency.DependencyFlags.SoftDependency)]
     public class MeidoPhotoStudio : BaseUnityPlugin
     {
         private static readonly CameraMain mainCamera = GameMain.Instance.MainCamera;
