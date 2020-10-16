@@ -107,7 +107,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             ActiveMeidoList.Clear();
 
-            if (MeidoPhotoStudio.EditMode)
+            if (MeidoPhotoStudio.EditMode && !GameMain.Instance.MainCamera.IsFadeOut())
             {
                 Meido meido = Meidos[EditMaidIndex];
                 meido.Maid.Visible = true;
