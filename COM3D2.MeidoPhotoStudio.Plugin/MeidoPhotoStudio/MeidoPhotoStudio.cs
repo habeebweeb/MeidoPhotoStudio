@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -261,19 +261,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private IEnumerator Screenshot(ScreenshotEventArgs args)
         {
             // Hide UI and dragpoints
-            GameObject editUI = GameObject.Find("/UI Root/Camera");
-            GameObject fpsViewer =
-                UTY.GetChildObject(GameMain.Instance.gameObject, "SystemUI Root/FpsCounter", false);
-            GameObject sysDialog =
-                UTY.GetChildObject(GameMain.Instance.gameObject, "SystemUI Root/SystemDialog", false);
-            GameObject sysShortcut =
-                UTY.GetChildObject(GameMain.Instance.gameObject, "SystemUI Root/SystemShortcut", false);
+            GameObject gameMain = GameMain.Instance.gameObject;
+            GameObject editUI = UTY.GetChildObject(GameObject.Find("UI Root"), "Camera");
+            GameObject fpsViewer = UTY.GetChildObject(gameMain, "SystemUI Root/FpsCounter");
+            GameObject sysDialog = UTY.GetChildObject(gameMain, "SystemUI Root/SystemDialog");
+            GameObject sysShortcut = UTY.GetChildObject(gameMain, "SystemUI Root/SystemShortcut");
+
+            // CameraUtility can hide the edit UI so keep its state for later
+            bool editUIWasActive = editUI.activeSelf;
+
+            uiActive = false;
             editUI.SetActive(false);
             fpsViewer.SetActive(false);
             sysDialog.SetActive(false);
             sysShortcut.SetActive(false);
-            uiActive = false;
 
+            // Hide maid dragpoints and maids
             List<Meido> activeMeidoList = meidoManager.ActiveMeidoList;
             bool[] isIK = new bool[activeMeidoList.Count];
             bool[] isVisible = new bool[activeMeidoList.Count];
@@ -281,11 +284,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Meido meido = activeMeidoList[i];
                 isIK[i] = meido.IK;
-                isVisible[i] = meido.Maid.Visible;
                 if (meido.IK) meido.IK = false;
-                if (args.HideMaids) meido.Maid.Visible = false;
+
+                // Hide the maid if needed
+                if (args.HideMaids)
+                {
+                    isVisible[i] = meido.Maid.Visible;
+                    meido.Maid.Visible = false;
+                }
             }
 
+            // Hide other drag points
             bool[] isCubeActive = {
                 MeidoDragPointManager.CubeActive,
                 PropManager.CubeActive,
@@ -298,16 +307,28 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             LightManager.CubeActive = false;
             EnvironmentManager.CubeActive = false;
 
+            // hide gizmos
             GizmoRender.UIVisible = false;
 
             yield return new WaitForEndOfFrame();
 
+            Texture2D rawScreenshot = null;
+
             if (args.InMemory)
             {
-                Texture2D rawScreenshot = new Texture2D(Screen.width, Screen.height, TextureFormat.ARGB32, false);
-                rawScreenshot.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0, false);
+                // Take a screenshot directly to a Texture2D for immediate processing
+                RenderTexture renderTexture = new RenderTexture(Screen.width, Screen.height, 24);
+                RenderTexture.active = renderTexture;
+                mainCamera.camera.targetTexture = renderTexture;
+                mainCamera.camera.Render();
+
+                rawScreenshot = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
+                rawScreenshot.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0, false);
                 rawScreenshot.Apply();
-                NotifyRawScreenshot?.Invoke(null, new ScreenshotEventArgs() { Screenshot = rawScreenshot });
+
+                mainCamera.camera.targetTexture = null;
+                RenderTexture.active = null;
+                DestroyImmediate(renderTexture);
             }
             else
             {
@@ -329,7 +350,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             // Show UI and dragpoints
             uiActive = true;
-            editUI.SetActive(true);
+            editUI.SetActive(editUIWasActive);
             fpsViewer.SetActive(GameMain.Instance.CMSystem.ViewFps);
             sysDialog.SetActive(true);
             sysShortcut.SetActive(true);
@@ -347,6 +368,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             EnvironmentManager.CubeActive = isCubeActive[3];
 
             GizmoRender.UIVisible = true;
+
+            if (args.InMemory && rawScreenshot)
+                NotifyRawScreenshot?.Invoke(null, new ScreenshotEventArgs() { Screenshot = rawScreenshot });
         }
 
         private void OnGUI()
