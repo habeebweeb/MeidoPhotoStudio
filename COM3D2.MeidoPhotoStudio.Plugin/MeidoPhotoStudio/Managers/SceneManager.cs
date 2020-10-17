@@ -122,7 +122,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             void SaveScene(object sender, ScreenshotEventArgs args)
             {
                 MeidoPhotoStudio.NotifyRawScreenshot -= SaveScene;
-                meidoPhotoStudio.StartCoroutine(SaveSceneToFile(args.Screenshot, overwrite));
+                SaveSceneToFile(args.Screenshot, overwrite);
             }
         }
 
@@ -268,7 +268,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             meidoPhotoStudio.ApplyScene(Path.Combine(Constants.configPath, "mpstempscene"));
         }
 
-        private System.Collections.IEnumerator SaveSceneToFile(Texture2D screenshot, bool overwrite = false)
+        private void SaveSceneToFile(Texture2D screenshot, bool overwrite = false)
         {
             Busy = true;
 
@@ -306,7 +306,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
 
             Busy = false;
-            yield break;
         }
 
         public class Scene
