@@ -677,10 +677,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private CacheBoneDataArray GetCacheBoneData()
         {
             CacheBoneDataArray cache = Maid.gameObject.GetComponent<CacheBoneDataArray>();
+            void CreateCache() => cache.CreateCache(Body.GetBone("Bip01"));
             if (cache == null)
             {
                 cache = Maid.gameObject.AddComponent<CacheBoneDataArray>();
-                cache.CreateCache(Body.GetBone("Bip01"));
+                CreateCache();
+            }
+            if (cache.bone_data?.transform == null)
+            {
+                Utility.LogDebug("Cache bone_data is null");
+                CreateCache();
             }
             return cache;
         }
