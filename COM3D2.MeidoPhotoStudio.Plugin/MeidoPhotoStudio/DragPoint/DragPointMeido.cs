@@ -6,6 +6,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     using static CustomGizmo;
     public abstract class DragPointMeido : DragPoint
     {
+        public static readonly Vector3 boneScale = Vector3.one * 0.04f;
         protected const int jointUpper = 0;
         protected const int jointMiddle = 1;
         protected const int jointLower = 2;
@@ -22,6 +23,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (value != isBone)
                 {
                     isBone = value;
+                    BaseScale = isBone ? boneScale : OriginalScale;
                     ApplyDragType();
                 }
             }

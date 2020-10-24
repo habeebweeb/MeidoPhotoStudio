@@ -37,8 +37,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private Vector3 startOffset;
         private Vector3 newOffset;
         public static Material dragPointMaterial = new Material(Shader.Find("CM3D2/Trans_AbsoluteFront"));
-        public static readonly Color defaultColour = new Color(0f, 0f, 0f, defaultAlpha);
-        public Vector3 BaseScale { get; private set; }
+        public static readonly Color defaultColour = new Color(0f, 0f, 0f, 0.4f);
+        public Vector3 OriginalScale { get; private set; }
+        private Vector3 baseScale;
+        public Vector3 BaseScale
+        {
+            get => baseScale;
+            protected set
+            {
+                baseScale = value;
+                transform.localScale = BaseScale * DragPointScale;
+            }
+        }
         private float dragPointScale = 1f;
         public float DragPointScale
         {
@@ -102,7 +112,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void Awake()
         {
-            BaseScale = transform.localScale;
+            BaseScale = OriginalScale = transform.localScale;
             collider = GetComponent<Collider>();
             renderer = GetComponent<Renderer>();
             ApplyDragType();
