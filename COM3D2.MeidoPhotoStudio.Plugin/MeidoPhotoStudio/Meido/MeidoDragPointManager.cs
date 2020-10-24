@@ -338,6 +338,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             CubeSmallChange += OnCubeSmall;
             InitializeBones();
             InitializeDragPoints();
+            SetDragPointScale(meido.Maid.transform.localScale.x);
         }
 
         private void InitializeDragPoints()
@@ -522,7 +523,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void InitializeSpineDragPoint(params Bone[] bones)
         {
-            Vector3 spineDragPointSize = Vector3.one * 0.045f;
+            Vector3 spineDragPointSize = DragPointMeido.boneScale;
             foreach (Bone bone in bones)
             {
                 Transform spine = BoneTransform[bone];
