@@ -15,6 +15,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private bool isUpper;
         private bool isMune;
         private bool isMuneL;
+        public override bool IsBone
+        {
+            set
+            {
+                base.IsBone = value;
+                if (!isMune) BaseScale = isBone ? boneScale : OriginalScale;
+            }
+        }
 
         public override void Set(Transform myObject)
         {

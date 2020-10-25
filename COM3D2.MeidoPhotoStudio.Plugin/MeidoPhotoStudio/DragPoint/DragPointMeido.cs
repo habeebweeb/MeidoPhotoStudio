@@ -14,8 +14,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         protected Maid maid;
         protected IKCtrlData IkCtrlData => meido.Body.IKCtrl.GetIKData("左手");
         protected bool isPlaying;
-        private bool isBone;
-        public bool IsBone
+        protected bool isBone;
+        public virtual bool IsBone
         {
             get => isBone;
             set
@@ -23,7 +23,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (value != isBone)
                 {
                     isBone = value;
-                    BaseScale = isBone ? boneScale : OriginalScale;
                     ApplyDragType();
                 }
             }
