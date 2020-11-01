@@ -449,21 +449,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             InitializeMuneDragPoint(left: true);
             InitializeMuneDragPoint(left: false);
 
-            DragPointChain[] armDragPointL = MakeIKChain(BoneTransform[Bone.HandL]);
+            DragPointLimb[] armDragPointL = MakeIKChain(BoneTransform[Bone.HandL]);
             DragPoints[Bone.UpperArmL] = armDragPointL[0];
             DragPoints[Bone.ForearmL] = armDragPointL[1];
             DragPoints[Bone.HandL] = armDragPointL[2];
 
-            DragPointChain[] armDragPointR = MakeIKChain(BoneTransform[Bone.HandR]);
+            DragPointLimb[] armDragPointR = MakeIKChain(BoneTransform[Bone.HandR]);
             DragPoints[Bone.UpperArmR] = armDragPointR[0];
             DragPoints[Bone.ForearmR] = armDragPointR[1];
             DragPoints[Bone.HandR] = armDragPointR[2];
 
-            DragPointChain[] legDragPointL = MakeIKChain(BoneTransform[Bone.FootL]);
+            DragPointLimb[] legDragPointL = MakeIKChain(BoneTransform[Bone.FootL]);
             DragPoints[Bone.CalfL] = legDragPointL[0];
             DragPoints[Bone.FootL] = legDragPointL[1];
 
-            DragPointChain[] legDragPointR = MakeIKChain(BoneTransform[Bone.FootR]);
+            DragPointLimb[] legDragPointR = MakeIKChain(BoneTransform[Bone.FootR]);
             DragPoints[Bone.CalfR] = legDragPointR[0];
             DragPoints[Bone.FootR] = legDragPointR[1];
 
@@ -477,7 +477,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             Bone mune = left ? Bone.MuneL : Bone.MuneR;
             Bone sub = left ? Bone.MuneSubL : Bone.MuneSubR;
-            DragPointChain muneDragPoint = DragPoint.Make<DragPointChain>(PrimitiveType.Sphere, Vector3.one * 0.12f);
+            DragPointMune muneDragPoint = DragPoint.Make<DragPointMune>(PrimitiveType.Sphere, Vector3.one * 0.12f);
             muneDragPoint.Initialize(meido,
                 () => (BoneTransform[mune].position + BoneTransform[sub].position) / 2f,
                 () => Vector3.zero
@@ -486,16 +486,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DragPoints[mune] = muneDragPoint;
         }
 
-        private DragPointChain[] MakeIKChain(Transform lower)
+        private DragPointLimb[] MakeIKChain(Transform lower)
         {
             Vector3 limbDragPointSize = Vector3.one * 0.12f;
             // Ignore Thigh transform when making a leg IK chain
             bool isLeg = lower.name.EndsWith("Foot");
-            DragPointChain[] dragPoints = new DragPointChain[isLeg ? 2 : 3];
+            DragPointLimb[] dragPoints = new DragPointLimb[isLeg ? 2 : 3];
             for (int i = dragPoints.Length - 1; i >= 0; i--)
             {
                 Transform joint = lower;
-                dragPoints[i] = DragPoint.Make<DragPointChain>(PrimitiveType.Sphere, limbDragPointSize);
+                dragPoints[i] = DragPoint.Make<DragPointLimb>(PrimitiveType.Sphere, limbDragPointSize);
                 dragPoints[i].Initialize(meido, () => joint.position, () => Vector3.zero);
                 dragPoints[i].Set(joint);
                 dragPoints[i].AddGizmo();

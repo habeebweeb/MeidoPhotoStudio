@@ -3,24 +3,18 @@ using UnityEngine;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
-    public class DragPointChain : DragPointMeido
+    public class DragPointLimb : DragPointChain
     {
-        private readonly TBody.IKCMO IK = new TBody.IKCMO();
-        private readonly Quaternion[] jointRotation = new Quaternion[3];
-        private IKCtrlData ikCtrlData;
-        private Transform[] ikChain;
         private int foot = 1;
         private bool isLower;
         private bool isMiddle;
         private bool isUpper;
-        private bool isMune;
-        private bool isMuneL;
         public override bool IsBone
         {
             set
             {
                 base.IsBone = value;
-                if (!isMune) BaseScale = isBone ? boneScale : OriginalScale;
+                BaseScale = isBone ? boneScale : OriginalScale;
             }
         }
 
@@ -30,27 +24,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             string name = myObject.name;
 
-            isMune = name.StartsWith("Mune");
-            isMuneL = isMune && name[5] == 'L'; // Mune_L_Sub
             foot = name.EndsWith("Foot") ? -1 : 1;
             isLower = name.EndsWith("Hand") || foot == -1;
             isMiddle = name.EndsWith("Calf") || name.EndsWith("Forearm");
-            isUpper = !(isMiddle || isLower) && !isMune;
-
-            ikChain = new Transform[] {
-                myObject.parent,
-                myObject.parent,
-                myObject
-            };
+            isUpper = !isMiddle && !isLower;
 
             if (isLower) ikChain[0] = ikChain[0].parent;
-
-            ikCtrlData = IkCtrlData;
-        }
-
-        private void InitializeRotation()
-        {
-            for (int i = 0; i < jointRotation.Length; i++) jointRotation[i] = ikChain[i].localRotation;
         }
 
         protected override void ApplyDragType()
@@ -71,8 +50,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else if (current == DragType.RotY)
             {
-                if (isMune) ApplyProperties(true, false, false);
-                else if (isMiddle) ApplyProperties(false, false, isBone);
+                if (isMiddle) ApplyProperties(false, false, isBone);
                 else ApplyProperties();
             }
             else if (current == DragType.MoveXZ)
@@ -80,47 +58,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (isLower) ApplyProperties(true, isBone, false);
                 else ApplyProperties();
             }
-            else ApplyProperties(!isMune, isBone && !isMune, false);
+            else ApplyProperties(true, isBone, false);
         }
 
         protected override void UpdateDragType()
         {
             bool control = Input.Control;
             bool alt = Input.Alt;
-
-            if (control && alt)
+            // Check for DragMove so that hand dragpoint is not in the way
+            if (control && !Input.GetKey(MpsKey.DragMove))
             {
-                // mune
-                CurrentDragType = DragType.RotY;
+                if (alt) CurrentDragType = DragType.RotY;
+                else CurrentDragType = DragType.MoveXZ;
             }
-            else if (control)
-            {
-                CurrentDragType = DragType.MoveXZ;
-            }
-            else if (alt)
-            {
-                CurrentDragType = Input.Shift ? DragType.RotLocalY : DragType.RotLocalXZ;
-            }
-            else
-            {
-                CurrentDragType = OtherDragType() ? DragType.Ignore : DragType.None;
-            }
-        }
-
-        protected override void OnMouseDown()
-        {
-            base.OnMouseDown();
-
-            if (isMune) meido.SetMune(false, isMuneL);
-
-            InitializeRotation();
-
-            InitializeIK(IK, ikChain[jointUpper], ikChain[jointMiddle], ikChain[jointLower]);
-        }
-
-        protected override void OnDoubleClick()
-        {
-            if (isMune && CurrentDragType == DragType.RotY) meido.SetMune(true, isMuneL);
+            else if (alt) CurrentDragType = Input.Shift ? DragType.RotLocalY : DragType.RotLocalXZ;
+            else CurrentDragType = OtherDragType() ? DragType.Ignore : DragType.None;
         }
 
         protected override void Drag()
@@ -129,7 +81,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             bool altRotation = CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.RotY;
 
-            if ((CurrentDragType == DragType.None) || altRotation)
+            if (CurrentDragType == DragType.None || altRotation)
             {
                 int upperJoint = altRotation ? jointMiddle : jointUpper;
 
@@ -146,6 +98,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 ikChain[joint].localRotation = jointRotation[joint];
                 ikChain[joint].Rotate(Vector3.right * (-mouseDelta.x / 1.5f));
             }
+
             if (CurrentDragType == DragType.RotLocalXZ)
             {
                 ikChain[jointLower].localRotation = jointRotation[jointLower];
