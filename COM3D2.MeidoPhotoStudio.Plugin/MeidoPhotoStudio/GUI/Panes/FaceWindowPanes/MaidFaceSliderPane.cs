@@ -178,7 +178,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void SetFaceValue(string key, bool value)
         {
-            float max = key.StartsWith("hoho") ? 0.5f : 1f;
+            float max = (key == "hoho" || key == "hoho2") ? 0.5f : 1f;
             if (key == "toothoff") value = !value;
             SetFaceValue(key, value ? max : 0f);
         }
