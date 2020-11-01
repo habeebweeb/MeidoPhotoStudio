@@ -29,7 +29,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void UpdateDragType()
         {
-            if (Input.Control && Input.Alt) CurrentDragType = DragType.RotLocalXZ;
+            if (Input.Control && Input.Alt) CurrentDragType = Input.Shift ? DragType.RotLocalY : DragType.RotLocalXZ;
             else CurrentDragType = DragType.None;
         }
 
@@ -41,6 +41,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 Porc(IK, ikCtrlData, ikChain[jointUpper], ikChain[jointMiddle], ikChain[jointLower]);
                 InitializeRotation();
+            }
+
+            if (CurrentDragType == DragType.RotLocalY)
+            {
+                Vector3 mouseDelta = MouseDelta();
+                ikChain[jointMiddle].localRotation = jointRotation[jointMiddle];
+                ikChain[jointMiddle].Rotate(Vector3.right * (-mouseDelta.x / 1.5f));
             }
         }
     }
