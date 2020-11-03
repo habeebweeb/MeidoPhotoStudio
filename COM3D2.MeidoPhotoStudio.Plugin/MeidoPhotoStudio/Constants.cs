@@ -22,12 +22,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public const string kankyoDirectory = "Environments";
         public const string configDirectory = "MeidoPhotoStudio";
         public const string translationDirectory = "Translations";
+        public const string databaseDirectory = "Database";
         public static readonly string customPosePath;
         public static readonly string customHandPath;
         public static readonly string customFacePath;
         public static readonly string scenesPath;
         public static readonly string kankyoPath;
         public static readonly string configPath;
+        public static readonly string databasePath;
         public static readonly int mainWindowID = 765;
         public static readonly int messageWindowID = 961;
         public static readonly int sceneManagerWindowID = 876;
@@ -97,9 +99,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             customFacePath = Path.Combine(presetPath, customFaceDirectory);
             scenesPath = Path.Combine(configPath, sceneDirectory);
             kankyoPath = Path.Combine(configPath, kankyoDirectory);
+            databasePath = Path.Combine(configPath, databaseDirectory);
 
             string[] directories = new[] {
-                customPosePath, customHandPath, scenesPath, kankyoPath, configPath, customFacePath
+                customPosePath, customHandPath, scenesPath, kankyoPath, configPath, customFacePath, databasePath
             };
 
             foreach (string directory in directories)
@@ -330,7 +333,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (!PoseGroupList.Contains("normal")) PoseGroupList.Insert(0, "normal");
             }
             // Load Poses
-            string poseListPath = Path.Combine(configPath, "Database\\mm_pose_list.json");
+            string poseListPath = Path.Combine(databasePath, "mm_pose_list.json");
             try
             {
                 string poseListJson = File.ReadAllText(poseListPath);
@@ -474,7 +477,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             foreach (KeyValuePair<string, List<PhotoFaceData>> kvp in PhotoFaceData.category_list)
             {
-                FaceDict[kvp.Key] = kvp.Value.Select(data => data.setting_name).ToList();
+                FaceDict[kvp.Key] = kvp.Value.ConvertAll(data => data.setting_name);
             }
 
             InitializeCustomFaceBlends();
@@ -592,7 +595,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             try
             {
-                string ignoreListPath = Path.Combine(configPath, "Database\\bg_ignore_list.json");
+                string ignoreListPath = Path.Combine(databasePath, "bg_ignore_list.json");
                 string ignoreListJson = File.ReadAllText(ignoreListPath);
                 string[] ignoreList = JsonConvert.DeserializeObject<string[]>(ignoreListJson);
                 doguHashSet.UnionWith(ignoreList);
@@ -624,7 +627,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             // Get cherry picked dogu that I can't find in the game files
             try
             {
-                string doguExtendPath = Path.Combine(configPath, "Database\\extra_dogu.json");
+                string doguExtendPath = Path.Combine(databasePath, "extra_dogu.json");
                 string doguExtendJson = File.ReadAllText(doguExtendPath);
                 DoguList.AddRange(JsonConvert.DeserializeObject<IEnumerable<string>>(doguExtendJson));
             }
@@ -764,7 +767,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             try
             {
-                string ignoreListPath = Path.Combine(configPath, "Database\\bg_ignore_list.json");
+                string ignoreListPath = Path.Combine(databasePath, "bg_ignore_list.json");
                 string ignoreListJson = File.ReadAllText(ignoreListPath);
                 string[] ignoreList = JsonConvert.DeserializeObject<string[]>(ignoreListJson);
                 doguHashSet.UnionWith(ignoreList);
