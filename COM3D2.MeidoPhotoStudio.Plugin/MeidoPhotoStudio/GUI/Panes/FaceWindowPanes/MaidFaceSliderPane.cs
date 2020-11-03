@@ -1,5 +1,9 @@
+using System;
+using System.IO;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEngine;
+using System.Linq;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -7,56 +11,56 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     public class MaidFaceSliderPane : BasePane
     {
         // TODO: Consider placing in external file to be user editable
-        private static readonly Dictionary<string, SliderProp> SliderRange = new Dictionary<string, SliderProp>()
+        private static readonly Dictionary<string, float> SliderLimits = new Dictionary<string, float>()
         {
             // Eye Shut
-            ["eyeclose"] = new SliderProp(0f, 1f),
+            ["eyeclose"] = 1f,
             // Eye Smile
-            ["eyeclose2"] = new SliderProp(0f, 1f),
+            ["eyeclose2"] = 1f,
             // Glare
-            ["eyeclose3"] = new SliderProp(0f, 1f),
+            ["eyeclose3"] = 1f,
             // Wide Eyes
-            ["eyebig"] = new SliderProp(0f, 1f),
+            ["eyebig"] = 1f,
             // Wink 1
-            ["eyeclose6"] = new SliderProp(0f, 1f),
+            ["eyeclose6"] = 1f,
             // Wink 2
-            ["eyeclose5"] = new SliderProp(0f, 1f),
+            ["eyeclose5"] = 1f,
             // Highlight
-            ["hitomih"] = new SliderProp(0f, 2f),
+            ["hitomih"] = 2f,
             // Pupil Size
-            ["hitomis"] = new SliderProp(0f, 3f),
+            ["hitomis"] = 3f,
             // Brow 1
-            ["mayuha"] = new SliderProp(0f, 1f),
+            ["mayuha"] = 1f,
             // Brow 2
-            ["mayuw"] = new SliderProp(0f, 1f),
+            ["mayuw"] = 1f,
             // Brow Up
-            ["mayuup"] = new SliderProp(0f, 0.8f),
+            ["mayuup"] = 1f,
             // Brow Down 1
-            ["mayuv"] = new SliderProp(0f, 0.8f),
+            ["mayuv"] = 1f,
             // Brow Down 2
-            ["mayuvhalf"] = new SliderProp(0f, 0.9f),
+            ["mayuvhalf"] = 1f,
             // Mouth Open 1
-            ["moutha"] = new SliderProp(0f, 1f),
+            ["moutha"] = 1f,
             // Mouth Open 2
-            ["mouths"] = new SliderProp(0f, 0.9f),
+            ["mouths"] = 1f,
             // Mouth Narrow
-            ["mouthc"] = new SliderProp(0f, 1f),
+            ["mouthc"] = 1f,
             // Mouth Widen
-            ["mouthi"] = new SliderProp(0f, 1f),
+            ["mouthi"] = 1f,
             // Smile
-            ["mouthup"] = new SliderProp(0f, 1.4f),
+            ["mouthup"] = 1.4f,
             // Frown
-            ["mouthdw"] = new SliderProp(0f, 1f),
+            ["mouthdw"] = 1f,
             // Mouth Pucker
-            ["mouthhe"] = new SliderProp(0f, 1f),
+            ["mouthhe"] = 1f,
             // Grin
-            ["mouthuphalf"] = new SliderProp(0f, 2f),
+            ["mouthuphalf"] = 2f,
             // Tongue Out
-            ["tangout"] = new SliderProp(0f, 1f),
+            ["tangout"] = 1f,
             // Tongue Up
-            ["tangup"] = new SliderProp(0f, 0.7f),
+            ["tangup"] = 1f,
             // Tongue Base
-            ["tangopen"] = new SliderProp(0f, 1f)
+            ["tangopen"] = 1f
         };
         private readonly MeidoManager meidoManager;
         private readonly Dictionary<string, BaseControl> faceControls;
@@ -70,7 +74,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             foreach (string key in faceKeys)
             {
                 string uiName = Translation.Get("faceBlendValues", key);
-                Slider slider = new Slider(uiName, SliderRange[key]);
+                Slider slider = new Slider(uiName, 0f, SliderLimits[key]);
                 string myKey = key;
                 slider.ControlEvent += (s, a) => SetFaceValue(myKey, slider.Value);
                 faceControls[key] = slider;
@@ -83,6 +87,38 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 string myKey = key;
                 toggle.ControlEvent += (s, a) => SetFaceValue(myKey, toggle.Value);
                 faceControls[key] = toggle;
+            }
+
+            InitializeSliderLimits(faceControls);
+        }
+
+        private static void InitializeSliderLimits(Dictionary<string, BaseControl> controls)
+        {
+            try
+            {
+                string sliderLimitsPath = Path.Combine(Constants.databasePath, "face_slider_limits.json");
+                string sliderLimitsJson = File.ReadAllText(sliderLimitsPath);
+
+                foreach (var kvp in JsonConvert.DeserializeObject<Dictionary<string, float>>(sliderLimitsJson))
+                {
+                    string key = kvp.Key;
+                    if (faceKeys.Contains(key) && controls.ContainsKey(key))
+                    {
+                        float limit = kvp.Value;
+                        limit = kvp.Value >= 1f ? limit : SliderLimits[key];
+                        Slider slider = (Slider)controls[kvp.Key];
+                        slider.SetBounds(slider.Left, limit);
+                    }
+                    else Utility.LogWarning($"'{key}' is not a valid face key");
+                }
+            }
+            catch (IOException e)
+            {
+                Utility.LogWarning($"Could not open face slider limit database because {e.Message}");
+            }
+            catch (Exception e)
+            {
+                Utility.LogError($"Could not apply face slider limit database because {e.Message}");
             }
         }
 
@@ -153,20 +189,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void DrawSliders(params string[] keys)
         {
             GUILayout.BeginHorizontal();
-            foreach (string key in keys)
-            {
-                ((Slider)faceControls[key]).Draw(MpsGui.HalfSlider);
-            }
+            foreach (string key in keys) faceControls[key].Draw(MpsGui.HalfSlider);
             GUILayout.EndHorizontal();
         }
 
         private void DrawToggles(params string[] keys)
         {
             GUILayout.BeginHorizontal();
-            foreach (string key in keys)
-            {
-                ((Toggle)faceControls[key]).Draw();
-            }
+            foreach (string key in keys) faceControls[key].Draw();
             GUILayout.EndHorizontal();
         }
 

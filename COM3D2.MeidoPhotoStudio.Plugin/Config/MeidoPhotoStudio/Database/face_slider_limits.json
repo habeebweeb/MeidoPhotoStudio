@@ -1,0 +1,114 @@
+/*
+    This file contains the upper limit for face blend values.
+
+    The values must be a real number that is greater than or equal to 1 otherwise they will be ignored.
+
+    The default limit for the majority, if not all, of the blend values used in studio mode is 1 so setting a limit 
+    below that doesn't really make sense.
+*/
+{
+    // Eye Shut
+    "eyeclose": 1,
+    // Eye Smile
+    "eyeclose2": 1,
+    // Glare
+    "eyeclose3": 1,
+    // Wide Eyes
+    "eyebig": 1,
+    // Wink 1
+    "eyeclose6": 1,
+    // Wink 2
+    "eyeclose5": 1,
+    // Highlight
+    "hitomih": 2,
+    // Pupil Size
+    "hitomis": 3,
+    // Brow 1
+    "mayuha": 1,
+    // Brow 2
+    "mayuw": 1,
+    // Brow Up
+    "mayuup": 1,
+    // Brow Down 1
+    "mayuv": 1,
+    // Brow Down 2
+    "mayuvhalf": 1,
+    // Mouth Open 1
+    "moutha": 1,
+    // Mouth Open 2
+    "mouths": 1,
+    // Mouth Narrow
+    "mouthc": 1,
+    // Mouth Widen
+    "mouthi": 1,
+    // Smile
+    "mouthup": 1.4,
+    // Frown
+    "mouthdw": 1,
+    // Mouth Pucker
+    "mouthhe": 1,
+    // Grin
+    "mouthuphalf": 2,
+    // Tongue Out
+    "tangout": 1,
+    // Tongue Up
+    "tangup": 1,
+    // Tongue Base
+    "tangopen": 1
+}
+/*
+These are alternative limits that further expand the range of the sliders.
+These limits expand the expressiveness of the GP-01 FB face that couldn't be achieved with the default limits.
+
+Since these limits would be way too much for non GP-01 FB faces, they aren't the default.
+{
+    // Eye Shut
+    "eyeclose": 1,
+    // Eye Smile
+    "eyeclose2": 1,
+    // Glare
+    "eyeclose3": 3.5,
+    // Wide Eyes
+    "eyebig": 4,
+    // Wink 1
+    "eyeclose6": 1,
+    // Wink 2
+    "eyeclose5": 1,
+    // Highlight
+    "hitomih": 2,
+    // Pupil Size
+    "hitomis": 3,
+    // Brow 1
+    "mayuha": 3,
+    // Brow 2
+    "mayuw": 2,
+    // Brow Up
+    "mayuup": 2,
+    // Brow Down 1
+    "mayuv": 2,
+    // Brow Down 2
+    "mayuvhalf": 2,
+    // Mouth Open 1
+    "moutha": 1.2,
+    // Mouth Open 2
+    "mouths": 1,
+    // Mouth Narrow
+    "mouthc": 1.2,
+    // Mouth Widen
+    "mouthi": 1.5,
+    // Smile
+    "mouthup": 1.5,
+    // Frown
+    "mouthdw": 1.5,
+    // Mouth Pucker
+    "mouthhe": 1.5,
+    // Grin
+    "mouthuphalf": 2,
+    // Tongue Out
+    "tangout": 2,
+    // Tongue Up
+    "tangup": 2,
+    // Tongue Base
+    "tangopen": 2
+}
+*/
