@@ -122,7 +122,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 toggle.Value = meido.GetFaceBlendValue(hash) > 0f;
                 if (hash == "toothoff") toggle.Value = !toggle.Value;
             }
-            hasTangOpen = meido.Body.Face.morph.hash["tangopen"] != null;
+            hasTangOpen = meido.Body.Face.morph.Contains("tangopen");
             updating = false;
         }
 

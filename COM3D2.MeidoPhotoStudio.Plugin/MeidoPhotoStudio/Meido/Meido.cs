@@ -572,12 +572,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SetFaceBlendValue(string hash, float value)
         {
             TMorph morph = Body.Face.morph;
-            if (hash == "nosefook") Maid.boNoseFook = morph.boNoseFook = value > 0f;
-            else
+            hash = Utility.GP01FbFaceHash(morph, hash);
+            if (morph.Contains(hash))
             {
-                hash = Utility.GP01FbFaceHash(morph, hash);
-                try { morph.dicBlendSet[CurrentFaceBlendSet][(int)morph.hash[hash]] = value; }
-                catch { }
+                if (hash == "nosefook") Maid.boNoseFook = morph.boNoseFook = value > 0f;
+                else morph.dicBlendSet[CurrentFaceBlendSet][(int)morph.hash[hash]] = value;
             }
         }
 
