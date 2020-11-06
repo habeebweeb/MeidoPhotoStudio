@@ -293,21 +293,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             int mirror = mirroring ? -1 : 1;
 
-            using (MemoryStream memoryStream = new MemoryStream(fingerBinary))
-            using (BinaryReader binaryReader = new BinaryReader(memoryStream))
+            using MemoryStream memoryStream = new MemoryStream(fingerBinary);
+            using BinaryReader binaryReader = new BinaryReader(memoryStream);
+
+            for (Bone bone = start; bone <= end; bone += joints)
             {
-                for (Bone bone = start; bone <= end; bone += joints)
+                for (int i = 0; i < joints - 1; i++)
                 {
-                    for (int i = 0; i < joints - 1; i++)
-                    {
-                        BoneTransform[bone + i].localRotation = new Quaternion
-                        (
-                            binaryReader.ReadSingle() * mirror,
-                            binaryReader.ReadSingle() * mirror,
-                            binaryReader.ReadSingle(),
-                            binaryReader.ReadSingle()
-                        );
-                    }
+                    BoneTransform[bone + i].localRotation = new Quaternion
+                    (
+                        binaryReader.ReadSingle() * mirror,
+                        binaryReader.ReadSingle() * mirror,
+                        binaryReader.ReadSingle(),
+                        binaryReader.ReadSingle()
+                    );
                 }
             }
         }
@@ -670,12 +669,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
-    public struct AttachPointInfo
+    public readonly struct AttachPointInfo
     {
         public AttachPoint AttachPoint { get; }
         public string MaidGuid { get; }
         public int MaidIndex { get; }
-        public static AttachPointInfo Empty => new AttachPointInfo(AttachPoint.None, string.Empty, -1);
+        private static readonly AttachPointInfo empty = new AttachPointInfo(AttachPoint.None, string.Empty, -1);
+        public static ref readonly AttachPointInfo Empty => ref empty;
 
         public AttachPointInfo(AttachPoint attachPoint, string maidGuid, int maidIndex)
         {

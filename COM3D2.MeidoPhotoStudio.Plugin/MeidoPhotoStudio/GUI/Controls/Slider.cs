@@ -89,7 +89,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
-    public struct SliderProp
+    public readonly struct SliderProp
     {
         public float Left { get; }
         public float Right { get; }

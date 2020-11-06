@@ -38,29 +38,25 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void Deserialize()
         {
-            using (BinaryReader binaryReader = new BinaryReader(File.OpenRead(cachePath)))
+            using BinaryReader binaryReader = new BinaryReader(File.OpenRead(cachePath));
+            if (binaryReader.ReadInt32() != cacheVersion)
             {
-                if (binaryReader.ReadInt32() != cacheVersion)
-                {
-                    Utility.LogInfo("Cache version out of date. Rebuilding");
-                    return;
-                }
-                while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
-                {
-                    ModItem item = ModItem.Deserialize(binaryReader);
-                    modItems[item.MenuFile] = item;
-                }
+                Utility.LogInfo("Cache version out of date. Rebuilding");
+                return;
+            }
+            while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
+            {
+                ModItem item = ModItem.Deserialize(binaryReader);
+                modItems[item.MenuFile] = item;
             }
         }
 
         public void Serialize()
         {
             if (!rebuild) return;
-            using (BinaryWriter binaryWriter = new BinaryWriter(File.OpenWrite(cachePath)))
-            {
-                binaryWriter.Write(cacheVersion);
-                foreach (ModItem item in modItems.Values) item.Serialize(binaryWriter);
-            }
+            using BinaryWriter binaryWriter = new BinaryWriter(File.OpenWrite(cachePath));
+            binaryWriter.Write(cacheVersion);
+            foreach (ModItem item in modItems.Values) item.Serialize(binaryWriter);
         }
     }
 }

@@ -963,11 +963,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
-    public struct PoseInfo
+    public readonly struct PoseInfo
     {
         public string PoseGroup { get; }
         public string Pose { get; }
         public bool CustomPose { get; }
+        private static readonly PoseInfo defaultPose =
+            new PoseInfo(Constants.PoseGroupList[0], Constants.PoseDict[Constants.PoseGroupList[0]][0]);
+        public static ref readonly PoseInfo DefaultPose => ref defaultPose;
+
         public PoseInfo(string poseGroup, string pose, bool customPose = false)
         {
             PoseGroup = poseGroup;

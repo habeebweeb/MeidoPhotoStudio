@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using BepInEx.Configuration;
+using System.Text;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -182,13 +183,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SortScenes(SortMode sortMode)
         {
             CurrentSortMode = sortMode;
-            Comparison<Scene> comparator;
-            switch (CurrentSortMode)
+            Comparison<Scene> comparator = CurrentSortMode switch
             {
-                case SortMode.DateModified: comparator = SortByDateModified; break;
-                case SortMode.DateCreated: comparator = SortByDateCreated; break;
-                default: comparator = SortByName; break;
-            }
+                SortMode.DateModified => SortByDateModified,
+                SortMode.DateCreated => SortByDateCreated,
+                _ => SortByName,
+            };
             SceneList.Sort(comparator);
         }
 
@@ -332,32 +332,29 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 if (sceneData == null) return;
 
-                using (MemoryStream memoryStream = new MemoryStream(sceneData))
-                using (BinaryReader binaryReader = new BinaryReader(memoryStream, System.Text.Encoding.UTF8))
+                using BinaryReader binaryReader = new BinaryReader(new MemoryStream(sceneData), Encoding.UTF8);
+
+                try
                 {
-                    try
+                    if (binaryReader.ReadString() != "MPS_SCENE")
                     {
-                        if (binaryReader.ReadString() != "MPS_SCENE")
-                        {
-                            Utility.LogWarning($"'{filePath}' is not a {MeidoPhotoStudio.pluginName} scene");
-                            return;
-                        }
-
-                        if (binaryReader.ReadInt32() > MeidoPhotoStudio.sceneVersion)
-                        {
-                            Utility.LogWarning(
-                                $"'{filePath}' is made in a newer version of {MeidoPhotoStudio.pluginName}"
-                            );
-                            return;
-                        }
-
-                        NumberOfMaids = binaryReader.ReadInt32();
-                    }
-                    catch (Exception e)
-                    {
-                        Utility.LogWarning($"Failed to deserialize scene '{filePath}' because {e.Message}");
+                        Utility.LogWarning($"'{filePath}' is not a {MeidoPhotoStudio.pluginName} scene");
                         return;
                     }
+
+                    if (binaryReader.ReadInt32() > MeidoPhotoStudio.sceneVersion)
+                    {
+                        Utility.LogWarning(
+                            $"'{filePath}' is made in a newer version of {MeidoPhotoStudio.pluginName}"
+                        );
+                        return;
+                    }
+
+                    NumberOfMaids = binaryReader.ReadInt32();
+                }
+                catch (Exception e)
+                {
+                    Utility.LogWarning($"Failed to deserialize scene '{filePath}' because {e.Message}");
                 }
             }
 

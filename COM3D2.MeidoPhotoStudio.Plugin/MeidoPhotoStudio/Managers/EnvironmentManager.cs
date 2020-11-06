@@ -98,7 +98,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             string bgAsset = binaryReader.ReadString();
             bool isCreative = Utility.IsGuidString(bgAsset);
             System.Collections.Generic.List<string> bgList = isCreative
-                ? Constants.MyRoomCustomBGList.Select(kvp => kvp.Key).ToList()
+                ? Constants.MyRoomCustomBGList.ConvertAll(kvp => kvp.Key)
                 : Constants.BGList;
 
             int assetIndex = bgList.FindIndex(
@@ -315,12 +315,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
-    public struct CameraInfo
+    public readonly struct CameraInfo
     {
         public Vector3 TargetPos { get; }
         public Vector3 Pos { get; }
         public Vector3 Angle { get; }
         public float Distance { get; }
+
         public CameraInfo(CameraMain camera)
         {
             TargetPos = camera.GetTargetPos();

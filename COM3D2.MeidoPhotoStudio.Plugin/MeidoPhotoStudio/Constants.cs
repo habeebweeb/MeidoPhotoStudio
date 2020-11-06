@@ -327,7 +327,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static void InitializePoses()
         {
-            void AddDefaultPose()
+            static void AddDefaultPose()
             {
                 if (!PoseDict.ContainsKey("normal")) PoseDict["normal"] = new List<string>() { "maid_stand01" };
                 if (!PoseGroupList.Contains("normal")) PoseGroupList.Insert(0, "normal");
@@ -411,7 +411,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static void InitializeCustomPoses()
         {
-            void GetPoses(string directory)
+            static void GetPoses(string directory)
             {
                 IEnumerable<string> poseList = Directory.GetFiles(directory)
                     .Where(file => Path.GetExtension(file) == ".anm");
@@ -441,7 +441,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static void InitializeHandPresets()
         {
-            void GetPresets(string directory)
+            static void GetPresets(string directory)
             {
                 IEnumerable<string> presetList = Directory.GetFiles(directory)
                     .Where(file => Path.GetExtension(file) == ".xml");
@@ -485,7 +485,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public static void InitializeCustomFaceBlends()
         {
-            void GetFacePresets(string directory)
+            static void GetFacePresets(string directory)
             {
                 IEnumerable<string> presetList = Directory.GetFiles(directory)
                     .Where(file => Path.GetExtension(file) == ".xml").ToList();
@@ -531,15 +531,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             // CM3D2 BGs
             if (GameUty.IsEnabledCompatibilityMode)
             {
-                using (CsvParser csvParser = OpenCsvParser("phot_bg_list.nei", GameUty.FileSystemOld))
+                using CsvParser csvParser = OpenCsvParser("phot_bg_list.nei", GameUty.FileSystemOld);
+                for (int cell_y = 1; cell_y < csvParser.max_cell_y; cell_y++)
                 {
-                    for (int cell_y = 1; cell_y < csvParser.max_cell_y; cell_y++)
+                    if (csvParser.IsCellToExistData(3, cell_y))
                     {
-                        if (csvParser.IsCellToExistData(3, cell_y))
-                        {
-                            string bg = csvParser.GetCellAsString(3, cell_y);
-                            BGList.Add(bg);
-                        }
+                        string bg = csvParser.GetCellAsString(3, cell_y);
+                        BGList.Add(bg);
                     }
                 }
             }
@@ -667,29 +665,28 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             void GetDeskItems(AFileSystemBase fs)
             {
-                using (CsvParser csvParser = OpenCsvParser("desk_item_detail.nei", fs))
-                {
-                    for (int cell_y = 1; cell_y < csvParser.max_cell_y; cell_y++)
-                    {
-                        if (csvParser.IsCellToExistData(0, cell_y))
-                        {
-                            int cell = csvParser.GetCellAsInteger(0, cell_y);
-                            if (enabledIDs.Contains(cell))
-                            {
-                                string dogu = string.Empty;
-                                if (csvParser.IsCellToExistData(3, cell_y))
-                                {
-                                    dogu = csvParser.GetCellAsString(3, cell_y);
-                                }
-                                else if (csvParser.IsCellToExistData(4, cell_y))
-                                {
-                                    dogu = csvParser.GetCellAsString(4, cell_y);
-                                }
+                using CsvParser csvParser = OpenCsvParser("desk_item_detail.nei", fs);
 
-                                if (!string.IsNullOrEmpty(dogu))
-                                {
-                                    com3d2DeskDogu.Add(dogu);
-                                }
+                for (int cell_y = 1; cell_y < csvParser.max_cell_y; cell_y++)
+                {
+                    if (csvParser.IsCellToExistData(0, cell_y))
+                    {
+                        int cell = csvParser.GetCellAsInteger(0, cell_y);
+                        if (enabledIDs.Contains(cell))
+                        {
+                            string dogu = string.Empty;
+                            if (csvParser.IsCellToExistData(3, cell_y))
+                            {
+                                dogu = csvParser.GetCellAsString(3, cell_y);
+                            }
+                            else if (csvParser.IsCellToExistData(4, cell_y))
+                            {
+                                dogu = csvParser.GetCellAsString(4, cell_y);
+                            }
+
+                            if (!string.IsNullOrEmpty(dogu))
+                            {
+                                com3d2DeskDogu.Add(dogu);
                             }
                         }
                     }
@@ -1042,7 +1039,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
-    public struct MpnAttachProp
+    public readonly struct MpnAttachProp
     {
         public MPN Tag { get; }
         public string MenuFile { get; }

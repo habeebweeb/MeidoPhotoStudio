@@ -802,7 +802,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             public string ModelFile { get; set; }
         }
 
-        private struct MaterialChange
+        private readonly struct MaterialChange
         {
             public int MaterialIndex { get; }
             public string MaterialFile { get; }

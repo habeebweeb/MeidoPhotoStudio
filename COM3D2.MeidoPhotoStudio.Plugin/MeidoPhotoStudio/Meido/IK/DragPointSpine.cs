@@ -31,7 +31,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (!isHead && current == DragType.RotLocalXZ) ApplyProperties(false, false, isThigh);
                 else if (!isThigh && (current == DragType.MoveY)) ApplyProperties(isHip, isHip, !isHip);
-                else if (!(isThigh || isHead) && (current == DragType.RotLocalY)) ApplyProperties(!isHip, !isHip, isHip);
+                else if (!isThigh && !isHead && (current == DragType.RotLocalY)) ApplyProperties(!isHip, !isHip, isHip);
                 else ApplyProperties(!isThigh, !isThigh, false);
             }
             else ApplyProperties(false, false, false);
@@ -42,7 +42,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bool shift = Input.Shift;
             bool alt = Input.Alt;
 
-            if (isThigh && alt && shift)
+            if (isThigh && !Input.Control && alt && shift)
             {
                 // gizmo thigh rotation
                 CurrentDragType = DragType.RotLocalXZ;

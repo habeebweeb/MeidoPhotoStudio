@@ -200,7 +200,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (!initialized) InitializeStyle();
 
-            style = style ?? DefaultDropdownStyle;
+            style ??= DefaultDropdownStyle;
 
             return style.CalcSize(new GUIContent(item));
         }
@@ -209,7 +209,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (!initialized) InitializeStyle();
 
-            style = style ?? DefaultDropdownStyle;
+            style ??= DefaultDropdownStyle;
 
             GUIContent content = new GUIContent(list[0]);
             Vector2 calculatedSize = style.CalcSize(content);

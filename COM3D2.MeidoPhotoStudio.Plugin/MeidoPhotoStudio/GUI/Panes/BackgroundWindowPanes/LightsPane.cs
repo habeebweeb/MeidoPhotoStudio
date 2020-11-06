@@ -98,7 +98,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             lightHeader = Translation.Get("lightsPane", "header");
             resetLabel = Translation.Get("lightsPane", "resetLabel");
-
         }
 
         protected override void ReloadTranslation()

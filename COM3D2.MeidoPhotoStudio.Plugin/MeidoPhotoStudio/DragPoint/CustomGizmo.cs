@@ -127,24 +127,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void SetTransform()
         {
-            switch (gizmoMode)
-            {
-                case GizmoMode.Local:
-                    transform.position = target.transform.position;
-                    transform.rotation = target.transform.rotation;
-                    break;
-                case GizmoMode.World:
-                    transform.position = target.transform.position;
-                    transform.rotation = Quaternion.identity;
-                    break;
-                case GizmoMode.Global:
-                    transform.position = target.transform.position;
-                    transform.rotation = Quaternion.LookRotation(
-                        transform.position - camera.transform.position, transform.up
-                    );
-                    break;
-            }
+            transform.position = target.transform.position;
             transform.localScale = Vector3.one;
+            transform.rotation = gizmoMode switch
+            {
+                GizmoMode.Local => target.transform.rotation,
+                GizmoMode.World => Quaternion.identity,
+                GizmoMode.Global => Quaternion.LookRotation(transform.position - camera.transform.position),
+                _ => target.transform.rotation
+            };
         }
 
         private void SetGizmoType(GizmoType gizmoType)
@@ -174,9 +165,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        private void OnGizmoDrag()
-        {
-            GizmoDrag?.Invoke(this, EventArgs.Empty);
-        }
+        private void OnGizmoDrag() => GizmoDrag?.Invoke(this, EventArgs.Empty);
     }
 }
