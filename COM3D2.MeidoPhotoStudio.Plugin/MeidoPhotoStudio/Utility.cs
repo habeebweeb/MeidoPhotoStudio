@@ -252,10 +252,23 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             binaryWriter.Write(vector3.z);
         }
 
+        public static Vector2 ReadVector2(this BinaryReader binaryReader)
+        {
+            return new Vector2(binaryReader.ReadSingle(), binaryReader.ReadSingle());
+        }
+
         public static Vector3 ReadVector3(this BinaryReader binaryReader)
         {
             return new Vector3(
                 binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle()
+            );
+        }
+
+        public static Vector4 ReadVector4(this BinaryReader binaryReader)
+        {
+            return new Vector4(
+                binaryReader.ReadSingle(), binaryReader.ReadSingle(),
+                binaryReader.ReadSingle(), binaryReader.ReadSingle()
             );
         }
 
@@ -291,6 +304,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 binaryReader.ReadSingle(), binaryReader.ReadSingle(),
                 binaryReader.ReadSingle(), binaryReader.ReadSingle()
             );
+        }
+
+        public static Matrix4x4 ReadMatrix4x4(this BinaryReader binaryReader)
+        {
+            Matrix4x4 matrix = default;
+            for (var i = 0; i < 16; i++) matrix[i] = binaryReader.ReadSingle();
+            return matrix;
         }
     }
 }

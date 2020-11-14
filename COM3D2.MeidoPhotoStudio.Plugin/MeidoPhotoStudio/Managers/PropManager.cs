@@ -54,14 +54,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public int CurrentDoguIndex { get; private set; }
         public DragPointDogu CurrentDogu => DoguCount == 0 ? null : doguList[CurrentDoguIndex];
 
-        static PropManager()
-        {
-            modItemsOnly = Configuration.Config.Bind(
-                "Prop", "ModItemsOnly",
-                false,
-                "Disable waiting for and loading base game clothing"
-            );
-        }
+        static PropManager() => modItemsOnly = Configuration.Config.Bind(
+            "Prop", "ModItemsOnly",
+            false,
+            "Disable waiting for and loading base game clothing"
+        );
 
         public PropManager(MeidoManager meidoManager)
         {
@@ -191,7 +188,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GameObject dogu = LoadModel(modItem);
             string name = modItem.MenuFile;
-            if (modItem.IsOfficialMod) name = Path.GetFileName(name);
+            if (modItem.IsOfficialMod) name = Path.GetFileName(name) + ".menu"; // Add '.menu' for partsedit support
             if (dogu != null) AttachDragPoint(dogu, modItem.ToString(), name, new Vector3(0f, 0f, 0.5f));
             return dogu != null;
         }

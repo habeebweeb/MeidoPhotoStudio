@@ -3,26 +3,33 @@ using System.Text;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public static class MenuFileUtility
+    public static partial class MenuFileUtility
     {
-        private static byte[] menuFileBuffer;
+        private static byte[] fileBuffer;
         public const string noCategory = "noCategory";
-        public static string[] MenuCategories = new[] {
+
+        public static readonly string[] MenuCategories =
+        {
             noCategory, "acchat", "headset", "wear", "skirt", "onepiece", "mizugi", "bra", "panz", "stkg", "shoes",
             "acckami", "megane", "acchead", "acchana", "accmimi", "glove", "acckubi", "acckubiwa", "acckamisub",
             "accnip", "accude", "accheso", "accashi", "accsenaka", "accshippo", "accxxx"
         };
+
         private static readonly HashSet<string> accMpn = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+
         private enum IMode
         {
-            None, ItemChange, TexChange
+            None,
+            ItemChange,
+            TexChange
         }
+
         public static event EventHandler MenuFilesReadyChange;
         public static bool MenuFilesReady { get; private set; }
 
@@ -40,179 +47,235 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             MenuFilesReadyChange?.Invoke(null, EventArgs.Empty);
         }
 
-        private static bool ProcScriptBin(byte[] menuBuf, ModelInfo modelInfo)
+        private static ref byte[] GetFileBuffer(long size)
         {
-            using (BinaryReader binaryReader = new BinaryReader(new MemoryStream(menuBuf), Encoding.UTF8))
+            if (fileBuffer == null) fileBuffer = new byte[Math.Max(500000, size)];
+            else if (fileBuffer.Length < size) fileBuffer = new byte[size];
+
+            return ref fileBuffer;
+        }
+
+        private static byte[] ReadAFileBase(string filename)
+        {
+            using AFileBase aFileBase = GameUty.FileOpen(filename);
+
+            if (aFileBase.IsValid() && aFileBase.GetSize() != 0)
             {
-                string menuHeader = binaryReader.ReadString();
-                NDebug.Assert(
-                    menuHeader == "CM3D2_MENU", "ProcScriptBin 例外 : ヘッダーファイルが不正です。" + menuHeader
-                );
-                binaryReader.ReadInt32(); // file version
-                binaryReader.ReadString(); // txt path
-                binaryReader.ReadString(); // name
-                binaryReader.ReadString(); // category
-                binaryReader.ReadString(); // description
-                binaryReader.ReadInt32(); // idk (as long)
+                ref byte[] buffer = ref GetFileBuffer(aFileBase.GetSize());
 
-                string menuPropString = string.Empty;
-                string menuPropStringTemp = string.Empty;
+                aFileBase.Read(ref buffer, aFileBase.GetSize());
 
-                try
+                return buffer;
+            }
+
+            Utility.LogError($"AFileBase '{filename}' is invalid");
+            return null;
+        }
+
+        private static byte[] ReadOfficialMod(string filename)
+        {
+            using var fileStream = new FileStream(filename, FileMode.Open);
+
+            if (fileStream.Length != 0)
+            {
+                ref byte[] buffer = ref GetFileBuffer(fileStream.Length);
+
+                fileStream.Read(buffer, 0, (int) fileStream.Length);
+
+                return buffer;
+            }
+
+            Utility.LogWarning($"Mod menu file '{filename}' is invalid");
+            return null;
+        }
+
+        private static IEnumerable<Renderer> GetRenderers(GameObject gameObject)
+            => gameObject.transform.GetComponentsInChildren<Transform>(true)
+                .Select(transform => transform.GetComponent<Renderer>())
+                .Where(renderer => renderer && renderer.material).ToList();
+
+        private static bool ProcScriptBin(byte[] menuBuf, out ModelInfo modelInfo)
+        {
+            modelInfo = null;
+            using var binaryReader = new BinaryReader(new MemoryStream(menuBuf), Encoding.UTF8);
+
+            if (binaryReader.ReadString() != "CM3D2_MENU") return false;
+
+            modelInfo = new ModelInfo();
+
+            binaryReader.ReadInt32(); // file version
+            binaryReader.ReadString(); // txt path
+            binaryReader.ReadString(); // name
+            binaryReader.ReadString(); // category
+            binaryReader.ReadString(); // description
+            binaryReader.ReadInt32(); // idk (as long)
+
+            try
+            {
+                while (true)
                 {
-                    while (true)
+                    int numberOfProps = binaryReader.ReadByte();
+                    var menuPropString = string.Empty;
+
+                    if (numberOfProps != 0)
                     {
-                        int numberOfProps = binaryReader.ReadByte();
-                        menuPropStringTemp = menuPropString;
-                        menuPropString = string.Empty;
-
-                        if (numberOfProps != 0)
+                        for (var i = 0; i < numberOfProps; i++)
                         {
-                            for (int i = 0; i < numberOfProps; i++)
-                            {
-                                menuPropString = $"{menuPropString}\"{binaryReader.ReadString()}\"";
-                            }
+                            menuPropString = $"{menuPropString}\"{binaryReader.ReadString()}\"";
+                        }
 
-                            if (menuPropString != string.Empty)
-                            {
-                                string header = UTY.GetStringCom(menuPropString);
-                                string[] menuProps = UTY.GetStringList(menuPropString);
+                        if (menuPropString != string.Empty)
+                        {
+                            var header = UTY.GetStringCom(menuPropString);
+                            string[] menuProps = UTY.GetStringList(menuPropString);
 
-                                if (header == "end") break;
-                                else if (header == "マテリアル変更")
+                            if (header == "end") break;
+
+                            switch (header)
+                            {
+                                case "マテリアル変更":
                                 {
-                                    int matNo = int.Parse(menuProps[2]);
-                                    string materialFile = menuProps[3];
+                                    var matNo = int.Parse(menuProps[2]);
+                                    var materialFile = menuProps[3];
                                     modelInfo.MaterialChanges.Add(new MaterialChange(matNo, materialFile));
+                                    break;
                                 }
-                                else if (header == "additem") modelInfo.ModelFile = menuProps[1];
+                                case "additem":
+                                    modelInfo.ModelFile = menuProps[1];
+                                    break;
                             }
                         }
-                        else break;
                     }
-                }
-                catch
-                {
-                    return false;
+                    else break;
                 }
             }
+            catch { return false; }
+
             return true;
         }
 
         private static void ProcModScriptBin(byte[] cd, GameObject go)
         {
-            BinaryReader binaryReader = new BinaryReader(new MemoryStream(cd), Encoding.UTF8);
-            string str1 = binaryReader.ReadString();
-            NDebug.Assert(str1 == "CM3D2_MOD", "ProcModScriptBin 例外 : ヘッダーファイルが不正です。" + str1);
-            binaryReader.ReadInt32();
-            binaryReader.ReadString();
-            binaryReader.ReadString();
-            binaryReader.ReadString();
-            binaryReader.ReadString();
-            binaryReader.ReadString();
-            string mpnValue = binaryReader.ReadString();
-            MPN mpn = MPN.null_mpn;
-            try
+            var matDict = new Dictionary<string, byte[]>();
+            string modData;
+
+            using (var binaryReader = new BinaryReader(new MemoryStream(cd), Encoding.UTF8))
             {
-                mpn = (MPN)Enum.Parse(typeof(MPN), mpnValue);
-            }
-            catch { }
-            if (mpn != MPN.null_mpn)
-            {
+                if (binaryReader.ReadString() != "CM3D2_MOD") return;
+                binaryReader.ReadInt32();
                 binaryReader.ReadString();
-            }
-            string s = binaryReader.ReadString();
-            int num2 = binaryReader.ReadInt32();
-            Dictionary<string, byte[]> dictionary = new Dictionary<string, byte[]>();
-            for (int i = 0; i < num2; i++)
-            {
-                string key = binaryReader.ReadString();
-                int count = binaryReader.ReadInt32();
-                byte[] value = binaryReader.ReadBytes(count);
-                dictionary.Add(key, value);
-            }
-            binaryReader.Close();
+                binaryReader.ReadString();
+                binaryReader.ReadString();
+                binaryReader.ReadString();
+                binaryReader.ReadString();
+                var mpnValue = binaryReader.ReadString();
+                var mpn = MPN.null_mpn;
+                try { mpn = (MPN) Enum.Parse(typeof(MPN), mpnValue, true); }
+                catch { /* ignored */ }
 
-            using (StringReader stringReader = new StringReader(s))
-            {
-                IMode mode = IMode.None;
-                Material material = null;
-                int num3 = 0;
-                string line;
-                bool change = false;
-                while ((line = stringReader.ReadLine()) != null)
+                if (mpn != MPN.null_mpn) binaryReader.ReadString();
+
+                modData = binaryReader.ReadString();
+                var entryCount = binaryReader.ReadInt32();
+                for (var i = 0; i < entryCount; i++)
                 {
-                    string[] array = line.Split(new[] { '\t', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-                    if (array[0] == "アイテム変更" || array[0] == "マテリアル変更") mode = IMode.ItemChange;
-                    else if (array[0] == "テクスチャ変更") mode = IMode.TexChange;
-                    if (mode == IMode.ItemChange)
-                    {
-                        if (array[0] == "スロット名") change = true;
-                        if (change)
-                        {
-                            if (array[0] == "マテリアル番号")
-                            {
-                                num3 = int.Parse(array[1]);
-                                foreach (Transform transform in go.GetComponentsInChildren<Transform>(true))
-                                {
-                                    Renderer component = transform.GetComponent<Renderer>();
-                                    if (component && component.materials != null)
-                                    {
-                                        Material[] materials = component.materials;
-                                        for (int k = 0; k < materials.Length; k++)
-                                        {
-                                            if (k == num3)
-                                            {
-                                                material = materials[k];
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            if (material != null)
-                            {
-                                if (array[0] == "テクスチャ設定")
-                                {
-                                    ChangeTex(num3, array[1], array[2].ToLower(), dictionary, go);
-                                }
-                                else if (array[0] == "色設定")
-                                {
-                                    material.SetColor(array[1],
-                                        new Color(
-                                            float.Parse(array[2]) / 255f,
-                                            float.Parse(array[3]) / 255f,
-                                            float.Parse(array[4]) / 255f,
-                                            float.Parse(array[5]) / 255f
-                                        )
-                                    );
-                                }
-                                else if (array[0] == "数値設定") material.SetFloat(array[1], float.Parse(array[2]));
-                            }
-                        }
-                    }
-                    else if (mode == IMode.TexChange)
-                    {
-                        int matno = int.Parse(array[2]);
-                        ChangeTex(matno, array[3], array[4].ToLower(), dictionary, go);
-                    }
+                    var key = binaryReader.ReadString();
+                    var count = binaryReader.ReadInt32();
+                    byte[] value = binaryReader.ReadBytes(count);
+                    matDict.Add(key, value);
                 }
             }
-        }
 
-        private static void ChangeTex(
-            int matno, string prop, string filename, Dictionary<string, byte[]> matDict, GameObject go
-        )
-        {
-            TextureResource textureResource;
-            byte[] buf = matDict[filename.ToLowerInvariant()];
-            textureResource = new TextureResource(2, 2, TextureFormat.ARGB32, null, buf);
-            List<Renderer> list = new List<Renderer>(3);
-            go.transform.GetComponentsInChildren(true, list);
-            foreach (Renderer r in list)
+            var mode = IMode.None;
+            var materialChange = false;
+
+            Material material = null;
+            var materialIndex = 0;
+
+            using var stringReader = new StringReader(modData);
+
+            string line;
+
+            List<Renderer> renderers = null;
+
+            while ((line = stringReader.ReadLine()) != null)
             {
-                if (r && r.material && matno < r.materials.Length)
+                string[] data = line.Split(new[] {'\t', ' '}, StringSplitOptions.RemoveEmptyEntries);
+
+                switch (data[0])
+                {
+                    case "アイテム変更":
+                    case "マテリアル変更":
+                        mode = IMode.ItemChange;
+                        break;
+                    case "テクスチャ変更":
+                        mode = IMode.TexChange;
+                        break;
+                }
+
+                switch (mode)
+                {
+                    case IMode.ItemChange:
+                    {
+                        if (data[0] == "スロット名") materialChange = true;
+
+                        if (materialChange)
+                        {
+                            if (data[0] == "マテリアル番号")
+                            {
+                                materialIndex = int.Parse(data[1]);
+
+                                renderers ??= GetRenderers(go).ToList();
+
+                                foreach (Renderer renderer in renderers)
+                                {
+                                    if (materialIndex < renderer.materials.Length)
+                                        material = renderer.materials[materialIndex];
+                                }
+                            }
+
+                            if (!material) continue;
+
+                            switch (data[0])
+                            {
+                                case "テクスチャ設定":
+                                    ChangeTex(materialIndex, data[1], data[2].ToLower());
+                                    break;
+                                case "色設定":
+                                    material.SetColor(data[1],
+                                        new Color(
+                                            float.Parse(data[2]) / 255f, float.Parse(data[3]) / 255f,
+                                            float.Parse(data[4]) / 255f, float.Parse(data[5]) / 255f
+                                        )
+                                    );
+                                    break;
+                                case "数値設定":
+                                    material.SetFloat(data[1], float.Parse(data[2]));
+                                    break;
+                            }
+                        }
+
+                        break;
+                    }
+                    case IMode.TexChange:
+                    {
+                        var matno = int.Parse(data[2]);
+                        ChangeTex(matno, data[3], data[4].ToLower());
+                        break;
+                    }
+                    case IMode.None:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            void ChangeTex(int matno, string prop, string filename)
+            {
+                byte[] buf = matDict[filename.ToLowerInvariant()];
+                var textureResource = new TextureResource(2, 2, TextureFormat.ARGB32, null, buf);
+                renderers ??= GetRenderers(go).ToList();
+                foreach (Renderer r in renderers)
                 {
                     r.materials[matno].SetTexture(prop, null);
                     Texture2D texture2D = textureResource.CreateTexture2D();
@@ -222,280 +285,32 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        private static GameObject LoadSkinMesh_R(string modelFileName, int layer)
-        {
-            using (AFileBase afileBase = GameUty.FileOpen(modelFileName, null))
-            {
-                if (afileBase.IsValid() && afileBase.GetSize() != 0)
-                {
-                    if (menuFileBuffer == null)
-                    {
-                        menuFileBuffer = new byte[Math.Max(500000, afileBase.GetSize())];
-                    }
-                    else if (menuFileBuffer.Length < afileBase.GetSize())
-                    {
-                        menuFileBuffer = new byte[afileBase.GetSize()];
-                    }
-                    afileBase.Read(ref menuFileBuffer, afileBase.GetSize());
-                }
-                else
-                {
-                    Utility.LogError("invalid model");
-                    return null;
-                }
-            }
-            using (BinaryReader binaryReader = new BinaryReader(new MemoryStream(menuFileBuffer), Encoding.UTF8))
-            {
-                GameObject gameObject = UnityEngine.Object.Instantiate(Resources.Load("seed")) as GameObject;
-                gameObject.layer = 1;
-                GameObject gameObject2 = null;
-                Hashtable hashtable = new Hashtable();
-                string text = binaryReader.ReadString();
-                if (text != "CM3D2_MESH")
-                {
-                    NDebug.Assert("LoadSkinMesh_R 例外 : ヘッダーファイルが不正です。" + text, false);
-                }
-                int num = binaryReader.ReadInt32();
-                string str = binaryReader.ReadString();
-                gameObject.name = "_SM_" + str;
-                string b = binaryReader.ReadString();
-                int num2 = binaryReader.ReadInt32();
-                List<GameObject> list = new List<GameObject>();
-                for (int i = 0; i < num2; i++)
-                {
-                    GameObject gameObject3 = UnityEngine.Object.Instantiate(Resources.Load("seed")) as GameObject;
-                    gameObject3.layer = layer;
-                    gameObject3.name = binaryReader.ReadString();
-                    list.Add(gameObject3);
-                    if (gameObject3.name == b)
-                    {
-                        gameObject2 = gameObject3;
-                    }
-                    hashtable[gameObject3.name] = gameObject3;
-                    bool flag = binaryReader.ReadByte() != 0;
-                    if (flag)
-                    {
-                        GameObject gameObject4 = UnityEngine.Object.Instantiate(Resources.Load("seed")) as GameObject;
-                        gameObject4.name = gameObject3.name + "_SCL_";
-                        gameObject4.transform.parent = gameObject3.transform;
-                        hashtable[gameObject3.name + "&_SCL_"] = gameObject4;
-                    }
-                }
-                for (int j = 0; j < num2; j++)
-                {
-                    int num3 = binaryReader.ReadInt32();
-                    if (num3 >= 0)
-                    {
-                        list[j].transform.parent = list[num3].transform;
-                    }
-                    else
-                    {
-                        list[j].transform.parent = gameObject.transform;
-                    }
-                }
-                for (int k = 0; k < num2; k++)
-                {
-                    Transform transform = list[k].transform;
-                    float x = binaryReader.ReadSingle();
-                    float y = binaryReader.ReadSingle();
-                    float z = binaryReader.ReadSingle();
-                    transform.localPosition = new Vector3(x, y, z);
-                    float x2 = binaryReader.ReadSingle();
-                    float y2 = binaryReader.ReadSingle();
-                    float z2 = binaryReader.ReadSingle();
-                    float w = binaryReader.ReadSingle();
-                    transform.localRotation = new Quaternion(x2, y2, z2, w);
-                    if (2001 <= num)
-                    {
-                        bool flag2 = binaryReader.ReadBoolean();
-                        if (flag2)
-                        {
-                            float x3 = binaryReader.ReadSingle();
-                            float y3 = binaryReader.ReadSingle();
-                            float z3 = binaryReader.ReadSingle();
-                            transform.localScale = new Vector3(x3, y3, z3);
-                        }
-                    }
-                }
-                int num4 = binaryReader.ReadInt32();
-                int num5 = binaryReader.ReadInt32();
-                int num6 = binaryReader.ReadInt32();
-                SkinnedMeshRenderer skinnedMeshRenderer = gameObject2.AddComponent<SkinnedMeshRenderer>();
-                skinnedMeshRenderer.updateWhenOffscreen = true;
-                skinnedMeshRenderer.skinnedMotionVectors = false;
-                skinnedMeshRenderer.lightProbeUsage = LightProbeUsage.Off;
-                skinnedMeshRenderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
-                skinnedMeshRenderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
-                Transform[] array2 = new Transform[num6];
-                for (int l = 0; l < num6; l++)
-                {
-                    string text2 = binaryReader.ReadString();
-                    if (!hashtable.ContainsKey(text2))
-                    {
-                        Utility.LogError("nullbone= " + text2);
-                    }
-                    else
-                    {
-                        GameObject gameObject5;
-                        if (hashtable.ContainsKey(text2 + "&_SCL_"))
-                        {
-                            gameObject5 = (GameObject)hashtable[text2 + "&_SCL_"];
-                        }
-                        else
-                        {
-                            gameObject5 = (GameObject)hashtable[text2];
-                        }
-                        array2[l] = gameObject5.transform;
-                    }
-                }
-                skinnedMeshRenderer.bones = array2;
-                Mesh mesh = new Mesh();
-                skinnedMeshRenderer.sharedMesh = mesh;
-                Mesh mesh2 = mesh;
-                // bodyskin.listDEL.Add(mesh2);
-                Matrix4x4[] array4 = new Matrix4x4[num6];
-                for (int m = 0; m < num6; m++)
-                {
-                    for (int n = 0; n < 16; n++)
-                    {
-                        array4[m][n] = binaryReader.ReadSingle();
-                    }
-                }
-                mesh2.bindposes = array4;
-                Vector3[] array5 = new Vector3[num4];
-                Vector3[] array6 = new Vector3[num4];
-                Vector2[] array7 = new Vector2[num4];
-                BoneWeight[] array8 = new BoneWeight[num4];
-                for (int num8 = 0; num8 < num4; num8++)
-                {
-                    float num9 = binaryReader.ReadSingle();
-                    float num10 = binaryReader.ReadSingle();
-                    float new_z = binaryReader.ReadSingle();
-                    array5[num8].Set(num9, num10, new_z);
-                    num9 = binaryReader.ReadSingle();
-                    num10 = binaryReader.ReadSingle();
-                    new_z = binaryReader.ReadSingle();
-                    array6[num8].Set(num9, num10, new_z);
-                    num9 = binaryReader.ReadSingle();
-                    num10 = binaryReader.ReadSingle();
-                    array7[num8].Set(num9, num10);
-                }
-                mesh2.vertices = array5;
-                mesh2.normals = array6;
-                mesh2.uv = array7;
-                int num11 = binaryReader.ReadInt32();
-                if (num11 > 0)
-                {
-                    Vector4[] array9 = new Vector4[num11];
-                    for (int num12 = 0; num12 < num11; num12++)
-                    {
-                        float x4 = binaryReader.ReadSingle();
-                        float y4 = binaryReader.ReadSingle();
-                        float z4 = binaryReader.ReadSingle();
-                        float w2 = binaryReader.ReadSingle();
-                        array9[num12] = new Vector4(x4, y4, z4, w2);
-                    }
-                    mesh2.tangents = array9;
-                }
-                for (int num13 = 0; num13 < num4; num13++)
-                {
-                    array8[num13].boneIndex0 = binaryReader.ReadUInt16();
-                    array8[num13].boneIndex1 = binaryReader.ReadUInt16();
-                    array8[num13].boneIndex2 = binaryReader.ReadUInt16();
-                    array8[num13].boneIndex3 = binaryReader.ReadUInt16();
-                    array8[num13].weight0 = binaryReader.ReadSingle();
-                    array8[num13].weight1 = binaryReader.ReadSingle();
-                    array8[num13].weight2 = binaryReader.ReadSingle();
-                    array8[num13].weight3 = binaryReader.ReadSingle();
-                }
-
-                mesh2.boneWeights = array8;
-                mesh2.subMeshCount = num5;
-                for (int num19 = 0; num19 < num5; num19++)
-                {
-                    int num20 = binaryReader.ReadInt32();
-                    int[] array10 = new int[num20];
-                    for (int num21 = 0; num21 < num20; num21++)
-                    {
-                        array10[num21] = binaryReader.ReadUInt16();
-                    }
-                    mesh2.SetTriangles(array10, num19);
-                }
-                int num22 = binaryReader.ReadInt32();
-                Material[] array11 = new Material[num22];
-                for (int num23 = 0; num23 < num22; num23++)
-                {
-                    Material material = ImportCM.ReadMaterial(binaryReader);
-                    array11[num23] = material;
-                }
-                skinnedMeshRenderer.materials = array11;
-                gameObject.AddComponent<Animation>();
-                return gameObject;
-            }
-        }
-
         public static GameObject LoadModel(string menuFile) => LoadModel(new ModItem(menuFile));
 
         public static GameObject LoadModel(ModItem modItem)
         {
-            byte[] menuBuffer = null;
-            byte[] modMenuBuffer = null;
+            var menu = modItem.IsOfficialMod ? modItem.BaseMenuFile : modItem.MenuFile;
 
-            if (modItem.IsOfficialMod)
+            byte[] modelBuffer;
+
+            try { modelBuffer = ReadAFileBase(menu); }
+            catch (Exception e)
             {
-                using (FileStream fileStream = new FileStream(modItem.MenuFile, FileMode.Open))
-                {
-                    if (fileStream == null || fileStream.Length == 0)
-                    {
-                        Utility.LogWarning($"Could not open mod menu file '{modItem.MenuFile}'");
-                        return null;
-                    }
-                    modMenuBuffer = new byte[fileStream.Length];
-
-                    fileStream.Read(modMenuBuffer, 0, (int)fileStream.Length);
-                }
+                Utility.LogError($"Could not read menu file '{menu}' because {e.Message}\n{e.StackTrace}");
+                return null;
             }
 
-            string menu = modItem.IsOfficialMod ? modItem.BaseMenuFile : modItem.MenuFile;
-
-            using (AFileBase afileBase = GameUty.FileOpen(menu))
+            if (ProcScriptBin(modelBuffer, out ModelInfo modelInfo))
             {
-                if (afileBase?.IsValid() != true)
+                if (InstantiateModel(modelInfo.ModelFile, out GameObject finalModel))
                 {
-                    Utility.LogWarning($"Could not open menu file '{menu}'");
-                    return null;
-                }
-                else if (afileBase.GetSize() == 0)
-                {
-                    Utility.LogWarning($"Mod menu is empty '{menu}'");
-                    return null;
-                }
-                else menuBuffer = afileBase.ReadAll();
-            }
+                    IEnumerable<Renderer> renderers = GetRenderers(finalModel).ToList();
 
-            ModelInfo modelInfo = new ModelInfo();
-
-            if (ProcScriptBin(menuBuffer, modelInfo))
-            {
-                GameObject gameObject = null;
-
-                try
-                {
-                    gameObject = LoadSkinMesh_R(modelInfo.ModelFile, 1);
-                }
-                catch
-                {
-                    Utility.LogWarning($"Could not load mesh for '{modItem.MenuFile}'");
-                }
-
-                if (gameObject != null)
-                {
                     foreach (MaterialChange matChange in modelInfo.MaterialChanges)
                     {
-                        foreach (Transform transform in gameObject.transform.GetComponentsInChildren<Transform>(true))
+                        foreach (Renderer renderer in renderers)
                         {
-                            Renderer renderer = transform.GetComponent<Renderer>();
-                            if (renderer && renderer.material && matChange.MaterialIndex < renderer.materials.Length)
+                            if (matChange.MaterialIndex < renderer.materials.Length)
                             {
                                 renderer.materials[matChange.MaterialIndex] = ImportCM.LoadMaterial(
                                     matChange.MaterialFile, null, renderer.materials[matChange.MaterialIndex]
@@ -504,13 +319,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         }
                     }
 
-                    if (modItem.IsOfficialMod) ProcModScriptBin(modMenuBuffer, gameObject);
-                }
+                    if (!modItem.IsOfficialMod) return finalModel;
 
-                return gameObject;
+                    try { modelBuffer = ReadOfficialMod(modItem.MenuFile); }
+                    catch (Exception e)
+                    {
+                        Utility.LogError(
+                            $"Could not read mod menu file '{modItem.MenuFile}' because {e.Message}\n{e.StackTrace}"
+                        );
+                        return null;
+                    }
+
+                    ProcModScriptBin(modelBuffer, finalModel);
+
+                    return finalModel;
+                }
             }
 
-            Utility.LogMessage($"Could not parse menu file '{modItem.MenuFile}'");
+            Utility.LogMessage($"Could not load model '{modItem.MenuFile}'");
 
             return null;
         }
@@ -530,38 +356,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return true;
         }
 
-        public static bool ParseMenuFile(string menuFile, ModItem modItem)
+        public static void ParseMenuFile(string menuFile, ModItem modItem)
         {
-            if (!ValidBG2MenuFile(menuFile)) return false;
+            if (!ValidBG2MenuFile(menuFile)) return;
+
+            byte[] buffer;
+
+            try { buffer = ReadAFileBase(menuFile); }
+            catch (Exception e)
+            {
+                Utility.LogError($"Could not read menu file '{menuFile}' because {e.Message}");
+                return ;
+            }
 
             try
             {
-                using (AFileBase afileBase = GameUty.FileOpen(menuFile))
-                {
-                    if (afileBase?.IsValid() != true || afileBase.GetSize() == 0) return false;
-                    if (menuFileBuffer == null)
-                    {
-                        menuFileBuffer = new byte[Math.Max(500000, afileBase.GetSize())];
-                    }
-                    else if (menuFileBuffer.Length < afileBase.GetSize())
-                    {
-                        menuFileBuffer = new byte[afileBase.GetSize()];
-                    }
-                    afileBase.Read(ref menuFileBuffer, afileBase.GetSize());
-                }
-            }
-            catch
-            {
-                Utility.LogError($"Could not read menu file '{menuFile}'");
-                return false;
-            }
+                using var binaryReader = new BinaryReader(new MemoryStream(buffer), Encoding.UTF8);
 
-            using (BinaryReader binaryReader = new BinaryReader(new MemoryStream(menuFileBuffer), Encoding.UTF8))
-            {
-                string menuHeader = binaryReader.ReadString();
-                NDebug.Assert(
-                    menuHeader == "CM3D2_MENU", "ProcScriptBin 例外 : ヘッダーファイルが不正です。" + menuHeader
-                );
+                if (binaryReader.ReadString() != "CM3D2_MENU") return;
                 binaryReader.ReadInt32(); // file version
                 binaryReader.ReadString(); // txt path
                 modItem.Name = binaryReader.ReadString(); // name
@@ -569,149 +381,107 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 binaryReader.ReadString(); // description
                 binaryReader.ReadInt32(); // idk (as long)
 
-                string menuPropString = string.Empty;
-                string menuPropStringTemp = string.Empty;
-
-                try
+                while (true)
                 {
-                    while (true)
+                    int numberOfProps = binaryReader.ReadByte();
+                    var menuPropString = string.Empty;
+
+                    if (numberOfProps == 0) break;
+
+                    for (var i = 0; i < numberOfProps; i++)
                     {
-                        int numberOfProps = binaryReader.ReadByte();
-                        menuPropStringTemp = menuPropString;
-                        menuPropString = string.Empty;
-
-                        if (numberOfProps != 0)
-                        {
-                            for (int i = 0; i < numberOfProps; i++)
-                            {
-                                menuPropString = $"{menuPropString}\"{binaryReader.ReadString()}\"";
-                            }
-
-                            if (menuPropString != string.Empty)
-                            {
-                                string header = UTY.GetStringCom(menuPropString);
-                                string[] menuProps = UTY.GetStringList(menuPropString);
-
-                                if (header == "end")
-                                {
-                                    break;
-                                }
-                                else if (header == "category")
-                                {
-                                    modItem.Category = menuProps[1];
-                                    if (!accMpn.Contains(modItem.Category)) return false;
-                                }
-                                else if (header == "icons" || header == "icon")
-                                {
-                                    modItem.IconFile = menuProps[1];
-                                    break;
-                                }
-                                else if (header == "priority")
-                                {
-                                    modItem.Priority = float.Parse(menuProps[1]);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        menuPropString = $"{menuPropString}\"{binaryReader.ReadString()}\"";
                     }
-                }
-                catch (Exception e)
-                {
-                    Utility.LogWarning($"Could not parse menu file '{menuFile}' because {e.Message}");
-                    return false;
+
+                    if (string.IsNullOrEmpty(menuPropString)) continue;
+
+                    var header = UTY.GetStringCom(menuPropString);
+                    string[] menuProps = UTY.GetStringList(menuPropString);
+
+                    if (header == "end") break;
+
+                    if (header == "category")
+                    {
+                        modItem.Category = menuProps[1];
+                        if (!accMpn.Contains(modItem.Category)) return;
+                    }
+                    else if (header == "icons" || header == "icon")
+                    {
+                        modItem.IconFile = menuProps[1];
+                        break;
+                    }
+                    else if (header == "priority") modItem.Priority = float.Parse(menuProps[1]);
                 }
             }
-            return true;
+            catch (Exception e)
+            {
+                Utility.LogWarning($"Could not parse menu file '{menuFile}' because {e.Message}");
+            }
         }
 
         public static bool ParseModMenuFile(string modMenuFile, ModItem modItem)
         {
             if (!ValidBG2MenuFile(modMenuFile)) return false;
 
-            byte[] buf = null;
-            try
-            {
-                using (FileStream fileStream = new FileStream(modMenuFile, FileMode.Open))
-                {
-                    if (fileStream == null) return false;
-                    if (fileStream.Length == 0L)
-                    {
-                        Utility.LogError($"Mod menu file '{modMenuFile}' is empty");
-                        return false;
-                    }
-                    buf = new byte[fileStream.Length];
-                    fileStream.Read(buf, 0, (int)fileStream.Length);
-                }
-            }
+            byte[] modBuffer;
+
+            try { modBuffer = ReadOfficialMod(modMenuFile); }
             catch (Exception e)
             {
                 Utility.LogError($"Could not read mod menu file '{modMenuFile} because {e.Message}'");
                 return false;
             }
 
-            if (buf == null) return false;
-
-            using (BinaryReader binaryReader = new BinaryReader(new MemoryStream(buf), Encoding.UTF8))
+            try
             {
-                try
-                {
-                    if (binaryReader.ReadString() != "CM3D2_MOD") return false;
+                using var binaryReader = new BinaryReader(new MemoryStream(modBuffer), Encoding.UTF8);
 
-                    binaryReader.ReadInt32();
-                    string iconName = binaryReader.ReadString();
-                    string baseItemPath = binaryReader.ReadString().Replace(":", " ");
-                    modItem.BaseMenuFile = Path.GetFileName(baseItemPath);
-                    modItem.Name = binaryReader.ReadString();
-                    modItem.Category = binaryReader.ReadString();
-                    if (!accMpn.Contains(modItem.Category)) return false;
-                    binaryReader.ReadString();
-                    string mpnValue = binaryReader.ReadString();
-                    MPN mpn = MPN.null_mpn;
-                    try
-                    {
-                        mpn = (MPN)Enum.Parse(typeof(MPN), mpnValue, true);
-                    }
-                    catch
-                    {
-                        return false;
-                    }
-                    if (mpn != MPN.null_mpn)
-                    {
-                        binaryReader.ReadString();
-                    }
-                    binaryReader.ReadString();
-                    int size = binaryReader.ReadInt32();
+                if (binaryReader.ReadString() != "CM3D2_MOD") return false;
 
-                    for (int i = 0; i < size; i++)
-                    {
-                        string key = binaryReader.ReadString();
-                        int count = binaryReader.ReadInt32();
-                        byte[] data = binaryReader.ReadBytes(count);
-                        if (string.Equals(key, iconName, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            Texture2D tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-                            tex.LoadImage(data);
-                            modItem.Icon = tex;
-                            break;
-                        }
-                    }
-                }
-                catch (Exception e)
+                binaryReader.ReadInt32();
+                var iconName = binaryReader.ReadString();
+                var baseItemPath = binaryReader.ReadString().Replace(":", " ");
+                modItem.BaseMenuFile = Path.GetFileName(baseItemPath);
+                modItem.Name = binaryReader.ReadString();
+                modItem.Category = binaryReader.ReadString();
+                if (!accMpn.Contains(modItem.Category)) return false;
+                binaryReader.ReadString();
+
+                var mpnValue = binaryReader.ReadString();
+                var mpn = MPN.null_mpn;
+                try { mpn = (MPN) Enum.Parse(typeof(MPN), mpnValue, true); }
+                catch { /* ignored */ }
+
+                if (mpn != MPN.null_mpn) binaryReader.ReadString();
+
+                binaryReader.ReadString();
+
+                var entryCount = binaryReader.ReadInt32();
+                for (var i = 0; i < entryCount; i++)
                 {
-                    Utility.LogWarning($"Could not parse mod menu file '{modMenuFile}' because {e}");
-                    return false;
+                    var key = binaryReader.ReadString();
+                    var count = binaryReader.ReadInt32();
+                    byte[] data = binaryReader.ReadBytes(count);
+
+                    if (!string.Equals(key, iconName, StringComparison.InvariantCultureIgnoreCase)) continue;
+
+                    var tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+                    tex.LoadImage(data);
+                    modItem.Icon = tex;
+                    break;
                 }
             }
+            catch (Exception e)
+            {
+                Utility.LogWarning($"Could not parse mod menu file '{modMenuFile}' because {e}");
+                return false;
+            }
+
             return true;
         }
 
         public static bool ValidBG2MenuFile(ModItem modItem)
-        {
-            return accMpn.Contains(modItem.Category) && ValidBG2MenuFile(modItem.MenuFile);
-        }
+            => accMpn.Contains(modItem.Category) && ValidBG2MenuFile(modItem.MenuFile);
 
         public static bool ValidBG2MenuFile(string menu)
         {
@@ -733,8 +503,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             public string Name { get; set; }
             public string Category { get; set; }
             public float Priority { get; set; }
-            public bool IsMod { get; set; }
-            public bool IsOfficialMod { get; set; }
+            public bool IsMod { get; private set; }
+            public bool IsOfficialMod { get; private set; }
 
             public static ModItem OfficialMod(string menuFile) => new ModItem()
             {
@@ -755,13 +525,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             public ModItem(string menuFile) => MenuFile = menuFile;
 
             public override string ToString()
-            {
-                return IsOfficialMod ? $"{Path.GetFileName(MenuFile)}#{BaseMenuFile}" : MenuFile;
-            }
+                => IsOfficialMod ? $"{Path.GetFileName(MenuFile)}#{BaseMenuFile}" : MenuFile;
 
             public static ModItem Deserialize(BinaryReader binaryReader)
-            {
-                return new ModItem()
+                => new ModItem()
                 {
                     MenuFile = binaryReader.ReadNullableString(),
                     BaseMenuFile = binaryReader.ReadNullableString(),
@@ -772,7 +539,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     IsMod = binaryReader.ReadBoolean(),
                     IsOfficialMod = binaryReader.ReadBoolean()
                 };
-            }
 
             public void Serialize(BinaryWriter binaryWriter)
             {
@@ -782,7 +548,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 binaryWriter.WriteNullableString(IconFile);
                 binaryWriter.WriteNullableString(Name);
                 binaryWriter.WriteNullableString(Category);
-                binaryWriter.WriteNullableString(Priority.ToString());
+                binaryWriter.WriteNullableString(Priority.ToString(CultureInfo.InvariantCulture));
                 binaryWriter.Write(IsMod);
                 binaryWriter.Write(IsOfficialMod);
             }
@@ -798,7 +564,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private class ModelInfo
         {
-            public List<MaterialChange> MaterialChanges { get; set; } = new List<MaterialChange>();
+            public List<MaterialChange> MaterialChanges { get; } = new List<MaterialChange>();
             public string ModelFile { get; set; }
         }
 
