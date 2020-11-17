@@ -311,19 +311,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void UndressAll()
         {
             if (!HasActiveMeido) return;
-            undress = Utility.Wrap(undress + 1, 0, 3);
-            TBody.MaskMode maskMode = TBody.MaskMode.None;
-            switch (undress)
-            {
-                case 0: maskMode = TBody.MaskMode.None; break;
-                case 1: maskMode = TBody.MaskMode.Underwear; break;
-                case 2: maskMode = TBody.MaskMode.Nude; break;
-            }
 
-            foreach (Meido activeMeido in ActiveMeidoList)
-            {
-                activeMeido.SetMaskMode(maskMode);
-            }
+            undress = ++undress % Enum.GetNames(typeof(Meido.Mask)).Length;
+
+            foreach (Meido activeMeido in ActiveMeidoList) activeMeido.SetMaskMode((Meido.Mask)undress);
 
             UpdateMeido?.Invoke(ActiveMeido, new MeidoUpdateEventArgs(SelectedMeido));
         }

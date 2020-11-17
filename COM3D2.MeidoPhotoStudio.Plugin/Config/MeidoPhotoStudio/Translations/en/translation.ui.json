@@ -121,7 +121,10 @@
         "curlingFront": "Curl Front",
         "curlingBack": "Curl Rear",
         "shiftPanties": "Shift",
-        "detail": "Detailed Clothing"
+        "detail": "Detailed Clothing",
+        "all": "All",
+        "underwear": "Underwear",
+        "nude": "Nude"
     },
     "gravityControlPane": {
         "hairToggle": "Hair",

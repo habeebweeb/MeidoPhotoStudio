@@ -1,76 +1,86 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using static TBody;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
+    using static Meido;
     public class MaidDressingPane : BasePane
     {
-        public static readonly SlotID[] clothingSlots = {
+        public static readonly SlotID[] ClothingSlots =
+        {
             // main slots
-            SlotID.wear, SlotID.skirt, SlotID.bra, SlotID.panz, SlotID.headset, SlotID.megane,
-            SlotID.accUde, SlotID.glove, SlotID.accSenaka, SlotID.stkg, SlotID.shoes, SlotID.body,
+            SlotID.wear, SlotID.skirt, SlotID.bra, SlotID.panz, SlotID.headset, SlotID.megane, SlotID.accUde,
+            SlotID.glove, SlotID.accSenaka, SlotID.stkg, SlotID.shoes, SlotID.body,
             // detailed slots
-            SlotID.accAshi, SlotID.accHana, SlotID.accHat, SlotID.accHeso, SlotID.accKamiSubL,
-            SlotID.accKamiSubR, SlotID.accKami_1_, SlotID.accKami_2_, SlotID.accKami_3_, SlotID.accKubi,
-            SlotID.accKubiwa, SlotID.accMiMiL, SlotID.accMiMiR, SlotID.accNipL, SlotID.accNipR,
-            SlotID.accShippo, SlotID.accXXX
+            SlotID.accAshi, SlotID.accHana, SlotID.accHat, SlotID.accHeso, SlotID.accKamiSubL, SlotID.accKamiSubR,
+            SlotID.accKami_1_, SlotID.accKami_2_, SlotID.accKami_3_, SlotID.accKubi, SlotID.accKubiwa, SlotID.accMiMiL,
+            SlotID.accMiMiR, SlotID.accNipL, SlotID.accNipR, SlotID.accShippo, SlotID.accXXX
             // unused slots
             // SlotID.mizugi, SlotID.onepiece, SlotID.accHead,
         };
-        public static readonly SlotID[] bodySlots = {
-            SlotID.body, SlotID.head, SlotID.eye, SlotID.hairF, SlotID.hairR,
-            SlotID.hairS, SlotID.hairT, SlotID.hairAho, SlotID.chikubi, SlotID.underhair,
-            SlotID.moza, SlotID.accHa
+
+        public static readonly SlotID[] BodySlots =
+        {
+            SlotID.body, SlotID.head, SlotID.eye, SlotID.hairF, SlotID.hairR, SlotID.hairS, SlotID.hairT,
+            SlotID.hairAho, SlotID.chikubi, SlotID.underhair, SlotID.moza, SlotID.accHa
         };
-        public static readonly SlotID[] wearSlots = {
-            SlotID.wear, SlotID.mizugi, SlotID.onepiece
+
+        public static readonly SlotID[] WearSlots = { SlotID.wear, SlotID.mizugi, SlotID.onepiece };
+
+        public static readonly SlotID[] HeadwearSlots =
+        {
+            SlotID.headset, SlotID.accHat, SlotID.accKamiSubL, SlotID.accKamiSubR, SlotID.accKami_1_,
+            SlotID.accKami_2_, SlotID.accKami_3_
         };
-        public static readonly SlotID[] headwearSlots = {
-            SlotID.headset, SlotID.accHat, SlotID.accKamiSubL,
-            SlotID.accKamiSubR, SlotID.accKami_1_, SlotID.accKami_2_, SlotID.accKami_3_
-        };
+
         private readonly MeidoManager meidoManager;
-        private readonly Dictionary<SlotID, Toggle> ClothingToggles;
-        private readonly Dictionary<SlotID, bool> LoadedSlots;
+        private readonly Dictionary<SlotID, Toggle> clothingToggles;
+        private readonly Dictionary<SlotID, bool> loadedSlots;
         private readonly Toggle detailedClothingToggle;
+        private readonly SelectionGrid maskModeGrid;
         private readonly Toggle curlingFrontToggle;
         private readonly Toggle curlingBackToggle;
         private readonly Toggle pantsuShiftToggle;
         private bool detailedClothing;
+        private static readonly string[] maskLabels = { "all", "underwear", "nude" };
 
         public MaidDressingPane(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
 
-            ClothingToggles = new Dictionary<SlotID, Toggle>(clothingSlots.Length);
-            LoadedSlots = new Dictionary<SlotID, bool>(clothingSlots.Length);
-            foreach (SlotID slot in clothingSlots)
+            clothingToggles = new Dictionary<SlotID, Toggle>(ClothingSlots.Length);
+            loadedSlots = new Dictionary<SlotID, bool>(ClothingSlots.Length);
+            foreach (SlotID slot in ClothingSlots)
             {
-                Toggle slotToggle = new Toggle(Translation.Get("clothing", slot.ToString()));
+                var slotToggle = new Toggle(Translation.Get("clothing", slot.ToString()));
                 slotToggle.ControlEvent += (s, a) => ToggleClothing(slot, slotToggle.Value);
-                ClothingToggles.Add(slot, slotToggle);
-                LoadedSlots[slot] = true;
+                clothingToggles.Add(slot, slotToggle);
+                loadedSlots[slot] = true;
             }
 
             detailedClothingToggle = new Toggle(Translation.Get("clothing", "detail"));
             detailedClothingToggle.ControlEvent += (s, a) => UpdateDetailedClothing();
 
             curlingFrontToggle = new Toggle(Translation.Get("clothing", "curlingFront"));
-            curlingFrontToggle.ControlEvent += (s, a) => ToggleCurling(Meido.Curl.front, curlingFrontToggle.Value);
+            curlingFrontToggle.ControlEvent += (s, a) => ToggleCurling(Curl.Front, curlingFrontToggle.Value);
             curlingBackToggle = new Toggle(Translation.Get("clothing", "curlingBack"));
-            curlingBackToggle.ControlEvent += (s, a) => ToggleCurling(Meido.Curl.back, curlingBackToggle.Value);
+            curlingBackToggle.ControlEvent += (s, a) => ToggleCurling(Curl.Back, curlingBackToggle.Value);
             pantsuShiftToggle = new Toggle(Translation.Get("clothing", "shiftPanties"));
-            pantsuShiftToggle.ControlEvent += (s, a) => ToggleCurling(Meido.Curl.shift, pantsuShiftToggle.Value);
+            pantsuShiftToggle.ControlEvent += (s, a) => ToggleCurling(Curl.Shift, pantsuShiftToggle.Value);
+
+            maskModeGrid = new SelectionGrid(Translation.GetArray("clothing", maskLabels));
+            maskModeGrid.ControlEvent += (s, a) => SetMaskMode((Mask)maskModeGrid.SelectedItemIndex);
 
             UpdateDetailedClothing();
         }
 
         protected override void ReloadTranslation()
         {
-            foreach (SlotID slot in clothingSlots)
+            foreach (SlotID slot in ClothingSlots)
             {
-                Toggle clothingToggle = ClothingToggles[slot];
+                Toggle clothingToggle = clothingToggles[slot];
                 if (slot == SlotID.headset)
                 {
                     clothingToggle.Label = detailedClothing
@@ -80,13 +90,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 else clothingToggle.Label = Translation.Get("clothing", slot.ToString());
             }
 
+            updating = true;
+            maskModeGrid.SetItems(Translation.GetArray("clothing", maskLabels));
+            updating = false;
+
             detailedClothingToggle.Label = Translation.Get("clothing", "detail");
             curlingFrontToggle.Label = Translation.Get("clothing", "curlingFront");
             curlingBackToggle.Label = Translation.Get("clothing", "curlingBack");
             pantsuShiftToggle.Label = Translation.Get("clothing", "shiftPanties");
         }
 
-        public void ToggleClothing(SlotID slot, bool enabled)
+        private void ToggleClothing(SlotID slot, bool enabled)
         {
             if (updating) return;
 
@@ -101,10 +115,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (!detailedClothing && slot == SlotID.headset)
             {
                 updating = true;
-                foreach (SlotID wearSlot in headwearSlots)
+                foreach (SlotID wearSlot in HeadwearSlots)
                 {
                     body.SetMask(wearSlot, enabled);
-                    ClothingToggles[wearSlot].Value = enabled;
+                    clothingToggles[wearSlot].Value = enabled;
                 }
                 updating = false;
             }
@@ -112,10 +126,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 if (slot == SlotID.wear)
                 {
-                    foreach (SlotID wearSlot in wearSlots)
-                    {
-                        body.SetMask(wearSlot, enabled);
-                    }
+                    foreach (SlotID wearSlot in WearSlots) body.SetMask(wearSlot, enabled);
                 }
                 else if (slot == SlotID.megane)
                 {
@@ -126,25 +137,28 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        public void ToggleCurling(Meido.Curl curl, bool enabled)
+        private void ToggleCurling(Curl curl, bool enabled)
         {
             if (updating) return;
 
             meidoManager.ActiveMeido.SetCurling(curl, enabled);
 
-            if (enabled)
-            {
-                updating = true;
-                if (curl == Meido.Curl.front && curlingBackToggle.Value)
-                {
-                    curlingBackToggle.Value = false;
-                }
-                else if (curl == Meido.Curl.back && curlingFrontToggle.Value)
-                {
-                    curlingFrontToggle.Value = false;
-                }
-                updating = false;
-            }
+            if (!enabled) return;
+
+            updating = true;
+            if (curl == Curl.Front && curlingBackToggle.Value) curlingBackToggle.Value = false;
+            else if (curl == Curl.Back && curlingFrontToggle.Value) curlingFrontToggle.Value = false;
+
+            updating = false;
+        }
+
+        private void SetMaskMode(Mask mask)
+        {
+            if (updating) return;
+
+            meidoManager.ActiveMeido.SetMaskMode(mask);
+
+            UpdatePane();
         }
 
         public override void UpdatePane()
@@ -155,13 +169,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             Meido meido = meidoManager.ActiveMeido;
             TBody body = meido.Maid.body0;
-            foreach (SlotID clothingSlot in clothingSlots)
+
+            foreach (SlotID clothingSlot in ClothingSlots)
             {
-                bool toggleValue = false;
-                bool hasSlot = false;
+                var toggleValue = false;
+                var hasSlot = false;
                 if (clothingSlot == SlotID.wear)
                 {
-                    foreach (SlotID wearSlot in wearSlots)
+                    foreach (SlotID wearSlot in WearSlots)
                     {
                         if (body.GetMask(wearSlot)) toggleValue = true;
                         if (body.GetSlotLoaded(wearSlot)) hasSlot = true;
@@ -175,7 +190,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
                 else if (!detailedClothing && clothingSlot == SlotID.headset)
                 {
-                    foreach (SlotID headwearSlot in headwearSlots)
+                    foreach (SlotID headwearSlot in HeadwearSlots)
                     {
                         if (body.GetMask(headwearSlot)) toggleValue = true;
                         if (body.GetSlotLoaded(headwearSlot)) hasSlot = true;
@@ -188,13 +203,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     hasSlot = body.GetSlotLoaded(clothingSlot);
                 }
 
-                ClothingToggles[clothingSlot].Value = hasSlot && toggleValue;
-                LoadedSlots[clothingSlot] = hasSlot;
+                clothingToggles[clothingSlot].Value = hasSlot && toggleValue;
+                loadedSlots[clothingSlot] = hasSlot;
             }
 
             curlingFrontToggle.Value = meido.CurlingFront;
             curlingBackToggle.Value = meido.CurlingBack;
             pantsuShiftToggle.Value = meido.PantsuShift;
+
+            MaskMode maskMode = meido.CurrentMaskMode;
+
+            maskModeGrid.SelectedItemIndex = maskMode == MaskMode.Nude ? (int)Mask.Nude : (int)maskMode;
 
             updating = false;
         }
@@ -202,20 +221,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void DrawSlotGroup(params SlotID[] slots)
         {
             GUILayout.BeginHorizontal();
-            for (int i = 0; i < slots.Length; i++)
+            for (var i = 0; i < slots.Length; i++)
             {
                 SlotID slot = slots[i];
-                GUI.enabled = Enabled && LoadedSlots[slot];
-                ClothingToggles[slot].Draw();
+                GUI.enabled = Enabled && loadedSlots[slot];
+                clothingToggles[slot].Draw();
                 if (i < slots.Length - 1) GUILayout.FlexibleSpace();
             }
             GUILayout.EndHorizontal();
+
+            GUI.enabled = Enabled;
         }
 
         private void UpdateDetailedClothing()
         {
             detailedClothing = detailedClothingToggle.Value;
-            ClothingToggles[SlotID.headset].Label = detailedClothing
+            clothingToggles[SlotID.headset].Label = detailedClothing
                 ? Translation.Get("clothing", "headset")
                 : Translation.Get("clothing", "headwear");
             UpdatePane();
@@ -223,10 +244,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw()
         {
-            Enabled = meidoManager.HasActiveMeido;
+            GUI.enabled = Enabled = meidoManager.HasActiveMeido;
 
-            GUI.enabled = Enabled;
             detailedClothingToggle.Draw();
+
+            MpsGui.BlackLine();
+
+            maskModeGrid.Draw();
+
             MpsGui.BlackLine();
 
             DrawSlotGroup(SlotID.wear, SlotID.skirt);
@@ -247,7 +272,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 DrawSlotGroup(SlotID.accHeso, SlotID.accAshi, SlotID.accXXX);
             }
 
-            GUI.enabled = Enabled;
+            MpsGui.BlackLine();
 
             GUILayout.BeginHorizontal();
             curlingFrontToggle.Draw();

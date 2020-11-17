@@ -1,11 +1,12 @@
 using System;
 using System.IO;
 using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
 using static TBody;
-using System.Collections.Generic;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -13,6 +14,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private bool initialized;
         private float[] BlendSetValueBackup;
+        private readonly FieldInfo m_eMaskMode = Utility.GetFieldInfo<TBody>("m_eMaskMode");
+        public MaskMode CurrentMaskMode => !Body.isLoadedBody ? default : (MaskMode) m_eMaskMode.GetValue(Body);
         public DragPointGravity HairGravityControl { get; private set; }
         public DragPointGravity SkirtGravityControl { get; private set; }
         public bool HairGravityActive
@@ -38,8 +41,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
         public const int meidoDataVersion = 1000;
-        public static readonly PoseInfo DefaultPose =
-            new PoseInfo(Constants.PoseGroupList[0], Constants.PoseDict[Constants.PoseGroupList[0]][0]);
         public static readonly string defaultFaceBlendSet = "通常";
         public static readonly string[] faceKeys = new string[24]
         {
@@ -56,10 +57,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             // cry 1, cry 2, cry 3, blush 1, blush 2, blush 3
             "tear1", "tear2", "tear3", "hohos", "hoho", "hohol"
         };
-        public enum Curl
-        {
-            front, back, shift
-        }
+        public enum Curl { Front, Back, Shift }
+        public enum Mask { All, Underwear, Nude }
         public event EventHandler<MeidoUpdateEventArgs> UpdateMeido;
         public int StockNo { get; }
         public Maid Maid { get; }
@@ -595,6 +594,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Utility.SetFieldValue(Maid, "MabatakiVal", 0f);
         }
 
+        public void SetMaskMode(Mask maskMode)
+            => SetMaskMode(maskMode == Mask.Nude ? MaskMode.Nude : (MaskMode) maskMode);
+
         public void SetMaskMode(MaskMode maskMode)
         {
             bool invisibleBody = !Body.GetMask(SlotID.body);
@@ -605,28 +607,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SetBodyMask(bool enabled)
         {
             Hashtable table = Utility.GetFieldValue<TBody, Hashtable>(Body, "m_hFoceHide");
-            foreach (SlotID bodySlot in MaidDressingPane.bodySlots)
-            {
-                table[bodySlot] = enabled;
-            }
-            if (Body.goSlot[19].m_strModelFileName.Contains("melala_body"))
-            {
-                table[SlotID.accHana] = enabled;
-            }
+            foreach (SlotID bodySlot in MaidDressingPane.BodySlots) table[bodySlot] = enabled;
             Body.FixMaskFlag();
             Body.FixVisibleFlag(false);
         }
 
         public void SetCurling(Curl curling, bool enabled)
         {
-            string[] name = curling == Curl.shift
+            string[] name = curling == Curl.Shift
                 ? new[] { "panz", "mizugi" }
                 : new[] { "skirt", "onepiece" };
             if (enabled)
             {
-                string action = curling == Curl.shift
-                    ? "パンツずらし" : curling == Curl.front
-                        ? "めくれスカート" : "めくれスカート後ろ";
+                var action = curling switch
+                {
+                    Curl.Shift => "パンツずらし",
+                    Curl.Front => "めくれスカート",
+                    _ => "めくれスカート後ろ"
+                };
                 Maid.ItemChangeTemp(name[0], action);
                 Maid.ItemChangeTemp(name[1], action);
             }
@@ -749,6 +747,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     tempWriter.WriteVector3(Body.offsetLookTarget);
                     tempWriter.WriteVector3(Utility.GetFieldValue<TBody, Vector3>(Body, "HeadEulerAngle"));
                 }
+
                 // Head/eye to camera
                 tempWriter.Write(HeadToCam);
                 tempWriter.Write(EyeToCam);
@@ -757,14 +756,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 // body visible
                 tempWriter.Write(Body.GetMask(SlotID.body));
                 // clothing
-                foreach (SlotID clothingSlot in MaidDressingPane.clothingSlots)
+                foreach (SlotID clothingSlot in MaidDressingPane.ClothingSlots)
                 {
                     bool value = true;
                     if (clothingSlot == SlotID.wear)
                     {
-                        if (MaidDressingPane.wearSlots.Any(slot => Body.GetSlotLoaded(slot)))
+                        if (MaidDressingPane.WearSlots.Any(slot => Body.GetSlotLoaded(slot)))
                         {
-                            value = MaidDressingPane.wearSlots.Any(slot => Body.GetMask(slot));
+                            value = MaidDressingPane.WearSlots.Any(slot => Body.GetMask(slot));
                         }
                     }
                     else if (clothingSlot == SlotID.megane)
@@ -775,12 +774,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                             value = slots.Any(slot => Body.GetMask(slot));
                         }
                     }
-                    else if (Body.GetSlotLoaded(clothingSlot))
-                    {
-                        value = Body.GetMask(clothingSlot);
-                    }
+                    else if (Body.GetSlotLoaded(clothingSlot)) { value = Body.GetMask(clothingSlot); }
+
                     tempWriter.Write(value);
                 }
+
                 // hair/skirt gravity
                 tempWriter.Write(HairGravityActive);
                 if (HairGravityActive) tempWriter.WriteVector3(HairGravityControl.Control.transform.localPosition);
@@ -872,7 +870,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             // body visible
             SetBodyMask(binaryReader.ReadBoolean());
             // clothing
-            foreach (SlotID clothingSlot in MaidDressingPane.clothingSlots)
+            foreach (SlotID clothingSlot in MaidDressingPane.ClothingSlots)
             {
                 bool value = binaryReader.ReadBoolean();
                 if (mmScene) continue;
@@ -912,9 +910,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bool curlingPantsu = binaryReader.ReadBoolean();
             if (!mmScene)
             {
-                if (CurlingFront != curlingFront) SetCurling(Curl.front, curlingFront);
-                if (CurlingBack != curlingBack) SetCurling(Curl.back, curlingBack);
-                SetCurling(Curl.shift, curlingPantsu);
+                if (CurlingFront != curlingFront) SetCurling(Curl.Front, curlingFront);
+                if (CurlingBack != curlingBack) SetCurling(Curl.Back, curlingBack);
+                SetCurling(Curl.Shift, curlingPantsu);
             }
 
             bool hasKousokuUpper = binaryReader.ReadBoolean();
