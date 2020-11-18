@@ -66,7 +66,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public MeidoDragPointManager IKManager { get; }
         public Texture2D Portrait => Maid.GetThumIcon();
         public bool IsEditMaid { get; set; }
-        public PoseInfo CachedPose { get; private set; } = DefaultPose;
+        public PoseInfo CachedPose { get; private set; } = PoseInfo.DefaultPose;
         public string CurrentFaceBlendSet { get; private set; } = defaultFaceBlendSet;
         public int Slot { get; private set; }
         public bool Loading { get; private set; }
