@@ -13,8 +13,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly UILabel nameLabel;
         private readonly GameObject msgGameObject;
         public bool ShowingMessage { get; private set; }
-        private string messageName;
-        private string messageText;
+        private string messageName = string.Empty;
+        private string messageText = string.Empty;
+        public int FontSize
+        {
+            get => msgLabel.fontSize;
+            set => msgLabel.fontSize = (int)Mathf.Clamp(value, fontBounds.Left, fontBounds.Right);
+        }
 
         static MessageWindowManager()
         {
@@ -27,9 +32,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             msgWnd = GameMain.Instance.MsgWnd;
             msgGameObject = sysRoot.transform.Find("MessageWindowPanel").gameObject;
             msgClass = new MessageClass(msgGameObject, msgWnd);
-            nameLabel = UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/SpeakerName/Name", false)
+            nameLabel = UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/SpeakerName/Name")
                 .GetComponent<UILabel>();
-            msgLabel = UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/Message", false)
+            msgLabel = UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/Message")
                 .GetComponent<UILabel>();
             Utility.SetFieldValue(msgClass, "message_label_", msgLabel);
             Utility.SetFieldValue(msgClass, "name_label_", nameLabel);
@@ -48,7 +53,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             binaryWriter.Write(header);
             binaryWriter.Write(ShowingMessage);
-            binaryWriter.Write(msgLabel.fontSize);
+            binaryWriter.Write(FontSize);
             binaryWriter.WriteNullableString(messageName);
             binaryWriter.WriteNullableString(messageText);
         }
@@ -56,8 +61,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Deserialize(System.IO.BinaryReader binaryReader)
         {
             CloseMessagePanel();
-            bool showingMessage = binaryReader.ReadBoolean();
-            msgLabel.fontSize = binaryReader.ReadInt32();
+            var showingMessage = binaryReader.ReadBoolean();
+            FontSize = binaryReader.ReadInt32();
             messageName = binaryReader.ReadNullableString();
             messageText = binaryReader.ReadNullableString();
             if (showingMessage) ShowMessage(messageName, messageText);
@@ -67,15 +72,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void SetPhotoMessageWindowActive(bool active)
         {
-            UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/MessageBox", false)
-                .SetActive(active);
-            UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/Hitret", false)
+            UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/MessageBox").SetActive(active);
+            UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/Hitret")
                 .GetComponent<UISprite>().enabled = !active;
             nameLabel.gameObject.SetActive(active);
             msgLabel.gameObject.SetActive(active);
 
             Transform transform = sysRoot.transform.Find("MessageWindowPanel/MessageViewer/MsgParent/Buttons");
-            MessageWindowMgr.MessageWindowUnderButton[] msgButtons = new[]
+            var msgButtons = new[]
             {
                 MessageWindowMgr.MessageWindowUnderButton.Skip,
                 MessageWindowMgr.MessageWindowUnderButton.Auto,
@@ -87,11 +91,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 transform.Find(msgButton.ToString()).gameObject.SetActive(!active);
             }
-            if (msgClass.subtitles_manager_ != null)
-            {
-                msgClass.subtitles_manager_.visible = false;
-                msgClass.subtitles_manager_ = null;
-            }
+
+            if (!msgClass.subtitles_manager_) return;
+
+            msgClass.subtitles_manager_.visible = false;
+            msgClass.subtitles_manager_ = null;
         }
 
         public void ShowMessage(string name, string message)
@@ -104,8 +108,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             msgClass.SetText(name, message, "", 0, AudioSourceMgr.Type.System);
             msgClass.FinishChAnime();
         }
-
-        public void SetFontSize(int fontSize) => msgLabel.fontSize = fontSize;
 
         public void CloseMessagePanel()
         {

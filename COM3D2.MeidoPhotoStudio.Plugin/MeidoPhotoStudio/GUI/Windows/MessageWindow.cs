@@ -52,7 +52,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void ChangeFontSize(object sender, EventArgs args)
         {
             fontSize = (int)fontSizeSlider.Value;
-            messageWindowManager.SetFontSize(fontSize);
+            messageWindowManager.FontSize = fontSize;
         }
 
         private void ShowMessage(object sender, EventArgs args)
