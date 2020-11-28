@@ -15,7 +15,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.environmentManager = environmentManager;
 
-            int theaterIndex = Constants.BGList.FindIndex(bg => bg == "Theater");
+            int theaterIndex = Constants.BGList.FindIndex(bg => bg == EnvironmentManager.defaultBg);
 
             List<string> bgList = new List<string>(Translation.GetList("bgNames", Constants.BGList));
             if (Constants.MyRoomCustomBGIndex >= 0)

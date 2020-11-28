@@ -232,6 +232,41 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
     }
 
+    public static class CameraUtility
+    {
+        public static CameraMain MainCamera => GameMain.Instance.MainCamera;
+        public static UltimateOrbitCamera UOCamera { get; } =
+            GameMain.Instance.MainCamera.GetComponent<UltimateOrbitCamera>();
+
+        public static void ApplyInfo(this CameraMain camera, CameraInfo info, bool stop = false)
+        {
+            camera.SetTargetPos(info.TargetPos);
+            camera.SetDistance(info.Distance);
+            camera.transform.rotation = info.Angle;
+            if (stop) StopAll();
+        }
+
+        public static CameraInfo GetInfo(this CameraMain camera, bool stop = false)
+        {
+            if (stop) StopAll();
+            return new CameraInfo(camera);
+        }
+
+        public static void StopSpin()
+        {
+            Utility.SetFieldValue(UOCamera, "xVelocity", 0f);
+            Utility.SetFieldValue(UOCamera, "yVelocity", 0f);
+        }
+
+        public static void StopMovement() => MainCamera.SetTargetPos(MainCamera.GetTargetPos());
+
+        public static void StopAll()
+        {
+            StopSpin();
+            StopMovement();
+        }
+    }
+
     public static class BinaryExtensions
     {
         public static string ReadNullableString(this BinaryReader binaryReader)
@@ -243,6 +278,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             binaryWriter.Write(str != null);
             if (str != null) binaryWriter.Write(str);
+        }
+
+        public static void Write(this BinaryWriter binaryWriter, Vector3 vector3)
+        {
+            binaryWriter.Write(vector3.x);
+            binaryWriter.Write(vector3.y);
+            binaryWriter.Write(vector3.z);
         }
 
         public static void WriteVector3(this BinaryWriter binaryWriter, Vector3 vector3)
@@ -272,6 +314,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             );
         }
 
+        public static void Write(this BinaryWriter binaryWriter, Quaternion quaternion)
+        {
+            binaryWriter.Write(quaternion.x);
+            binaryWriter.Write(quaternion.y);
+            binaryWriter.Write(quaternion.z);
+            binaryWriter.Write(quaternion.w);
+        }
+
         public static void WriteQuaternion(this BinaryWriter binaryWriter, Quaternion quaternion)
         {
             binaryWriter.Write(quaternion.x);
@@ -287,6 +337,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 binaryReader.ReadSingle(), binaryReader.ReadSingle(),
                 binaryReader.ReadSingle(), binaryReader.ReadSingle()
             );
+        }
+
+        public static void Write(this BinaryWriter binaryWriter, Color colour)
+        {
+            binaryWriter.Write(colour.r);
+            binaryWriter.Write(colour.g);
+            binaryWriter.Write(colour.b);
+            binaryWriter.Write(colour.a);
         }
 
         public static void WriteColour(this BinaryWriter binaryWriter, Color colour)

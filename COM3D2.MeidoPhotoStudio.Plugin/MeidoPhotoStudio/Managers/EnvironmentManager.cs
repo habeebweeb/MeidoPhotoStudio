@@ -1,6 +1,8 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -8,18 +10,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     public class EnvironmentManager : IManager, ISerializable
     {
         private static readonly BgMgr bgMgr = GameMain.Instance.BgMgr;
+        private static readonly CameraMain mainCamera = CameraUtility.MainCamera;
+        private static readonly UltimateOrbitCamera ultimateOrbitCamera = CameraUtility.UOCamera;
         public const string header = "ENVIRONMENT";
+        public const string defaultBg = "Theater";
+        private const string myRoomPrefix = "マイルーム:";
         private static bool cubeActive;
         public static bool CubeActive
         {
             get => cubeActive;
             set
             {
-                if (value != cubeActive)
-                {
-                    cubeActive = value;
-                    CubeActiveChange?.Invoke(null, EventArgs.Empty);
-                }
+                if (value == cubeActive) return;
+                cubeActive = value;
+                CubeActiveChange?.Invoke(null, EventArgs.Empty);
             }
         }
         private static bool cubeSmall;
@@ -28,23 +32,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => cubeSmall;
             set
             {
-                if (value != cubeSmall)
-                {
-                    cubeSmall = value;
-                    CubeSmallChange?.Invoke(null, EventArgs.Empty);
-                }
+                if (value == cubeSmall) return;
+                cubeSmall = value;
+                CubeSmallChange?.Invoke(null, EventArgs.Empty);
             }
         }
         private static event EventHandler CubeActiveChange;
         private static event EventHandler CubeSmallChange;
-        private UltimateOrbitCamera ultimateOrbitCamera;
         private GameObject cameraObject;
         private Camera subCamera;
         private GameObject bgObject;
         private Transform bg;
-        private CameraInfo cameraInfo;
         private DragPointBG bgDragPoint;
-        private string currentBGAsset = "Theater";
+        private string currentBGAsset = defaultBg;
         private bool bgVisible = true;
         public bool BGVisible
         {
@@ -58,7 +58,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private float defaultCameraMoveSpeed;
         private float defaultCameraZoomSpeed;
         private const float cameraFastMoveSpeed = 0.1f;
-        private const float cameraFastZoomSpeed = 2f;
+        private const float cameraFastZoomSpeed = 3f;
+        private CameraInfo tempCameraInfo;
 
         static EnvironmentManager()
         {
@@ -74,9 +75,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Activate();
         }
 
-        public void Serialize(System.IO.BinaryWriter binaryWriter) => Serialize(binaryWriter, false);
+        public void Serialize(BinaryWriter binaryWriter) => Serialize(binaryWriter, false);
 
-        public void Serialize(System.IO.BinaryWriter binaryWriter, bool kankyo)
+        public void Serialize(BinaryWriter binaryWriter, bool kankyo)
         {
             binaryWriter.Write(header);
             binaryWriter.Write(currentBGAsset);
@@ -86,29 +87,29 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             binaryWriter.Write(kankyo);
 
-            CameraMain camera = GameMain.Instance.MainCamera;
-            binaryWriter.WriteVector3(camera.GetTargetPos());
-            binaryWriter.Write(camera.GetDistance());
-            binaryWriter.WriteQuaternion(camera.transform.rotation);
-            StopCameraSpin();
+            binaryWriter.WriteVector3(mainCamera.GetTargetPos());
+            binaryWriter.Write(mainCamera.GetDistance());
+            binaryWriter.WriteQuaternion(mainCamera.transform.rotation);
+
+            CameraUtility.StopAll();
         }
 
-        public void Deserialize(System.IO.BinaryReader binaryReader)
+        public void Deserialize(BinaryReader binaryReader)
         {
-            string bgAsset = binaryReader.ReadString();
-            bool isCreative = Utility.IsGuidString(bgAsset);
-            System.Collections.Generic.List<string> bgList = isCreative
+            var bgAsset = binaryReader.ReadString();
+            var isCreative = Utility.IsGuidString(bgAsset);
+            List<string> bgList = isCreative
                 ? Constants.MyRoomCustomBGList.ConvertAll(kvp => kvp.Key)
                 : Constants.BGList;
 
-            int assetIndex = bgList.FindIndex(
+            var assetIndex = bgList.FindIndex(
                 asset => asset.Equals(bgAsset, StringComparison.InvariantCultureIgnoreCase)
             );
             if (assetIndex < 0)
             {
                 Utility.LogWarning($"Could not load BG '{bgAsset}'");
                 isCreative = false;
-                bgAsset = "Theater";
+                bgAsset = defaultBg;
             }
             else bgAsset = bgList[assetIndex];
 
@@ -117,20 +118,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bg.rotation = binaryReader.ReadQuaternion();
             bg.localScale = binaryReader.ReadVector3();
 
-            bool kankyo = binaryReader.ReadBoolean();
+            var kankyo = binaryReader.ReadBoolean();
 
             Vector3 cameraPosition = binaryReader.ReadVector3();
-            float cameraDistance = binaryReader.ReadSingle();
+            var cameraDistance = binaryReader.ReadSingle();
             Quaternion cameraRotation = binaryReader.ReadQuaternion();
 
-            if (!kankyo)
-            {
-                CameraMain camera = GameMain.Instance.MainCamera;
-                camera.SetTargetPos(cameraPosition);
-                camera.SetDistance(cameraDistance);
-                camera.transform.rotation = cameraRotation;
-                StopCameraSpin();
-            }
+            if (kankyo) return;
+
+            mainCamera.SetTargetPos(cameraPosition);
+            mainCamera.SetDistance(cameraDistance);
+            mainCamera.transform.rotation = cameraRotation;
+            CameraUtility.StopAll();
         }
 
         public void Activate()
@@ -142,18 +141,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             cameraObject = new GameObject("subCamera");
             subCamera = cameraObject.AddComponent<Camera>();
-            subCamera.CopyFrom(Camera.main);
+            subCamera.CopyFrom(mainCamera.camera);
             subCamera.clearFlags = CameraClearFlags.Depth;
             subCamera.cullingMask = 256;
             subCamera.depth = 1f;
-            subCamera.transform.parent = GameMain.Instance.MainCamera.transform;
+            subCamera.transform.parent = mainCamera.transform;
 
             cameraObject.SetActive(true);
 
             bgObject.SetActive(true);
 
-            ultimateOrbitCamera =
-                Utility.GetFieldValue<CameraMain, UltimateOrbitCamera>(GameMain.Instance.MainCamera, "m_UOCamera");
             ultimateOrbitCamera.enabled = true;
 
             defaultCameraMoveSpeed = ultimateOrbitCamera.moveSpeed;
@@ -162,11 +159,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (!MeidoPhotoStudio.EditMode)
             {
                 ResetCamera();
-                ChangeBackground("Theater");
+                ChangeBackground(defaultBg);
             }
             else UpdateBG();
 
-            SaveCameraInfo();
+            SaveTempCamera();
 
             CubeSmallChange += OnCubeSmall;
             CubeActiveChange += OnCubeActive;
@@ -176,30 +173,28 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             BgMgrPatcher.ChangeBgBegin -= OnChangeBegin;
             BgMgrPatcher.ChangeBgEnd -= OnChangeEnd;
+
             DestroyDragPoint();
-            GameObject.Destroy(cameraObject);
-            GameObject.Destroy(subCamera);
+            Object.Destroy(cameraObject);
+            Object.Destroy(subCamera);
 
             BGVisible = true;
-
-            Camera mainCamera = GameMain.Instance.MainCamera.camera;
-            mainCamera.backgroundColor = Color.black;
+            mainCamera.camera.backgroundColor = Color.black;
 
             ultimateOrbitCamera.moveSpeed = defaultCameraMoveSpeed;
             ultimateOrbitCamera.zoomSpeed = defaultCameraZoomSpeed;
 
-            if (MeidoPhotoStudio.EditMode) bgMgr.ChangeBg("Theater");
+            if (MeidoPhotoStudio.EditMode) bgMgr.ChangeBg(defaultBg);
             else
             {
-                bool isNight = GameMain.Instance.CharacterMgr.status.GetFlag("時間帯") == 3;
+                var isNight = GameMain.Instance.CharacterMgr.status.GetFlag("時間帯") == 3;
 
-                if (isNight) bgMgr.ChangeBg("ShinShitsumu_ChairRot_Night");
-                else bgMgr.ChangeBg("ShinShitsumu_ChairRot");
+                bgMgr.ChangeBg(isNight ? "ShinShitsumu_ChairRot_Night" : "ShinShitsumu_ChairRot");
 
-                GameMain.Instance.MainCamera.Reset(CameraMain.CameraType.Target, true);
-                GameMain.Instance.MainCamera.SetTargetPos(new Vector3(0.5609447f, 1.380762f, -1.382336f), true);
-                GameMain.Instance.MainCamera.SetDistance(1.6f, true);
-                GameMain.Instance.MainCamera.SetAroundAngle(new Vector2(245.5691f, 6.273283f), true);
+                mainCamera.Reset(CameraMain.CameraType.Target, true);
+                mainCamera.SetTargetPos(new Vector3(0.5609447f, 1.380762f, -1.382336f));
+                mainCamera.SetDistance(1.6f);
+                mainCamera.SetAroundAngle(new Vector2(245.5691f, 6.273283f));
             }
 
             if (bgMgr.BgObject) bgMgr.BgObject.transform.localScale = Vector3.one;
@@ -212,23 +207,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (Input.GetKey(MpsKey.CameraLayer))
             {
-                if (Input.GetKeyDown(MpsKey.CameraSave))
-                {
-                    SaveCameraInfo();
-                }
-
-                if (Input.GetKeyDown(MpsKey.CameraLoad))
-                {
-                    LoadCameraInfo(cameraInfo);
-                }
-
-                if (Input.GetKeyDown(MpsKey.CameraReset))
-                {
-                    ResetCamera();
-                }
+                if (Input.GetKeyDown(MpsKey.CameraSave)) SaveTempCamera();
+                else if (Input.GetKeyDown(MpsKey.CameraLoad)) LoadCameraInfo(tempCameraInfo);
+                else if (Input.GetKeyDown(MpsKey.CameraReset)) ResetCamera();
             }
 
-            bool shift = Input.Shift;
+            var shift = Input.Shift;
             ultimateOrbitCamera.moveSpeed = shift ? cameraFastMoveSpeed : defaultCameraMoveSpeed;
             ultimateOrbitCamera.zoomSpeed = shift ? cameraFastZoomSpeed : defaultCameraZoomSpeed;
         }
@@ -239,11 +223,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             else bgMgr.ChangeBg(assetName);
         }
 
-        private void AttachDragPoint(Transform bgObject)
+        private void AttachDragPoint(Transform bgTransform)
         {
             bgDragPoint = DragPoint.Make<DragPointBG>(PrimitiveType.Cube, Vector3.one * 0.12f);
-            bgDragPoint.Initialize(() => bgObject.position, () => Vector3.zero);
-            bgDragPoint.Set(bgObject);
+            bgDragPoint.Initialize(() => bgTransform.position, () => Vector3.zero);
+            bgDragPoint.Set(bgTransform);
             bgDragPoint.AddGizmo();
             bgDragPoint.ConstantScale = true;
             bgDragPoint.gameObject.SetActive(CubeActive);
@@ -258,50 +242,26 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (!bgMgr.BgObject) return;
 
             currentBGAsset = bgMgr.GetBGName();
-            if (currentBGAsset.StartsWith("マイルーム:"))
-            {
-                currentBGAsset = currentBGAsset.Replace("マイルーム:", string.Empty);
-            }
+            if (currentBGAsset.StartsWith(myRoomPrefix))
+                currentBGAsset = currentBGAsset.Replace(myRoomPrefix, string.Empty);
             bg = bgMgr.BgObject.transform;
             AttachDragPoint(bg);
         }
 
         private void DestroyDragPoint()
         {
-            if (bgDragPoint) GameObject.Destroy(bgDragPoint.gameObject);
+            if (bgDragPoint) Object.Destroy(bgDragPoint.gameObject);
         }
 
-        private void SaveCameraInfo()
-        {
-            cameraInfo = new CameraInfo(GameMain.Instance.MainCamera);
-            StopCameraSpin();
-        }
+        private void SaveTempCamera() => tempCameraInfo = mainCamera.GetInfo(true);
 
-        public void LoadCameraInfo(CameraInfo cameraInfo)
-        {
-            CameraMain camera = GameMain.Instance.MainCamera;
-            camera.SetTargetPos(cameraInfo.TargetPos);
-            camera.SetPos(cameraInfo.Pos);
-            camera.SetDistance(cameraInfo.Distance);
-            camera.transform.eulerAngles = cameraInfo.Angle;
-            StopCameraSpin();
-        }
-
-        private void StopCameraSpin()
-        {
-            UltimateOrbitCamera uoCamera = Utility.GetFieldValue<CameraMain, UltimateOrbitCamera>(
-                GameMain.Instance.MainCamera, "m_UOCamera"
-            );
-            Utility.SetFieldValue(uoCamera, "xVelocity", 0f);
-            Utility.SetFieldValue(uoCamera, "yVelocity", 0f);
-        }
+        public void LoadCameraInfo(CameraInfo info) => mainCamera.ApplyInfo(info, true);
 
         private void ResetCamera()
         {
-            CameraMain cameraMain = GameMain.Instance.MainCamera;
-            cameraMain.Reset(CameraMain.CameraType.Target, true);
-            cameraMain.SetTargetPos(new Vector3(0f, 0.9f, 0f), true);
-            cameraMain.SetDistance(3f, true);
+            mainCamera.Reset(CameraMain.CameraType.Target, true);
+            mainCamera.SetTargetPos(new Vector3(0f, 0.9f, 0f));
+            mainCamera.SetDistance(3f);
         }
 
         private void OnCubeSmall(object sender, EventArgs args)
@@ -318,15 +278,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     public readonly struct CameraInfo
     {
         public Vector3 TargetPos { get; }
-        public Vector3 Pos { get; }
-        public Vector3 Angle { get; }
+        public Quaternion Angle { get; }
         public float Distance { get; }
 
         public CameraInfo(CameraMain camera)
         {
             TargetPos = camera.GetTargetPos();
-            Pos = camera.GetPos();
-            Angle = camera.transform.eulerAngles;
+            Angle = camera.transform.rotation;
             Distance = camera.GetDistance();
         }
     }
