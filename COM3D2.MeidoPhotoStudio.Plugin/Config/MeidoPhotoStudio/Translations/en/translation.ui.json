@@ -251,6 +251,11 @@
         "spot": "Spot Angle",
         "shadow": "Shadow"
     },
+    "cameraPane": {
+        "header": "Camera",
+        "zRotation": "Z Rotation",
+        "fov": "FOV"
+    },
     "lightsPane": {
         "header": "Lights",
         "add": "+",

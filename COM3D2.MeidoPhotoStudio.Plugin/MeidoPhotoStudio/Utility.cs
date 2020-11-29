@@ -243,6 +243,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             camera.SetTargetPos(info.TargetPos);
             camera.SetDistance(info.Distance);
             camera.transform.rotation = info.Angle;
+            camera.camera.fieldOfView = info.FOV;
             if (stop) StopAll();
         }
 

@@ -7,6 +7,7 @@ using Object = UnityEngine.Object;
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
+    using UInput = Input;
     public class EnvironmentManager : IManager, ISerializable
     {
         private static readonly BgMgr bgMgr = GameMain.Instance.BgMgr;
@@ -60,6 +61,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private const float cameraFastMoveSpeed = 0.1f;
         private const float cameraFastZoomSpeed = 3f;
         private CameraInfo tempCameraInfo;
+        private int currentCameraIndex;
+        private const KeyCode AlphaOne = KeyCode.Alpha1;
+        public int CameraCount => cameraInfos.Length;
+        public EventHandler CameraChange;
+
+        public int CurrentCameraIndex
+        {
+            get => currentCameraIndex;
+            set
+            {
+                cameraInfos[currentCameraIndex] = mainCamera.GetInfo();
+                currentCameraIndex = value;
+                LoadCameraInfo(cameraInfos[currentCameraIndex]);
+            }
+        }
+        private CameraInfo[] cameraInfos;
 
         static EnvironmentManager()
         {
@@ -165,6 +182,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             SaveTempCamera();
 
+            CameraInfo initalInfo = mainCamera.GetInfo();
+
+            cameraInfos = new CameraInfo[5];
+
+            for (var i = 0; i < CameraCount; i++) cameraInfos[i] = initalInfo;
+
             CubeSmallChange += OnCubeSmall;
             CubeActiveChange += OnCubeActive;
         }
@@ -210,6 +233,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (Input.GetKeyDown(MpsKey.CameraSave)) SaveTempCamera();
                 else if (Input.GetKeyDown(MpsKey.CameraLoad)) LoadCameraInfo(tempCameraInfo);
                 else if (Input.GetKeyDown(MpsKey.CameraReset)) ResetCamera();
+
+                for (var i = 0; i < CameraCount; i++)
+                {
+                    if (i != CurrentCameraIndex && UInput.GetKeyDown(AlphaOne + i)) CurrentCameraIndex = i;
+                }
             }
 
             var shift = Input.Shift;
@@ -255,7 +283,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void SaveTempCamera() => tempCameraInfo = mainCamera.GetInfo(true);
 
-        public void LoadCameraInfo(CameraInfo info) => mainCamera.ApplyInfo(info, true);
+        public void LoadCameraInfo(CameraInfo info)
+        {
+            mainCamera.ApplyInfo(info, true);
+            CameraChange?.Invoke(this, EventArgs.Empty);
+        }
 
         private void ResetCamera()
         {
@@ -280,12 +312,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public Vector3 TargetPos { get; }
         public Quaternion Angle { get; }
         public float Distance { get; }
+        public float FOV { get; }
 
         public CameraInfo(CameraMain camera)
         {
             TargetPos = camera.GetTargetPos();
             Angle = camera.transform.rotation;
             Distance = camera.GetDistance();
+            FOV = camera.camera.fieldOfView;
         }
     }
 }

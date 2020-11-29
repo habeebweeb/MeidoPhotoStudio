@@ -5,6 +5,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     public class BGWindowPane : BaseMainWindowPane
     {
         private readonly BackgroundSelectorPane backgroundSelectorPane;
+        private readonly CameraPane cameraPane;
         private readonly LightsPane lightsPane;
         private readonly EffectsPane effectsPane;
         private readonly DragPointPane dragPointPane;
@@ -20,6 +21,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             sceneManagerButton.ControlEvent += (s, a) => sceneWindow.Visible = !sceneWindow.Visible;
 
             backgroundSelectorPane = AddPane(new BackgroundSelectorPane(environmentManager));
+            cameraPane = AddPane(new CameraPane(environmentManager));
             dragPointPane = AddPane(new DragPointPane());
             lightsPane = AddPane(new LightsPane(lightManager));
 
@@ -45,10 +47,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             sceneManagerButton.Draw();
             backgroundSelectorPane.Draw();
             dragPointPane.Draw();
+
             scrollPos = GUILayout.BeginScrollView(scrollPos);
+
+            cameraPane.Draw();
             lightsPane.Draw();
             effectsPane.Draw();
             otherEffectsPane.Draw();
+
             GUILayout.EndScrollView();
         }
 
