@@ -294,6 +294,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             mainCamera.Reset(CameraMain.CameraType.Target, true);
             mainCamera.SetTargetPos(new Vector3(0f, 0.9f, 0f));
             mainCamera.SetDistance(3f);
+            CameraChange?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnCubeSmall(object sender, EventArgs args)

@@ -9,9 +9,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly SelectionGrid cameraGrid;
         private readonly Slider zRotationSlider;
         private readonly Slider fovSlider;
-
         private string header;
-        private Vector3 cameraRotation;
 
         public CameraPane(EnvironmentManager environmentManager)
         {
@@ -27,8 +25,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             zRotationSlider.ControlEvent += (s, a) =>
             {
                 if (updating) return;
-                cameraRotation.z = zRotationSlider.Value;
-                camera.transform.rotation = Quaternion.Euler(cameraRotation);
+                Vector3 newRotation = camera.transform.eulerAngles;
+                newRotation.z = zRotationSlider.Value;
+                camera.transform.rotation = Quaternion.Euler(newRotation);
             };
             fovSlider = new Slider(Translation.Get("cameraPane", "fov"), 20f, 150f, camera.fieldOfView);
             fovSlider.ControlEvent += (s, a) =>
@@ -66,13 +65,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void UpdatePane()
         {
-            Camera camera = CameraUtility.MainCamera.camera;
-            Vector3 eulerAngles = camera.transform.eulerAngles;
-            cameraRotation = eulerAngles;
-
             updating = true;
 
-            zRotationSlider.Value = eulerAngles.z;
+            Camera camera = CameraUtility.MainCamera.camera;
+
+            zRotationSlider.Value = camera.transform.eulerAngles.z;
             fovSlider.Value = camera.fieldOfView;
 
             cameraGrid.SelectedItemIndex = environmentManager.CurrentCameraIndex;
