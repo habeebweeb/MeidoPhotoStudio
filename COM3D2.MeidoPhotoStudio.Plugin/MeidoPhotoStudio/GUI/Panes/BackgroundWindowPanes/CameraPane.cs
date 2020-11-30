@@ -19,9 +19,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Camera camera = CameraUtility.MainCamera.camera;
             Vector3 eulerAngles = camera.transform.eulerAngles;
 
-            cameraRotation = eulerAngles;
-
-            zRotationSlider = new Slider(Translation.Get("cameraPane", "zRotation"), 0f, 360f, eulerAngles.z);
+            zRotationSlider = new Slider(Translation.Get("cameraPane", "zRotation"), 0f, 360f, eulerAngles.z)
+            {
+                HasReset = true, HasTextField = true
+            };
             zRotationSlider.ControlEvent += (s, a) =>
             {
                 if (updating) return;
@@ -29,7 +30,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 newRotation.z = zRotationSlider.Value;
                 camera.transform.rotation = Quaternion.Euler(newRotation);
             };
-            fovSlider = new Slider(Translation.Get("cameraPane", "fov"), 20f, 150f, camera.fieldOfView);
+
+            var fieldOfView = camera.fieldOfView;
+            fovSlider = new Slider(Translation.Get("cameraPane", "fov"), 20f, 150f, fieldOfView, fieldOfView)
+            {
+                HasReset = true, HasTextField = true
+            };
             fovSlider.ControlEvent += (s, a) =>
             {
                 if (updating) return;
