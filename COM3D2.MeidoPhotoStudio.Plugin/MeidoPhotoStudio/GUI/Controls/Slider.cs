@@ -5,6 +5,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     public class Slider : BaseControl
     {
+        private const string textFormat = "F4";
         private bool hasLabel;
         private string label;
         public string Label
@@ -16,17 +17,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 hasLabel = !string.IsNullOrEmpty(label);
             }
         }
+
         private float value;
+
         public float Value
         {
             get => value;
             set
             {
                 this.value = Utility.Bound(value, Left, Right);
+                if (hasTextField) textFieldValue = Value.ToString(textFormat);
                 OnControlEvent(EventArgs.Empty);
             }
         }
+
         private float left;
+
         public float Left
         {
             get => left;
@@ -36,7 +42,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.value = Utility.Bound(value, left, right);
             }
         }
+
         private float right;
+
         public float Right
         {
             get => right;
@@ -46,18 +54,39 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 this.value = Utility.Bound(value, left, right);
             }
         }
-
-        public Slider(string label, float left, float right, float value = 0)
+        private float defaultValue;
+        public float DefaultValue
         {
+            get => defaultValue;
+            set => defaultValue = Utility.Bound(value, Left, Right);
+        }
+
+        private string textFieldValue;
+        private bool hasTextField;
+        public bool HasTextField
+        {
+            get => hasTextField;
+            set
+            {
+                hasTextField = value;
+                if (hasTextField) textFieldValue = Value.ToString(textFormat);
+            }
+        }
+        public bool HasReset { get; set; }
+
+        public Slider(string label, float left, float right, float value = 0, float defaultValue = 0)
+        {
+            textFieldValue = value.ToString(textFormat);
             Label = label;
             this.left = left;
             this.right = right;
             this.value = Utility.Bound(value, left, right);
+            DefaultValue = defaultValue;
         }
 
-        public Slider(string label, SliderProp prop) : this(label, prop.Left, prop.Right, prop.Initial) { }
+        public Slider(string label, SliderProp prop) : this(label, prop.Left, prop.Right, prop.Initial, prop.Default) { }
 
-        public Slider(SliderProp prop) : this(string.Empty, prop.Left, prop.Right, prop.Initial) { }
+        public Slider(SliderProp prop) : this(string.Empty, prop.Left, prop.Right, prop.Initial, prop.Default) { }
 
         public void SetBounds(float left, float right)
         {
@@ -68,24 +97,54 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Draw(params GUILayoutOption[] layoutOptions)
         {
-            GUIStyle sliderStyle = new GUIStyle(GUI.skin.horizontalSlider);
-            sliderStyle.margin.bottom = 0;
-            if (hasLabel)
+            var hasUpper = hasLabel || HasTextField || HasReset;
+
+            var tempText = string.Empty;
+
+            if (hasUpper)
             {
                 GUILayout.BeginVertical(GUILayout.ExpandWidth(false));
-                GUIStyle sliderLabelStyle = new GUIStyle(GUI.skin.label);
-                sliderLabelStyle.padding.bottom = -5;
-                sliderLabelStyle.margin = new RectOffset(0, 0, 0, 0);
-                sliderLabelStyle.alignment = TextAnchor.LowerLeft;
-                sliderLabelStyle.fontSize = 13;
-                GUILayout.Label(Label, sliderLabelStyle, GUILayout.ExpandWidth(false));
+                GUILayout.BeginHorizontal();
+
+                if (hasLabel)
+                {
+                    GUILayout.Label(Label, MpsGui.SliderLabelStyle, GUILayout.ExpandWidth(false));
+                    GUILayout.FlexibleSpace();
+                }
+
+                if (HasTextField)
+                {
+                    tempText = GUILayout.TextField(textFieldValue, MpsGui.SliderTextBoxStyle, GUILayout.Width(60f));
+                }
+
+                if (HasReset && GUILayout.Button("|", MpsGui.SliderResetButtonStyle, GUILayout.Width(15f)))
+                {
+                    Value = DefaultValue;
+                    tempText = textFieldValue = Value.ToString(textFormat);
+                }
+                GUILayout.EndHorizontal();
             }
-            else sliderStyle.margin.top = 10;
-            float value = GUILayout.HorizontalSlider(
-                Value, Left, Right, sliderStyle, GUI.skin.horizontalSliderThumb, layoutOptions
+
+            GUIStyle sliderStyle = hasUpper ? MpsGui.SliderStyle : MpsGui.SliderStyleNoLabel;
+
+            var tempValue = GUILayout.HorizontalSlider(
+                Value, Left, Right, sliderStyle, MpsGui.SliderThumbStyle, layoutOptions
             );
-            if (hasLabel) GUILayout.EndVertical();
-            if (value != Value) Value = value;
+
+            if (hasUpper) GUILayout.EndVertical();
+
+            if (HasTextField)
+            {
+                if (tempValue != Value) tempText = textFieldValue = tempValue.ToString(textFormat);
+
+                if (tempText != textFieldValue)
+                {
+                    textFieldValue = tempText;
+                    if (float.TryParse(tempText, out float newValue)) tempValue = newValue;
+                }
+            }
+
+            if (tempValue != Value) Value = tempValue;
         }
     }
 
@@ -94,12 +153,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public float Left { get; }
         public float Right { get; }
         public float Initial { get; }
+        public float Default { get; }
 
-        public SliderProp(float left, float right, float initial = 0f)
+        public SliderProp(float left, float right, float initial = 0f, float @default = 0f)
         {
             Left = left;
             Right = right;
             Initial = Utility.Bound(initial, left, right);
+            Default = Utility.Bound(@default, left, right);
         }
     }
 }
