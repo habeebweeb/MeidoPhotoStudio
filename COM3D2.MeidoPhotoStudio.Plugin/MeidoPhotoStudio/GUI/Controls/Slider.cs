@@ -1,11 +1,11 @@
 using System;
+using System.Globalization;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     public class Slider : BaseControl
     {
-        private const string textFormat = "F4";
         private bool hasLabel;
         private string label;
         public string Label
@@ -26,7 +26,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             set
             {
                 this.value = Utility.Bound(value, Left, Right);
-                if (hasTextField) textFieldValue = Value.ToString(textFormat);
+                if (hasTextField) textFieldValue = FormatValue(value);
                 OnControlEvent(EventArgs.Empty);
             }
         }
@@ -69,18 +69,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             set
             {
                 hasTextField = value;
-                if (hasTextField) textFieldValue = Value.ToString(textFormat);
+                if (hasTextField) textFieldValue = FormatValue(Value);
             }
         }
         public bool HasReset { get; set; }
 
         public Slider(string label, float left, float right, float value = 0, float defaultValue = 0)
         {
-            textFieldValue = value.ToString(textFormat);
             Label = label;
             this.left = left;
             this.right = right;
             this.value = Utility.Bound(value, left, right);
+            textFieldValue = FormatValue(this.value);
             DefaultValue = defaultValue;
         }
 
@@ -120,7 +120,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 if (HasReset && GUILayout.Button("|", MpsGui.SliderResetButtonStyle, GUILayout.Width(15f)))
                 {
                     Value = DefaultValue;
-                    tempText = textFieldValue = Value.ToString(textFormat);
+                    tempText = textFieldValue = FormatValue(Value);
                 }
                 GUILayout.EndHorizontal();
             }
@@ -135,17 +135,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (HasTextField)
             {
-                if (tempValue != Value) tempText = textFieldValue = tempValue.ToString(textFormat);
+                if (tempValue != Value) tempText = textFieldValue = FormatValue(tempValue);
 
                 if (tempText != textFieldValue)
                 {
                     textFieldValue = tempText;
-                    if (float.TryParse(tempText, out float newValue)) tempValue = newValue;
+                    if (float.TryParse(tempText, out var newValue)) tempValue = newValue;
                 }
             }
 
             if (tempValue != Value) Value = tempValue;
         }
+
+        private static string FormatValue(float value) => value.ToString("0.####", CultureInfo.InvariantCulture);
     }
 
     public readonly struct SliderProp
