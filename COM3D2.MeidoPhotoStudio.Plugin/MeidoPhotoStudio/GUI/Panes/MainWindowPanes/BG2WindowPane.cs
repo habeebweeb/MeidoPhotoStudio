@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     public class BG2WindowPane : BaseMainWindowPane
@@ -40,11 +42,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             propTabs.Draw();
             MpsGui.WhiteLine();
             currentPropsPane.Draw();
-            if (propTabs.SelectedItemIndex == 0)
-            {
-                propManagerPane.Draw();
-                attachPropPane.Draw();
-            }
+
+            if (propTabs.SelectedItemIndex != 0) return;
+
+            propManagerPane.Draw();
+            scrollPos = GUILayout.BeginScrollView(scrollPos);
+            attachPropPane.Draw();
+            GUILayout.EndScrollView();
         }
 
         public override void UpdatePanes()

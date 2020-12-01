@@ -30,10 +30,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 [AttachPoint.CalfR] = "calfR",
                 [AttachPoint.FootL] = "footL",
                 [AttachPoint.FootR] = "footR",
+                [AttachPoint.Spine1a] = "spine1a",
+                [AttachPoint.Spine1] = "spine1",
+                [AttachPoint.Spine0a] = "spine0a",
+                [AttachPoint.Spine0] = "spine0"
             };
         private readonly Toggle keepWorldPositionToggle;
-        private readonly Button previousMaidButton;
-        private readonly Button nextMaidButton;
         private readonly Dropdown meidoDropdown;
         private bool meidoDropdownActive;
         private bool doguDropdownActive;
@@ -54,19 +56,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             meidoDropdown = new Dropdown(new[] { Translation.Get("systemMessage", "noMaids") });
             meidoDropdown.SelectionChange += (s, a) => SwitchMaid();
 
-            previousMaidButton = new Button("<");
-            previousMaidButton.ControlEvent += (s, a) => meidoDropdown.Step(-1);
-
-            nextMaidButton = new Button(">");
-            nextMaidButton.ControlEvent += (s, a) => meidoDropdown.Step(1);
-
             keepWorldPositionToggle = new Toggle(Translation.Get("attachPropPane", "keepWorldPosition"));
 
             foreach (AttachPoint attachPoint in Enum.GetValues(typeof(AttachPoint)))
             {
                 if (attachPoint == AttachPoint.None) continue;
                 AttachPoint point = attachPoint;
-                Toggle toggle = new Toggle(Translation.Get("attachPropPane", toggleTranslation[point]));
+                var toggle = new Toggle(Translation.Get("attachPropPane", toggleTranslation[point]));
                 toggle.ControlEvent += (s, a) =>
                 {
                     if (updating) return;
@@ -91,9 +87,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             const float dropdownButtonHeight = 30;
             const float dropdownButtonWidth = 153f;
-            GUILayoutOption[] dropdownLayoutOptions = new GUILayoutOption[] {
-                GUILayout.Height(dropdownButtonHeight),
-                GUILayout.Width(dropdownButtonWidth)
+            GUILayoutOption[] dropdownLayoutOptions = {
+                GUILayout.Height(dropdownButtonHeight), GUILayout.Width(dropdownButtonWidth)
             };
 
             MpsGui.Header(header);
@@ -106,11 +101,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             keepWorldPositionToggle.Draw();
 
             DrawToggleGroup(AttachPoint.Head, AttachPoint.Neck);
-            DrawToggleGroup(AttachPoint.UpperArmR, AttachPoint.UpperArmL);
-            DrawToggleGroup(AttachPoint.ForearmR, AttachPoint.ForearmL);
-            DrawToggleGroup(AttachPoint.MuneR, AttachPoint.MuneL);
-            DrawToggleGroup(AttachPoint.HandR, AttachPoint.Pelvis, AttachPoint.HandL);
-            DrawToggleGroup(AttachPoint.ThighR, AttachPoint.ThighL);
+            DrawToggleGroup(AttachPoint.UpperArmR, AttachPoint.Spine1a, AttachPoint.UpperArmL);
+            DrawToggleGroup(AttachPoint.ForearmR, AttachPoint.Spine1, AttachPoint.ForearmL);
+            DrawToggleGroup(AttachPoint.MuneR, AttachPoint.Spine0a, AttachPoint.MuneL);
+            DrawToggleGroup(AttachPoint.HandR, AttachPoint.Spine0,AttachPoint.HandL);
+            DrawToggleGroup(AttachPoint.ThighR,AttachPoint.Pelvis, AttachPoint.ThighL);
             DrawToggleGroup(AttachPoint.CalfR, AttachPoint.CalfL);
             DrawToggleGroup(AttachPoint.FootR, AttachPoint.FootL);
 
@@ -121,10 +116,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            foreach (AttachPoint point in attachPoints)
-            {
-                Toggles[point].Draw();
-            }
+            foreach (AttachPoint point in attachPoints) Toggles[point].Draw();
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
         }
@@ -132,27 +124,22 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void SetAttachPointToggle(AttachPoint point, bool value)
         {
             updating = true;
-            foreach (Toggle toggle in Toggles.Values)
-            {
-                toggle.Value = false;
-            }
+            foreach (Toggle toggle in Toggles.Values) toggle.Value = false;
             if (point != AttachPoint.None) Toggles[point].Value = value;
             updating = false;
         }
 
         private void ChangeAttachPoint(AttachPoint point)
         {
-            bool toggleValue = point != AttachPoint.None && Toggles[point].Value;
+            var toggleValue = point != AttachPoint.None && Toggles[point].Value;
             SetAttachPointToggle(point, toggleValue);
 
             Meido meido = null;
 
             if (point != AttachPoint.None)
-            {
                 meido = Toggles[point].Value
                     ? meidoManager.ActiveMeidoList[meidoDropdown.SelectedItemIndex]
                     : null;
-            }
 
             propManager.AttachProp(
                 propManager.CurrentDoguIndex, point, meido, keepWorldPositionToggle.Value
@@ -164,18 +151,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (updating || selectedMaid == meidoDropdown.SelectedItemIndex) return;
             selectedMaid = meidoDropdown.SelectedItemIndex;
             DragPointDogu dragDogu = propManager.CurrentDogu;
-            if (dragDogu != null)
-            {
-                if (dragDogu.attachPointInfo.AttachPoint == AttachPoint.None) return;
-                ChangeAttachPoint(dragDogu.attachPointInfo.AttachPoint);
-            }
+            if (!dragDogu) return;
+            if (dragDogu.attachPointInfo.AttachPoint == AttachPoint.None) return;
+            ChangeAttachPoint(dragDogu.attachPointInfo.AttachPoint);
         }
 
         private void SwitchDogu()
         {
             if (updating) return;
             DragPointDogu dragDogu = propManager.CurrentDogu;
-            if (dragDogu != null) SetAttachPointToggle(dragDogu.attachPointInfo.AttachPoint, true);
+            if (dragDogu) SetAttachPointToggle(dragDogu.attachPointInfo.AttachPoint, true);
         }
 
         private void SetMeidoDropdown()
@@ -184,13 +169,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 SetAttachPointToggle(AttachPoint.Head, false);
             }
-            int index = Mathf.Clamp(meidoDropdown.SelectedItemIndex, 0, meidoManager.ActiveMeidoList.Count);
+            var index = Mathf.Clamp(meidoDropdown.SelectedItemIndex, 0, meidoManager.ActiveMeidoList.Count);
 
             string[] dropdownList = meidoManager.ActiveMeidoList.Count == 0
                 ? new[] { Translation.Get("systemMessage", "noMaids") }
                 : meidoManager.ActiveMeidoList.Select(
                     meido => $"{meido.Slot + 1}: {meido.FirstName} {meido.LastName}"
                 ).ToArray();
+
             updating = true;
             meidoDropdown.SetDropdownItems(dropdownList, index);
             updating = false;

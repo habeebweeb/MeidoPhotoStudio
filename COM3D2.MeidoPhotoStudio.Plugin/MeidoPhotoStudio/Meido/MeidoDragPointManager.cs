@@ -9,7 +9,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     public enum AttachPoint
     {
         None, Head, Neck, UpperArmL, UpperArmR, ForearmL, ForearmR, MuneL, MuneR, HandL, HandR,
-        Pelvis, ThighL, ThighR, CalfL, CalfR, FootL, FootR
+        Pelvis, ThighL, ThighR, CalfL, CalfR, FootL, FootR, Spine1a, Spine1, Spine0a, Spine0
     }
 
     public class MeidoDragPointManager
@@ -63,6 +63,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             [AttachPoint.CalfR] = Bone.CalfR,
             [AttachPoint.FootL] = Bone.FootL,
             [AttachPoint.FootR] = Bone.FootR,
+            [AttachPoint.Spine1a] = Bone.Spine1a,
+            [AttachPoint.Spine1] = Bone.Spine1,
+            [AttachPoint.Spine0a] = Bone.Spine0a,
+            [AttachPoint.Spine0] = Bone.Spine
         };
         private static readonly Bone[] SpineBones =
         {
@@ -164,7 +168,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameMain.Instance.StartCoroutine(ApplyHipPosition(binaryReader.ReadVector3()));
         }
 
-        /* 
+        /*
             Somebody smarter than me please help me find a way to do this better T_T
             inb4 for loop.
          */
