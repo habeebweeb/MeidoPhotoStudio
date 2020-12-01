@@ -9,7 +9,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         private static readonly string[] lightTypes = { "normal", "spot", "point" };
         private readonly LightManager lightManager;
-        private readonly Dictionary<LightProp, Slider> LightSlider;
+        private readonly Dictionary<LightProp, Slider> lightSlider;
         private readonly Dropdown lightDropdown;
         private readonly Button addLightButton;
         private readonly Button deleteLightButton;
@@ -23,24 +23,30 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private string lightHeader;
         private string resetLabel;
 
-        private static readonly Dictionary<LightProp, SliderProp> LightSliderProp =
-            new Dictionary<LightProp, SliderProp>()
-            {
-                [LightProp.LightRotX] = new SliderProp(0f, 360f, LightProperty.DefaultRotation.eulerAngles.x),
-                [LightProp.LightRotY] = new SliderProp(0f, 360f, LightProperty.DefaultRotation.eulerAngles.y),
-                [LightProp.Intensity] = new SliderProp(0f, 2f, 0.95f),
-                [LightProp.ShadowStrength] = new SliderProp(0f, 1f, 0.098f),
-                [LightProp.Range] = new SliderProp(0f, 150f, GameMain.Instance.MainLight.GetComponent<Light>().range),
-                [LightProp.SpotAngle] = new SliderProp(0f, 150f, 50f),
-                [LightProp.Red] = new SliderProp(0f, 1f, 1f),
-                [LightProp.Green] = new SliderProp(0f, 1f, 1f),
-                [LightProp.Blue] = new SliderProp(0f, 1f, 1f),
-            };
+        private static readonly Dictionary<LightProp, SliderProp> lightSliderProp;
         private static readonly string[,] sliderNames = {
             { "lights", "x" }, { "lights", "y" }, { "lights", "intensity" }, { "lights", "shadow" },
             { "lights", "spot" }, { "lights", "range" }, { "backgroundWindow", "red" }, { "backgroundWindow", "green" },
             { "backgroundWindow", "blue" }
         };
+
+        static LightsPane()
+        {
+            Vector3 rotation = LightProperty.DefaultRotation.eulerAngles;
+            var range = GameMain.Instance.MainLight.GetComponent<Light>().range;
+            lightSliderProp = new Dictionary<LightProp, SliderProp>
+            {
+                [LightProp.LightRotX] = new SliderProp(0f, 360f, rotation.x, rotation.x),
+                [LightProp.LightRotY] = new SliderProp(0f, 360f, rotation.y, rotation.y),
+                [LightProp.Intensity] = new SliderProp(0f, 2f, 0.95f, 0.95f),
+                [LightProp.ShadowStrength] = new SliderProp(0f, 1f, 0.098f, 0.098f),
+                [LightProp.Range] = new SliderProp(0f, 150f, range, range),
+                [LightProp.SpotAngle] = new SliderProp(0f, 150f, 50f, 50f),
+                [LightProp.Red] = new SliderProp(0f, 1f, 1f, 1f),
+                [LightProp.Green] = new SliderProp(0f, 1f, 1f, 1f),
+                [LightProp.Blue] = new SliderProp(0f, 1f, 1f, 1f),
+            };
+        }
 
         public LightsPane(LightManager lightManager)
         {
@@ -57,34 +63,32 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             lightDropdown.SelectionChange += (s, a) => SetCurrentLight();
 
             addLightButton = new Button("+");
-            addLightButton.ControlEvent += (s, a) => AddLight();
+            addLightButton.ControlEvent += (s, a) => lightManager.AddLight();
 
             deleteLightButton = new Button(Translation.Get("lightsPane", "delete"));
-            deleteLightButton.ControlEvent += (s, a) => DeleteCurrentLight();
+            deleteLightButton.ControlEvent += (s, a) => lightManager.DeleteActiveLight();
 
             disableToggle = new Toggle(Translation.Get("lightsPane", "disable"));
-            disableToggle.ControlEvent += (s, a) => SetCurrentLightActive();
+            disableToggle.ControlEvent += (s, a) => lightManager.CurrentLight.IsDisabled = disableToggle.Value;
 
             clearLightsButton = new Button(Translation.Get("lightsPane", "clear"));
             clearLightsButton.ControlEvent += (s, a) => ClearLights();
 
-            int numberOfLightProps = Enum.GetNames(typeof(LightProp)).Length;
-            LightSlider = new Dictionary<LightProp, Slider>(numberOfLightProps);
+            var numberOfLightProps = Enum.GetNames(typeof(LightProp)).Length;
+            lightSlider = new Dictionary<LightProp, Slider>(numberOfLightProps);
 
-            for (int i = 0; i < numberOfLightProps; i++)
+            for (var i = 0; i < numberOfLightProps; i++)
             {
-                LightProp lightProp = (LightProp)i;
-                SliderProp sliderProp = LightSliderProp[lightProp];
-                Slider slider = new Slider(Translation.Get(sliderNames[i, 0], sliderNames[i, 1]), sliderProp);
-                if (lightProp == LightProp.LightRotX || lightProp == LightProp.LightRotY)
+                var lightProp = (LightProp)i;
+                SliderProp sliderProp = lightSliderProp[lightProp];
+                var slider = new Slider(Translation.Get(sliderNames[i, 0], sliderNames[i, 1]), sliderProp)
                 {
-                    slider.ControlEvent += (s, a) => SetLightRotation();
-                }
-                else
-                {
-                    slider.ControlEvent += (s, a) => SetLightProp(lightProp, slider.Value);
-                }
-                LightSlider[lightProp] = slider;
+                    HasTextField = true,
+                    HasReset = true
+                };
+                if (lightProp <= LightProp.LightRotY) slider.ControlEvent += (s, a) => SetLightRotation();
+                else slider.ControlEvent += (s, a) => SetLightProp(lightProp, slider.Value);
+                lightSlider[lightProp] = slider;
             }
 
             colorToggle = new Toggle(Translation.Get("lightsPane", "colour"));
@@ -94,7 +98,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             resetPropsButton.ControlEvent += (s, a) => ResetLightProps();
 
             resetPositionButton = new Button(Translation.Get("lightsPane", "resetPosition"));
-            resetPositionButton.ControlEvent += (s, a) => ResetLightPosition();
+            resetPositionButton.ControlEvent += (s, a) => lightManager.CurrentLight.ResetLightPosition();
 
             lightHeader = Translation.Get("lightsPane", "header");
             resetLabel = Translation.Get("lightsPane", "resetLabel");
@@ -108,9 +112,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             deleteLightButton.Label = Translation.Get("lightsPane", "delete");
             disableToggle.Label = Translation.Get("lightsPane", "disable");
             clearLightsButton.Label = Translation.Get("lightsPane", "clear");
-            for (LightProp lightProp = LightProp.LightRotX; lightProp <= LightProp.Blue; lightProp++)
+            for (var lightProp = LightProp.LightRotX; lightProp <= LightProp.Blue; lightProp++)
             {
-                LightSlider[lightProp].Label =
+                lightSlider[lightProp].Label =
                     Translation.Get(sliderNames[(int)lightProp, 0], sliderNames[(int)lightProp, 1]);
             }
             colorToggle.Label = Translation.Get("lightsPane", "colour");
@@ -146,14 +150,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             UpdatePane();
         }
 
-        private void ResetLightPosition() => lightManager.CurrentLight.ResetLightPosition();
-
-        private void AddLight() => lightManager.AddLight();
-
-        private void DeleteCurrentLight() => lightManager.DeleteActiveLight();
-
-        private void SetCurrentLightActive() => lightManager.CurrentLight.IsDisabled = disableToggle.Value;
-
         private void SetCurrentLightType()
         {
             if (updating) return;
@@ -177,8 +173,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void SetLightRotation()
         {
             if (updating) return;
-            float lightRotX = LightSlider[LightProp.LightRotX].Value;
-            float lightRotY = LightSlider[LightProp.LightRotY].Value;
+            var lightRotX = lightSlider[LightProp.LightRotX].Value;
+            var lightRotY = lightSlider[LightProp.LightRotY].Value;
             lightManager.CurrentLight.SetRotation(lightRotX, lightRotY);
         }
 
@@ -193,16 +189,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             updating = true;
             LightProperty prop = lightManager.CurrentLight.CurrentLightProperty;
-            LightSlider[LightProp.LightRotX].Value = prop.Rotation.eulerAngles.x;
-            LightSlider[LightProp.LightRotY].Value = prop.Rotation.eulerAngles.y;
+            lightSlider[LightProp.LightRotX].Value = prop.Rotation.eulerAngles.x;
+            lightSlider[LightProp.LightRotY].Value = prop.Rotation.eulerAngles.y;
             updating = false;
         }
 
         private void UpdateScale()
         {
             updating = true;
-            LightSlider[LightProp.SpotAngle].Value = lightManager.CurrentLight.CurrentLightProperty.SpotAngle;
-            LightSlider[LightProp.Range].Value = lightManager.CurrentLight.CurrentLightProperty.Range;
+            lightSlider[LightProp.SpotAngle].Value = lightManager.CurrentLight.CurrentLightProperty.SpotAngle;
+            lightSlider[LightProp.Range].Value = lightManager.CurrentLight.CurrentLightProperty.Range;
             updating = false;
         }
 
@@ -221,21 +217,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             currentLightType = currentLight.SelectedLightType;
             lightTypeGrid.SelectedItemIndex = (int)currentLightType;
             disableToggle.Value = currentLight.IsDisabled;
-            LightSlider[LightProp.LightRotX].Value = currentLight.Rotation.eulerAngles.x;
-            LightSlider[LightProp.LightRotY].Value = currentLight.Rotation.eulerAngles.y;
-            LightSlider[LightProp.Intensity].Value = currentLight.Intensity;
-            LightSlider[LightProp.ShadowStrength].Value = currentLight.ShadowStrength;
-            LightSlider[LightProp.Range].Value = currentLight.Range;
-            LightSlider[LightProp.SpotAngle].Value = currentLight.SpotAngle;
-            LightSlider[LightProp.Red].Value = currentLight.LightColour.r;
-            LightSlider[LightProp.Green].Value = currentLight.LightColour.g;
-            LightSlider[LightProp.Blue].Value = currentLight.LightColour.b;
+            lightSlider[LightProp.LightRotX].Value = currentLight.Rotation.eulerAngles.x;
+            lightSlider[LightProp.LightRotY].Value = currentLight.Rotation.eulerAngles.y;
+            lightSlider[LightProp.Intensity].Value = currentLight.Intensity;
+            lightSlider[LightProp.ShadowStrength].Value = currentLight.ShadowStrength;
+            lightSlider[LightProp.Range].Value = currentLight.Range;
+            lightSlider[LightProp.SpotAngle].Value = currentLight.SpotAngle;
+            lightSlider[LightProp.Red].Value = currentLight.LightColour.r;
+            lightSlider[LightProp.Green].Value = currentLight.LightColour.g;
+            lightSlider[LightProp.Blue].Value = currentLight.LightColour.b;
             updating = false;
         }
 
         public override void Draw()
         {
-            bool isMain = lightManager.SelectedLightIndex == 0;
+            var isMain = lightManager.SelectedLightIndex == 0;
 
             GUILayoutOption noExpandWidth = GUILayout.ExpandWidth(false);
 
@@ -268,39 +264,24 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             if (currentLightType != MPSLightType.Point)
             {
-                LightSlider[LightProp.LightRotX].Draw();
-                LightSlider[LightProp.LightRotY].Draw();
+                lightSlider[LightProp.LightRotX].Draw();
+                lightSlider[LightProp.LightRotY].Draw();
             }
 
-            LightSlider[LightProp.Intensity].Draw();
+            lightSlider[LightProp.Intensity].Draw();
 
-            if (currentLightType == MPSLightType.Normal)
-            {
-                LightSlider[LightProp.ShadowStrength].Draw();
-            }
-            else
-            {
-                LightSlider[LightProp.Range].Draw();
-            }
+            if (currentLightType == MPSLightType.Normal) lightSlider[LightProp.ShadowStrength].Draw();
+            else lightSlider[LightProp.Range].Draw();
 
-            if (currentLightType == MPSLightType.Spot)
-            {
-                LightSlider[LightProp.SpotAngle].Draw();
-            }
+            if (currentLightType == MPSLightType.Spot) lightSlider[LightProp.SpotAngle].Draw();
 
-            GUILayoutOption sliderWidth = MpsGui.HalfSlider;
-            GUILayout.BeginHorizontal();
-            LightSlider[LightProp.Red].Draw(sliderWidth);
-            LightSlider[LightProp.Green].Draw(sliderWidth);
-            GUILayout.EndHorizontal();
+            MpsGui.BlackLine();
 
-            GUILayout.BeginHorizontal();
-            LightSlider[LightProp.Blue].Draw(sliderWidth);
-            if ((lightManager.SelectedLightIndex == 0) && (currentLightType == MPSLightType.Normal))
-            {
-                colorToggle.Draw();
-            }
-            GUILayout.EndHorizontal();
+            lightSlider[LightProp.Red].Draw();
+            lightSlider[LightProp.Green].Draw();
+            lightSlider[LightProp.Blue].Draw();
+
+            if (lightManager.SelectedLightIndex == 0 && currentLightType == MPSLightType.Normal) colorToggle.Draw();
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(resetLabel, noExpandWidth);
