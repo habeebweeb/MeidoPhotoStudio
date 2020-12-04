@@ -6,11 +6,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     public class DragPointMune : DragPointChain
     {
         private bool isMuneL;
+        private int inv = 1;
 
         public override void Set(Transform myObject)
         {
             base.Set(myObject);
             isMuneL = myObject.name[5] == 'L'; // Mune_L_Sub
+            if (isMuneL) inv *= -1;
         }
 
         protected override void ApplyDragType() => ApplyProperties(CurrentDragType != DragType.None, false, false);
@@ -46,8 +48,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (CurrentDragType == DragType.RotLocalY)
             {
                 Vector3 mouseDelta = MouseDelta();
-                ikChain[jointMiddle].localRotation = jointRotation[jointMiddle];
-                ikChain[jointMiddle].Rotate(Vector3.right * (-mouseDelta.x / 1.5f));
+                ikChain[jointLower].localRotation = jointRotation[jointLower];
+                ikChain[jointLower].Rotate(Vector3.up * (-mouseDelta.x / 1.5f) * inv);
+                ikChain[jointLower].Rotate(Vector3.forward * (mouseDelta.y / 1.5f) * inv);
             }
         }
     }
