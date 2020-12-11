@@ -14,14 +14,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public BGWindowPane(
             EnvironmentManager environmentManager, LightManager lightManager, EffectManager effectManager,
-            SceneWindow sceneWindow
+            SceneWindow sceneWindow, CameraManager cameraManager
         )
         {
             sceneManagerButton = new Button(Translation.Get("backgroundWindow", "manageScenesButton"));
             sceneManagerButton.ControlEvent += (s, a) => sceneWindow.Visible = !sceneWindow.Visible;
 
             backgroundSelectorPane = AddPane(new BackgroundSelectorPane(environmentManager));
-            cameraPane = AddPane(new CameraPane(environmentManager));
+            cameraPane = AddPane(new CameraPane(cameraManager));
             dragPointPane = AddPane(new DragPointPane());
             lightsPane = AddPane(new LightsPane(lightManager));
 

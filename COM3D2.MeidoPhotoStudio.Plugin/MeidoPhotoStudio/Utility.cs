@@ -237,22 +237,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public static CameraMain MainCamera => GameMain.Instance.MainCamera;
         public static UltimateOrbitCamera UOCamera { get; } =
             GameMain.Instance.MainCamera.GetComponent<UltimateOrbitCamera>();
-
-        public static void ApplyInfo(this CameraMain camera, CameraInfo info, bool stop = false)
-        {
-            camera.SetTargetPos(info.TargetPos);
-            camera.SetDistance(info.Distance);
-            camera.transform.rotation = info.Angle;
-            camera.camera.fieldOfView = info.FOV;
-            if (stop) StopAll();
-        }
-
-        public static CameraInfo GetInfo(this CameraMain camera, bool stop = false)
-        {
-            if (stop) StopAll();
-            return new CameraInfo(camera);
-        }
-
+        
         public static void StopSpin()
         {
             Utility.SetFieldValue(UOCamera, "xVelocity", 0f);

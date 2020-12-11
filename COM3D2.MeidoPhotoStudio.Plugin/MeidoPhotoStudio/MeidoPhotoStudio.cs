@@ -32,6 +32,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private LightManager lightManager;
         private PropManager propManager;
         private EffectManager effectManager;
+        private CameraManager cameraManager;
         private static Constants.Scene currentScene;
         private bool initialized;
         private bool active;
@@ -86,7 +87,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 binaryWriter.Write(kankyo ? kankyoMagic : meidoManager.ActiveMeidoList.Count);
 
                 effectManager.Serialize(binaryWriter);
-                environmentManager.Serialize(binaryWriter, kankyo);
+                environmentManager.Serialize(binaryWriter);
                 lightManager.Serialize(binaryWriter);
 
                 if (!kankyo)
@@ -173,9 +174,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         return;
                     }
 
-                    if (binaryReader.ReadInt32() > sceneVersion)
+                    var version = binaryReader.ReadInt32();
+
+                    if (version > sceneVersion)
                     {
-                        Utility.LogWarning($"'{filePath}' is made in a newer version of {pluginName}");
+                        Utility.LogWarning($"'{filePath}' is newer than the current version"
+                        + $"Scene's version: {version}, current version: {sceneVersion}");
                         return;
                     }
 
@@ -189,6 +193,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                                 messageWindowManager.Deserialize(binaryReader);
                                 break;
                             case EnvironmentManager.header:
+                                environmentManager.Deserialize(binaryReader);
+                                break;
+                            case CameraManager.header:
                                 environmentManager.Deserialize(binaryReader);
                                 break;
                             case MeidoManager.header:
@@ -250,7 +257,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     }
 
                     meidoManager.Update();
-                    environmentManager.Update();
+                    cameraManager.Update();
                     windowManager.Update();
                     effectManager.Update();
                     sceneManager.Update();
@@ -395,6 +402,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             lightManager = new LightManager();
             propManager = new PropManager(meidoManager);
             sceneManager = new SceneManager(this);
+            cameraManager = new CameraManager();
 
             effectManager = new EffectManager();
             effectManager.AddManager<BloomEffectManager>();
@@ -419,7 +427,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     [Constants.Window.Pose] = new PoseWindowPane(meidoManager, maidSwitcherPane),
                     [Constants.Window.Face] = new FaceWindowPane(meidoManager, maidSwitcherPane),
                     [Constants.Window.BG] = new BGWindowPane(
-                        environmentManager, lightManager, effectManager, sceneWindow
+                        environmentManager, lightManager, effectManager, sceneWindow, cameraManager
                     ),
                     [Constants.Window.BG2] = new BG2WindowPane(meidoManager, propManager),
                     [Constants.Window.Settings] = new SettingsWindowPane()
@@ -438,6 +446,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             {
                 meidoManager.Activate();
                 environmentManager.Activate();
+                cameraManager.Activate();
                 propManager.Activate();
                 lightManager.Activate();
                 effectManager.Activate();
@@ -471,6 +480,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 meidoManager.Deactivate();
                 environmentManager.Deactivate();
+                cameraManager.Deactivate();
                 propManager.Deactivate();
                 lightManager.Deactivate();
                 effectManager.Deactivate();

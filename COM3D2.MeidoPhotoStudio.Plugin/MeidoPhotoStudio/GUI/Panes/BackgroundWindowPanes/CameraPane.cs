@@ -5,16 +5,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     public class CameraPane : BasePane
     {
-        private readonly EnvironmentManager environmentManager;
+        private readonly CameraManager cameraManager;
         private readonly SelectionGrid cameraGrid;
         private readonly Slider zRotationSlider;
         private readonly Slider fovSlider;
         private string header;
 
-        public CameraPane(EnvironmentManager environmentManager)
+        public CameraPane(CameraManager cameraManager)
         {
-            this.environmentManager = environmentManager;
-            this.environmentManager.CameraChange += (s, a) => UpdatePane();
+            this.cameraManager = cameraManager;
+            this.cameraManager.CameraChange += (s, a) => UpdatePane();
 
             Camera camera = CameraUtility.MainCamera.camera;
             Vector3 eulerAngles = camera.transform.eulerAngles;
@@ -42,12 +42,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 camera.fieldOfView = fovSlider.Value;
             };
             cameraGrid = new SelectionGrid(
-                Enumerable.Range(1, environmentManager.CameraCount).Select(x => x.ToString()).ToArray()
+                Enumerable.Range(1, cameraManager.CameraCount).Select(x => x.ToString()).ToArray()
             );
             cameraGrid.ControlEvent += (s, a) =>
             {
                 if (updating) return;
-                environmentManager.CurrentCameraIndex = cameraGrid.SelectedItemIndex;
+                cameraManager.CurrentCameraIndex = cameraGrid.SelectedItemIndex;
             };
 
             header = Translation.Get("cameraPane", "header");
@@ -78,7 +78,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             zRotationSlider.Value = camera.transform.eulerAngles.z;
             fovSlider.Value = camera.fieldOfView;
 
-            cameraGrid.SelectedItemIndex = environmentManager.CurrentCameraIndex;
+            cameraGrid.SelectedItemIndex = cameraManager.CurrentCameraIndex;
 
             updating = false;
         }
