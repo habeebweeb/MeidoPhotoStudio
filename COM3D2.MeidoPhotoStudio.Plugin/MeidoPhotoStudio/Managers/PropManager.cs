@@ -1,22 +1,41 @@
-using System;
-using System.IO;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using UnityEngine;
-using UnityEngine.Rendering;
 using BepInEx.Configuration;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    using static MenuFileUtility;
+    using static ModelUtility;
+
     public class PropManager : IManager, ISerializable
     {
         public const string header = "PROP";
-        public const int propDataVersion = 1000;
         private static readonly ConfigEntry<bool> modItemsOnly;
-        public static bool ModItemsOnly => modItemsOnly.Value;
-        private readonly MeidoManager meidoManager;
         private static bool cubeActive = true;
+        private static Dictionary<string, string> modFileToFullPath;
+
+        private static Dictionary<string, string> ModFileToFullPath
+        {
+            get
+            {
+                if (modFileToFullPath != null) return modFileToFullPath;
+
+                string[] modFiles = Menu.GetModFiles();
+                modFileToFullPath = new Dictionary<string, string>(modFiles.Length, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var mod in modFiles)
+                {
+                    var key = Path.GetFileName(mod);
+                    if (!modFileToFullPath.ContainsKey(key)) modFileToFullPath[key] = mod;
+                }
+
+                return modFileToFullPath;
+            }
+        }
+
         public static bool CubeActive
         {
             get => cubeActive;
@@ -29,7 +48,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
         }
+
         private static bool cubeSmall;
+
         public static bool CubeSmall
         {
             get => cubeSmall;
@@ -42,17 +63,44 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 }
             }
         }
+
         private static event EventHandler CubeActiveChange;
         private static event EventHandler CubeSmallChange;
-        private readonly List<DragPointDogu> doguList = new List<DragPointDogu>();
-        public int DoguCount => doguList.Count;
-        public event EventHandler DoguListChange;
-        public event EventHandler DoguSelectChange;
-        public string[] PropNameList => doguList.Count == 0
+        public static bool ModItemsOnly => modItemsOnly.Value;
+        private readonly List<DragPointProp> propList = new List<DragPointProp>();
+
+        public string[] PropNameList => propList.Count == 0
             ? new[] { Translation.Get("systemMessage", "noProps") }
-            : doguList.Select(dogu => dogu.Name).ToArray();
-        public int CurrentDoguIndex { get; private set; }
-        public DragPointDogu CurrentDogu => DoguCount == 0 ? null : doguList[CurrentDoguIndex];
+            : propList.Select(prop => prop.Name).ToArray();
+
+        public int PropCount => propList.Count;
+        private int currentPropIndex;
+        private MeidoManager meidoManager;
+
+        public int CurrentPropIndex
+        {
+            get => currentPropIndex;
+            set
+            {
+                if (PropCount == 0)
+                {
+                    currentPropIndex = 0;
+                    return;
+                }
+
+                if ((uint) value >= (uint) PropCount) throw new ArgumentOutOfRangeException(nameof(value));
+
+                if (currentPropIndex == value) return;
+
+                currentPropIndex = value;
+                PropSelectionChange?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public DragPointProp CurrentProp => PropCount == 0 ? null : propList[CurrentPropIndex];
+        public event EventHandler PropSelectionChange;
+        public event EventHandler FromPropSelect;
+        public event EventHandler PropListChange;
 
         static PropManager() => modItemsOnly = Configuration.Config.Bind(
             "Prop", "ModItemsOnly",
@@ -63,105 +111,194 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public PropManager(MeidoManager meidoManager)
         {
             this.meidoManager = meidoManager;
-            this.meidoManager.BeginCallMeidos += DetachProps;
-            this.meidoManager.EndCallMeidos += OnEndCall;
+            meidoManager.BeginCallMeidos += OnBeginCallMeidos;
+            meidoManager.EndCallMeidos += OnEndCallMeidos;
             Activate();
         }
 
-        public void Serialize(BinaryWriter binaryWriter)
+        public void AddFromPropInfo(PropInfo propInfo)
         {
-            binaryWriter.Write(header);
-            binaryWriter.Write(propDataVersion);
-            binaryWriter.Write(doguList.Count);
-            foreach (DragPointDogu dogu in doguList)
+            switch (propInfo.Type)
             {
-                binaryWriter.WriteVector3(dogu.MyObject.position);
-                binaryWriter.WriteQuaternion(dogu.MyObject.rotation);
-                binaryWriter.WriteVector3(dogu.MyObject.localScale);
-                dogu.attachPointInfo.Serialize(binaryWriter);
-                binaryWriter.Write(dogu.ShadowCasting);
-
-                binaryWriter.Write(dogu.assetName);
-            }
-        }
-
-        public void Deserialize(BinaryReader binaryReader)
-        {
-            Dictionary<string, string> modToModPath = null;
-            ClearDogu();
-
-            int version = binaryReader.ReadInt32();
-
-            int numberOfProps = binaryReader.ReadInt32();
-
-            int doguIndex = 0;
-
-            for (int i = 0; i < numberOfProps; i++)
-            {
-                Vector3 position = binaryReader.ReadVector3();
-                Quaternion rotation = binaryReader.ReadQuaternion();
-                Vector3 scale = binaryReader.ReadVector3();
-
-                AttachPointInfo info = AttachPointInfo.Deserialize(binaryReader);
-
-                bool shadowCasting = binaryReader.ReadBoolean();
-
-                string assetName = binaryReader.ReadString();
-
-                if (assetName.EndsWith(".menu") && assetName.Contains('#') && modToModPath == null)
-                {
-                    modToModPath = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
-                    foreach (string mod in Menu.GetModFiles()) modToModPath.Add(Path.GetFileName(mod), mod);
-                }
-
-                if (SpawnFromAssetString(assetName, modToModPath))
-                {
-                    DragPointDogu dogu = doguList[doguIndex++];
-                    Transform obj = dogu.MyObject;
-                    obj.position = position;
-                    obj.rotation = rotation;
-                    obj.localScale = scale;
-                    dogu.attachPointInfo = info;
-                    dogu.ShadowCasting = shadowCasting;
-                }
-            }
-            CurrentDoguIndex = 0;
-            GameMain.Instance.StartCoroutine(DeserializeAttach());
-        }
-
-        private System.Collections.IEnumerator DeserializeAttach()
-        {
-            yield return new WaitForEndOfFrame();
-
-            foreach (DragPointDogu dogu in doguList)
-            {
-                AttachPointInfo info = dogu.attachPointInfo;
-                if (info.AttachPoint != AttachPoint.None)
-                {
-                    Meido parent = meidoManager.GetMeido(info.MaidIndex);
-                    if (parent != null)
+                case PropInfo.PropType.Mod:
+                    ModItem modItem;
+                    if (!string.IsNullOrEmpty(propInfo.SubFilename))
                     {
-                        Transform obj = dogu.MyObject;
-                        Vector3 position = obj.position;
-                        Vector3 scale = obj.localScale;
-                        Quaternion rotation = obj.rotation;
-
-                        Transform point = parent.IKManager.GetAttachPointTransform(info.AttachPoint);
-                        dogu.MyObject.SetParent(point, true);
-                        info = new AttachPointInfo(
-                            info.AttachPoint,
-                            parent.Maid.status.guid,
-                            parent.Slot
-                        );
-                        dogu.attachPointInfo = info;
-
-                        obj.position = position;
-                        obj.localScale = scale;
-                        obj.rotation = rotation;
+                        modItem = ModItem.OfficialMod(ModFileToFullPath[propInfo.Filename]);
+                        modItem.BaseMenuFile = propInfo.SubFilename;
                     }
-                }
+                    else
+                        modItem = ModItem.Mod(propInfo.Filename);
+
+                    AddModProp(modItem);
+                    break;
+                case PropInfo.PropType.MyRoom:
+                    AddMyRoomProp(new MyRoomItem { ID = propInfo.MyRoomID, PrefabName = propInfo.Filename });
+                    break;
+                case PropInfo.PropType.Bg:
+                    AddBgProp(propInfo.Filename);
+                    break;
+                case PropInfo.PropType.Odogu:
+                    AddGameProp(propInfo.Filename);
+                    break;
+                default: throw new ArgumentOutOfRangeException();
             }
         }
+
+        public bool AddModProp(ModItem modItem)
+        {
+            var model = LoadMenuModel(modItem);
+            if (!model) return false;
+
+            var name = modItem.MenuFile;
+            if (modItem.IsOfficialMod) name = Path.GetFileName(name) + ".menu"; // add '.menu' for partsedit support
+            model.name = name;
+
+            var dragPoint = AttachDragPoint(model);
+            dragPoint.Info = PropInfo.FromModItem(modItem);
+
+            AddProp(dragPoint);
+
+            return true;
+        }
+
+        public bool AddMyRoomProp(MyRoomItem myRoomItem)
+        {
+            var model = LoadMyRoomModel(myRoomItem);
+            if (!model) return false;
+
+            model.name = Translation.Get("myRoomPropNames", myRoomItem.PrefabName);
+
+            var dragPoint = AttachDragPoint(model);
+            dragPoint.Info = PropInfo.FromMyRoom(myRoomItem);
+
+            AddProp(dragPoint);
+
+            return true;
+        }
+
+        public bool AddBgProp(string assetName)
+        {
+            var model = LoadBgModel(assetName);
+            if (!model) return false;
+
+            model.name = Translation.Get("bgNames", assetName);
+
+            var dragPoint = AttachDragPoint(model);
+            dragPoint.Info = PropInfo.FromBg(assetName);
+
+            AddProp(dragPoint);
+
+            return true;
+        }
+
+        public bool AddGameProp(string assetName)
+        {
+            var isMenu = assetName.EndsWith(".menu");
+            var model = isMenu ? LoadMenuModel(assetName) : LoadGameModel(assetName);
+            if (!model) return false;
+
+            model.name = Translation.Get("propNames", isMenu ? Utility.HandItemToOdogu(assetName) : assetName, !isMenu);
+
+            var dragPoint = AttachDragPoint(model);
+            dragPoint.Info = PropInfo.FromGameProp(assetName);
+
+            AddProp(dragPoint);
+
+            return true;
+        }
+
+        public void CopyProp(int propIndex)
+        {
+            if ((uint) propIndex >= (uint) PropCount) throw new ArgumentOutOfRangeException(nameof(propIndex));
+
+            AddFromPropInfo(propList[propIndex].Info);
+        }
+
+        public void DeleteAllProps()
+        {
+            foreach (var prop in propList) DestroyProp(prop);
+            propList.Clear();
+            CurrentPropIndex = 0;
+            EmitPropListChange();
+        }
+
+        public void RemoveProp(int index)
+        {
+            if ((uint) index >= (uint) PropCount) throw new ArgumentOutOfRangeException(nameof(index));
+
+            DestroyProp(propList[index]);
+            propList.RemoveAt(index);
+            CurrentPropIndex = Utility.Bound(CurrentPropIndex, 0, PropCount - 1);
+            EmitPropListChange();
+        }
+
+        private DragPointProp AttachDragPoint(GameObject model)
+        {
+            var dragPoint = DragPoint.Make<DragPointProp>(PrimitiveType.Cube, Vector3.one * 0.12f);
+            dragPoint.Initialize(() => model.transform.position, () => Vector3.zero);
+            dragPoint.Set(model.transform);
+            dragPoint.AddGizmo(0.45f, CustomGizmo.GizmoMode.World);
+            dragPoint.ConstantScale = true;
+            dragPoint.DragPointScale = CubeSmall ? DragPointGeneral.smallCube : 1f;
+            dragPoint.Delete += OnDeleteProp;
+            dragPoint.Select += OnSelectProp;
+            return dragPoint;
+        }
+
+        private void AddProp(DragPointProp dragPoint)
+        {
+            propList.Add(dragPoint);
+            EmitPropListChange();
+        }
+
+        private void DestroyProp(DragPointProp prop)
+        {
+            if (!prop) return;
+
+            prop.Delete -= OnDeleteProp;
+            prop.Select -= OnSelectProp;
+            Object.Destroy(prop.gameObject);
+        }
+
+        private void EmitPropListChange() => PropListChange?.Invoke(this, EventArgs.Empty);
+
+        private void OnBeginCallMeidos(object sender, EventArgs args)
+        {
+            foreach (var prop in propList.Where(p => p.AttachPointInfo.AttachPoint != AttachPoint.None))
+                prop.DetachTemporary();
+        }
+
+        private void OnEndCallMeidos(object sender, EventArgs args)
+        {
+            foreach (var prop in propList.Where(p => p.AttachPointInfo.AttachPoint != AttachPoint.None))
+            {
+                var info = prop.AttachPointInfo;
+                var meido = meidoManager.GetMeido(info.MaidGuid);
+                prop.AttachTo(meido, info.AttachPoint, meido == null);
+            }
+        }
+
+        private void OnDeleteProp(object sender, EventArgs args)
+            => RemoveProp(propList.IndexOf((DragPointProp) sender));
+
+        private void OnSelectProp(object sender, EventArgs args)
+        {
+            CurrentPropIndex = propList.IndexOf((DragPointProp) sender);
+            FromPropSelect?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnCubeSmall(object sender, EventArgs args)
+        {
+            foreach (var dragPoint in propList) dragPoint.DragPointScale = CubeSmall ? DragPointGeneral.smallCube : 1f;
+        }
+
+        private void OnCubeActive(object sender, EventArgs args)
+        {
+            foreach (var dragPoint in propList) dragPoint.gameObject.SetActive(CubeActive);
+        }
+
+        public void Update() { }
 
         public void Activate()
         {
@@ -171,401 +308,12 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Deactivate()
         {
-            ClearDogu();
+            DeleteAllProps();
             CubeSmallChange -= OnCubeSmall;
             CubeActiveChange -= OnCubeActive;
         }
 
-        public void Update() { }
-
-        private GameObject GetDeploymentObject()
-        {
-            return GameObject.Find("Deployment Object Parent")
-                ?? new GameObject("Deployment Object Parent");
-        }
-
-        public bool SpawnModItemProp(ModItem modItem)
-        {
-            GameObject dogu = LoadModel(modItem);
-            string name = modItem.MenuFile;
-            if (modItem.IsOfficialMod) name = Path.GetFileName(name) + ".menu"; // Add '.menu' for partsedit support
-            if (dogu != null) AttachDragPoint(dogu, modItem.ToString(), name, new Vector3(0f, 0f, 0.5f));
-            return dogu != null;
-        }
-
-        public bool SpawnMyRoomProp(MyRoomItem item)
-        {
-            MyRoomCustom.PlacementData.Data data = MyRoomCustom.PlacementData.GetData(item.ID);
-            GameObject dogu = GameObject.Instantiate(data.GetPrefab());
-            string name = Translation.Get("myRoomPropNames", item.PrefabName);
-            if (dogu != null)
-            {
-                GameObject finalDogu = new GameObject();
-                dogu.transform.SetParent(finalDogu.transform, true);
-                finalDogu.transform.SetParent(GetDeploymentObject().transform, false);
-                AttachDragPoint(finalDogu, item.ToString(), name, new Vector3(0f, 0f, 0.5f));
-            }
-            else Utility.LogInfo($"Could not load MyRoomCreative prop '{item.PrefabName}'");
-            return dogu != null;
-        }
-
-        public bool SpawnBG(string assetName)
-        {
-            if (assetName.StartsWith("BG_")) assetName = assetName.Substring(3);
-            GameObject obj = GameMain.Instance.BgMgr.CreateAssetBundle(assetName)
-                ?? Resources.Load<GameObject>("BG/" + assetName)
-                ?? Resources.Load<GameObject>("BG/2_0/" + assetName);
-
-            if (obj != null)
-            {
-                GameObject dogu = GameObject.Instantiate(obj);
-                string name = Translation.Get("bgNames", assetName);
-                dogu.transform.localScale = Vector3.one * 0.1f;
-                AttachDragPoint(dogu, $"BG_{assetName}", name, new Vector3(0f, 0f, 0.5f));
-            }
-            return obj != null;
-        }
-
-        public bool SpawnObject(string assetName)
-        {
-            // TODO: Add a couple more things to ignore list
-            GameObject dogu = null;
-            string doguName = Translation.Get("propNames", assetName, false);
-            Vector3 doguPosition = new Vector3(0f, 0f, 0.5f);
-
-            if (assetName.EndsWith(".menu"))
-            {
-                dogu = LoadModel(assetName);
-                string handItem = Utility.HandItemToOdogu(assetName);
-                if (Translation.Has("propNames", handItem)) doguName = Translation.Get("propNames", handItem);
-            }
-            else if (assetName.StartsWith("mirror"))
-            {
-                Material mirrorMaterial = new Material(Shader.Find("Mirror"));
-                dogu = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                Renderer mirrorRenderer = dogu.GetComponent<Renderer>();
-                mirrorRenderer.material = mirrorMaterial;
-                mirrorRenderer.enabled = true;
-                MirrorReflection2 mirrorReflection = dogu.AddComponent<MirrorReflection2>();
-                mirrorReflection.m_TextureSize = 2048;
-
-                Vector3 localPosition = new Vector3(0f, 0.96f, 0f);
-                dogu.transform.Rotate(dogu.transform.right, 90f);
-                dogu.transform.localPosition = localPosition;
-
-                switch (assetName)
-                {
-                    case "mirror1":
-                        dogu.transform.localScale = new Vector3(0.2f, 0.4f, 0.2f);
-                        break;
-                    case "mirror2":
-                        dogu.transform.localScale = new Vector3(0.1f, 0.4f, 0.2f);
-                        break;
-                    case "mirror3":
-                        localPosition.y = 0.85f;
-                        dogu.transform.localScale = new Vector3(0.03f, 0.18f, 0.124f);
-                        break;
-                    default:
-                        GameObject.Destroy(dogu);
-                        dogu = null;
-                        break;
-                }
-            }
-            else if (assetName.IndexOf(':') >= 0)
-            {
-                string[] assetParts = assetName.Split(':');
-                GameObject obj = GameMain.Instance.BgMgr.CreateAssetBundle(assetParts[0])
-                    ?? Resources.Load<GameObject>("BG/" + assetParts[0]);
-                try
-                {
-                    GameObject bg = GameObject.Instantiate(obj);
-                    int num = int.Parse(assetParts[1]);
-                    dogu = bg.transform.GetChild(num).gameObject;
-                    dogu.transform.SetParent(null);
-                    GameObject.Destroy(bg);
-                }
-                catch { }
-            }
-            else
-            {
-                GameObject obj = GameMain.Instance.BgMgr.CreateAssetBundle(assetName)
-                    ?? Resources.Load<GameObject>("Prefab/" + assetName)
-                    ?? Resources.Load<GameObject>("BG/" + assetName);
-                try
-                {
-                    dogu = GameObject.Instantiate<GameObject>(obj);
-                    dogu.transform.localPosition = Vector3.zero;
-
-                    MeshRenderer[] meshRenderers = dogu.GetComponentsInChildren<MeshRenderer>();
-                    for (int i = 0; i < meshRenderers.Length; i++)
-                    {
-                        if (meshRenderers[i])
-                        {
-                            string name = meshRenderers[i].gameObject.name;
-                            if (name.IndexOf("castshadow", StringComparison.OrdinalIgnoreCase) < 0)
-                            {
-                                meshRenderers[i].shadowCastingMode = ShadowCastingMode.Off;
-                            }
-                        }
-                    }
-
-                    Collider collider = dogu.transform.GetComponent<Collider>();
-                    if (collider != null) collider.enabled = false;
-                    foreach (Transform transform in dogu.transform)
-                    {
-                        collider = transform.GetComponent<Collider>();
-                        if (collider != null)
-                        {
-                            collider.enabled = false;
-                        }
-                    }
-                }
-                catch { }
-                #region particle system experiment
-                // if (asset.StartsWith("Particle/"))
-                // {
-                //     ParticleSystem particleSystem = go.GetComponent<ParticleSystem>();
-                //     if (particleSystem != null)
-                //     {
-                //         ParticleSystem.MainModule main;
-                //         main = particleSystem.main;
-                //         main.loop = true;
-                //         main.duration = Mathf.Infinity;
-
-                //         ParticleSystem[] particleSystems = particleSystem.GetComponents<ParticleSystem>();
-                //         foreach (ParticleSystem part in particleSystems)
-                //         {
-                //             ParticleSystem.EmissionModule emissionModule = part.emission;
-                //             ParticleSystem.Burst[] bursts = new ParticleSystem.Burst[emissionModule.burstCount];
-                //             emissionModule.GetBursts(bursts);
-                //             for (int i = 0; i < bursts.Length; i++)
-                //             {
-                //                 bursts[i].cycleCount = Int32.MaxValue;
-                //             }
-                //             emissionModule.SetBursts(bursts);
-                //             main = part.main;
-                //             main.loop = true;
-                //             main.duration = Mathf.Infinity;
-                //         }
-                //     }
-                // }
-                #endregion particle system experiment
-            }
-
-            if (dogu != null)
-            {
-                AttachDragPoint(dogu, assetName, doguName, doguPosition);
-                return true;
-            }
-
-            Utility.LogInfo($"Could not spawn object '{assetName}'");
-
-            return false;
-        }
-
-        private bool SpawnFromAssetString(string assetName, Dictionary<string, string> modDict = null)
-        {
-            bool result;
-            if (assetName.EndsWith(".menu"))
-            {
-                if (assetName.Contains('#'))
-                {
-                    string[] assetParts = assetName.Split('#');
-                    string menuFile = modDict == null ? Menu.GetModPathFileName(assetParts[0]) : modDict[assetParts[0]];
-
-                    ModItem item = ModItem.OfficialMod(menuFile);
-                    item.BaseMenuFile = assetParts[1];
-                    result = SpawnModItemProp(item);
-                }
-                else if (assetName.StartsWith("handitem")) result = SpawnObject(assetName);
-                else result = SpawnModItemProp(ModItem.Mod(assetName));
-            }
-            else if (assetName.StartsWith("MYR_"))
-            {
-                string[] assetParts = assetName.Split('#');
-                int id = int.Parse(assetParts[0].Substring(4));
-                string prefabName;
-                if (assetParts.Length == 2 && !string.IsNullOrEmpty(assetParts[1])) prefabName = assetParts[1];
-                else
-                {
-                    // deserialize modifiedMM and maybe MM 23.0+.
-                    MyRoomCustom.PlacementData.Data data = MyRoomCustom.PlacementData.GetData(id);
-                    prefabName = !string.IsNullOrEmpty(data.resourceName) ? data.resourceName : data.assetName;
-                }
-                result = SpawnMyRoomProp(new MyRoomItem() { ID = id, PrefabName = prefabName });
-            }
-            else if (assetName.StartsWith("BG_")) result = SpawnBG(assetName);
-            else result = SpawnObject(assetName);
-
-            return result;
-        }
-
-        private void AttachDragPoint(GameObject dogu, string assetName, string name, Vector3 position)
-        {
-            // TODO: Figure out why some props aren't centred properly
-            // Doesn't happen in MM but even after copy pasting the code, it doesn't work :/
-            dogu.name = name;
-            dogu.transform.position = position;
-
-            DragPointDogu dragDogu = DragPoint.Make<DragPointDogu>(PrimitiveType.Cube, Vector3.one * 0.12f);
-            dragDogu.Initialize(() => dogu.transform.position, () => Vector3.zero);
-            dragDogu.Set(dogu.transform);
-            dragDogu.AddGizmo(scale: 0.45f, mode: CustomGizmo.GizmoMode.World);
-            dragDogu.ConstantScale = true;
-            dragDogu.Delete += DeleteDogu;
-            dragDogu.Select += SelectDogu;
-            dragDogu.DragPointScale = CubeSmall ? DragPointGeneral.smallCube : 1f;
-            dragDogu.assetName = assetName;
-
-            doguList.Add(dragDogu);
-            OnDoguListChange();
-        }
-
-        public void SetCurrentDogu(int doguIndex)
-        {
-            if (doguIndex >= 0 && doguIndex < DoguCount)
-            {
-                CurrentDoguIndex = doguIndex;
-                DoguSelectChange?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        public void RemoveDogu(int doguIndex)
-        {
-            if (doguIndex >= 0 && doguIndex < DoguCount)
-            {
-                DestroyDogu(doguList[doguIndex]);
-                doguList.RemoveAt(doguIndex);
-                CurrentDoguIndex = Utility.Bound(CurrentDoguIndex, 0, DoguCount - 1);
-                OnDoguListChange();
-            }
-        }
-
-        public void CopyDogu(int doguIndex)
-        {
-            if (doguIndex >= 0 && doguIndex < DoguCount)
-            {
-                SpawnFromAssetString(doguList[doguIndex].assetName);
-            }
-        }
-
-        public void AttachProp(
-            int doguIndex, AttachPoint attachPoint, Meido meido, bool worldPositionStays = true
-        )
-        {
-            if (doguList.Count == 0 || doguIndex >= doguList.Count || doguIndex < 0) return;
-            AttachProp(doguList[doguIndex], attachPoint, meido, worldPositionStays);
-        }
-
-        private void AttachProp(
-            DragPointDogu dragDogu, AttachPoint attachPoint, Meido meido, bool worldPositionStays = true
-        )
-        {
-            GameObject dogu = dragDogu.MyGameObject;
-
-            Transform attachPointTransform = meido?.IKManager.GetAttachPointTransform(attachPoint);
-            // ?? GetDeploymentObject().transform;
-
-            dragDogu.attachPointInfo = new AttachPointInfo(
-                attachPoint: meido == null ? AttachPoint.None : attachPoint,
-                maidGuid: meido == null ? string.Empty : meido.Maid.status.guid,
-                maidIndex: meido == null ? -1 : meido.Slot
-            );
-
-            Vector3 position = dogu.transform.position;
-            Quaternion rotation = dogu.transform.rotation;
-            Vector3 scale = dogu.transform.localScale;
-
-            dogu.transform.SetParent(attachPointTransform, worldPositionStays);
-
-            if (worldPositionStays)
-            {
-                dogu.transform.position = position;
-                dogu.transform.rotation = rotation;
-            }
-            else
-            {
-                dogu.transform.localPosition = Vector3.zero;
-                dogu.transform.rotation = Quaternion.identity;
-            }
-
-            dogu.transform.localScale = scale;
-
-            if (meido == null) Utility.FixGameObjectScale(dogu);
-        }
-
-        private void DetachProps(object sender, EventArgs args)
-        {
-            foreach (DragPointDogu dogu in doguList)
-            {
-                if (dogu.attachPointInfo.AttachPoint != AttachPoint.None)
-                {
-                    dogu.MyObject.SetParent(null, /*GetDeploymentObject().transform*/ true);
-                }
-            }
-        }
-
-        private void ClearDogu()
-        {
-            for (int i = DoguCount - 1; i >= 0; i--)
-            {
-                DestroyDogu(doguList[i]);
-            }
-            doguList.Clear();
-            CurrentDoguIndex = 0;
-        }
-
-        private void OnEndCall(object sender, EventArgs args) => ReattachProps(useGuid: true);
-
-        private void ReattachProps(bool useGuid, bool forceStay = false)
-        {
-            foreach (DragPointDogu dragDogu in doguList)
-            {
-                AttachPointInfo info = dragDogu.attachPointInfo;
-                Meido meido = useGuid
-                    ? meidoManager.GetMeido(info.MaidGuid)
-                    : meidoManager.GetMeido(info.MaidIndex);
-                bool worldPositionStays = forceStay || meido == null;
-                AttachProp(dragDogu, dragDogu.attachPointInfo.AttachPoint, meido, worldPositionStays);
-            }
-        }
-
-        private void DeleteDogu(object sender, EventArgs args)
-        {
-            DragPointDogu dogu = (DragPointDogu)sender;
-            RemoveDogu(doguList.FindIndex(dragDogu => dragDogu == dogu));
-        }
-
-        private void DestroyDogu(DragPointDogu dogu)
-        {
-            if (dogu == null) return;
-            dogu.Delete -= DeleteDogu;
-            dogu.Select -= SelectDogu;
-            GameObject.Destroy(dogu.gameObject);
-        }
-
-        private void SelectDogu(object sender, EventArgs args)
-        {
-            DragPointDogu dogu = (DragPointDogu)sender;
-            SetCurrentDogu(doguList.IndexOf(dogu));
-        }
-
-        private void OnCubeSmall(object sender, EventArgs args)
-        {
-            foreach (DragPointDogu dogu in doguList)
-            {
-                dogu.DragPointScale = CubeSmall ? DragPointGeneral.smallCube : 1f;
-            }
-        }
-
-        private void OnCubeActive(object sender, EventArgs args)
-        {
-            foreach (DragPointDogu dragPoint in doguList)
-            {
-                dragPoint.gameObject.SetActive(CubeActive);
-            }
-        }
-
-        private void OnDoguListChange() => DoguListChange?.Invoke(this, EventArgs.Empty);
+        public void Serialize(BinaryWriter binaryWriter) => Utility.LogMessage("no prop serialization :(");
+        public void Deserialize(BinaryReader binaryReader) => Utility.LogMessage("no prop deserialization :(");
     }
 }

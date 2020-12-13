@@ -15,18 +15,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly Button copyPropButton;
         private string propManagerHeader;
 
-        private int CurrentDoguIndex => propManager.CurrentDoguIndex;
+        private int CurrentDoguIndex => propManager.CurrentPropIndex;
 
         public PropManagerPane(PropManager propManager)
         {
             this.propManager = propManager;
-            this.propManager.DoguListChange += (s, a) =>
+            this.propManager.PropListChange += (s, a) =>
             {
                 UpdatePropList();
                 UpdateToggles();
             };
 
-            this.propManager.DoguSelectChange += (s, a) =>
+            this.propManager.FromPropSelect += (s, a) =>
             {
                 updating = true;
                 propDropdown.SelectedItemIndex = CurrentDoguIndex;
@@ -38,7 +38,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             propDropdown.SelectionChange += (s, a) =>
             {
                 if (updating) return;
-                this.propManager.SetCurrentDogu(propDropdown.SelectedItemIndex);
+                this.propManager.CurrentPropIndex = propDropdown.SelectedItemIndex;
                 UpdateToggles();
             };
 
@@ -51,29 +51,29 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             dragPointToggle = new Toggle(Translation.Get("propManagerPane", "dragPointToggle"));
             dragPointToggle.ControlEvent += (s, a) =>
             {
-                if (updating || this.propManager.DoguCount == 0) return;
-                this.propManager.CurrentDogu.DragPointEnabled = dragPointToggle.Value;
+                if (updating || this.propManager.PropCount == 0) return;
+                this.propManager.CurrentProp.DragPointEnabled = dragPointToggle.Value;
             };
 
             gizmoToggle = new Toggle(Translation.Get("propManagerPane", "gizmoToggle"));
             gizmoToggle.ControlEvent += (s, a) =>
             {
-                if (updating || this.propManager.DoguCount == 0) return;
-                this.propManager.CurrentDogu.GizmoEnabled = gizmoToggle.Value;
+                if (updating || this.propManager.PropCount == 0) return;
+                this.propManager.CurrentProp.GizmoEnabled = gizmoToggle.Value;
             };
 
             shadowCastingToggle = new Toggle(Translation.Get("propManagerPane", "shadowCastingToggle"));
             shadowCastingToggle.ControlEvent += (s, a) =>
             {
-                if (updating || this.propManager.DoguCount == 0) return;
-                this.propManager.CurrentDogu.ShadowCasting = shadowCastingToggle.Value;
+                if (updating || this.propManager.PropCount == 0) return;
+                this.propManager.CurrentProp.ShadowCasting = shadowCastingToggle.Value;
             };
 
             copyPropButton = new Button(Translation.Get("propManagerPane", "copyButton"));
-            copyPropButton.ControlEvent += (s, a) => this.propManager.CopyDogu(CurrentDoguIndex);
+            copyPropButton.ControlEvent += (s, a) => this.propManager.CopyProp(CurrentDoguIndex);
 
             deletePropButton = new Button(Translation.Get("propManagerPane", "deleteButton"));
-            deletePropButton.ControlEvent += (s, a) => this.propManager.RemoveDogu(CurrentDoguIndex);
+            deletePropButton.ControlEvent += (s, a) => this.propManager.RemoveProp(CurrentDoguIndex);
 
             propManagerHeader = Translation.Get("propManagerPane", "header");
         }
@@ -105,7 +105,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             MpsGui.Header(propManagerHeader);
             MpsGui.WhiteLine();
 
-            GUI.enabled = propManager.DoguCount > 0;
+            GUI.enabled = propManager.PropCount > 0;
 
             GUILayout.BeginHorizontal();
             propDropdown.Draw(dropdownLayoutOptions);
@@ -138,13 +138,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void UpdateToggles()
         {
-            DragPointDogu dogu = propManager.CurrentDogu;
-            if (dogu == null) return;
+            DragPointProp prop = propManager.CurrentProp;
+            if (prop == null) return;
 
             updating = true;
-            dragPointToggle.Value = dogu.DragPointEnabled;
-            gizmoToggle.Value = dogu.GizmoEnabled;
-            shadowCastingToggle.Value = dogu.ShadowCasting;
+            dragPointToggle.Value = prop.DragPointEnabled;
+            gizmoToggle.Value = prop.GizmoEnabled;
+            shadowCastingToggle.Value = prop.ShadowCasting;
             updating = false;
         }
     }

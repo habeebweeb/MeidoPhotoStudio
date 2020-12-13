@@ -16,7 +16,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             this.meidoManager = meidoManager;
             this.propManager = propManager;
-            this.propManager.DoguSelectChange += (s, a) => propTabs.SelectedItemIndex = 0;
+            this.propManager.FromPropSelect += (s, a) => propTabs.SelectedItemIndex = 0;
 
             // should be added in this order
             AddPane(new PropsPane(propManager));

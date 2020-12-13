@@ -39,7 +39,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             this.meidoManager.UpdateMeido += UpdateMeido;
 
             this.propManager = propManager;
-            this.propManager.DoguSelectChange += (s, a) => ChangeWindow(Constants.Window.BG2);
+            this.propManager.FromPropSelect += (s, a) => ChangeWindow(Constants.Window.BG2);
 
             this.lightManager = lightManager;
             this.lightManager.Select += (s, a) => ChangeWindow(Constants.Window.BG);

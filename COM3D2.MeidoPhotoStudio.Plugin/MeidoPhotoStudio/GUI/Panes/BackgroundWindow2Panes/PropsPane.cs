@@ -157,11 +157,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             string assetName = Constants.DoguDict[SelectedCategory][doguDropdown.SelectedItemIndex];
             if (SelectedCategory == Constants.customDoguCategories[Constants.DoguCategory.BGSmall])
             {
-                propManager.SpawnBG(assetName);
+                propManager.AddBgProp(assetName);
             }
             else
             {
-                propManager.SpawnObject(assetName);
+                propManager.AddGameProp(assetName);
             }
         }
     }

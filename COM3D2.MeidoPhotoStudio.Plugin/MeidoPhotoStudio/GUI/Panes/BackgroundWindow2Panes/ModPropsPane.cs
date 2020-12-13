@@ -139,7 +139,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     float x = modIndex % columns * buttonSize;
                     float y = modIndex / columns * buttonSize;
                     Rect iconRect = new Rect(x, y, buttonSize, buttonSize);
-                    if (GUI.Button(iconRect, "")) propManager.SpawnModItemProp(modItem);
+                    if (GUI.Button(iconRect, "")) propManager.AddModProp(modItem);
                     GUI.DrawTexture(iconRect, modItem.Icon);
                     modIndex++;
                 }

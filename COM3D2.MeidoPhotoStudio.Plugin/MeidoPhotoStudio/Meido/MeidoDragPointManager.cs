@@ -681,6 +681,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private static readonly AttachPointInfo empty = new AttachPointInfo(AttachPoint.None, string.Empty, -1);
         public static ref readonly AttachPointInfo Empty => ref empty;
 
+        public AttachPointInfo(AttachPoint attachPoint, Meido meido)
+        {
+            AttachPoint = attachPoint;
+            MaidGuid = meido.Maid.status.guid;
+            MaidIndex = meido.Slot;
+        }
+
         public AttachPointInfo(AttachPoint attachPoint, string maidGuid, int maidIndex)
         {
             AttachPoint = attachPoint;

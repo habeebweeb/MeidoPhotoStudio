@@ -582,7 +582,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             DoguDict[customDoguCategories[DoguCategory.Mob]].AddRange(new[] {
                 "Mob_Man_Stand001", "Mob_Man_Stand002", "Mob_Man_Stand003", "Mob_Man_Sit001", "Mob_Man_Sit002",
                 "Mob_Man_Sit003", "Mob_Girl_Stand001", "Mob_Girl_Stand002", "Mob_Girl_Stand003", "Mob_Girl_Sit001",
-                "Mob_Girl_Sit002", "Mob_Girl_Sit003", "Salon:65", "Salon:63", "Salon:69"
+                "Mob_Girl_Sit002", "Mob_Girl_Sit003"
             });
 
             List<string> DoguList = DoguDict[customDoguCategories[DoguCategory.Other]];

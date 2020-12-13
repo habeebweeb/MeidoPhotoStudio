@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    using static MenuFileUtility;
     public class MyRoomPropsPane : BasePane
     {
         private readonly PropManager propManager;
@@ -69,7 +68,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 float y = i / columns * buttonSize;
                 MyRoomItem myRoomItem = myRoomPropList[i];
                 Rect iconRect = new Rect(x, y, buttonSize, buttonSize);
-                if (GUI.Button(iconRect, "")) propManager.SpawnMyRoomProp(myRoomItem);
+                if (GUI.Button(iconRect, "")) propManager.AddMyRoomProp(myRoomItem);
                 GUI.DrawTexture(iconRect, myRoomItem.Icon);
             }
 
