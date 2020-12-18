@@ -10,7 +10,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     using static Meido;
     public class MaidFaceSliderPane : BasePane
     {
-        // TODO: Consider placing in external file to be user editable
         private static readonly Dictionary<string, float> SliderLimits = new Dictionary<string, float>()
         {
             // Eye Shut
@@ -208,9 +207,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void SetFaceValue(string key, bool value)
         {
-            float max = (key == "hoho" || key == "hoho2") ? 0.5f : 1f;
             if (key == "toothoff") value = !value;
-            SetFaceValue(key, value ? max : 0f);
+            SetFaceValue(key, value ? 1f : 0f);
         }
     }
 }

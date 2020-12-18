@@ -562,21 +562,41 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 BackupBlendSetValues();
 
                 Maid.FaceAnime(blendSet, 0f);
+
+                var morph = Body.Face.morph;
+
+                foreach (var faceKey in faceKeys)
+                {
+                    var hash = Utility.GP01FbFaceHash(morph, faceKey);
+                    if (!morph.Contains(hash)) continue;
+
+                    var blendIndex = (int) morph.hash[hash];
+                    var value = faceKey == "nosefook"
+                        ? Maid.boNoseFook || morph.boNoseFook ? 1f : 0f
+                        : morph.dicBlendSet[CurrentFaceBlendSet][blendIndex];
+
+                    morph.SetBlendValues(blendIndex, value);
+                }
+
+                morph.FixBlendValues();
             }
 
             StopBlink();
             OnUpdateMeido();
         }
 
-        public void SetFaceBlendValue(string hash, float value)
+        public void SetFaceBlendValue(string faceKey, float value)
         {
             TMorph morph = Body.Face.morph;
-            hash = Utility.GP01FbFaceHash(morph, hash);
-            if (morph.Contains(hash))
-            {
-                if (hash == "nosefook") Maid.boNoseFook = morph.boNoseFook = value > 0f;
-                else morph.dicBlendSet[CurrentFaceBlendSet][(int)morph.hash[hash]] = value;
-            }
+            var hash = Utility.GP01FbFaceHash(morph, faceKey);
+            if (!morph.Contains(hash)) return;
+
+            var blendIndex = (int) morph.hash[hash];
+            if (faceKey == "nosefook") Maid.boNoseFook = morph.boNoseFook = value > 0f;
+            else morph.dicBlendSet[CurrentFaceBlendSet][blendIndex] = value;
+
+            morph.SetBlendValues(blendIndex, value);
+            morph.FixBlendValues();
         }
 
         public float GetFaceBlendValue(string hash)
