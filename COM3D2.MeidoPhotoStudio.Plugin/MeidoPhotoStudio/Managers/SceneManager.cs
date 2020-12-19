@@ -4,13 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using BepInEx.Configuration;
-using System.Text;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
     public class SceneManager : IManager
     {
+
+        private static byte[] tempSceneData;
+        private static string TempScenePath => Path.Combine(Constants.configPath, "mpstempscene");
         public static bool Busy { get; private set; }
         public static readonly Vector2 sceneDimensions = new Vector2(480, 270);
         private static readonly ConfigEntry<bool> sortDescending;
@@ -24,7 +26,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             get => sortDescending.Value;
             set => sortDescending.Value = value;
         }
-        public List<Scene> SceneList { get; } = new List<Scene>();
+        public List<MPSScene> SceneList { get; } = new();
         public int CurrentDirectoryIndex { get; private set; } = -1;
         public string CurrentDirectoryName => CurrentDirectoryList[CurrentDirectoryIndex];
         public List<string> CurrentDirectoryList
@@ -38,7 +40,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             private set => currentSortMode.Value = value;
         }
         public int CurrentSceneIndex { get; private set; } = -1;
-        public Scene CurrentScene => SceneList.Count == 0 ? null : SceneList[CurrentSceneIndex];
+        public MPSScene CurrentScene => SceneList.Count == 0 ? null : SceneList[CurrentSceneIndex];
         public enum SortMode
         {
             Name, DateCreated, DateModified
@@ -141,7 +143,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SelectScene(int sceneIndex)
         {
             CurrentSceneIndex = Mathf.Clamp(sceneIndex, 0, SceneList.Count - 1);
-            CurrentScene.GetNumberOfMaids();
+            CurrentScene.Preload();
         }
 
         public void AddDirectory(string directoryName)
@@ -183,7 +185,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void SortScenes(SortMode sortMode)
         {
             CurrentSortMode = sortMode;
-            Comparison<Scene> comparator = CurrentSortMode switch
+            Comparison<MPSScene> comparator = CurrentSortMode switch
             {
                 SortMode.DateModified => SortByDateModified,
                 SortMode.DateCreated => SortByDateCreated,
@@ -202,22 +204,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             CurrentSceneIndex = Mathf.Clamp(CurrentSceneIndex, 0, SceneList.Count - 1);
         }
 
-        public void LoadScene()
-        {
-            meidoPhotoStudio.ApplyScene(CurrentScene.FileInfo.FullName);
-        }
+        public void LoadScene(MPSScene scene) => meidoPhotoStudio.LoadScene(scene.Data);
 
-        private int SortByName(Scene a, Scene b)
+        private int SortByName(MPSScene a, MPSScene b)
         {
             return SortDirection * LexicographicStringComparer.Comparison(a.FileInfo.Name, b.FileInfo.Name);
         }
 
-        private int SortByDateCreated(Scene a, Scene b)
+        private int SortByDateCreated(MPSScene a, MPSScene b)
         {
             return SortDirection * DateTime.Compare(a.FileInfo.CreationTime, b.FileInfo.CreationTime);
         }
 
-        private int SortByDateModified(Scene a, Scene b)
+        private int SortByDateModified(MPSScene a, MPSScene b)
         {
             return SortDirection * DateTime.Compare(a.FileInfo.LastWriteTime, b.FileInfo.LastWriteTime);
         }
@@ -233,7 +232,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             foreach (string filename in Directory.GetFiles(CurrentScenesDirectory))
             {
-                if (Path.GetExtension(filename) == ".png") SceneList.Add(new Scene(filename));
+                if (Path.GetExtension(filename) == ".png") SceneList.Add(new MPSScene(filename));
             }
 
             SortScenes(CurrentSortMode);
@@ -245,34 +244,46 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             string baseDirectoryName = KankyoMode ? Constants.kankyoDirectory : Constants.sceneDirectory;
             CurrentDirectoryList.Sort((a, b)
-                => a.Equals(baseDirectoryName, StringComparison.InvariantCultureIgnoreCase) ? -1 : a.CompareTo(b));
+                => a.Equals(baseDirectoryName, StringComparison.InvariantCultureIgnoreCase) 
+                    ? -1 : LexicographicStringComparer.Comparison(a, b));
         }
 
         private void ClearSceneList()
         {
-            foreach (Scene scene in SceneList) scene.Destroy();
+            foreach (MPSScene scene in SceneList) scene.Destroy();
             SceneList.Clear();
         }
 
         private void QuickSaveScene()
         {
             if (Busy) return;
-            byte[] data = meidoPhotoStudio.SerializeScene(kankyo: false);
+            
+            var data = meidoPhotoStudio.SaveScene();
             if (data == null) return;
-            File.WriteAllBytes(Path.Combine(Constants.configPath, "mpstempscene"), data);
+
+            tempSceneData = data;
+            
+            File.WriteAllBytes(TempScenePath, data);
         }
 
         private void QuickLoadScene()
         {
             if (Busy) return;
-            meidoPhotoStudio.ApplyScene(Path.Combine(Constants.configPath, "mpstempscene"));
+
+            if (tempSceneData == null)
+            {
+                if (File.Exists(TempScenePath)) tempSceneData = File.ReadAllBytes(TempScenePath);
+                else return;
+            }
+
+            meidoPhotoStudio.LoadScene(tempSceneData);
         }
 
         private void SaveSceneToFile(Texture2D screenshot, bool overwrite = false)
         {
             Busy = true;
 
-            byte[] sceneData = meidoPhotoStudio.SerializeScene(KankyoMode);
+            byte[] sceneData = meidoPhotoStudio.SaveScene(KankyoMode);
 
             if (sceneData != null)
             {
@@ -280,7 +291,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 string fileName = $"{scenePrefix}{Utility.Timestamp}.png";
                 string savePath = Path.Combine(CurrentScenesDirectory, fileName);
 
-                if (overwrite && CurrentScene != null) savePath = CurrentScene.FileInfo.FullName;
+                if (overwrite && CurrentScene?.FileInfo != null) savePath = CurrentScene.FileInfo.FullName;
                 else overwrite = false;
 
                 Utility.ResizeToFit(screenshot, (int)sceneDimensions.x, (int)sceneDimensions.y);
@@ -292,8 +303,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     fileStream.Write(sceneData, 0, sceneData.Length);
                 }
 
-                UnityEngine.Object.DestroyImmediate(screenshot);
-
                 if (overwrite)
                 {
                     File.SetCreationTime(savePath, CurrentScene.FileInfo.CreationTime);
@@ -301,67 +310,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     SceneList.RemoveAt(CurrentSceneIndex);
                 }
 
-                SceneList.Add(new Scene(savePath));
+                SceneList.Add(new MPSScene(savePath));
                 SortScenes(CurrentSortMode);
             }
 
             Busy = false;
-        }
-
-        public class Scene
-        {
-            public const int initialNumberOfMaids = -2;
-            public Texture2D Thumbnail { get; }
-            public FileInfo FileInfo { get; set; }
-            public int NumberOfMaids { get; private set; } = initialNumberOfMaids;
-
-            public Scene(string filePath)
-            {
-                FileInfo = new FileInfo(filePath);
-                Thumbnail = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-                Thumbnail.LoadImage(File.ReadAllBytes(FileInfo.FullName));
-            }
-
-            public void GetNumberOfMaids()
-            {
-                if (NumberOfMaids != initialNumberOfMaids) return;
-
-                string filePath = FileInfo.FullName;
-
-                byte[] sceneData = MeidoPhotoStudio.DecompressScene(filePath);
-
-                if (sceneData == null) return;
-
-                using BinaryReader binaryReader = new BinaryReader(new MemoryStream(sceneData), Encoding.UTF8);
-
-                try
-                {
-                    if (binaryReader.ReadString() != "MPS_SCENE")
-                    {
-                        Utility.LogWarning($"'{filePath}' is not a {MeidoPhotoStudio.pluginName} scene");
-                        return;
-                    }
-
-                    if (binaryReader.ReadInt32() > MeidoPhotoStudio.sceneVersion)
-                    {
-                        Utility.LogWarning(
-                            $"'{filePath}' is made in a newer version of {MeidoPhotoStudio.pluginName}"
-                        );
-                        return;
-                    }
-
-                    NumberOfMaids = binaryReader.ReadInt32();
-                }
-                catch (Exception e)
-                {
-                    Utility.LogWarning($"Failed to deserialize scene '{filePath}' because {e.Message}");
-                }
-            }
-
-            public void Destroy()
-            {
-                if (Thumbnail != null) UnityEngine.Object.DestroyImmediate(Thumbnail);
-            }
         }
     }
 }

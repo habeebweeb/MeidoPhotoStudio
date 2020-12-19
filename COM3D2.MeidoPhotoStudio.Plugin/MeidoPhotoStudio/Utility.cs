@@ -1,14 +1,18 @@
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
 using System.Linq;
+using Ionic.Zlib;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     public static class Utility
     {
+        private const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+            | BindingFlags.Static;
         internal static readonly byte[] pngHeader = { 137, 80, 78, 71, 13, 10, 26, 10 };
         internal static readonly byte[] pngEnd = System.Text.Encoding.ASCII.GetBytes("IEND");
         internal static readonly Regex guidRegEx = new Regex(
@@ -72,12 +76,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             return texture2D;
         }
 
-        public static FieldInfo GetFieldInfo<T>(string field)
-        {
-            const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-                | BindingFlags.Static;
-            return typeof(T).GetField(field, bindingFlags);
-        }
+        public static FieldInfo GetFieldInfo<T>(string field) => typeof(T).GetField(field, bindingFlags);
 
         public static TValue GetFieldValue<TType, TValue>(TType instance, string field)
         {
@@ -90,6 +89,17 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             GetFieldInfo<TType>(name).SetValue(instance, value);
         }
+
+        public static PropertyInfo GetPropertyInfo<T>(string field) => typeof(T).GetProperty(field, bindingFlags);
+
+        public static TValue GetPropertyValue<TType, TValue>(TType instance, string property)
+        {
+            var propertyInfo = GetPropertyInfo<TType>(property);
+            return propertyInfo == null ? default : (TValue) propertyInfo.GetValue(instance, null);
+        }
+        
+        public static void SetPropertyValue<TType, TValue>(TType instance, string name, TValue value) 
+            => GetPropertyInfo<TType>(name).SetValue(instance, value, null);
 
         public static bool AnyMouseDown()
         {
@@ -182,7 +192,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             byte[] buffer = new byte[8];
             stream.Read(buffer, 0, 8);
-            stream.Position = 0L;
             return BytesEqual(buffer, pngHeader);
         }
 
@@ -208,6 +217,11 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             if (Path.GetExtension(name) != ".txt") name += ".txt";
             File.WriteAllLines(Path.Combine(Constants.configPath, name), list.ToArray());
         }
+
+        public static void WriteToFile(string name, byte[] data)
+        {
+            File.WriteAllBytes(Path.Combine(Constants.configPath, name), data);
+        }
     }
 
     public class MousePosition : MonoBehaviour
@@ -230,6 +244,44 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else mousePosition = Input.mousePosition;
         }
+    }
+
+    public static class KeyValuePairExtensions
+    {
+        public static void Deconstruct<TKey, TValue>(
+            this KeyValuePair<TKey, TValue> kvp, out TKey key, out TValue value
+        )
+        {
+            key = kvp.Key;
+            value = kvp.Value;
+        }
+    }
+
+    public static class StreamExtensions
+    {
+        public static void CopyTo(this Stream stream, Stream outStream)
+        {
+            var buf = new byte[1024 * 32];
+            int length;
+            while ((length = stream.Read(buf, 0, buf.Length)) > 0) 
+                outStream.Write(buf, 0, length);
+        }
+
+        public static MemoryStream Decompress(this MemoryStream stream)
+        {
+            var dataMemoryStream = new MemoryStream();
+            using var compressionStream = new DeflateStream(stream, CompressionMode.Decompress, true);
+
+            compressionStream.CopyTo(dataMemoryStream);
+            compressionStream.Flush();
+
+            dataMemoryStream.Position = 0L;
+
+            return dataMemoryStream;
+        }
+
+        public static DeflateStream GetCompressionStream(this MemoryStream stream)
+            => new(stream, CompressionMode.Compress);
     }
 
     public static class CameraUtility

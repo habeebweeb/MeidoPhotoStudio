@@ -117,30 +117,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
 
-        public void Serialize(System.IO.BinaryWriter binaryWriter)
-        {
-            foreach (LightProperty lightProperty in LightProperties)
-            {
-                lightProperty.Serialize(binaryWriter);
-            }
-            binaryWriter.WriteVector3(MyObject.position);
-            binaryWriter.Write((int)SelectedLightType);
-            binaryWriter.Write(IsColourMode);
-            binaryWriter.Write(IsDisabled);
-        }
-
-        public void Deserialize(System.IO.BinaryReader binaryReader)
-        {
-            for (int i = 0; i < LightProperties.Length; i++)
-            {
-                LightProperties[i] = LightProperty.Deserialize(binaryReader);
-            }
-            MyObject.position = binaryReader.ReadVector3();
-            SetLightType((MPSLightType)binaryReader.ReadInt32());
-            IsColourMode = binaryReader.ReadBoolean();
-            IsDisabled = binaryReader.ReadBoolean();
-        }
-
         public static void SetLightProperties(Light light, LightProperty prop)
         {
             light.transform.rotation = prop.Rotation;
@@ -279,7 +255,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
     public class LightProperty
     {
-        public static readonly Vector3 DefaultPosition = new Vector3(0f, 1.9f, 0.4f);
+        public static readonly Vector3 DefaultPosition = new(0f, 1.9f, 0.4f);
         public static readonly Quaternion DefaultRotation = Quaternion.Euler(40f, 180f, 0f);
         public Quaternion Rotation { get; set; } = DefaultRotation;
         public float Intensity { get; set; } = 0.95f;
@@ -287,28 +263,5 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public float SpotAngle { get; set; } = 50f;
         public float ShadowStrength { get; set; } = 0.10f;
         public Color LightColour { get; set; } = Color.white;
-
-        public void Serialize(System.IO.BinaryWriter binaryWriter)
-        {
-            binaryWriter.WriteQuaternion(Rotation);
-            binaryWriter.Write(Intensity);
-            binaryWriter.Write(Range);
-            binaryWriter.Write(SpotAngle);
-            binaryWriter.Write(ShadowStrength);
-            binaryWriter.WriteColour(LightColour);
-        }
-
-        public static LightProperty Deserialize(System.IO.BinaryReader binaryReader)
-        {
-            return new LightProperty()
-            {
-                Rotation = binaryReader.ReadQuaternion(),
-                Intensity = binaryReader.ReadSingle(),
-                Range = binaryReader.ReadSingle(),
-                SpotAngle = binaryReader.ReadSingle(),
-                ShadowStrength = binaryReader.ReadSingle(),
-                LightColour = binaryReader.ReadColour()
-            };
-        }
     }
 }

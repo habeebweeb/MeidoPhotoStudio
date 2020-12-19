@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Linq;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class MeidoManager : IManager, ISerializable
+    public class MeidoManager : IManager
     {
         public const string header = "MEIDO";
         private static readonly CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;
@@ -135,41 +134,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public void Update()
         {
             if (InputManager.GetKeyDown(MpsKey.MeidoUndressing)) UndressAll();
-        }
-
-        public void Serialize(System.IO.BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write(header);
-            // Only true for MM scenes converted to MPS scenes
-            binaryWriter.Write(false);
-            binaryWriter.Write(Meido.meidoDataVersion);
-            binaryWriter.Write(ActiveMeidoList.Count);
-            foreach (Meido meido in ActiveMeidoList)
-            {
-                meido.Serialize(binaryWriter);
-            }
-            // Global hair/skirt gravity
-            binaryWriter.Write(GlobalGravity);
-        }
-
-        public void Deserialize(System.IO.BinaryReader binaryReader)
-        {
-            bool isMMScene = binaryReader.ReadBoolean();
-            int dataVersion = binaryReader.ReadInt32();
-            int numberOfMaids = binaryReader.ReadInt32();
-            for (int i = 0; i < numberOfMaids; i++)
-            {
-                if (i >= ActiveMeidoList.Count)
-                {
-                    long skip = binaryReader.ReadInt64(); // meido buffer length
-                    binaryReader.BaseStream.Seek(skip, System.IO.SeekOrigin.Current);
-                    continue;
-                }
-                Meido meido = ActiveMeidoList[i];
-                meido.Deserialize(binaryReader, dataVersion, isMMScene);
-            }
-            // Global hair/skirt gravity
-            GlobalGravity = binaryReader.ReadBoolean();
         }
 
         private void UnloadMeidos()

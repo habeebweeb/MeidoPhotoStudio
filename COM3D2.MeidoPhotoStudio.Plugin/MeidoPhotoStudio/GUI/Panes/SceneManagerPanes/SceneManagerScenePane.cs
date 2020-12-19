@@ -62,7 +62,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     }
                     else if (currentScene < sceneManager.SceneList.Count)
                     {
-                        SceneManager.Scene scene = sceneManager.SceneList[currentScene];
+                        var scene = sceneManager.SceneList[currentScene];
                         if (GUILayout.Button(scene.Thumbnail, sceneImageStyle, sceneLayoutOptions))
                         {
                             sceneManager.SelectScene(currentScene);

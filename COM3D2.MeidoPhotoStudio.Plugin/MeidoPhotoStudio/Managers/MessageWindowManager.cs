@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class MessageWindowManager : IManager, ISerializable
+    public class MessageWindowManager : IManager
     {
         public const string header = "TEXTBOX";
         public static readonly SliderProp fontBounds = new SliderProp(25f, 60f);
@@ -13,8 +13,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private readonly UILabel nameLabel;
         private readonly GameObject msgGameObject;
         public bool ShowingMessage { get; private set; }
-        private string messageName = string.Empty;
-        private string messageText = string.Empty;
+        public string MessageName { get; private set; } = string.Empty;
+        public string MessageText { get; private set; } = string.Empty;
+
         public int FontSize
         {
             get => msgLabel.fontSize;
@@ -49,25 +50,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             SetPhotoMessageWindowActive(false);
         }
 
-        public void Serialize(System.IO.BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write(header);
-            binaryWriter.Write(ShowingMessage);
-            binaryWriter.Write(FontSize);
-            binaryWriter.WriteNullableString(messageName);
-            binaryWriter.WriteNullableString(messageText);
-        }
-
-        public void Deserialize(System.IO.BinaryReader binaryReader)
-        {
-            CloseMessagePanel();
-            var showingMessage = binaryReader.ReadBoolean();
-            FontSize = binaryReader.ReadInt32();
-            messageName = binaryReader.ReadNullableString();
-            messageText = binaryReader.ReadNullableString();
-            if (showingMessage) ShowMessage(messageName, messageText);
-        }
-
         public void Update() { }
 
         private void SetPhotoMessageWindowActive(bool active)
@@ -100,8 +82,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void ShowMessage(string name, string message)
         {
-            messageName = name;
-            messageText = message;
+            MessageName = name;
+            MessageText = message;
             ShowingMessage = true;
             msgWnd.OpenMessageWindowPanel();
             msgLabel.ProcessText();

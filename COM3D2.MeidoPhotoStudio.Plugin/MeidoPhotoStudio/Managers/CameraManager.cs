@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -8,7 +6,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
     using UInput = Input;
-    public class CameraManager : IManager, ISerializable
+    public class CameraManager : IManager
     {
         public const string header = "CAMERA";
         private static readonly CameraMain mainCamera = CameraUtility.MainCamera;
@@ -50,37 +48,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             cameraInfos = new CameraInfo[5];
             for (var i = 0; i < cameraInfos.Length; i++) cameraInfos[i] = new CameraInfo();
             Activate();
-        }
-
-        public void Serialize(BinaryWriter binaryWriter) => Serialize(binaryWriter, false);
-
-        public void Serialize(BinaryWriter binaryWriter, bool kankyo)
-        {
-            binaryWriter.Write(header);
-
-            binaryWriter.Write(kankyo);
-
-            binaryWriter.WriteVector3(mainCamera.GetTargetPos());
-            binaryWriter.Write(mainCamera.GetDistance());
-            binaryWriter.WriteQuaternion(mainCamera.transform.rotation);
-
-            CameraUtility.StopAll();
-        }
-
-        public void Deserialize(BinaryReader binaryReader)
-        {
-            var kankyo = binaryReader.ReadBoolean();
-
-            Vector3 cameraPosition = binaryReader.ReadVector3();
-            var cameraDistance = binaryReader.ReadSingle();
-            Quaternion cameraRotation = binaryReader.ReadQuaternion();
-
-            if (kankyo) return;
-
-            mainCamera.SetTargetPos(cameraPosition);
-            mainCamera.SetDistance(cameraDistance);
-            mainCamera.transform.rotation = cameraRotation;
-            CameraUtility.StopAll();
         }
 
         public void Activate()

@@ -35,25 +35,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             set => chromaticAberration = Vignette.chromaticAberration = value;
         }
 
-        public void Serialize(System.IO.BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write(header);
-            binaryWriter.Write(Intensity);
-            binaryWriter.Write(Blur);
-            binaryWriter.Write(BlurSpread);
-            binaryWriter.Write(ChromaticAberration);
-            binaryWriter.Write(Active);
-        }
-
-        public void Deserialize(System.IO.BinaryReader binaryReader)
-        {
-            Intensity = binaryReader.ReadSingle();
-            Blur = binaryReader.ReadSingle();
-            BlurSpread = binaryReader.ReadSingle();
-            ChromaticAberration = binaryReader.ReadSingle();
-            SetEffectActive(binaryReader.ReadBoolean());
-        }
-
         public void Activate()
         {
             if (Vignette == null)

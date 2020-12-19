@@ -71,27 +71,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             set => fogColour = Fog.globalFogColor = value;
         }
 
-        public void Serialize(System.IO.BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write(header);
-            binaryWriter.Write(Distance);
-            binaryWriter.Write(Density);
-            binaryWriter.Write(HeightScale);
-            binaryWriter.Write(Height);
-            binaryWriter.WriteColour(FogColour);
-            binaryWriter.Write(Active);
-        }
-
-        public void Deserialize(System.IO.BinaryReader binaryReader)
-        {
-            Distance = binaryReader.ReadSingle();
-            Density = binaryReader.ReadSingle();
-            HeightScale = binaryReader.ReadSingle();
-            Height = binaryReader.ReadSingle();
-            FogColour = binaryReader.ReadColour();
-            SetEffectActive(binaryReader.ReadBoolean());
-        }
-
         public void Activate()
         {
             if (Fog == null)

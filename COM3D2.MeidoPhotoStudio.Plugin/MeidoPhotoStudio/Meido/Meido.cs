@@ -10,7 +10,7 @@ using static TBody;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class Meido : ISerializable
+    public class Meido
     {
         private bool initialized;
         private float[] BlendSetValueBackup;
@@ -20,27 +20,20 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public DragPointGravity SkirtGravityControl { get; private set; }
         public bool HairGravityActive
         {
-            get => HairGravityControl.Valid && HairGravityControl.Active;
+            get => HairGravityControl.Active;
             set
             {
-                if (HairGravityControl.Valid && value != HairGravityControl.Active)
-                {
-                    HairGravityControl.gameObject.SetActive(value);
-                }
+                if (HairGravityControl.Valid) HairGravityControl.gameObject.SetActive(value);
             }
         }
         public bool SkirtGravityActive
         {
-            get => SkirtGravityControl.Valid && SkirtGravityControl.Active;
+            get => SkirtGravityControl.Active;
             set
             {
-                if (SkirtGravityControl.Valid && value != SkirtGravityControl.Active)
-                {
-                    SkirtGravityControl.gameObject.SetActive(value);
-                }
+                if (SkirtGravityControl.Valid) SkirtGravityControl.gameObject.SetActive(value);
             }
         }
-        public const int meidoDataVersion = 1000;
         public static readonly string defaultFaceBlendSet = "通常";
         public static readonly string[] faceKeys = new string[24]
         {
@@ -399,10 +392,13 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Maid.SetAutoTwistAll(true);
         }
 
+        public KeyValuePair<bool, bool> SetFrameBinary(byte[] poseBuffer)
+            => GetCacheBoneData().SetFrameBinary(poseBuffer);
+
         public void CopyPose(Meido fromMeido)
         {
             Stop = true;
-            GetCacheBoneData().SetFrameBinary(fromMeido.SerializePose(frameBinary: true));
+            SetFrameBinary(fromMeido.SerializePose(frameBinary: true));
             SetMune(fromMeido.Body.GetMuneYureL() != 0f, left: true);
             SetMune(fromMeido.Body.GetMuneYureR() != 0f, left: false);
         }
@@ -742,231 +738,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             );
             GravityMove?.Invoke(this, args);
         }
-
-        public void Serialize(BinaryWriter binaryWriter)
-        {
-            using (MemoryStream memoryStream = new MemoryStream())
-            using (BinaryWriter tempWriter = new BinaryWriter(memoryStream))
-            {
-                // transform
-                tempWriter.WriteVector3(Maid.transform.position);
-                tempWriter.WriteQuaternion(Maid.transform.rotation);
-                tempWriter.WriteVector3(Maid.transform.localScale);
-                // pose
-                byte[] poseBuffer = SerializePose(true);
-                tempWriter.Write(poseBuffer.Length);
-                tempWriter.Write(poseBuffer);
-                CachedPose.Serialize(tempWriter);
-                // eye direction
-                tempWriter.WriteQuaternion(Body.quaDefEyeL * Quaternion.Inverse(DefaultEyeRotL));
-                tempWriter.WriteQuaternion(Body.quaDefEyeR * Quaternion.Inverse(DefaultEyeRotR));
-                // free look
-                tempWriter.Write(FreeLook);
-                if (FreeLook)
-                {
-                    tempWriter.WriteVector3(Body.offsetLookTarget);
-                    tempWriter.WriteVector3(Utility.GetFieldValue<TBody, Vector3>(Body, "HeadEulerAngle"));
-                }
-
-                // Head/eye to camera
-                tempWriter.Write(HeadToCam);
-                tempWriter.Write(EyeToCam);
-                // face
-                SerializeFace(tempWriter);
-                // body visible
-                tempWriter.Write(Body.GetMask(SlotID.body));
-                // clothing
-                foreach (SlotID clothingSlot in MaidDressingPane.ClothingSlots)
-                {
-                    bool value = true;
-                    if (clothingSlot == SlotID.wear)
-                    {
-                        if (MaidDressingPane.WearSlots.Any(slot => Body.GetSlotLoaded(slot)))
-                        {
-                            value = MaidDressingPane.WearSlots.Any(slot => Body.GetMask(slot));
-                        }
-                    }
-                    else if (clothingSlot == SlotID.megane)
-                    {
-                        SlotID[] slots = new[] { SlotID.megane, SlotID.accHead };
-                        if (slots.Any(slot => Body.GetSlotLoaded(slot)))
-                        {
-                            value = slots.Any(slot => Body.GetMask(slot));
-                        }
-                    }
-                    else if (Body.GetSlotLoaded(clothingSlot)) { value = Body.GetMask(clothingSlot); }
-
-                    tempWriter.Write(value);
-                }
-
-                // hair/skirt gravity
-                tempWriter.Write(HairGravityActive);
-                if (HairGravityActive) tempWriter.WriteVector3(HairGravityControl.Control.transform.localPosition);
-                tempWriter.Write(SkirtGravityActive);
-                if (SkirtGravityActive) tempWriter.WriteVector3(SkirtGravityControl.Control.transform.localPosition);
-
-                // zurashi and mekure
-                tempWriter.Write(CurlingFront);
-                tempWriter.Write(CurlingBack);
-                tempWriter.Write(PantsuShift);
-
-                bool hasKousokuUpper = Body.GetSlotLoaded(SlotID.kousoku_upper);
-                tempWriter.Write(hasKousokuUpper);
-                if (hasKousokuUpper) tempWriter.Write(Maid.GetProp(MPN.kousoku_upper).strTempFileName);
-
-                bool hasKousokuLower = Body.GetSlotLoaded(SlotID.kousoku_lower);
-                tempWriter.Write(hasKousokuLower);
-                if (hasKousokuLower) tempWriter.Write(Maid.GetProp(MPN.kousoku_lower).strTempFileName);
-
-                binaryWriter.Write(memoryStream.Length);
-                binaryWriter.Write(memoryStream.ToArray());
-            }
-        }
-
-        private void SerializeFace(BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write("MPS_FACE");
-            foreach (string hash in faceKeys.Concat(faceToggleKeys))
-            {
-                try
-                {
-                    float value = GetFaceBlendValue(hash);
-                    binaryWriter.Write(hash);
-                    binaryWriter.Write(value);
-                }
-                catch { }
-            }
-            binaryWriter.Write("END_FACE");
-        }
-
-        public void Deserialize(BinaryReader binaryReader) => Deserialize(binaryReader, meidoDataVersion, false);
-
-        public void Deserialize(BinaryReader binaryReader, int dataVersion, bool mmScene)
-        {
-            Maid.GetAnimation().Stop();
-            DetachAllMpnAttach();
-
-            binaryReader.ReadInt64(); // meido buffer length
-            // transform
-            Maid.transform.position = binaryReader.ReadVector3();
-            Maid.transform.rotation = binaryReader.ReadQuaternion();
-            Maid.transform.localScale = binaryReader.ReadVector3();
-            IKManager.SetDragPointScale(Maid.transform.localScale.x);
-            // pose
-
-            KeyValuePair<bool, bool> muneSetting = new KeyValuePair<bool, bool>(true, true);
-            if (mmScene) IKManager.Deserialize(binaryReader);
-            else
-            {
-                int poseBufferLength = binaryReader.ReadInt32();
-                byte[] poseBuffer = binaryReader.ReadBytes(poseBufferLength);
-                muneSetting = GetCacheBoneData().SetFrameBinary(poseBuffer);
-            }
-
-            SetMune(!muneSetting.Key, left: true);
-            SetMune(!muneSetting.Value, left: false);
-
-            CachedPose = PoseInfo.Deserialize(binaryReader);
-            // eye direction
-            Body.quaDefEyeL = binaryReader.ReadQuaternion() * DefaultEyeRotL;
-            Body.quaDefEyeR = binaryReader.ReadQuaternion() * DefaultEyeRotR;
-            // free look
-            FreeLook = binaryReader.ReadBoolean();
-            if (FreeLook)
-            {
-                Body.offsetLookTarget = binaryReader.ReadVector3();
-                // Head angle cannot be resolved with just the offsetLookTarget
-                if (!mmScene)
-                {
-                    Utility.SetFieldValue(Body, "HeadEulerAngleG", Vector3.zero);
-                    Utility.SetFieldValue(Body, "HeadEulerAngle", binaryReader.ReadVector3());
-                }
-            }
-            // Head/eye to camera
-            HeadToCam = binaryReader.ReadBoolean();
-            EyeToCam = binaryReader.ReadBoolean();
-            // face
-            DeserializeFace(binaryReader);
-            // body visible
-            SetBodyMask(binaryReader.ReadBoolean());
-            // clothing
-            foreach (SlotID clothingSlot in MaidDressingPane.ClothingSlots)
-            {
-                bool value = binaryReader.ReadBoolean();
-                if (mmScene) continue;
-                if (clothingSlot == SlotID.wear)
-                {
-                    Body.SetMask(SlotID.wear, value);
-                    Body.SetMask(SlotID.mizugi, value);
-                    Body.SetMask(SlotID.onepiece, value);
-                }
-                else if (clothingSlot == SlotID.megane)
-                {
-                    Body.SetMask(SlotID.megane, value);
-                    Body.SetMask(SlotID.accHead, value);
-                }
-                else if (Body.GetSlotLoaded(clothingSlot))
-                {
-                    Body.SetMask(clothingSlot, value);
-                }
-            }
-            // hair/skirt gravity
-            bool hairGravityActive = binaryReader.ReadBoolean();
-            if (hairGravityActive)
-            {
-                HairGravityActive = true;
-                ApplyGravity(binaryReader.ReadVector3(), skirt: false);
-            }
-            bool skirtGravityActive = binaryReader.ReadBoolean();
-            if (skirtGravityActive)
-            {
-                SkirtGravityActive = true;
-                ApplyGravity(binaryReader.ReadVector3(), skirt: true);
-            }
-
-            // zurashi and mekure
-            bool curlingFront = binaryReader.ReadBoolean();
-            bool curlingBack = binaryReader.ReadBoolean();
-            bool curlingPantsu = binaryReader.ReadBoolean();
-            if (!mmScene)
-            {
-                if (CurlingFront != curlingFront) SetCurling(Curl.Front, curlingFront);
-                if (CurlingBack != curlingBack) SetCurling(Curl.Back, curlingBack);
-                SetCurling(Curl.Shift, curlingPantsu);
-            }
-
-            bool hasKousokuUpper = binaryReader.ReadBoolean();
-            if (hasKousokuUpper)
-            {
-                try
-                {
-                    SetMpnProp(new MpnAttachProp(MPN.kousoku_upper, binaryReader.ReadString()), false);
-                }
-                catch { }
-            }
-
-            bool hasKousokuLower = binaryReader.ReadBoolean();
-            if (hasKousokuLower)
-            {
-                try
-                {
-                    SetMpnProp(new MpnAttachProp(MPN.kousoku_lower, binaryReader.ReadString()), false);
-                }
-                catch { }
-            }
-            // OnUpdateMeido();
-        }
-
-        private void DeserializeFace(BinaryReader binaryReader)
-        {
-            StopBlink();
-            binaryReader.ReadString(); // read face header
-            string header;
-            while ((header = binaryReader.ReadString()) != "END_FACE")
-            {
-                SetFaceBlendValue(header, binaryReader.ReadSingle());
-            }
-        }
     }
 
     public class GravityEventArgs : EventArgs
@@ -995,23 +766,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             PoseGroup = poseGroup;
             Pose = pose;
             CustomPose = customPose;
-        }
-
-        public void Serialize(BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write(PoseGroup);
-            binaryWriter.Write(Pose);
-            binaryWriter.Write(CustomPose);
-        }
-
-        public static PoseInfo Deserialize(BinaryReader binaryReader)
-        {
-            return new PoseInfo
-            (
-                binaryReader.ReadString(),
-                binaryReader.ReadString(),
-                binaryReader.ReadBoolean()
-            );
         }
     }
 }

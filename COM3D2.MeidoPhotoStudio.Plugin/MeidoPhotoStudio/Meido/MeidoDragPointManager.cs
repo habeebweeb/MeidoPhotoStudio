@@ -675,39 +675,27 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
     public readonly struct AttachPointInfo
     {
-        public AttachPoint AttachPoint { get; }
+        private readonly AttachPoint attachPoint;
+        public AttachPoint AttachPoint => attachPoint;
         public string MaidGuid { get; }
-        public int MaidIndex { get; }
-        private static readonly AttachPointInfo empty = new AttachPointInfo(AttachPoint.None, string.Empty, -1);
+        
+        private readonly int maidIndex;
+        public int MaidIndex => maidIndex;
+        private static readonly AttachPointInfo empty = new(AttachPoint.None, string.Empty, -1);
         public static ref readonly AttachPointInfo Empty => ref empty;
 
         public AttachPointInfo(AttachPoint attachPoint, Meido meido)
         {
-            AttachPoint = attachPoint;
+            this.attachPoint = attachPoint;
             MaidGuid = meido.Maid.status.guid;
-            MaidIndex = meido.Slot;
+            maidIndex = meido.Slot;
         }
 
         public AttachPointInfo(AttachPoint attachPoint, string maidGuid, int maidIndex)
         {
-            AttachPoint = attachPoint;
+            this.attachPoint = attachPoint;
             MaidGuid = maidGuid;
-            MaidIndex = maidIndex;
-        }
-
-        public void Serialize(BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write((int)AttachPoint);
-            binaryWriter.Write(MaidIndex);
-        }
-
-        public static AttachPointInfo Deserialize(BinaryReader binaryReader)
-        {
-            return new AttachPointInfo(
-                (AttachPoint)binaryReader.ReadInt32(),
-                string.Empty,
-                binaryReader.ReadInt32()
-            );
+            this.maidIndex = maidIndex;
         }
     }
 }

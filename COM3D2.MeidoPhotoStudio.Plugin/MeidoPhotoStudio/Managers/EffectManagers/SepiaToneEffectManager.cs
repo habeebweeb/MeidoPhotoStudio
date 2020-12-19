@@ -1,4 +1,3 @@
-using System.IO;
 using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
@@ -23,14 +22,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
 
         public void Deactivate() => SetEffectActive(false);
-
-        public void Deserialize(BinaryReader binaryReader) => SetEffectActive(binaryReader.ReadBoolean());
-
-        public void Serialize(BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write(header);
-            binaryWriter.Write(Active);
-        }
 
         public void SetEffectActive(bool active) => SepiaTone.enabled = Active = active;
 

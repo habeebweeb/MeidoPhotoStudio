@@ -83,25 +83,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         static BloomEffectManager() => backup_m_fBloomDefIntensity = BloomDefIntensity;
 
-        public void Serialize(System.IO.BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write(header);
-            binaryWriter.Write(BloomValue);
-            binaryWriter.Write(BlurIterations);
-            binaryWriter.WriteColour(BloomThresholdColour);
-            binaryWriter.Write(BloomHDR);
-            binaryWriter.Write(Active);
-        }
-
-        public void Deserialize(System.IO.BinaryReader binaryReader)
-        {
-            BloomValue = binaryReader.ReadSingle();
-            BlurIterations = binaryReader.ReadInt32();
-            BloomThresholdColour = binaryReader.ReadColour();
-            BloomHDR = binaryReader.ReadBoolean();
-            SetEffectActive(binaryReader.ReadBoolean());
-        }
-
         public void Activate()
         {
             if (Bloom == null)

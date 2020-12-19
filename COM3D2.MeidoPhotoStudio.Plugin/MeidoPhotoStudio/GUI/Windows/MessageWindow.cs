@@ -20,7 +20,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
         }
         private int fontSize = 25;
-        private bool showingMessage;
 
         public MessageWindow(MessageWindowManager messageWindowManager)
         {
@@ -39,13 +38,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             okButton.ControlEvent += ShowMessage;
         }
 
-        public void ToggleVisibility()
+        private void ToggleVisibility()
         {
-            if (showingMessage)
-            {
-                messageWindowManager.CloseMessagePanel();
-                showingMessage = false;
-            }
+            if (messageWindowManager.ShowingMessage) messageWindowManager.CloseMessagePanel();
             else Visible = !Visible;
         }
 
@@ -58,7 +53,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void ShowMessage(object sender, EventArgs args)
         {
             Visible = false;
-            showingMessage = true;
             messageWindowManager.ShowMessage(nameTextField.Value, messageTextArea.Value);
         }
 
@@ -87,12 +81,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public override void Deactivate()
         {
-            if (showingMessage)
-            {
-                messageWindowManager.CloseMessagePanel();
-                showingMessage = false;
-            }
-
+            messageWindowManager.CloseMessagePanel();
             Visible = false;
         }
     }

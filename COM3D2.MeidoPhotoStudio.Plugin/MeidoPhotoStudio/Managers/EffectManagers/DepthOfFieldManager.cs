@@ -41,27 +41,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             set => visualizeFocus = DepthOfField.visualizeFocus = value;
         }
 
-        public void Serialize(System.IO.BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write(header);
-            binaryWriter.Write(FocalLength);
-            binaryWriter.Write(FocalSize);
-            binaryWriter.Write(Aperture);
-            binaryWriter.Write(MaxBlurSize);
-            binaryWriter.Write(VisualizeFocus);
-            binaryWriter.Write(Active);
-        }
-
-        public void Deserialize(System.IO.BinaryReader binaryReader)
-        {
-            FocalLength = binaryReader.ReadSingle();
-            FocalSize = binaryReader.ReadSingle();
-            Aperture = binaryReader.ReadSingle();
-            MaxBlurSize = binaryReader.ReadSingle();
-            VisualizeFocus = binaryReader.ReadBoolean();
-            SetEffectActive(binaryReader.ReadBoolean());
-        }
-
         public void Activate()
         {
             if (DepthOfField == null)

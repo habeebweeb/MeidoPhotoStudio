@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class EffectManager : IManager, ISerializable
+    public class EffectManager : IManager
     {
         public const string header = "EFFECT";
         public const string footer = "END_EFFECT";
@@ -18,42 +18,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             EffectManagers[typeof(T)] = manager;
             manager.Activate();
             return manager;
-        }
-
-        public void Serialize(System.IO.BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write(header);
-            foreach (IEffectManager effectManager in EffectManagers.Values) effectManager.Serialize(binaryWriter);
-            binaryWriter.Write(footer);
-        }
-
-        public void Deserialize(System.IO.BinaryReader binaryReader)
-        {
-            string header;
-            while ((header = binaryReader.ReadString()) != footer)
-            {
-                switch (header)
-                {
-                    case BloomEffectManager.header:
-                        Get<BloomEffectManager>().Deserialize(binaryReader);
-                        break;
-                    case DepthOfFieldEffectManager.header:
-                        Get<DepthOfFieldEffectManager>().Deserialize(binaryReader);
-                        break;
-                    case VignetteEffectManager.header:
-                        Get<VignetteEffectManager>().Deserialize(binaryReader);
-                        break;
-                    case FogEffectManager.header:
-                        Get<FogEffectManager>().Deserialize(binaryReader);
-                        break;
-                    case SepiaToneEffectManger.header:
-                        Get<SepiaToneEffectManger>().Deserialize(binaryReader);
-                        break;
-                    case BlurEffectManager.header:
-                        Get<BlurEffectManager>().Deserialize(binaryReader);
-                        break;
-                }
-            }
         }
 
         public void Activate()

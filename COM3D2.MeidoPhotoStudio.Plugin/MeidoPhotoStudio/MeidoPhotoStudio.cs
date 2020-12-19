@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Ionic.Zlib;
 using BepInEx;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
@@ -14,14 +14,16 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     [BepInDependency("org.bepinex.plugins.unityinjectorloader", BepInDependency.DependencyFlags.SoftDependency)]
     public class MeidoPhotoStudio : BaseUnityPlugin
     {
+        public static readonly byte[] SceneHeader = Encoding.UTF8.GetBytes("MPSSCENE");
         private static readonly CameraMain mainCamera = GameMain.Instance.MainCamera;
         private static event EventHandler<ScreenshotEventArgs> ScreenshotEvent;
         private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
         public const string pluginName = "MeidoPhotoStudio";
         public const string pluginVersion = "1.0.0";
-        public const int sceneVersion = 1000;
+        public const string pluginSubVersion = "beta.3";
+        public const short sceneVersion = 1;
         public const int kankyoMagic = -765;
-        public static string pluginString = $"{pluginName} {pluginVersion}";
+        public static readonly string pluginString = $"{pluginName} {pluginVersion}";
         public static bool EditMode => currentScene == Constants.Scene.Edit;
         public static event EventHandler<ScreenshotEventArgs> NotifyRawScreenshot;
         private WindowManager windowManager;
@@ -42,6 +44,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             Input.Register(MpsKey.Screenshot, KeyCode.S, "Take screenshot");
             Input.Register(MpsKey.Activate, KeyCode.F6, "Activate/deactivate MeidoPhotoStudio");
+
+            if (!string.IsNullOrEmpty(pluginSubVersion)) pluginString += $"-{pluginSubVersion}";
         }
 
         private void Awake()
@@ -71,159 +75,107 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             ResetCalcNearClip();
         }
 
-        public byte[] SerializeScene(bool kankyo = false)
+        public byte[] SaveScene(bool environment = false)
         {
             if (meidoManager.Busy) return null;
 
-            byte[] compressedData;
+            using var memoryStream = new MemoryStream();
+            using var headerWriter = new BinaryWriter(memoryStream, Encoding.UTF8);
 
-            using (MemoryStream memoryStream = new MemoryStream())
-            using (DeflateStream deflateStream = new DeflateStream(memoryStream, CompressionMode.Compress))
-            using (BinaryWriter binaryWriter = new BinaryWriter(deflateStream, System.Text.Encoding.UTF8))
+            headerWriter.Write(SceneHeader);
+
+            new SceneMetadata{
+                Version = sceneVersion, Environment = environment, 
+                MaidCount = environment ? kankyoMagic : meidoManager.ActiveMeidoList.Count
+            }.WriteMetadata(headerWriter);
+
+            using var compressionStream = memoryStream.GetCompressionStream();
+            using var dataWriter = new BinaryWriter(compressionStream, Encoding.UTF8);
+
+            if (!environment)
             {
-                binaryWriter.Write("MPS_SCENE");
-                binaryWriter.Write(sceneVersion);
-
-                binaryWriter.Write(kankyo ? kankyoMagic : meidoManager.ActiveMeidoList.Count);
-
-                effectManager.Serialize(binaryWriter);
-                environmentManager.Serialize(binaryWriter);
-                lightManager.Serialize(binaryWriter);
-
-                if (!kankyo)
-                {
-                    messageWindowManager.Serialize(binaryWriter);
-                    // meidomanager has to be serialized before propmanager because reattached props will be in the 
-                    // wrong place after a maid's pose is deserialized.
-                    meidoManager.Serialize(binaryWriter);
-                }
-
-                propManager.Serialize(binaryWriter);
-
-                binaryWriter.Write("END");
-
-                deflateStream.Close();
-
-                compressedData = memoryStream.ToArray();
+                Serialization.Get<MeidoManager>().Serialize(meidoManager, dataWriter);
+                Serialization.Get<MessageWindowManager>().Serialize(messageWindowManager, dataWriter);
+                Serialization.Get<CameraManager>().Serialize(cameraManager, dataWriter);
             }
 
-            return compressedData;
+            Serialization.Get<LightManager>().Serialize(lightManager, dataWriter);
+            Serialization.Get<EffectManager>().Serialize(effectManager, dataWriter);
+            Serialization.Get<EnvironmentManager>().Serialize(environmentManager, dataWriter);
+            Serialization.Get<PropManager>().Serialize(propManager, dataWriter);
+
+            dataWriter.Write("END");
+
+            compressionStream.Close();
+
+            var data = memoryStream.ToArray();
+            return data;
         }
 
-        public static byte[] DecompressScene(string filePath)
+        public void LoadScene(byte[] buffer)
         {
-            if (!File.Exists(filePath))
+            if (meidoManager.Busy)
             {
-                Utility.LogWarning($"Scene file '{filePath}' does not exist.");
-                return null;
+                Utility.LogMessage("Could not apply scene. Meidos are Busy");
+                return;
             }
 
-            byte[] compressedData;
-
-            using (FileStream fileStream = File.OpenRead(filePath))
+            using var memoryStream = new MemoryStream(buffer);
+            using var headerReader = new BinaryReader(memoryStream, Encoding.UTF8);
+            
+            if (!Utility.BytesEqual(headerReader.ReadBytes(SceneHeader.Length), SceneHeader))
             {
-                if (Utility.IsPngFile(fileStream))
-                {
-                    if (!Utility.SeekPngEnd(fileStream))
-                    {
-                        Utility.LogWarning($"'{filePath}' is not a PNG file");
-                        return null;
-                    }
-
-                    if (fileStream.Position == fileStream.Length)
-                    {
-                        Utility.LogWarning($"'{filePath}' contains no scene data");
-                        return null;
-                    }
-
-                    int dataLength = (int)(fileStream.Length - fileStream.Position);
-
-                    compressedData = new byte[dataLength];
-
-                    fileStream.Read(compressedData, 0, dataLength);
-                }
-                else
-                {
-                    compressedData = new byte[fileStream.Length];
-                    fileStream.Read(compressedData, 0, compressedData.Length);
-                }
+                Utility.LogError("Not a MPS scene!");
+                return;
             }
 
-            return DeflateStream.UncompressBuffer(compressedData);
-        }
+            var metadata = SceneMetadata.ReadMetadata(headerReader);
 
-        public void ApplyScene(string filePath)
-        {
-            if (meidoManager.Busy) return;
+            using var uncompressed = memoryStream.Decompress();
+            using var dataReader = new BinaryReader(uncompressed, Encoding.UTF8);
 
-            byte[] sceneBinary = DecompressScene(filePath);
-
-            if (sceneBinary == null) return;
-
-            string header = string.Empty;
-            string previousHeader = string.Empty;
-
-            using (MemoryStream memoryStream = new MemoryStream(sceneBinary))
-            using (BinaryReader binaryReader = new BinaryReader(memoryStream, System.Text.Encoding.UTF8))
+            var header = string.Empty;
+            var previousHeader = string.Empty;
+            try
             {
-                try
+                while ((header = dataReader.ReadString()) != "END")
                 {
-                    if (binaryReader.ReadString() != "MPS_SCENE")
+                    switch (header)
                     {
-                        Utility.LogWarning($"'{filePath}' is not a {pluginName} scene");
-                        return;
+                        case MeidoManager.header: 
+                            Serialization.Get<MeidoManager>().Deserialize(meidoManager, dataReader, metadata);
+                            break;
+                        case MessageWindowManager.header:
+                            Serialization.Get<MessageWindowManager>().Deserialize(messageWindowManager, dataReader, metadata);
+                            break;
+                        case CameraManager.header:
+                            Serialization.Get<CameraManager>().Deserialize(cameraManager, dataReader, metadata);
+                            break;
+                        case LightManager.header:
+                            Serialization.Get<LightManager>().Deserialize(lightManager, dataReader, metadata);
+                            break;
+                        case EffectManager.header:
+                            Serialization.Get<EffectManager>().Deserialize(effectManager, dataReader, metadata);
+                            break;
+                        case EnvironmentManager.header:
+                            Serialization.Get<EnvironmentManager>().Deserialize(environmentManager, dataReader, metadata);
+                            break;
+                        case PropManager.header:
+                            Serialization.Get<PropManager>().Deserialize(propManager, dataReader, metadata);
+                            break;
+                        default: throw new Exception($"Unknown header '{header}'");
                     }
 
-                    var version = binaryReader.ReadInt32();
-
-                    if (version > sceneVersion)
-                    {
-                        Utility.LogWarning($"'{filePath}' is newer than the current version"
-                        + $"Scene's version: {version}, current version: {sceneVersion}");
-                        return;
-                    }
-
-                    binaryReader.ReadInt32(); // Number of Maids
-
-                    while ((header = binaryReader.ReadString()) != "END")
-                    {
-                        switch (header)
-                        {
-                            case MessageWindowManager.header:
-                                messageWindowManager.Deserialize(binaryReader);
-                                break;
-                            case EnvironmentManager.header:
-                                environmentManager.Deserialize(binaryReader);
-                                break;
-                            case CameraManager.header:
-                                environmentManager.Deserialize(binaryReader);
-                                break;
-                            case MeidoManager.header:
-                                meidoManager.Deserialize(binaryReader);
-                                break;
-                            case PropManager.header:
-                                propManager.Deserialize(binaryReader);
-                                break;
-                            case LightManager.header:
-                                lightManager.Deserialize(binaryReader);
-                                break;
-                            case EffectManager.header:
-                                effectManager.Deserialize(binaryReader);
-                                break;
-                            default: throw new Exception($"Unknown header '{header}'");
-                        }
-                        previousHeader = header;
-                    }
+                    previousHeader = header;
                 }
-                catch (Exception e)
-                {
-                    Utility.LogError(
-                        $"Failed to deserialize scene '{filePath}' because {e.Message}"
-                        + $"\nCurrent header: '{header}'. Last header: '{previousHeader}'"
-                    );
-                    Utility.LogError(e.StackTrace);
-                    return;
-                }
+            }
+            catch (Exception e)
+            {
+                Utility.LogError(
+                    $"Failed to deserialize scene TEST because {e.Message}"
+                    + $"\nCurrent header: '{header}'. Last header: '{previousHeader}'"
+                );
+                Utility.LogError(e.StackTrace);
             }
         }
 

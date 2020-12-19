@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using Input = InputManager;
-    public class EnvironmentManager : IManager, ISerializable
+    public class EnvironmentManager : IManager
     {
         private static readonly BgMgr bgMgr = GameMain.Instance.BgMgr;
         public const string header = "ENVIRONMENT";
@@ -95,40 +93,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             CubeSmallChange -= OnCubeSmall;
             CubeActiveChange -= OnCubeActive;
-        }
-
-        public void Serialize(BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write(header);
-            binaryWriter.Write(CurrentBgAsset);
-            binaryWriter.WriteVector3(bg.position);
-            binaryWriter.WriteQuaternion(bg.rotation);
-            binaryWriter.WriteVector3(bg.localScale);
-        }
-        
-        public void Deserialize(BinaryReader binaryReader) 
-        { 
-            var bgAsset = binaryReader.ReadString();
-            var isCreative = Utility.IsGuidString(bgAsset);
-            List<string> bgList = isCreative
-                ? Constants.MyRoomCustomBGList.ConvertAll(kvp => kvp.Key)
-                : Constants.BGList;
-
-            var assetIndex = bgList.FindIndex(
-                asset => asset.Equals(bgAsset, StringComparison.InvariantCultureIgnoreCase)
-            );
-            if (assetIndex < 0)
-            {
-                Utility.LogWarning($"Could not load BG '{bgAsset}'");
-                isCreative = false;
-                bgAsset = defaultBg;
-            }
-            else bgAsset = bgList[assetIndex];
-
-            ChangeBackground(bgAsset, isCreative);
-            bg.position = binaryReader.ReadVector3();
-            bg.rotation = binaryReader.ReadQuaternion();
-            bg.localScale = binaryReader.ReadVector3();
         }
 
         public void ChangeBackground(string assetName, bool creative = false)

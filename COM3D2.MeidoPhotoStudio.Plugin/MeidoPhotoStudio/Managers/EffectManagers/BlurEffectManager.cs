@@ -1,6 +1,3 @@
-using System.IO;
-using UnityEngine;
-
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     public class BlurEffectManager : IEffectManager
@@ -53,19 +50,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Reset();
             Blur.enabled = false;
             Active = false;
-        }
-
-        public void Deserialize(BinaryReader binaryReader)
-        {
-            BlurSize = binaryReader.ReadSingle();
-            SetEffectActive(binaryReader.ReadBoolean());
-        }
-
-        public void Serialize(BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write(header);
-            binaryWriter.Write(BlurSize);
-            binaryWriter.Write(Active);
         }
 
         public void SetEffectActive(bool active)

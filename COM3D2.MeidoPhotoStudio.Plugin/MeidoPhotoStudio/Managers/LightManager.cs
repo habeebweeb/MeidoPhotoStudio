@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
-    public class LightManager : IManager, ISerializable
+    public class LightManager : IManager
     {
         public const string header = "LIGHT";
         private static bool cubeActive = true;
@@ -42,28 +42,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public event EventHandler Select;
 
         public LightManager() => Activate();
-
-        public void Serialize(System.IO.BinaryWriter binaryWriter)
-        {
-            binaryWriter.Write(header);
-            binaryWriter.Write(lightList.Count);
-            foreach (DragPointLight light in lightList)
-            {
-                light.Serialize(binaryWriter);
-            }
-        }
-
-        public void Deserialize(System.IO.BinaryReader binaryReader)
-        {
-            ClearLights();
-            int numberOfLights = binaryReader.ReadInt32();
-            lightList[0].Deserialize(binaryReader);
-            for (int i = 1; i < numberOfLights; i++)
-            {
-                AddLight();
-                lightList[i].Deserialize(binaryReader);
-            }
-        }
 
         public void Activate()
         {

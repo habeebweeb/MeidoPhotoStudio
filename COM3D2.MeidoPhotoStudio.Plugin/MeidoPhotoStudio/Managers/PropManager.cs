@@ -10,7 +10,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 {
     using static ModelUtility;
 
-    public class PropManager : IManager, ISerializable
+    public class PropManager : IManager
     {
         public const string header = "PROP";
         private static readonly ConfigEntry<bool> modItemsOnly;
@@ -116,7 +116,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             Activate();
         }
 
-        public void AddFromPropInfo(PropInfo propInfo)
+        public bool AddFromPropInfo(PropInfo propInfo)
         {
             switch (propInfo.Type)
             {
@@ -127,20 +127,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                         modItem = ModItem.OfficialMod(ModFileToFullPath[propInfo.Filename]);
                         modItem.BaseMenuFile = propInfo.SubFilename;
                     }
-                    else
-                        modItem = ModItem.Mod(propInfo.Filename);
+                    else modItem = ModItem.Mod(propInfo.Filename);
 
-                    AddModProp(modItem);
-                    break;
+                    return AddModProp(modItem);
                 case PropInfo.PropType.MyRoom:
-                    AddMyRoomProp(new MyRoomItem { ID = propInfo.MyRoomID, PrefabName = propInfo.Filename });
-                    break;
+                    return AddMyRoomProp(new MyRoomItem { ID = propInfo.MyRoomID, PrefabName = propInfo.Filename });
                 case PropInfo.PropType.Bg:
-                    AddBgProp(propInfo.Filename);
-                    break;
+                    return AddBgProp(propInfo.Filename);
                 case PropInfo.PropType.Odogu:
-                    AddGameProp(propInfo.Filename);
-                    break;
+                    return AddGameProp(propInfo.Filename);
                 default: throw new ArgumentOutOfRangeException();
             }
         }
@@ -233,6 +228,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             EmitPropListChange();
         }
 
+        public void AttachProp(DragPointProp prop, AttachPoint point, int index)
+        {
+            if ((uint) index >= (uint) meidoManager.ActiveMeidoList.Count) return;
+
+            var meido = meidoManager.ActiveMeidoList[index];
+
+            prop.AttachTo(meido, point);
+        }
+
         private DragPointProp AttachDragPoint(GameObject model)
         {
             var dragPoint = DragPoint.Make<DragPointProp>(PrimitiveType.Cube, Vector3.one * 0.12f);
@@ -312,8 +316,5 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             CubeSmallChange -= OnCubeSmall;
             CubeActiveChange -= OnCubeActive;
         }
-
-        public void Serialize(BinaryWriter binaryWriter) => Utility.LogMessage("no prop serialization :(");
-        public void Deserialize(BinaryReader binaryReader) => Utility.LogMessage("no prop deserialization :(");
     }
 }

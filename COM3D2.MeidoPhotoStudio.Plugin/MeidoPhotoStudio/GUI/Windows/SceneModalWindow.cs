@@ -94,7 +94,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             // thumbnail
             if (!directoryMode)
             {
-                SceneManager.Scene scene = sceneManager.CurrentScene;
+                MPSScene scene = sceneManager.CurrentScene;
                 Texture2D thumb = scene.Thumbnail;
 
                 float scale = Mathf.Min(
@@ -117,22 +117,18 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
                 Rect labelBox = GUILayoutUtility.GetLastRect();
 
-                if (scene.NumberOfMaids != SceneManager.Scene.initialNumberOfMaids)
-                {
-                    int numberOfMaids = scene.NumberOfMaids;
-                    string infoString = numberOfMaids == MeidoPhotoStudio.kankyoMagic
-                        ? infoKankyo
-                        : string.Format(numberOfMaids == 1 ? infoMaidSingular : infoMaidPlural, numberOfMaids);
+                var infoString = scene.Environment
+                    ? infoKankyo
+                    : string.Format(scene.NumberOfMaids == 1 ? infoMaidSingular : infoMaidPlural, scene.NumberOfMaids);
 
-                    Vector2 labelSize = labelStyle.CalcSize(new GUIContent(infoString));
+                Vector2 labelSize = labelStyle.CalcSize(new GUIContent(infoString));
 
-                    labelBox = new Rect(
-                        labelBox.x + 10, labelBox.y + labelBox.height - (labelSize.y + 10),
-                        labelSize.x + 10, labelSize.y + 2
-                    );
+                labelBox = new Rect(
+                    labelBox.x + 10, labelBox.y + labelBox.height - (labelSize.y + 10),
+                    labelSize.x + 10, labelSize.y + 2
+                );
 
-                    GUI.Label(labelBox, infoString, labelStyle);
-                }
+                GUI.Label(labelBox, infoString, labelStyle);
 
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
@@ -234,7 +230,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     sceneManager.DeleteScene();
                     deleteScene = false;
                 }
-                else sceneManager.LoadScene();
+                else sceneManager.LoadScene(sceneManager.CurrentScene);
 
                 Modal.Close();
             }
