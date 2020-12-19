@@ -61,6 +61,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             tempCameraInfo.Reset();
 
             for (var i = 0; i < CameraCount; i++) cameraInfos[i].Reset();
+
+            mainCamera.ForceCalcNearClip();
         }
 
         public void Deactivate()
@@ -76,6 +78,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             mainCamera.SetTargetPos(new Vector3(0.5609447f, 1.380762f, -1.382336f));
             mainCamera.SetDistance(1.6f);
             mainCamera.SetAroundAngle(new Vector2(245.5691f, 6.273283f));
+
+            mainCamera.ResetCalcNearClip();
         }
 
         public void Update()

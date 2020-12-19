@@ -15,7 +15,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     public class MeidoPhotoStudio : BaseUnityPlugin
     {
         public static readonly byte[] SceneHeader = Encoding.UTF8.GetBytes("MPSSCENE");
-        private static readonly CameraMain mainCamera = GameMain.Instance.MainCamera;
         private static event EventHandler<ScreenshotEventArgs> ScreenshotEvent;
         private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
         public const string pluginName = "MeidoPhotoStudio";
@@ -72,7 +71,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private void OnSceneChanged(Scene current, Scene next)
         {
             if (active) Deactivate(true);
-            ResetCalcNearClip();
+            CameraUtility.MainCamera.ResetCalcNearClip();
         }
 
         public byte[] SaveScene(bool environment = false)
@@ -278,14 +277,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 // Take a screenshot directly to a Texture2D for immediate processing
                 RenderTexture renderTexture = new RenderTexture(Screen.width, Screen.height, 24);
                 RenderTexture.active = renderTexture;
-                mainCamera.camera.targetTexture = renderTexture;
-                mainCamera.camera.Render();
+                CameraUtility.MainCamera.camera.targetTexture = renderTexture;
+                CameraUtility.MainCamera.camera.Render();
 
                 rawScreenshot = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
                 rawScreenshot.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0, false);
                 rawScreenshot.Apply();
 
-                mainCamera.camera.targetTexture = null;
+                CameraUtility.MainCamera.camera.targetTexture = null;
                 RenderTexture.active = null;
                 DestroyImmediate(renderTexture);
             }
@@ -406,8 +405,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 windowManager.Activate();
             }
 
-            SetNearClipPlane();
-
             uiActive = true;
             active = true;
 
@@ -428,7 +425,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             void exit()
             {
                 sysDialog.Close();
-                ResetCalcNearClip();
 
                 meidoManager.Deactivate();
                 environmentManager.Deactivate();
@@ -471,21 +467,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     );
                 }
             }
-        }
-
-        private void SetNearClipPlane()
-        {
-            mainCamera.StopAllCoroutines();
-            mainCamera.m_bCalcNearClip = false;
-            mainCamera.camera.nearClipPlane = 0.01f;
-        }
-
-        private void ResetCalcNearClip()
-        {
-            if (mainCamera.m_bCalcNearClip) return;
-            mainCamera.StopAllCoroutines();
-            mainCamera.m_bCalcNearClip = true;
-            mainCamera.Start();
         }
     }
 

@@ -303,6 +303,21 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             StopSpin();
             StopMovement();
         }
+
+        public static void ForceCalcNearClip(this CameraMain camera)
+        {
+            camera.StopAllCoroutines();
+            camera.m_bCalcNearClip = false;
+            camera.camera.nearClipPlane = 0.01f;
+        }
+
+        public static void ResetCalcNearClip(this CameraMain camera)
+        {
+            if (camera.m_bCalcNearClip) return;
+            camera.StopAllCoroutines();
+            camera.m_bCalcNearClip = true;
+            camera.Start();
+        }
     }
 
     public static class BinaryExtensions
