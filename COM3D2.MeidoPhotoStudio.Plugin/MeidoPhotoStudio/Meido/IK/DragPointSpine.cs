@@ -42,7 +42,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bool shift = Input.Shift;
             bool alt = Input.Alt;
 
-            if (isThigh && !Input.Control && alt && shift)
+            if (OtherDragType()) CurrentDragType = DragType.Ignore;
+            else if (isThigh && !Input.Control && alt && shift)
             {
                 // gizmo thigh rotation
                 CurrentDragType = DragType.RotLocalXZ;
@@ -62,7 +63,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             }
             else
             {
-                CurrentDragType = OtherDragType() ? DragType.Ignore : DragType.None;
+                CurrentDragType = DragType.None;
             }
         }
 

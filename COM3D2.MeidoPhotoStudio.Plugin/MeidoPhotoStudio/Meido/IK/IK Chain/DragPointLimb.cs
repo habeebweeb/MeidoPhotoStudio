@@ -66,13 +66,14 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             bool control = Input.Control;
             bool alt = Input.Alt;
             // Check for DragMove so that hand dragpoint is not in the way
-            if (control && !Input.GetKey(MpsKey.DragMove))
+            if (OtherDragType()) CurrentDragType = DragType.Ignore;
+            else if (control && !Input.GetKey(MpsKey.DragMove))
             {
                 if (alt) CurrentDragType = DragType.RotY;
                 else CurrentDragType = DragType.MoveXZ;
             }
             else if (alt) CurrentDragType = Input.Shift ? DragType.RotLocalY : DragType.RotLocalXZ;
-            else CurrentDragType = OtherDragType() ? DragType.Ignore : DragType.None;
+            else CurrentDragType = Input.Shift ? DragType.Ignore : DragType.None;
         }
 
         protected override void Drag()

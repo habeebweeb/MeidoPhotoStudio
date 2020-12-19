@@ -180,8 +180,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             return InputManager.GetKey(MpsKey.DragSelect) || InputManager.GetKey(MpsKey.DragDelete)
                 || InputManager.GetKey(MpsKey.DragMove) || InputManager.GetKey(MpsKey.DragRotate)
-                || InputManager.GetKey(MpsKey.DragScale) || InputManager.GetKey(MpsKey.DragFinger)
-                || InputManager.Shift;
+                || InputManager.GetKey(MpsKey.DragScale) || InputManager.GetKey(MpsKey.DragFinger);
         }
 
         protected Vector3 CursorPosition()
