@@ -14,6 +14,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         private float defaultCameraZoomSpeed;
         private const float cameraFastMoveSpeed = 0.1f;
         private const float cameraFastZoomSpeed = 3f;
+        private Camera subCamera;
         private CameraInfo tempCameraInfo = new CameraInfo();
         private const KeyCode AlphaOne = KeyCode.Alpha1;
         public int CameraCount => cameraInfos.Length;
@@ -63,10 +64,19 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             for (var i = 0; i < CameraCount; i++) cameraInfos[i].Reset();
 
             mainCamera.ForceCalcNearClip();
+
+            var subCamGo = new GameObject("subcam");
+            subCamera = subCamGo.AddComponent<Camera>();
+            subCamera.CopyFrom(mainCamera.camera);
+            subCamera.clearFlags = CameraClearFlags.Depth;
+            subCamera.cullingMask = 1 << 8;
+            subCamera.depth = 1f;
+            subCamera.transform.parent = mainCamera.transform;
         }
 
         public void Deactivate()
         {
+            UnityEngine.Object.Destroy(subCamera.gameObject);
             mainCamera.camera.backgroundColor = Color.black;
 
             ultimateOrbitCamera.moveSpeed = defaultCameraMoveSpeed;
@@ -95,6 +105,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     if (i != CurrentCameraIndex && UInput.GetKeyDown(AlphaOne + i)) CurrentCameraIndex = i;
                 }
             }
+
+            subCamera.fieldOfView = mainCamera.camera.fieldOfView;
 
             var shift = Input.Shift;
             ultimateOrbitCamera.moveSpeed = shift ? cameraFastMoveSpeed : defaultCameraMoveSpeed;

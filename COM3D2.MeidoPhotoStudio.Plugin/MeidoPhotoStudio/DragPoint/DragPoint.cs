@@ -129,7 +129,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameObject dragPointGo = GameObject.CreatePrimitive(primitiveType);
             dragPointGo.transform.SetParent(DragPointParent().transform, false);
             dragPointGo.transform.localScale = scale;
-            dragPointGo.layer = layer;
+            dragPointGo.layer = 8;
 
             T dragPoint = dragPointGo.AddComponent<T>();
             dragPoint.renderer.material = dragPointMaterial;
