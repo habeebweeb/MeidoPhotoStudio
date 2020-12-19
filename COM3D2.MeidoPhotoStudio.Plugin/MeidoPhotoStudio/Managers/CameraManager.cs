@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -11,8 +10,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         public const string header = "CAMERA";
         private static readonly CameraMain mainCamera = CameraUtility.MainCamera;
         private static readonly UltimateOrbitCamera ultimateOrbitCamera = CameraUtility.UOCamera;
-        private GameObject cameraObject;
-        private Camera subCamera;
         private float defaultCameraMoveSpeed;
         private float defaultCameraZoomSpeed;
         private const float cameraFastMoveSpeed = 0.1f;
@@ -52,16 +49,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Activate()
         {
-            cameraObject = new GameObject("subCamera");
-            subCamera = cameraObject.AddComponent<Camera>();
-            subCamera.CopyFrom(mainCamera.camera);
-            subCamera.clearFlags = CameraClearFlags.Depth;
-            subCamera.cullingMask = 256;
-            subCamera.depth = 1f;
-            subCamera.transform.parent = mainCamera.transform;
-
-            cameraObject.SetActive(true);
-
             ultimateOrbitCamera.enabled = true;
 
             defaultCameraMoveSpeed = ultimateOrbitCamera.moveSpeed;
@@ -78,9 +65,6 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         public void Deactivate()
         {
-            Object.Destroy(cameraObject);
-            Object.Destroy(subCamera);
-
             mainCamera.camera.backgroundColor = Color.black;
 
             ultimateOrbitCamera.moveSpeed = defaultCameraMoveSpeed;

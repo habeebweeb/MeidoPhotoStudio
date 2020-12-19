@@ -6,6 +6,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     using static CustomGizmo;
     public abstract class DragPoint : MonoBehaviour
     {
+        private static readonly int layer = (int) Mathf.Log(LayerMask.GetMask("AbsolutFront"), 2);
         public const float defaultAlpha = 0.75f;
         private static GameObject dragPointParent;
         private const float doubleClickSensitivity = 0.3f;
@@ -128,7 +129,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             GameObject dragPointGo = GameObject.CreatePrimitive(primitiveType);
             dragPointGo.transform.SetParent(DragPointParent().transform, false);
             dragPointGo.transform.localScale = scale;
-            dragPointGo.layer = 8;
+            dragPointGo.layer = layer;
 
             T dragPoint = dragPointGo.AddComponent<T>();
             dragPoint.renderer.material = dragPointMaterial;
