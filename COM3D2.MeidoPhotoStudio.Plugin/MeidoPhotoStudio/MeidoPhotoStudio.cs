@@ -78,37 +78,47 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         {
             if (meidoManager.Busy) return null;
 
-            using var memoryStream = new MemoryStream();
-            using var headerWriter = new BinaryWriter(memoryStream, Encoding.UTF8);
-
-            headerWriter.Write(SceneHeader);
-
-            new SceneMetadata{
-                Version = sceneVersion, Environment = environment, 
-                MaidCount = environment ? kankyoMagic : meidoManager.ActiveMeidoList.Count
-            }.WriteMetadata(headerWriter);
-
-            using var compressionStream = memoryStream.GetCompressionStream();
-            using var dataWriter = new BinaryWriter(compressionStream, Encoding.UTF8);
-
-            if (!environment)
+            try
             {
-                Serialization.Get<MeidoManager>().Serialize(meidoManager, dataWriter);
-                Serialization.Get<MessageWindowManager>().Serialize(messageWindowManager, dataWriter);
-                Serialization.Get<CameraManager>().Serialize(cameraManager, dataWriter);
+                using var memoryStream = new MemoryStream();
+                using var headerWriter = new BinaryWriter(memoryStream, Encoding.UTF8);
+
+                headerWriter.Write(SceneHeader);
+
+                new SceneMetadata
+                {
+                    Version = sceneVersion,
+                    Environment = environment,
+                    MaidCount = environment ? kankyoMagic : meidoManager.ActiveMeidoList.Count
+                }.WriteMetadata(headerWriter);
+
+                using var compressionStream = memoryStream.GetCompressionStream();
+                using var dataWriter = new BinaryWriter(compressionStream, Encoding.UTF8);
+
+                if (!environment)
+                {
+                    Serialization.Get<MeidoManager>().Serialize(meidoManager, dataWriter);
+                    Serialization.Get<MessageWindowManager>().Serialize(messageWindowManager, dataWriter);
+                    Serialization.Get<CameraManager>().Serialize(cameraManager, dataWriter);
+                }
+
+                Serialization.Get<LightManager>().Serialize(lightManager, dataWriter);
+                Serialization.Get<EffectManager>().Serialize(effectManager, dataWriter);
+                Serialization.Get<EnvironmentManager>().Serialize(environmentManager, dataWriter);
+                Serialization.Get<PropManager>().Serialize(propManager, dataWriter);
+
+                dataWriter.Write("END");
+
+                compressionStream.Close();
+
+                var data = memoryStream.ToArray();
+                return data;
             }
-
-            Serialization.Get<LightManager>().Serialize(lightManager, dataWriter);
-            Serialization.Get<EffectManager>().Serialize(effectManager, dataWriter);
-            Serialization.Get<EnvironmentManager>().Serialize(environmentManager, dataWriter);
-            Serialization.Get<PropManager>().Serialize(propManager, dataWriter);
-
-            dataWriter.Write("END");
-
-            compressionStream.Close();
-
-            var data = memoryStream.ToArray();
-            return data;
+            catch (Exception e)
+            {
+                Utility.LogError($"Failed to save scene because {e.Message}\n{e.StackTrace}");
+                return null;
+            }
         }
 
         public void LoadScene(byte[] buffer)
