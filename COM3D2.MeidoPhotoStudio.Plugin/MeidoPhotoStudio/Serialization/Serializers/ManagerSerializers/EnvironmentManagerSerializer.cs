@@ -18,14 +18,15 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
             writer.Write(manager.CurrentBgAsset);
 
-            TransformDtoSerializer.Serialize(new TransformDTO(GetBgTransform(manager)), writer);
+            var bgTransform = GetBgTransform(manager);
+            var transformDto = bgTransform ? new TransformDTO(bgTransform) : new TransformDTO();
+
+            TransformDtoSerializer.Serialize(transformDto, writer);
         }
 
         public override void Deserialize(EnvironmentManager manager, BinaryReader reader, SceneMetadata metadata)
         {
             _ = reader.ReadVersion();
-
-            var bg = GetBgTransform(manager);
 
             var bgAsset = reader.ReadString();
 
@@ -54,6 +55,10 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
             manager.ChangeBackground(bgAsset, creativeBg);
 
             if (!validBg) return;
+
+            var bg = GetBgTransform(manager);
+
+            if (!bg) return;
 
             bg.position = transformDto.Position;
             bg.rotation = transformDto.Rotation;
