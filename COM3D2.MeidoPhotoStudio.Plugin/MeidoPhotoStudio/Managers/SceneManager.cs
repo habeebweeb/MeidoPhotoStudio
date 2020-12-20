@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using BepInEx.Configuration;
+using Object = UnityEngine.Object;
 
 namespace COM3D2.MeidoPhotoStudio.Plugin
 {
@@ -291,28 +292,39 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 string fileName = $"{scenePrefix}{Utility.Timestamp}.png";
                 string savePath = Path.Combine(CurrentScenesDirectory, fileName);
 
-                if (overwrite && CurrentScene?.FileInfo != null) savePath = CurrentScene.FileInfo.FullName;
-                else overwrite = false;
+                Utility.ResizeToFit(screenshot, (int) sceneDimensions.x, (int) sceneDimensions.y);
 
-                Utility.ResizeToFit(screenshot, (int)sceneDimensions.x, (int)sceneDimensions.y);
-
-                using (FileStream fileStream = File.Create(savePath))
+                try
                 {
-                    byte[] encodedPng = screenshot.EncodeToPNG();
-                    fileStream.Write(encodedPng, 0, encodedPng.Length);
-                    fileStream.Write(sceneData, 0, sceneData.Length);
+                    if (overwrite && CurrentScene?.FileInfo != null) savePath = CurrentScene.FileInfo.FullName;
+                    else overwrite = false;
+
+                    using (FileStream fileStream = File.Create(savePath))
+                    {
+                        byte[] encodedPng = screenshot.EncodeToPNG();
+                        fileStream.Write(encodedPng, 0, encodedPng.Length);
+                        fileStream.Write(sceneData, 0, sceneData.Length);
+                    }
+
+                    if (overwrite)
+                    {
+                        File.SetCreationTime(savePath, CurrentScene.FileInfo.CreationTime);
+                        CurrentScene.Destroy();
+                        SceneList.RemoveAt(CurrentSceneIndex);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Utility.LogError($"Failed to save scene to disk because {e.Message}\n{e.StackTrace}");
+                    Object.DestroyImmediate(screenshot);
+                    Busy = false;
+                    return;
                 }
 
-                if (overwrite)
-                {
-                    File.SetCreationTime(savePath, CurrentScene.FileInfo.CreationTime);
-                    CurrentScene.Destroy();
-                    SceneList.RemoveAt(CurrentSceneIndex);
-                }
-
-                SceneList.Add(new MPSScene(savePath));
+                SceneList.Add(new MPSScene(savePath, screenshot));
                 SortScenes(CurrentSortMode);
             }
+            else Object.DestroyImmediate(screenshot);
 
             Busy = false;
         }
