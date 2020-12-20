@@ -37,9 +37,9 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         public Vector3 Position { get; init; }
         public Vector3 LocalPosition { get; init; }
-        public Quaternion Rotation { get; init; }
-        public Quaternion LocalRotation { get; init; }
-        public Vector3 LocalScale { get; init; }
+        public Quaternion Rotation { get; init; } = Quaternion.identity;
+        public Quaternion LocalRotation { get; init; } = Quaternion.identity;
+        public Vector3 LocalScale { get; init; } = Vector3.one;
 
         public TransformDTO() { }
 
