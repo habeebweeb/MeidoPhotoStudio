@@ -957,7 +957,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                     {
                         Texture2D icon;
                         string iconFile = item.IconFile;
-                        if (string.IsNullOrEmpty(iconFile) || !GameUty.FileSystem.IsExistentFile(iconFile))
+                        if (string.IsNullOrEmpty(iconFile))
                         {
                             Utility.LogWarning($"Could not find icon '{iconFile}' for menu '{item.MenuFile}");
                             return true;
