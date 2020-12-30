@@ -509,7 +509,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         private void InitializeFingerDragPoint(Bone start, Bone end)
         {
-            Vector3 fingerDragPointSize = Vector3.one * 0.015f;
+            Vector3 fingerDragPointSize = Vector3.one * 0.01f;
             int joints = BoneTransform[start].name.Split(' ')[2].StartsWith("Finger") ? 4 : 3;
             for (Bone bone = start; bone <= end; bone += joints)
             {
