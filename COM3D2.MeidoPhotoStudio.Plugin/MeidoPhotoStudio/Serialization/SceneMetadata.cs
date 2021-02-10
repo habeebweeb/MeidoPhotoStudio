@@ -6,9 +6,8 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
     {
         public short Version { get; init; }
         public bool Environment { get; init; }
-        public bool MMConverted { get; init; }
         public int MaidCount { get; init; }
-
+        public bool MMConverted { get; init; }
 
         public void WriteMetadata(BinaryWriter writer)
         {
@@ -30,7 +29,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
         }
 
         public void Deconstruct(
-            out short version, out bool environment, out bool mmConverted, out int maidCount
+            out short version, out bool environment, out int maidCount, out bool mmConverted
         )
         {
             version = Version;

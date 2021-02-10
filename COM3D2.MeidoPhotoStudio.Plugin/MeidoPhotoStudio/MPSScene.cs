@@ -57,7 +57,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
                 return;
             }
 
-            (_, Environment, _, NumberOfMaids) = SceneMetadata.ReadMetadata(binaryReader);
+            (_, Environment, NumberOfMaids, _) = SceneMetadata.ReadMetadata(binaryReader);
 
             Data = memoryStream.ToArray();
         }
