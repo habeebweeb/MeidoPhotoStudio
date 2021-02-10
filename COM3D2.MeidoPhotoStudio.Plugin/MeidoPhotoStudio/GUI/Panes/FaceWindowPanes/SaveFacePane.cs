@@ -30,7 +30,7 @@ namespace COM3D2.MeidoPhotoStudio.Plugin
 
         protected override void ReloadTranslation()
         {
-            categoryHeader = Translation.Get("faceSave", "saveButton");
+            categoryHeader = Translation.Get("faceSave", "categoryHeader");
             nameHeader = Translation.Get("faceSave", "nameHeader");
             saveFaceButton.Label = Translation.Get("faceSave", "saveButton");
         }
