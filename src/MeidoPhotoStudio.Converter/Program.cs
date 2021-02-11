@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using MyRoomCustom;
 
-namespace COM3D2.MeidoPhotoStudio.Converter
+namespace MeidoPhotoStudio.Converter
 {
     using static Plugin.BinaryExtensions;
 
@@ -262,7 +262,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
             // MM scene converted to MPS
             binaryWriter.Write(true);
 
-            binaryWriter.Write(Plugin.Meido.meidoDataVersion);
+            // binaryWriter.Write(Plugin.Meido.meidoDataVersion);
 
             int numberOfMaids = strArray2.Length;
 
@@ -430,7 +430,7 @@ namespace COM3D2.MeidoPhotoStudio.Converter
         {
             binaryWriter.Write(Plugin.PropManager.header);
 
-            binaryWriter.Write(Plugin.PropManager.propDataVersion);
+            // binaryWriter.Write(Plugin.PropManager.propDataVersion);
 
             bool hasWProp = strArray3.Length > 37 && !string.IsNullOrEmpty(strArray3[37]);
             int numberOfProps = hasWProp ? 1 : 0;
