@@ -9,9 +9,9 @@ Discord - habeebweeb#6577
 
 {pluginname} is an alternative to {photomode}.
 
-Source can be found https://git.coder.horse/habeebweeb/COM3D2.MeidoPhotoStudio[here]
+Source can be found https://git.coder.horse/habeebweeb/COM3D2.MeidoPhotoStudio/src/dev[here]
 
-A <<manual#, full manual>> is also included which goes into more depth.
+_A full manual, which goes into more depth, will be included when {pluginname} 1.0.0 offcially releases._
 
 == Installation
 
@@ -23,9 +23,9 @@ A <<manual#, full manual>> is also included which goes into more depth.
 
 Move the contents of the `BepInEx` folder into `COM3D2\BepInEx`
 
-== File System
+== Files
 
-{pluginname} reads and writes data from `{config}`.
+{pluginname} reads and writes files to and from `{config}`.
 
 [horizontal]
 Translations:: Contains translation files.
@@ -36,20 +36,30 @@ Scenes:: Contains saved scenes.
 
 Presets:: Contains poses and hand and face presets
 +
-Sample presets are included.
+_Sample presets are included._
 
-Database:: Contains databases for extra content.
+Database:: Contains databases that {pluginname} uses.
 +
-Each database file has comments at the top to describe their use.
+--
+`bg_ignore_list.json`:: List of BGs to ignore when building prop list.
 
-`cache.dat`:: Cache file for menu files.
+`extra_dogu.json`:: List of extra props that I can't find through nei files
 
-`MeidoPhotoStudio.cfg`:: Configuration file.
+`mm_pose_list.json`:: Collection of in game poses to display.
 
-`mpstempscene`:: A save file that's made when pressing `Ctrl + S`
+`face_slider_limits.json`:: Upper limit of face slider values
+
+_Each database file has comments at the top with further information._
+--
+
+`cache.dat`:: Cache file for menu files. (Generated at runtime).
+
+`MeidoPhotoStudio.cfg`:: Configuration file. (Generated at runtime).
+
+`mpstempscene`:: A save file that's made when pressing `Ctrl + S`.
 
 
-Environments, scenes, and each preset folder can have folders within them to allow for grouping.
+NOTE: Environments, scenes, and each preset folder can have single level deep folders within them to allow for grouping.
 
 == Hotkeys
 
@@ -91,6 +101,9 @@ Environments, scenes, and each preset folder can have folders within them to all
 
 | `Q + A`
 | Load saved camera
+
+| `Q + 1-5`
+| Switch to another camera
 
 | `Shift + Scroll`
 | Zoom camera faster
@@ -135,6 +148,9 @@ Environments, scenes, and each preset folder can have folders within them to all
 | `Z + Control + Drag`
 | Move object along the y axis
 
+| `Z (+ Control) + Double Click`
+| Reset object position
+
 |===
 
 ==== Rotation
@@ -158,6 +174,20 @@ Environments, scenes, and each preset folder can have folders within them to all
 
 |===
 
+==== Scaling
+[%header, cols="2a, 3"]
+|===
+
+| Key | Action
+
+| `C + Drag`
+| Scale object
+
+| `C + Double Click`
+| Reset object scale
+
+|===
+
 ==== Maid
 
 [%header, cols="2a, 3a"]
@@ -169,45 +199,41 @@ Environments, scenes, and each preset folder can have folders within them to all
 | 
 
 * Move arms and legs
-    ** Moving from the hand/foot will move the arm/leg like a chain
-    ** Moving from the elbow/knee will rotate the arm/leg using the shoulder/hip as the pivot point
-* Move shoulders
+** Moving from the hand/foot will move the arm/leg like a chain
+** Moving from the elbow/knee will rotate the arm/leg using the shoulder/hip as the pivot point
 
+* Move shoulders
 
 | `Alt + Drag`
 | 
 
 .All along XZ axis
-- Rotate torso
-- Rotate pelvis
-- Rotate head
-- Rotate hands/feet
+* Rotate torso
+* Rotate pelvis
+* Rotate head
+* Rotate hands/feet
 
 | `Alt + Shift + Drag`
 | 
 
 .All along local y axis
-- Rotate torso
-- Rotate pelvis
-- Rotate head
-- Rotate hands/feet
-- Rotate arms/legs (when dragging on elbow/knee respectively)
+* Rotate torso
+* Rotate pelvis
+* Rotate head
+* Rotate hands/feet
+* Rotate arms/legs (when dragging on elbow/knee respectively)
 
 | `Control + Alt + Drag`
 |
 
-- Move both eyes (When dragging on face)
-- Move each breast
+* Move both eyes (When dragging on face)
+* Move each breast
 
 | `Control + Alt + Shift + Drag`
 | 
 
---
-Move eyes in opposite directions
-****
-Cross eyed, ahegao etc.
-****
---
+* Move eyes in opposite directions
+* Rotate breasts
 
 | `Control + Alt + Double Click`
 | Reset eyes and breasts position
@@ -224,7 +250,46 @@ Cross eyed, ahegao etc.
 | `A + Left Click`
 |
 
-- Make selected maid the active maid and switch to pose tab (When clicking on torso)
-- Make selected maid the active maid and switch to face tab (When clicking on face)
+* Make selected maid the active maid and switch to pose tab (When clicking on torso)
+* Make selected maid the active maid and switch to face tab (When clicking on face)
 
 |===
+
+== Changelog
+
+=== {pluginname}.1.0.0-beta.3.1
+
+==== Fixes
+
+* Fix memory leak when saving scenes to a file
+* Handle errors when saving scenes to prevent {pluginname} from locking up
+* Fix issue where {pluginname} crashes when trying to save a non-existent background
+** SceneCaputre hides the background by destroying it so it caused issues for {pluginname}
+
+=== {pluginname}.1.0.0-beta.3
+
+==== Fixes
+* Fix face tab sliders/toggles doing nothing when using face shapekeys in ShapeAnimator
+* Fix face blush toggles doing nothing
+
+==== Changes
+* Make bone mode drag handles way smaller and more transparent
+
+==== Enhancements
+* Add spine as attach points for props
+
+==== New Features
+* Add camera Z rotation and FOV slider
+
+* Add camera slots
+** There are 5 slots that function similarly to quick save slots
+** Cameras can be switched between through the GUI or by holding `Q + (1..5)`
+
+* Add textfield and reset button to some sliders
+** textfield and reset buttons were added to the camera pane and lights pane
+
+* Add clothing mask radio buttons to change dressing for individual maids
+** Functions the same way as pushing `H` to change all the maid's dressing
+
+* Add user configurable face slider limits
+** `Config\MeidoPhotoStudio\Database\face_slider_limits.json` has been added
