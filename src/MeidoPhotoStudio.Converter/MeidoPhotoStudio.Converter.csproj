@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net35</TargetFramework>
+    <FrameworkPathOverride Condition="'$(TargetFramework)' == 'net35'">$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
+    <ProjectGuid>{19D28B0C-3537-4FEE-B7B3-1ABF70B16D5E}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="..\..\lib\Assembly-CSharp.dll" />
+    <Reference Include="..\..\lib\Assembly-CSharp-firstpass.dll" />
+    <Reference Include="..\..\lib\UnityEngine.dll" />
+    <Reference Include="..\..\lib\Ionic.Zlib.dll" />
+    <Reference Include="..\..\lib\ExIni.dll" />
+    <Reference Include="..\..\lib\BepInEx.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MeidoPhotoStudio.Plugin\MeidoPhotoStudio.Plugin.csproj" />
+  </ItemGroup>
+</Project>
