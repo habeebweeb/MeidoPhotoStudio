@@ -1,0 +1,37 @@
+/*
+    This file is included as a convenience to prevent C(O)M3D2 BGs from being added to the 'Props 1' dropdown
+
+    You should consider checking your 'phot_bg_list_add.nei' file in the 'PhotoBG_NEI' folder somewhere in your 'Mod'
+    folder to see if you're missing any of these items and add them. This will have the added benefit of having these
+    BGs show up in the backgrounds dropdown and in studio mode.
+*/
+[
+    "classroom_nodesk",
+    "heroineroom_d1",
+    "heroineroom_d1_night",
+    "heroineroom_d",
+    "heroineroom_d_night",
+    "heroineroom_e1",
+    "heroineroom_e1_night",
+    "heroineroom_e",
+    "heroineroom_e_night",
+    "heroineroom_f1",
+    "heroineroom_f1_night",
+    "heroineroom_f",
+    "heroineroom_f_night",
+    "heroineroom_g1",
+    "heroineroom_g1_night",
+    "heroineroom_g",
+    "heroineroom_g_night",
+    "heroineroom_h1",
+    "heroineroom_h1_night",
+    "heroineroom_j1",
+    "heroineroom_j1_night",
+    "heroineroom_k1",
+    "heroineroom_k1_night",
+    "heroineroom_l1",
+    "heroineroom_l1_night",
+    "KaraokeRoom",
+    "train_notsurikawa",
+    "yashiki_Pillow"
+]
