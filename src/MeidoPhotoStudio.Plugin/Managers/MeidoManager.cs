@@ -62,7 +62,11 @@ namespace MeidoPhotoStudio.Plugin
 
         public void Activate()
         {
-            GameMain.Instance.CharacterMgr.ResetCharaPosAll();
+            characterMgr.ResetCharaPosAll();
+
+            if (!MeidoPhotoStudio.EditMode)
+                characterMgr.DeactivateMaid(0);
+
             numberOfMeidos = characterMgr.GetStockMaidCount();
             Meidos = new Meido[numberOfMeidos];
 

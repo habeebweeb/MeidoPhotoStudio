@@ -213,6 +213,8 @@ namespace MeidoPhotoStudio.Plugin
 
             IKManager.Initialize();
 
+            SetFaceBlendSet(defaultFaceBlendSet);
+
             IK = true;
             Stop = false;
             Bone = false;
