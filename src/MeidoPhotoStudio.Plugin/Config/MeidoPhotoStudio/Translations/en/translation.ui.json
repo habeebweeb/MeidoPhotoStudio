@@ -9,7 +9,8 @@
     "maidCallWindow": {
         "okButton": "OK",
         "clearButton": "Clear",
-        "callButton": "Call"
+        "callButton": "Call",
+        "activeOnlyToggle": "Active Only"
     },
     "placementDropdown": {
         "normal": "Normal",
