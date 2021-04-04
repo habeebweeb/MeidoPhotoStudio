@@ -14,6 +14,8 @@ namespace MeidoPhotoStudio.Plugin
         private float defaultCameraZoomSpeed;
         private const float cameraFastMoveSpeed = 0.1f;
         private const float cameraFastZoomSpeed = 3f;
+        private const float cameraSlowMoveSpeed = 0.004f;
+        private const float cameraSlowZoomSpeed = 0.1f;
         private Camera subCamera;
         private CameraInfo tempCameraInfo = new CameraInfo();
         private const KeyCode AlphaOne = KeyCode.Alpha1;
@@ -108,9 +110,21 @@ namespace MeidoPhotoStudio.Plugin
 
             subCamera.fieldOfView = mainCamera.camera.fieldOfView;
 
-            var shift = Input.Shift;
-            ultimateOrbitCamera.moveSpeed = shift ? cameraFastMoveSpeed : defaultCameraMoveSpeed;
-            ultimateOrbitCamera.zoomSpeed = shift ? cameraFastZoomSpeed : defaultCameraZoomSpeed;
+            if (Input.Shift)
+            {
+                ultimateOrbitCamera.moveSpeed = cameraFastMoveSpeed;
+                ultimateOrbitCamera.zoomSpeed = cameraFastZoomSpeed;
+            }
+            else if (Input.Control)
+            {
+                ultimateOrbitCamera.moveSpeed = cameraSlowMoveSpeed;
+                ultimateOrbitCamera.zoomSpeed = cameraSlowZoomSpeed;
+            }
+            else
+            {
+                ultimateOrbitCamera.moveSpeed = defaultCameraMoveSpeed;
+                ultimateOrbitCamera.zoomSpeed = defaultCameraZoomSpeed;
+            }
         }
 
         private void SaveTempCamera()
