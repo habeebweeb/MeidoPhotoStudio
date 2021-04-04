@@ -429,6 +429,8 @@
         "openSceneManager": "Open Scene Manager"
     },
     "settingsLabels": {
+        "settingsButton": "Settings",
+        "closeSettingsButton": "Close",
         "reloadTranslation": "Reload Translation",
         "reloadAllPresets": "Reload Presets"
     },
