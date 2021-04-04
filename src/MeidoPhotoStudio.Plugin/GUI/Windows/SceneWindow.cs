@@ -40,8 +40,6 @@ namespace MeidoPhotoStudio.Plugin
             directoryList = AddPane(new SceneManagerDirectoryPane(sceneManager, sceneModalWindow));
 
             sceneGrid = AddPane(new SceneManagerScenePane(sceneManager, sceneModalWindow));
-
-            sceneGrid.SetParent(this);
         }
 
         public override void GUIFunc(int id)

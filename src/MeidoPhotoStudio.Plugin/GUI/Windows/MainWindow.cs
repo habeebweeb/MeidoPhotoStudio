@@ -64,6 +64,7 @@ namespace MeidoPhotoStudio.Plugin
 
         public override void Activate()
         {
+            base.Activate();
             updating = true;
             tabsPane.SelectedTab = Constants.Window.Call;
             updating = false;
