@@ -197,7 +197,7 @@ namespace MeidoPhotoStudio.Plugin
             {
                 scaling = true;
                 float scale = currentScale + (mouseDelta.y / 200f * ScaleFactor);
-                if (scale < 0.1f) scale = 0.1f;
+                if (scale < 0f) scale = 0f;
                 MyObject.localScale = new Vector3(scale, scale, scale);
                 OnScale();
             }
