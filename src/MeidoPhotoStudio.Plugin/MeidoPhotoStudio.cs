@@ -430,9 +430,32 @@ namespace MeidoPhotoStudio.Plugin
         {
             if (meidoManager.Busy || SceneManager.Busy) return;
 
-            SystemDialog sysDialog = GameMain.Instance.SysDlg;
+            var sysDialog = GameMain.Instance.SysDlg;
 
-            void exit()
+            if (!sysDialog.IsDecided && !force) return;
+
+            uiActive = false;
+            active = false;
+
+            if (force)
+            {
+                Exit();
+                return;
+            }
+
+            sysDialog.Show(
+                string.Format(Translation.Get("systemMessage", "exitConfirm"), pluginName),
+                SystemDialog.TYPE.OK_CANCEL,
+                Exit,
+                () =>
+                {
+                    sysDialog.Close();
+                    uiActive = true;
+                    active = true;
+                }
+            );
+
+            void Exit()
             {
                 sysDialog.Close();
 
@@ -448,34 +471,14 @@ namespace MeidoPhotoStudio.Plugin
 
                 Modal.Close();
 
-                if (!EditMode)
-                {
-                    GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
-                    dailyPanel?.SetActive(true);
-                }
-
                 Configuration.Config.Save();
-            }
 
-            if (sysDialog.IsDecided || EditMode || force)
-            {
-                uiActive = false;
-                active = false;
+                if (EditMode) return;
 
-                if (EditMode || force) exit();
-                else
-                {
-                    string exitMessage = string.Format(Translation.Get("systemMessage", "exitConfirm"), pluginName);
-                    sysDialog.Show(exitMessage, SystemDialog.TYPE.OK_CANCEL,
-                        f_dgOk: exit,
-                        f_dgCancel: () =>
-                        {
-                            sysDialog.Close();
-                            uiActive = true;
-                            active = true;
-                        }
-                    );
-                }
+                var dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
+
+                if (dailyPanel != null)
+                    dailyPanel.SetActive(true);
             }
         }
     }
