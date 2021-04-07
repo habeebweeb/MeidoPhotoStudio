@@ -181,7 +181,7 @@ namespace MeidoPhotoStudio.Plugin
             else category = faceGroup;
 
             CustomFaceDict[category].Add(fullPath);
-            CustomFaceDict[category].Sort(LexicographicStringComparer.Comparison);
+            CustomFaceDict[category].Sort(WindowsLogicalComparer.StrCmpLogicalW);
 
             CustomFaceChange?.Invoke(null, new PresetChangeEventArgs(fullPath, category));
         }
@@ -231,7 +231,7 @@ namespace MeidoPhotoStudio.Plugin
             else category = poseGroup;
 
             CustomPoseDict[category].Add(fullPath);
-            CustomPoseDict[category].Sort(LexicographicStringComparer.Comparison);
+            CustomPoseDict[category].Sort(WindowsLogicalComparer.StrCmpLogicalW);
 
             CustomPoseChange?.Invoke(null, new PresetChangeEventArgs(fullPath, category));
         }
@@ -290,7 +290,7 @@ namespace MeidoPhotoStudio.Plugin
             else category = handGroup;
 
             CustomHandDict[category].Add(fullPath);
-            CustomHandDict[category].Sort(LexicographicStringComparer.Comparison);
+            CustomHandDict[category].Sort(WindowsLogicalComparer.StrCmpLogicalW);
 
             CustomHandChange?.Invoke(null, new PresetChangeEventArgs(fullPath, category));
         }
@@ -322,7 +322,7 @@ namespace MeidoPhotoStudio.Plugin
             if (a == b) return 0;
             if (a == topItem) return -1;
             if (b == topItem) return 1;
-            else return LexicographicStringComparer.Comparison(a, b);
+            else return WindowsLogicalComparer.StrCmpLogicalW(a, b);
         }
 
         public static void InitializePoses()
@@ -421,7 +421,7 @@ namespace MeidoPhotoStudio.Plugin
                     string poseGroupName = new DirectoryInfo(directory).Name;
                     if (poseGroupName != customPoseDirectory) CustomPoseGroupList.Add(poseGroupName);
                     CustomPoseDict[poseGroupName] = poseList.ToList();
-                    CustomPoseDict[poseGroupName].Sort(LexicographicStringComparer.Comparison);
+                    CustomPoseDict[poseGroupName].Sort(WindowsLogicalComparer.StrCmpLogicalW);
                 }
             }
 
@@ -451,7 +451,7 @@ namespace MeidoPhotoStudio.Plugin
                     string presetCategory = new DirectoryInfo(directory).Name;
                     if (presetCategory != customHandDirectory) CustomHandGroupList.Add(presetCategory);
                     CustomHandDict[presetCategory] = presetList.ToList();
-                    CustomHandDict[presetCategory].Sort(LexicographicStringComparer.Comparison);
+                    CustomHandDict[presetCategory].Sort(WindowsLogicalComparer.StrCmpLogicalW);
                 }
             }
 
@@ -495,7 +495,7 @@ namespace MeidoPhotoStudio.Plugin
                     string faceGroupName = new DirectoryInfo(directory).Name;
                     if (faceGroupName != customFaceDirectory) CustomFaceGroupList.Add(faceGroupName);
                     CustomFaceDict[faceGroupName] = presetList.ToList();
-                    CustomFaceDict[faceGroupName].Sort(LexicographicStringComparer.Comparison);
+                    CustomFaceDict[faceGroupName].Sort(WindowsLogicalComparer.StrCmpLogicalW);
                 }
             }
 

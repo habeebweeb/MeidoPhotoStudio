@@ -209,7 +209,7 @@ namespace MeidoPhotoStudio.Plugin
 
         private int SortByName(MPSScene a, MPSScene b)
         {
-            return SortDirection * LexicographicStringComparer.Comparison(a.FileInfo.Name, b.FileInfo.Name);
+            return SortDirection * WindowsLogicalComparer.StrCmpLogicalW(a.FileInfo.Name, b.FileInfo.Name);
         }
 
         private int SortByDateCreated(MPSScene a, MPSScene b)
@@ -246,7 +246,7 @@ namespace MeidoPhotoStudio.Plugin
             string baseDirectoryName = KankyoMode ? Constants.kankyoDirectory : Constants.sceneDirectory;
             CurrentDirectoryList.Sort((a, b)
                 => a.Equals(baseDirectoryName, StringComparison.InvariantCultureIgnoreCase) 
-                    ? -1 : LexicographicStringComparer.Comparison(a, b));
+                    ? -1 : WindowsLogicalComparer.StrCmpLogicalW(a, b));
         }
 
         private void ClearSceneList()
