@@ -143,12 +143,20 @@ namespace MeidoPhotoStudio.Plugin
         private void UnloadMeidos()
         {
             SelectedMeido = 0;
+
+            var commonMeidoIDs = new HashSet<int>(
+                ActiveMeidoList.Where(meido => SelectedMeidoSet.Contains(meido.StockNo)).Select(meido => meido.StockNo)
+            );
+
             foreach (Meido meido in ActiveMeidoList)
             {
                 meido.UpdateMeido -= OnUpdateMeido;
                 meido.GravityMove -= OnGravityMove;
-                meido.Unload();
+                
+                if (!commonMeidoIDs.Contains(meido.StockNo))
+                    meido.Unload();
             }
+
             ActiveMeidoList.Clear();
         }
 

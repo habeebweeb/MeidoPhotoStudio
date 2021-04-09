@@ -66,6 +66,7 @@ namespace MeidoPhotoStudio.Plugin
         public string FirstName => Maid.status.firstName;
         public string LastName => Maid.status.lastName;
         public bool Busy => Maid.IsBusy || Loading;
+        public bool Active { get; private set; }
         public bool CurlingFront => Maid.IsItemChange("skirt", "めくれスカート")
             || Maid.IsItemChange("onepiece", "めくれスカート");
         public bool CurlingBack => Maid.IsItemChange("skirt", "めくれスカート後ろ")
@@ -163,6 +164,9 @@ namespace MeidoPhotoStudio.Plugin
 
             Slot = slot;
 
+            if (Active) 
+                return;
+
             FreeLook = false;
             Maid.Visible = true;
             Body.boHeadToCam = true;
@@ -218,6 +222,8 @@ namespace MeidoPhotoStudio.Plugin
             IK = true;
             Stop = false;
             Bone = false;
+
+            Active = true;
         }
 
         private void ReinitializeBody(object sender, ProcStartEventArgs args)
@@ -324,6 +330,8 @@ namespace MeidoPhotoStudio.Plugin
             Maid.Visible = false;
 
             IKManager.Destroy();
+            
+            Active = false;
         }
 
         public void Deactivate()
