@@ -373,11 +373,15 @@ namespace MeidoPhotoStudio.Plugin
                 {
                     Utility.LogWarning($"{poseFilename}: Could not open because {e.Message}");
                     Constants.InitializeCustomPoses();
+                    SetPose(PoseInfo.DefaultPose);
+                    OnUpdateMeido();
                     return;
                 }
                 catch (Exception e)
                 {
                     Utility.LogWarning($"{poseFilename}: Could not apply pose because {e.Message}");
+                    SetPose(PoseInfo.DefaultPose);
+                    OnUpdateMeido();
                     return;
                 }
                 SetMune(true, left: true);
