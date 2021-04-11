@@ -20,7 +20,7 @@ namespace MeidoPhotoStudio.Plugin
         public const string pluginName = "MeidoPhotoStudio";
         public const string pluginVersion = "1.0.0";
         public const string pluginSubVersion = "beta.3";
-        public const short sceneVersion = 1;
+        public const short sceneVersion = 2;
         public const int kankyoMagic = -765;
         public static readonly string pluginString = $"{pluginName} {pluginVersion}";
         public static bool EditMode => currentScene == Constants.Scene.Edit;

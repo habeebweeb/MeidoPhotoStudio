@@ -10,7 +10,7 @@ namespace MeidoPhotoStudio.Plugin
     {
         private const short version = 1;
         private const short headVersion = 1;
-        private const short bodyVersion = 1;
+        private const short bodyVersion = 2;
         private const short clothingVersion = 1;
 
         private static SimpleSerializer<PoseInfo> PoseInfoSerializer => Serialization.GetSimple<PoseInfo>();
@@ -104,6 +104,13 @@ namespace MeidoPhotoStudio.Plugin
             writer.Write(poseBuffer);
 
             PoseInfoSerializer.Serialize(meido.CachedPose, writer);
+
+            // v2 start
+            // sub mune rotation
+            var body = meido.Body;
+            writer.WriteQuaternion(body.GetBone("Mune_L_sub").localRotation);
+            writer.WriteQuaternion(body.GetBone("Mune_R_sub").localRotation);
+            // v2 end
         }
 
         private static void SerializeClothing(Meido meido, BinaryWriter writer)
@@ -194,7 +201,7 @@ namespace MeidoPhotoStudio.Plugin
 
         private static void DeserializeBody(Meido meido, BinaryReader reader, SceneMetadata metadata)
         {
-            _ = reader.ReadVersion();
+            var version = reader.ReadVersion();
 
             var muneSetting = new KeyValuePair<bool, bool>(true, true);
             if (metadata.MMConverted) meido.IKManager.Deserialize(reader);
@@ -210,6 +217,20 @@ namespace MeidoPhotoStudio.Plugin
             
             meido.SetMune(!muneSetting.Key, true);
             meido.SetMune(!muneSetting.Value);
+
+            if (version >= 2)
+            {
+                var muneLSubRotation = reader.ReadQuaternion();
+                var muneSubRRotation = reader.ReadQuaternion();
+
+                var body = meido.Body;
+
+                if (muneSetting.Key)
+                    body.GetBone("Mune_L_sub").localRotation = muneLSubRotation;
+
+                if (muneSetting.Value)
+                    body.GetBone("Mune_R_sub").localRotation = muneSubRRotation;
+            }
         }
 
         private static void DeserializeClothing(Meido meido, BinaryReader reader, SceneMetadata metadata)
