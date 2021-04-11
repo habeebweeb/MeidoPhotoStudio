@@ -140,6 +140,13 @@ namespace MeidoPhotoStudio.Plugin
 
             var metadata = SceneMetadata.ReadMetadata(headerReader);
 
+            if (metadata.Version > sceneVersion)
+            {
+                Utility.LogWarning("Cannot load scene. Scene is too new.");
+                Utility.LogWarning($"Your version: {sceneVersion}, Scene version: {metadata.Version}");
+                return;
+            }
+
             using var uncompressed = memoryStream.Decompress();
             using var dataReader = new BinaryReader(uncompressed, Encoding.UTF8);
 
