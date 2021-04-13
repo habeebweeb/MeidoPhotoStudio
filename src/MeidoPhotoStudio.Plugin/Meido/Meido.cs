@@ -7,6 +7,7 @@ using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
 using static TBody;
+using Object = UnityEngine.Object;
 
 namespace MeidoPhotoStudio.Plugin
 {
@@ -237,31 +238,37 @@ namespace MeidoPhotoStudio.Plugin
                     MPN.hairf, MPN.hairr, MPN.hairs, MPN.hairt
                 };
 
+                Action action = null;
+
                 // Change body
                 if (Maid.GetProp(MPN.body).boDut)
                 {
                     IKManager.Destroy();
-                    StartLoad(reinitializeBody);
+                    action += ReinitializeBody;
                 }
+
                 // Change face
-                else if (Maid.GetProp(MPN.head).boDut)
+                if (Maid.GetProp(MPN.head).boDut)
                 {
                     SetFaceBlendSet(defaultFaceBlendSet);
-                    StartLoad(reinitializeFace);
+                    action += ReinitializeFace;
                 }
-                // Gravity control clothing/hair change
-                else if (gravityControlProps.Any(prop => Maid.GetProp(prop).boDut))
-                {
-                    if (HairGravityControl) GameObject.Destroy(HairGravityControl.gameObject);
-                    if (SkirtGravityControl) GameObject.Destroy(SkirtGravityControl.gameObject);
 
-                    StartLoad(reinitializeGravity);
+                // Gravity control clothing/hair change
+                if (gravityControlProps.Any(prop => Maid.GetProp(prop).boDut))
+                {
+                    if (HairGravityControl) Object.Destroy(HairGravityControl.gameObject);
+                    if (SkirtGravityControl) Object.Destroy(SkirtGravityControl.gameObject);
+                    action += ReinitializeGravity;
                 }
+
                 // Clothing/accessory changes
                 // Includes null_mpn too but any button click results in null_mpn bodut I think
-                else StartLoad(() => OnUpdateMeido());
+                action ??= () => OnUpdateMeido();
 
-                void reinitializeBody()
+                StartLoad(action);
+
+                void ReinitializeBody()
                 {
                     IKManager.Initialize();
                     Stop = false;
@@ -275,14 +282,14 @@ namespace MeidoPhotoStudio.Plugin
                     Utility.SetFieldValue(customPartsWindow, "animation", Maid.GetAnimation());
                 }
 
-                void reinitializeFace()
+                void ReinitializeFace()
                 {
                     DefaultEyeRotL = Body.quaDefEyeL;
                     DefaultEyeRotR = Body.quaDefEyeR;
                     BackupBlendSetValues();
                 }
 
-                void reinitializeGravity()
+                void ReinitializeGravity()
                 {
                     InitializeGravityControls();
                     OnUpdateMeido();
