@@ -108,8 +108,14 @@ NOTE: Environments, scenes, and each preset folder can have single level deep fo
 | `Shift + Scroll`
 | Zoom camera faster
 
+| `Control + Scroll`
+| Zoom camera slower
+
 | `Shift + Middle Drag`
 | Pan camera faster
+
+| `Control + Middle Drag`
+| Pan camera slower
 
 |===
 
