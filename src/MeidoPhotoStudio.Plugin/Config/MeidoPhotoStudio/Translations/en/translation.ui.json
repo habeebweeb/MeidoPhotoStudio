@@ -264,8 +264,8 @@
         "resetPosition": "Position",
         "resetProperties": "Properties",
         "clear": "Clear",
-        "colour": "Colour",
-        "disable": "On",
+        "colour": "Hide BG",
+        "disable": "Off",
         "resetLabel": "Reset"
     },
     "lightType": {
