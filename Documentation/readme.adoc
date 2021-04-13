@@ -268,16 +268,6 @@ NOTE: Environments, scenes, and each preset folder can have single level deep fo
 
 === {pluginname}.1.0.0-beta.3
 
-==== Fixes
-* Fix face tab sliders/toggles doing nothing when using face shapekeys in ShapeAnimator
-* Fix face blush toggles doing nothing
-
-==== Changes
-* Make bone mode drag handles way smaller and more transparent
-
-==== Enhancements
-* Add spine as attach points for props
-
 ==== New Features
 * Add camera Z rotation and FOV slider
 
@@ -293,3 +283,13 @@ NOTE: Environments, scenes, and each preset folder can have single level deep fo
 
 * Add user configurable face slider limits
 ** `Config\MeidoPhotoStudio\Database\face_slider_limits.json` has been added
+
+==== Enhancements
+* Add spine as attach points for props
+
+==== Changes
+* Make bone mode drag handles way smaller and more transparent
+
+==== Fixes
+* Fix face tab sliders/toggles doing nothing when using face shapekeys in ShapeAnimator
+* Fix face blush toggles doing nothing
