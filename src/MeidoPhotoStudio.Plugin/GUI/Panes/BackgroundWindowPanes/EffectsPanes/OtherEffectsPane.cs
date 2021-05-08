@@ -27,11 +27,17 @@ namespace MeidoPhotoStudio.Plugin
             blurSlider = new Slider(Translation.Get("otherEffectsPane", "blurSlider"), 0f, 18f);
             blurSlider.ControlEvent += (s, a) =>
             {
-                float value = blurSlider.Value;
-                if (!blurEffectManager.Active && value > 0f) blurEffectManager.SetEffectActive(true);
-                else if (blurEffectManager.Active && value == 0f) blurEffectManager.SetEffectActive(false);
+                if (updating)
+                    return;
 
-                if (blurEffectManager.Active) blurEffectManager.BlurSize = blurSlider.Value;
+                var value = blurSlider.Value;
+
+                if (!blurEffectManager.Active && value > 0f)
+                    blurEffectManager.SetEffectActive(true);
+                else if (blurEffectManager.Active && Mathf.Approximately(value, 0f))
+                    blurEffectManager.SetEffectActive(false);
+
+                blurEffectManager.BlurSize = value;
             };
         }
 
@@ -51,14 +57,15 @@ namespace MeidoPhotoStudio.Plugin
 
         public override void UpdatePane()
         {
-            if (sepiaToneEffectManger.Ready)
-            {
-                updating = true;
-                sepiaToggle.Value = sepiaToneEffectManger.Active;
-                updating = false;
-            }
+            updating = true;
 
-            if (blurEffectManager.Ready) blurSlider.Value = blurEffectManager.BlurSize;
+            if (sepiaToneEffectManger.Ready)
+                sepiaToggle.Value = sepiaToneEffectManger.Active;
+
+            if (blurEffectManager.Ready)
+                blurSlider.Value = blurEffectManager.BlurSize;
+
+            updating = false;
         }
     }
 }
