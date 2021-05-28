@@ -9,41 +9,63 @@ namespace MeidoPhotoStudio.Converter.Converters
 {
     public class MMConverter : IConverter
     {
-        private readonly string workingDirectory;
-
-        public MMConverter(string directory) => workingDirectory = directory;
-
-        public void Convert()
+        public void Convert(string workingDirectory)
         {
-            if (!Directory.Exists(workingDirectory))
-                Directory.CreateDirectory(workingDirectory);
+            var baseDirectory = Path.Combine(workingDirectory, MPSSceneSerializer.FormatDate(DateTime.Now));
 
-            foreach (var section in GetSceneSections(workingDirectory))
+            foreach (var iniFilePath in GetIniFiles(workingDirectory))
             {
-                foreach (var key in section.Keys.Where(
-                    key => !key.Key.StartsWith("ss") && !string.IsNullOrEmpty(key.Value)
-                ))
+                var section = GetSceneSection(iniFilePath);
+
+                if (section is null)
+                    continue;
+
+                var outputDirectoryName = Path.GetFileNameWithoutExtension(iniFilePath);
+                var outputDirectory = Path.Combine(baseDirectory, outputDirectoryName);
+
+                Directory.CreateDirectory(outputDirectory);
+
+                var keys = section.Keys.Where(key => !key.Key.StartsWith("ss") && !string.IsNullOrEmpty(key.Value));
+
+                foreach (var key in keys)
                 {
-                    var data = key.Value;
-                    var screenshotKey = $"s{key.Key}";
+                    var background = int.Parse(key.Key.Substring(1)) >= 10000;
+
+                    var convertedData = MMSceneConverter.Convert(key.Value, background);
+                    var sceneMetadata = MMSceneConverter.GetSceneMetadata(key.Value, background);
+
+                    var screenshotKey = $"s{key.Key}"; // ex. ss100=thumb_base64
                     string? screenshotBase64 = null;
 
                     if (section.HasKey(screenshotKey) && !string.IsNullOrEmpty(section[screenshotKey].Value))
                         screenshotBase64 = section[screenshotKey].Value;
 
-                    var convertedData = MMSceneConverter.Convert(data);
-                    
+                    var filename = GenerateFilename(iniFilePath, key);
+                    var fullPath = Path.Combine(outputDirectory, filename);
+
+                    MPSSceneSerializer.SaveToFile(fullPath, sceneMetadata, convertedData, screenshotBase64);
                 }
             }
         }
 
-        private static void Convert(MMScene scene) { }
+        private static IEnumerable<string> GetIniFiles(string workingDirectory) =>
+            Directory.GetFiles(workingDirectory, "*.ini", SearchOption.AllDirectories);
 
-        private static IEnumerable<IniSection> GetSceneSections(string directory) =>
-            Directory.GetFiles(directory, "*.ini", SearchOption.AllDirectories)
-                .Select(GetSceneSection)
-                .Where(section => section is not null)
-                .Select(section => section!);
+        private static string GenerateFilename(string iniFilePath, IniKey sceneKey)
+        {
+            var background = int.Parse(sceneKey.Key.Substring(1)) >= 10000;
+
+            var iniFilename = Path.GetFileNameWithoutExtension(iniFilePath);
+
+            var sceneName = sceneKey.Key;
+
+            var data = sceneKey.Value;
+            var date = DateTime.Parse(data.Substring(0, data.IndexOf(',')));
+
+            var sceneDate = MPSSceneSerializer.FormatDate(date);
+
+            return $"mm{(background ? "kankyo" : "scene")}_{iniFilename}_{sceneName}_{sceneDate}.png";
+        }
 
         private static IniSection? GetSceneSection(string filePath)
         {

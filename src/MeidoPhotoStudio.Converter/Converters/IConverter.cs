@@ -2,6 +2,6 @@
 {
     public interface IConverter
     {
-        void Convert();
+        void Convert(string workingDirectory);
     }
 }

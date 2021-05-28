@@ -2,10 +2,11 @@
 using System.IO;
 using System.Text;
 using MeidoPhotoStudio.Plugin;
+using Ionic.Zlib;
 
 namespace MeidoPhotoStudio.Converter
 {
-    internal class MPSSceneSerializer
+    public static class MPSSceneSerializer
     {
         private const string NoThumbBase64 =
             "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7D"
@@ -18,14 +19,30 @@ namespace MeidoPhotoStudio.Converter
         private static byte[]? noThumb;
         public static byte[] NoThumb => noThumb ??= Convert.FromBase64String(NoThumbBase64);
 
-        public void SaveToFile(string filename, byte[] rawSceneData, string? thumbnail)
+        public static void SaveToFile(string filename, SceneMetadata metadata, byte[] rawSceneData, string? thumbnail)
         {
+            if (Path.GetExtension(filename) != ".png")
+                filename += ".png";
+
             using var fileStream = File.Create(filename);
 
-            var rawThumbnail = thumbnail is null ? NoThumb : Convert.FromBase64String(thumbnail);
+            var rawThumbnail = string.IsNullOrEmpty(thumbnail) ? NoThumb : Convert.FromBase64String(thumbnail);
 
             fileStream.Write(rawThumbnail, 0, rawThumbnail.Length);
-            fileStream.Write(rawSceneData, 0, rawSceneData.Length);
+
+            using var headerWriter = new BinaryWriter(fileStream, Encoding.UTF8);
+
+            headerWriter.Write(MeidoPhotoStudio.Plugin.MeidoPhotoStudio.SceneHeader);
+
+            metadata.WriteMetadata(headerWriter);
+
+            using var compressionStream = new DeflateStream(fileStream, CompressionMode.Compress);
+
+            compressionStream.Write(rawSceneData, 0, rawSceneData.Length);
+
+            compressionStream.Close();
         }
+
+        public static string FormatDate(DateTime date) => date.ToString("yyyyMMddHHmmss");
     }
 }
