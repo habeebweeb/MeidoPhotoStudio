@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MyRoomCustom;
+using UnityEngine;
 
 namespace MeidoPhotoStudio.Converter.MultipleMaids
 {
@@ -33,5 +34,6 @@ namespace MeidoPhotoStudio.Converter.MultipleMaids
                     data => data,
                     StringComparer.InvariantCultureIgnoreCase
                 );
+        public static readonly Vector3 DefaultSoftG = new(0f, -3f / 1000f, 0f);
     }
 }
