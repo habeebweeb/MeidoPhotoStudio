@@ -188,7 +188,7 @@ namespace MeidoPhotoStudio.Plugin
             catch (Exception e)
             {
                 Utility.LogError(
-                    $"Failed to deserialize scene TEST because {e.Message}"
+                    $"Failed to deserialize scene because {e.Message}"
                     + $"\nCurrent header: '{header}'. Last header: '{previousHeader}'"
                 );
                 Utility.LogError(e.StackTrace);
