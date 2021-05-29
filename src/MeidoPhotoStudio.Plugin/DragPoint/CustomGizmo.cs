@@ -8,6 +8,8 @@ namespace MeidoPhotoStudio.Plugin
     {
         private static readonly Camera camera = GameMain.Instance.MainCamera.camera;
         private Transform target;
+        private bool hasAlternateTarget;
+        private Transform positionTransform;
         private readonly FieldInfo beSelectedType = Utility.GetFieldInfo<GizmoRender>("beSelectedType");
         private int SelectedType => (int)beSelectedType.GetValue(this);
         private static readonly FieldInfo is_drag_ = Utility.GetFieldInfo<GizmoRender>("is_drag_");
@@ -70,6 +72,12 @@ namespace MeidoPhotoStudio.Plugin
             return gizmo;
         }
 
+        public void SetAlternateTarget(Transform trans)
+        {
+            positionTransform = trans;
+            hasAlternateTarget = trans != null;
+        }
+
         public override void Update()
         {
             BeginUpdate();
@@ -130,7 +138,7 @@ namespace MeidoPhotoStudio.Plugin
         private void SetTransform()
         {
             Transform transform = this.transform;
-            transform.position = target.position;
+            transform.position = (hasAlternateTarget ? positionTransform : target).position;
             transform.localScale = Vector3.one;
             transform.rotation = gizmoMode switch
             {
