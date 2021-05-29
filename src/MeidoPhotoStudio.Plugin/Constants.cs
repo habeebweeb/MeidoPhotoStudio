@@ -542,13 +542,13 @@ namespace MeidoPhotoStudio.Plugin
                 }
             }
 
+            // Set index regardless of there being myRoom bgs or not
+            MyRoomCustomBGIndex = BGList.Count;
+
             Dictionary<string, string> saveDataDict = CreativeRoomManager.GetSaveDataDic();
 
             if (saveDataDict != null)
-            {
-                MyRoomCustomBGIndex = BGList.Count;
                 MyRoomCustomBGList.AddRange(saveDataDict);
-            }
         }
 
         public static void InitializeDogu()
