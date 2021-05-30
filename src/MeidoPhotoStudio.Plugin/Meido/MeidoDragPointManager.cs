@@ -144,28 +144,66 @@ namespace MeidoPhotoStudio.Plugin
 
         public MeidoDragPointManager(Meido meido) => this.meido = meido;
 
-        public void Deserialize(BinaryReader binaryReader)
+        public void Deserialize(BinaryReader reader)
         {
-            Bone[] bones = {
-                Bone.Hip, Bone.Pelvis, Bone.Spine, Bone.Spine0a, Bone.Spine1, Bone.Spine1a, Bone.Neck,
-                Bone.ClavicleL, Bone.ClavicleR, Bone.UpperArmL, Bone.UpperArmR, Bone.ForearmL, Bone.ForearmR,
-                Bone.ThighL, Bone.ThighR, Bone.CalfL, Bone.CalfR, Bone.MuneL, Bone.MuneR, Bone.MuneSubL, Bone.MuneSubR,
-                Bone.HandL, Bone.HandR, Bone.FootL, Bone.FootR
-            };
-            int localRotationIndex = Array.IndexOf(bones, Bone.CalfR);
-            for (Bone bone = Bone.Finger0L; bone <= Bone.Toe2NubR; ++bone)
+            var sixtyFourFlag = reader.ReadBoolean();
+            var upperBone = sixtyFourFlag ? Bone.Finger4NubR : Bone.Toe2NubR;
+
+            // finger rotations. Toe rotations as well if sixtyFourFlag is false
+            for (var bone = Bone.Finger0L; bone <= upperBone; ++bone)
+                BoneTransform[bone].localRotation = reader.ReadQuaternion();
+
+            var bones = sixtyFourFlag ? new[]
+                {
+                    Bone.Pelvis, Bone.Spine, Bone.Spine0a, Bone.Spine1, Bone.Spine1a, Bone.Neck, Bone.UpperArmL,
+                    Bone.UpperArmR, Bone.ForearmL, Bone.ForearmR, Bone.ThighL, Bone.ThighR, Bone.CalfL, Bone.CalfR,
+                    Bone.HandL, Bone.HandR, Bone.FootL, Bone.FootR,
+                }
+                : new[]
+                {
+                    Bone.Hip, Bone.Pelvis, Bone.Spine, Bone.Spine0a, Bone.Spine1, Bone.Spine1a, Bone.Neck,
+                    Bone.ClavicleL, Bone.ClavicleR, Bone.UpperArmL, Bone.UpperArmR, Bone.ForearmL, Bone.ForearmR,
+                    Bone.ThighL, Bone.ThighR, Bone.CalfL, Bone.CalfR, Bone.MuneL, Bone.MuneR, Bone.MuneSubL,
+                    Bone.MuneSubR, Bone.HandL, Bone.HandR, Bone.FootL, Bone.FootR,
+                };
+
+            var localRotationIndex = Array.IndexOf(bones, Bone.CalfR);
+
+            for (var i = 0; i < bones.Length; i++)
             {
-                BoneTransform[bone].localRotation = binaryReader.ReadQuaternion();
+                var bone = bones[i];
+
+                if (bone == Bone.ClavicleL)
+                {
+                    /*
+                     * Versions of MM possibly serialized ClavicleL improperly.
+                     * At least I think that's what happened otherwise why would they make this check at all.
+                     * https://git.coder.horse/meidomustard/modifiedMM/src/master/MultipleMaids/CM3D2/MultipleMaids/Plugin/MultipleMaids.Update.cs#L4355 
+                     *
+                     * Just look at the way MM serializes rotations.
+                     * https://git.coder.horse/meidomustard/modifiedMM/src/master/MultipleMaids/CM3D2/MultipleMaids/Plugin/MultipleMaids.Update.cs#L2364
+                     * It is most definitely possible MM dev missed a component.
+                     *
+                     * Also why is strArray9.Length == 2 acceptable? If the length were only 2,
+                     * float.Parse(strArray9[2]) would throw an index out of range exception???
+                     */
+                    if (!reader.ReadBoolean())
+                    {
+                        reader.ReadQuaternion();
+                        continue;
+                    }
+                }
+
+                var rotation = reader.ReadQuaternion();
+
+                if (sixtyFourFlag || i > localRotationIndex)
+                    BoneTransform[bone].localRotation = rotation;
+                else
+                    BoneTransform[bone].rotation = rotation;
             }
-            for (int i = 0; i < bones.Length; i++)
-            {
-                Bone bone = bones[i];
-                Quaternion rotation = binaryReader.ReadQuaternion();
-                if (i > localRotationIndex) BoneTransform[bone].localRotation = rotation;
-                else BoneTransform[bone].rotation = rotation;
-            }
+
             // WHY????
-            GameMain.Instance.StartCoroutine(ApplyHipPosition(binaryReader.ReadVector3()));
+            GameMain.Instance.StartCoroutine(ApplyHipPosition(reader.ReadVector3()));
         }
 
         /*

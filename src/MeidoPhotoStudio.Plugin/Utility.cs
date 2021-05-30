@@ -135,7 +135,7 @@ namespace MeidoPhotoStudio.Plugin
         public static string HandItemToOdogu(string menu)
         {
             menu = menu.Substring(menu.IndexOf('_') + 1);
-            menu = menu.Substring(0, menu.IndexOf("_i_.menu"));
+            menu = menu.Substring(0, menu.IndexOf("_i_.menu", StringComparison.OrdinalIgnoreCase));
             menu = $"odogu_{menu}";
             return menu;
         }
