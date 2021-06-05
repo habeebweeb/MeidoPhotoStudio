@@ -21,14 +21,19 @@ namespace MeidoPhotoStudio.Converter
 
         public static void SaveToFile(string filename, SceneMetadata metadata, byte[] rawSceneData, string? thumbnail)
         {
-            if (Path.GetExtension(filename) != ".png")
+            var rawThumbnail = string.IsNullOrEmpty(thumbnail) ? NoThumb : Convert.FromBase64String(thumbnail);
+
+            SaveToFile(filename, metadata, rawSceneData, rawThumbnail);
+        }
+
+        public static void SaveToFile(string filename, SceneMetadata metadata, byte[] rawSceneData, byte[] thumbnail)
+        {
+            if (!string.Equals(Path.GetExtension(filename), ".png", StringComparison.OrdinalIgnoreCase))
                 filename += ".png";
 
             using var fileStream = File.Create(filename);
 
-            var rawThumbnail = string.IsNullOrEmpty(thumbnail) ? NoThumb : Convert.FromBase64String(thumbnail);
-
-            fileStream.Write(rawThumbnail, 0, rawThumbnail.Length);
+            fileStream.Write(thumbnail, 0, thumbnail.Length);
 
             using var headerWriter = new BinaryWriter(fileStream, Encoding.UTF8);
 
