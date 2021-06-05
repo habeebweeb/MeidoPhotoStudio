@@ -33,7 +33,7 @@ namespace MeidoPhotoStudio.Converter
             if (!Directory.Exists(workingDirectory))
                 Directory.CreateDirectory(workingDirectory);
 
-            pluginCore = new(workingDirectory, new MMConverter());
+            pluginCore = new(workingDirectory, new MMConverter(), new MMPngConverter());
             ui = new(pluginCore);
 
             SceneManager.sceneLoaded += (scene, _) =>
