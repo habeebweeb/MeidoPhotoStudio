@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ExIni;
@@ -9,47 +8,69 @@ namespace MeidoPhotoStudio.Converter.Converters
 {
     public class MMConverter : IConverter
     {
+        private const string InputDirectoryName = "Input";
+        public const string ConverterName = "MultipleMaids";
+
         public void Convert(string workingDirectory)
         {
-            var baseDirectory = Path.Combine(workingDirectory, MPSSceneSerializer.FormatDate(DateTime.Now));
+            var baseDirectory = Path.Combine(workingDirectory, ConverterName);
+            var baseInputDirectory = Path.Combine(baseDirectory, InputDirectoryName);
+            var baseOutputDirectory = Path.Combine(baseDirectory, MPSSceneSerializer.FormatDate(DateTime.Now));
 
-            foreach (var iniFilePath in GetIniFiles(workingDirectory))
+            Convert(baseInputDirectory, baseOutputDirectory);
+        }
+
+        private static void Convert(string workingDirectory, string destination)
+        {
+            var directory = new DirectoryInfo(workingDirectory);
+
+            if (!directory.Exists)
+                return;
+
+            Directory.CreateDirectory(destination);
+
+            foreach (var iniFile in directory.GetFiles("*.ini"))
+                ConvertIniFile(iniFile, destination);
+
+            foreach (var subDirectory in directory.GetDirectories())
             {
-                var section = GetSceneSection(iniFilePath);
-
-                if (section is null)
-                    continue;
-
-                var outputDirectoryName = Path.GetFileNameWithoutExtension(iniFilePath);
-                var outputDirectory = Path.Combine(baseDirectory, outputDirectoryName);
-
-                Directory.CreateDirectory(outputDirectory);
-
-                var keys = section.Keys.Where(key => !key.Key.StartsWith("ss") && !string.IsNullOrEmpty(key.Value));
-
-                foreach (var key in keys)
-                {
-                    var background = int.Parse(key.Key.Substring(1)) >= 10000;
-
-                    var convertedData = MMSceneConverter.Convert(key.Value, background);
-                    var sceneMetadata = MMSceneConverter.GetSceneMetadata(key.Value, background);
-
-                    var screenshotKey = $"s{key.Key}"; // ex. ss100=thumb_base64
-                    string? screenshotBase64 = null;
-
-                    if (section.HasKey(screenshotKey) && !string.IsNullOrEmpty(section[screenshotKey].Value))
-                        screenshotBase64 = section[screenshotKey].Value;
-
-                    var filename = GenerateFilename(iniFilePath, key);
-                    var fullPath = Path.Combine(outputDirectory, filename);
-
-                    MPSSceneSerializer.SaveToFile(fullPath, sceneMetadata, convertedData, screenshotBase64);
-                }
+                var subDestination = Path.Combine(destination, subDirectory.Name);
+                Convert(subDirectory.FullName, subDestination);
             }
         }
 
-        private static IEnumerable<string> GetIniFiles(string workingDirectory) =>
-            Directory.GetFiles(workingDirectory, "*.ini", SearchOption.AllDirectories);
+        private static void ConvertIniFile(FileInfo iniFile, string destination)
+        {
+            var section = GetSceneSection(iniFile.FullName);
+
+            if (section is null)
+                return;
+
+            var outputDirectory = Path.Combine(destination, Path.GetFileNameWithoutExtension(iniFile.Name));
+
+            Directory.CreateDirectory(outputDirectory);
+
+            foreach (var key in section.Keys.Where(
+                key => !key.Key.StartsWith("ss") && !string.IsNullOrEmpty(key.Value)
+            ))
+                ConvertScene(section, key, Path.Combine(outputDirectory, GenerateFilename(iniFile.Name, key)));
+        }
+
+        private static void ConvertScene(IniSection section, IniKey key, string filePath)
+        {
+            var background = int.Parse(key.Key.Substring(1)) >= 10000;
+
+            var convertedData = MMSceneConverter.Convert(key.Value, background);
+            var sceneMetadata = MMSceneConverter.GetSceneMetadata(key.Value, background);
+
+            var screenshotKey = $"s{key.Key}"; // ex. ss100=thumb_base64
+            string? screenshotBase64 = null;
+
+            if (section.HasKey(screenshotKey) && !string.IsNullOrEmpty(section[screenshotKey].Value))
+                screenshotBase64 = section[screenshotKey].Value;
+
+            MPSSceneSerializer.SaveToFile(filePath, sceneMetadata, convertedData, screenshotBase64);
+        }
 
         private static string GenerateFilename(string iniFilePath, IniKey sceneKey)
         {
