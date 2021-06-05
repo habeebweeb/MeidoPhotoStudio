@@ -17,4 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MeidoPhotoStudio.Plugin\MeidoPhotoStudio.Plugin.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="LZMA-SDK" Version="18.1.0" />
+  </ItemGroup>
 </Project>
