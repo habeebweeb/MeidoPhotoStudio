@@ -24,28 +24,35 @@ namespace MeidoPhotoStudio.Converter.Utility
             var fourByteBuffer = new byte[4];
             var chunkBuffer = new byte[1024];
 
-            do
+            try
             {
-                // chunk length
-                var read = stream.Read(fourByteBuffer, 0, 4);
-                memoryStream.Write(fourByteBuffer, 0, read);
+                do
+                {
+                    // chunk length
+                    var read = stream.Read(fourByteBuffer, 0, 4);
+                    memoryStream.Write(fourByteBuffer, 0, read);
 
-                if (BitConverter.IsLittleEndian)
-                    Array.Reverse(fourByteBuffer);
+                    if (BitConverter.IsLittleEndian)
+                        Array.Reverse(fourByteBuffer);
 
-                var length = BitConverter.ToUInt32(fourByteBuffer, 0);
+                    var length = BitConverter.ToUInt32(fourByteBuffer, 0);
 
-                // chunk type
-                read = stream.Read(fourByteBuffer, 0, 4);
-                memoryStream.Write(fourByteBuffer, 0, read);
+                    // chunk type
+                    read = stream.Read(fourByteBuffer, 0, 4);
+                    memoryStream.Write(fourByteBuffer, 0, read);
 
-                if (chunkBuffer.Length < length + 4L)
-                    chunkBuffer = new byte[length + 4L];
+                    if (chunkBuffer.Length < length + 4L)
+                        chunkBuffer = new byte[length + 4L];
 
-                // chunk data + CRC
-                read = stream.Read(chunkBuffer, 0, (int)(length + 4L));
-                memoryStream.Write(chunkBuffer, 0, read);
-            } while (!MeidoPhotoStudio.Plugin.Utility.BytesEqual(fourByteBuffer, PngEnd));
+                    // chunk data + CRC
+                    read = stream.Read(chunkBuffer, 0, (int)(length + 4L));
+                    memoryStream.Write(chunkBuffer, 0, read);
+                } while (!MeidoPhotoStudio.Plugin.Utility.BytesEqual(fourByteBuffer, PngEnd));
+            }
+            catch
+            {
+                return null;
+            }
 
             return memoryStream.ToArray();
         }

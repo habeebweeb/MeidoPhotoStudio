@@ -44,7 +44,7 @@ namespace MeidoPhotoStudio.Converter.Converters
         {
             var fileStream = File.OpenRead(pngFile);
 
-            var thumbnailData = PngUtility.ExtractPng(fileStream);
+            var thumbnailData = PngUtility.ExtractPng(fileStream) ?? MPSSceneSerializer.NoThumb;
 
             var kankyo = new byte[KankyoHeader.Length];
             fileStream.Read(kankyo, 0, KankyoHeader.Length);
@@ -70,8 +70,7 @@ namespace MeidoPhotoStudio.Converter.Converters
                 if (Plugin.Instance == null)
                     return;
 
-                var logger = Plugin.Instance.Logger;
-                logger.LogWarning($"Could not decompress scene data from {pngFile} because {e}");
+                Plugin.Instance.Logger.LogWarning($"Could not decompress scene data from {pngFile} because {e}");
 
                 return;
             }
@@ -79,8 +78,22 @@ namespace MeidoPhotoStudio.Converter.Converters
             if (string.IsNullOrEmpty(sceneData))
                 return;
 
-            var convertedData = MMSceneConverter.Convert(sceneData, background);
-            var sceneMetadata = MMSceneConverter.GetSceneMetadata(sceneData, background);
+            byte[] convertedData;
+            MeidoPhotoStudio.Plugin.SceneMetadata sceneMetadata;
+
+            try
+            {
+                convertedData = MMSceneConverter.Convert(sceneData, background);
+                sceneMetadata = MMSceneConverter.GetSceneMetadata(sceneData, background);
+            }
+            catch (Exception e)
+            {
+                if (Plugin.Instance == null)
+                    return;
+
+                Plugin.Instance.Logger.LogError($"Could not convert {pngFile} because {e}");
+                return;
+            }
 
             MPSSceneSerializer.SaveToFile(outputFilename, sceneMetadata, convertedData, thumbnailData);
         }

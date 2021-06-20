@@ -60,8 +60,22 @@ namespace MeidoPhotoStudio.Converter.Converters
         {
             var background = int.Parse(key.Key.Substring(1)) >= 10000;
 
-            var convertedData = MMSceneConverter.Convert(key.Value, background);
-            var sceneMetadata = MMSceneConverter.GetSceneMetadata(key.Value, background);
+            byte[] convertedData;
+            MeidoPhotoStudio.Plugin.SceneMetadata sceneMetadata;
+
+            try
+            {
+                convertedData = MMSceneConverter.Convert(key.Value, background);
+                sceneMetadata = MMSceneConverter.GetSceneMetadata(key.Value, background);
+            }
+            catch (Exception e)
+            {
+                if (Plugin.Instance == null)
+                    return;
+
+                Plugin.Instance.Logger.LogError($"Could not convert {Path.GetFileName(filePath)} scene because {e}");
+                return;
+            }
 
             var screenshotKey = $"s{key.Key}"; // ex. ss100=thumb_base64
             string? screenshotBase64 = null;
