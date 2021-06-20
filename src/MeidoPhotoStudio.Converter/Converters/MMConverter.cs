@@ -98,17 +98,23 @@ namespace MeidoPhotoStudio.Converter.Converters
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Could not {(e is IOException ? "read" : "parse")} ini file {filePath}");
+                if (Plugin.Instance != null)
+                    Plugin.Instance.Logger.LogWarning(
+                        $"Could not {(e is IOException ? "read" : "parse")} ini file {filePath}"
+                    );
+
                 return null;
             }
 
-            if (!iniFile.HasSection("scene"))
-            {
-                Console.WriteLine($"{filePath} is not a valid MM config because '[scene]' section is missing");
-                return null;
-            }
+            if (iniFile.HasSection("scene"))
+                return iniFile.GetSection("scene");
 
-            return iniFile.GetSection("scene");
+            if (Plugin.Instance != null)
+                Plugin.Instance.Logger.LogWarning(
+                    $"{filePath} is not a valid MM config because '[scene]' section is missing"
+                );
+
+            return null;
         }
     }
 }
