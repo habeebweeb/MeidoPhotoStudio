@@ -1,6 +1,6 @@
 # MeidoPhotoStudio
 
-A MultipleMaids alternative
+A screenshot making plugin alternative to Studio Mode.
 
 ## Features
 
@@ -33,16 +33,27 @@ A MultipleMaids alternative
 
 ![MM is spaghetti code](./img/spaghetti_code.jpg)
 
-Despite being an overall good plugin, MultipleMaids (MM) is plagued with many bugs and is seldom maintained by the original developers.
+Despite being an overall good plugin (in terms of functionality), MultipleMaids (MM) is plagued with many bugs and is
+seldom maintained by the original developer.
 
-ModifiedMM was an effort to fix some of the problems with MM and even add new features. Although great progress was made, MM's code base prevents anyone, but the original developer (hopefully), from making any meaningful changes. The code base can rival that of the flying spaghetti monster.
+A previous project I worked on, ModifiedMM, was an effort to fix some of the problems with MM and even add new features.
+Although great progress was made, MM's code base prevents anyone, but the original developer (hopefully),
+from making any meaningful changes.
 
-As well as MM being hard to maintain, ModifiedMM was created against the wishes of the original developers.
+ModifiedMM was also created against the wishes of the original developer as stated in MM's `使い方.txt` (`Usage.txt`).
 
 > "転載・配布・改変したプラグインの公開は禁止します。" (使い方.txt)  
-> "Publication of reprinted/distributed/modified plug-ins is prohibited" (Google Translate).
 
-MeidoPhotoStudio is an attempt at making MultipleMaids truly great again.
+Which translates to _"Publication of reprinted/distributed/modified plug-ins is prohibited"_ (Google Translate).
+
+MeidoPhotoStudio is a completely new plugin, written from the ground up, that aims to deliver a simple and more
+streamlined screenshot making experience that is familiar to MultipleMaids users.
+
+## その他 / Note
+
+このプラグインは複数メイド撮影プラグインの改変・改造ではありません。
+
+MeidoPhotoStudio is not based on and does not use any MultipleMaids source code.
 
 ## Building
 
