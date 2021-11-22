@@ -263,6 +263,56 @@ NOTE: Environments, scenes, and each preset folder can have single level deep fo
 
 == Changelog
 
+=== {pluginname}.1.0.0-beta.4.1
+
+==== Enhancements
+
+* IK drag handles for the arms and fingers match body node position rather than bone position so drag handles are no
+longer offset from maid body.
+
+==== Fixes
+
+* Fix message box and text disappearing after leaving edit mode
+* Fix background switcher breaking when `MyRoom` directory is missing from game root
+* Fix blur effect not turning off properly
+
+=== {pluginname}.1.0.0-beta.4
+
+==== New Features
+
+* Add a toggle to only list active maids in the scene
+
+* Add hotkey to slow down camera zoom and movement
+** Added to ease the difficulty of manipulating objects at a very small scale.
+
+==== Enhancements
+
+* Remove exist check for mod prop icon files
+** Makes loading the mod prop list a lot faster.
+
+* Prevent already active maids from being reactivated when called again
+* Add confirmation when exiting MPS in edit mode
+
+==== Changes
+
+* Reduce drag point size for fingers/toes
+* Move "Colour" (now "Hide BG") toggle next to light type radio buttons
+
+* Set lower limit for object scale to 0x
+** Not a very comfortable experience but it's there now.
+
+* Update Translations
+
+==== Fixes
+
+* Fix preset change breaking hair/skirt gravity
+* Fix "Private Mode" maid interfering with MPS
+* Fix non-existent pose soft locking pose selector
+* Fix alternate mune rotation (control + alt + shift) not being saved
+
+* Stop camera movement and rotation when saving/loading scene
+** This was present before but was missing when save system was reworked.
+
 === {pluginname}.1.0.0-beta.3.1
 
 ==== Fixes
