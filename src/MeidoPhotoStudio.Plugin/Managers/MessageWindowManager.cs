@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin
@@ -5,21 +6,44 @@ namespace MeidoPhotoStudio.Plugin
     public class MessageWindowManager : IManager
     {
         public const string header = "TEXTBOX";
-        public static readonly SliderProp fontBounds = new SliderProp(25f, 60f);
-        private static GameObject sysRoot;
-        private readonly MessageClass msgClass;
-        private readonly MessageWindowMgr msgWnd;
-        private readonly UILabel msgLabel;
-        private readonly UILabel nameLabel;
-        private readonly GameObject msgGameObject;
-        public bool ShowingMessage { get; private set; }
-        public string MessageName { get; private set; } = string.Empty;
-        public string MessageText { get; private set; } = string.Empty;
+        public static readonly SliderProp FontBounds = new SliderProp(25f, 60f);
+
+        private readonly MessageWindowMgr messageWindowMgr;
+        private readonly GameObject subtitlesDisplayPanel;
+        private readonly GameObject hitRetSprite;
+        private readonly GameObject messageBox;
+        private readonly GameObject messageButtons;
+        private readonly UILabel messageLabel;
+        private readonly UILabel speakerLabel;
+
+        public bool ShowingMessage
+        {
+            get => messageWindowMgr.IsVisibleMessageViewer;
+            private set
+            {
+                if (value)
+                    messageWindowMgr.OpenMessageWindowPanel();
+                else
+                    messageWindowMgr.CloseMessageWindowPanel();
+            }
+        }
+
+        public string MessageName
+        {
+            get => speakerLabel.text;
+            private set => speakerLabel.text = value;
+        }
+
+        public string MessageText
+        {
+            get => messageLabel.text;
+            private set => messageLabel.text = value;
+        }
 
         public int FontSize
         {
-            get => msgLabel.fontSize;
-            set => msgLabel.fontSize = (int)Mathf.Clamp(value, fontBounds.Left, fontBounds.Right);
+            get => messageLabel.fontSize;
+            set => messageLabel.fontSize = (int)Mathf.Clamp(value, FontBounds.Left, FontBounds.Right);
         }
 
         static MessageWindowManager()
@@ -29,55 +53,52 @@ namespace MeidoPhotoStudio.Plugin
 
         public MessageWindowManager()
         {
-            sysRoot = GameObject.Find("__GameMain__/SystemUI Root");
-            msgWnd = GameMain.Instance.MsgWnd;
-            msgGameObject = sysRoot.transform.Find("MessageWindowPanel").gameObject;
-            msgClass = new MessageClass(msgGameObject, msgWnd);
-            nameLabel = UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/SpeakerName/Name")
-                .GetComponent<UILabel>();
-            msgLabel = UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/Message")
-                .GetComponent<UILabel>();
-            Utility.SetFieldValue(msgClass, "message_label_", msgLabel);
-            Utility.SetFieldValue(msgClass, "name_label_", nameLabel);
-            Activate();
-        }
+            messageWindowMgr = GameMain.Instance.MsgWnd;
 
-        public void Activate() => SetPhotoMessageWindowActive(true);
+            var messageWindowPanel =
+                Utility.GetFieldValue<MessageWindowMgr, GameObject>(messageWindowMgr, "m_goMessageWindowPanel");
 
-        public void Deactivate()
-        {
-            msgWnd.CloseMessageWindowPanel();
-            SetPhotoMessageWindowActive(false);
+            var msgParent = UTY.GetChildObject(messageWindowPanel, "MessageViewer/MsgParent");
+
+            messageButtons = UTY.GetChildObject(msgParent, "Buttons");
+            hitRetSprite = UTY.GetChildObject(msgParent, "Hitret");
+            subtitlesDisplayPanel = UTY.GetChildObject(msgParent, "SubtitlesDisplayPanel");
+
+            messageBox = UTY.GetChildObject(msgParent, "MessageBox");
+            speakerLabel = UTY.GetChildObject(msgParent, "SpeakerName/Name").GetComponent<UILabel>();
+            messageLabel = UTY.GetChildObject(msgParent, "Message").GetComponent<UILabel>();
         }
 
         public void Update() { }
 
-        private void SetPhotoMessageWindowActive(bool active)
+        public void Activate()
         {
-            UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/MessageBox").SetActive(active);
-            UTY.GetChildObject(msgGameObject, "MessageViewer/MsgParent/Hitret")
-                .GetComponent<UISprite>().enabled = !active;
-            nameLabel.gameObject.SetActive(active);
-            msgLabel.gameObject.SetActive(active);
+            if (Product.supportMultiLanguage)
+                subtitlesDisplayPanel.SetActive(false);
 
-            Transform transform = sysRoot.transform.Find("MessageWindowPanel/MessageViewer/MsgParent/Buttons");
-            var msgButtons = new[]
+            ResetMessageBoxProperties();
+
+            SetMessageBoxActive(true);
+
+            SetMessageBoxExtrasActive(false);
+
+            CloseMessagePanel();
+        }
+
+        public void Deactivate()
+        {
+            if (Product.supportMultiLanguage)
             {
-                MessageWindowMgr.MessageWindowUnderButton.Skip,
-                MessageWindowMgr.MessageWindowUnderButton.Auto,
-                MessageWindowMgr.MessageWindowUnderButton.Voice,
-                MessageWindowMgr.MessageWindowUnderButton.BackLog,
-                MessageWindowMgr.MessageWindowUnderButton.Config
-            };
-            foreach (MessageWindowMgr.MessageWindowUnderButton msgButton in msgButtons)
-            {
-                transform.Find(msgButton.ToString()).gameObject.SetActive(!active);
+                subtitlesDisplayPanel.SetActive(true);
+
+                SetMessageBoxActive(false);
             }
 
-            if (!msgClass.subtitles_manager_) return;
+            ResetMessageBoxProperties();
 
-            msgClass.subtitles_manager_.visible = false;
-            msgClass.subtitles_manager_ = null;
+            SetMessageBoxExtrasActive(true);
+
+            CloseMessagePanel();
         }
 
         public void ShowMessage(string name, string message)
@@ -85,16 +106,34 @@ namespace MeidoPhotoStudio.Plugin
             MessageName = name;
             MessageText = message;
             ShowingMessage = true;
-            msgWnd.OpenMessageWindowPanel();
-            msgLabel.ProcessText();
-            msgClass.SetText(name, message, "", 0, AudioSourceMgr.Type.System);
-            msgClass.FinishChAnime();
         }
 
         public void CloseMessagePanel()
         {
+            if (!ShowingMessage)
+                return;
+
             ShowingMessage = false;
-            msgWnd.CloseMessageWindowPanel();
+        }
+
+        private void SetMessageBoxActive(bool active)
+        {
+            messageBox.SetActive(active);
+            messageLabel.gameObject.SetActive(active);
+            speakerLabel.gameObject.SetActive(active);
+        }
+
+        private void SetMessageBoxExtrasActive(bool active)
+        {
+            messageButtons.SetActive(active);
+            hitRetSprite.SetActive(active);
+        }
+
+        private void ResetMessageBoxProperties()
+        {
+            FontSize = 25;
+            MessageName = string.Empty;
+            MessageText = string.Empty;
         }
     }
 }

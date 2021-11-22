@@ -19,7 +19,7 @@ namespace MeidoPhotoStudio.Plugin
         private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
         public const string pluginName = "MeidoPhotoStudio";
         public const string pluginVersion = "1.0.0";
-        public const string pluginSubVersion = "beta.3";
+        public const string pluginSubVersion = "beta.4.1";
         public const short sceneVersion = 2;
         public const int kankyoMagic = -765;
         public static readonly string pluginString = $"{pluginName} {pluginVersion}";
@@ -367,6 +367,7 @@ namespace MeidoPhotoStudio.Plugin
             meidoManager = new MeidoManager();
             environmentManager = new EnvironmentManager();
             messageWindowManager = new MessageWindowManager();
+            messageWindowManager.Activate();
             lightManager = new LightManager();
             propManager = new PropManager(meidoManager);
             sceneManager = new SceneManager(this);
