@@ -41,10 +41,10 @@ namespace MeidoPhotoStudio.Plugin
 
     public class DragPointPropDTO
     {
-        public TransformDTO TransformDTO { get; init; }
-        public AttachPointInfo AttachPointInfo { get; init; }
-        public PropInfo PropInfo { get; init; }
-        public bool ShadowCasting { get; init; }
+        public TransformDTO TransformDTO { get; set; }
+        public AttachPointInfo AttachPointInfo { get; set; }
+        public PropInfo PropInfo { get; set; }
+        public bool ShadowCasting { get; set; }
 
         public DragPointPropDTO() { }
 
