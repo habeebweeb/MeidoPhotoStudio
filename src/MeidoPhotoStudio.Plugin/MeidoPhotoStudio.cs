@@ -25,6 +25,7 @@ namespace MeidoPhotoStudio.Plugin
         public static readonly string pluginString = $"{pluginName} {pluginVersion}";
         public static bool EditMode => currentScene == Constants.Scene.Edit;
         public static event EventHandler<ScreenshotEventArgs> NotifyRawScreenshot;
+        private HarmonyLib.Harmony harmony;
         private WindowManager windowManager;
         private SceneManager sceneManager;
         private MeidoManager meidoManager;
@@ -49,8 +50,9 @@ namespace MeidoPhotoStudio.Plugin
 
         private void Awake()
         {
-            var harmony = HarmonyLib.Harmony.CreateAndPatchAll(typeof(AllProcPropSeqStartPatcher));
+            harmony = HarmonyLib.Harmony.CreateAndPatchAll(typeof(AllProcPropSeqStartPatcher));
             harmony.PatchAll(typeof(BgMgrPatcher));
+            harmony.PatchAll(typeof(MeidoManager));
             ScreenshotEvent += OnScreenshotEvent;
             DontDestroyOnLoad(this);
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
