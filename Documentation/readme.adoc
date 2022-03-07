@@ -275,6 +275,10 @@ longer offset from maid body.
 * Fix message box and text disappearing after leaving edit mode
 * Fix background switcher breaking when `MyRoom` directory is missing from game root
 * Fix blur effect not turning off properly
+* Fix issue where loading a scene that uses a non-existent pose breaks the pose selector
+* Fix MPS naively restoring edit mode's OK button's original functionality
+** Other plugins may have hooked onto the OK button and MPS restoring original functionality effectively removes those
+hooks
 
 === {pluginname}.1.0.0-beta.4
 
