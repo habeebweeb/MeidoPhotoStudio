@@ -14,7 +14,7 @@ namespace MeidoPhotoStudio.Plugin
         private Func<Vector3> rotation;
         private Collider collider;
         private Renderer renderer;
-        protected bool ReinitializeDrag { get; private set; }
+        private bool reinitializeDrag;
         protected bool Transforming => CurrentDragType >= DragType.MoveXZ;
         protected bool Special => CurrentDragType == DragType.Select || CurrentDragType == DragType.Delete;
         protected bool Moving => CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY;
@@ -72,7 +72,7 @@ namespace MeidoPhotoStudio.Plugin
                 if (value != oldDragType)
                 {
                     currentDragType = value;
-                    ReinitializeDrag = true;
+                    reinitializeDrag = true;
                     oldDragType = currentDragType;
                     ApplyDragType();
                 }
@@ -210,10 +210,9 @@ namespace MeidoPhotoStudio.Plugin
 
         protected virtual void OnMouseDrag()
         {
-            if (ReinitializeDrag)
+            if (reinitializeDrag)
             {
-                // NOTE: Order matters here.
-                ReinitializeDrag = false;
+                reinitializeDrag = false;
                 OnMouseDown();
             }
 

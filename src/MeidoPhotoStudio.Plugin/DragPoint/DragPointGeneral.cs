@@ -91,19 +91,16 @@ namespace MeidoPhotoStudio.Plugin
 
         protected override void OnMouseDown()
         {
-            if (!ReinitializeDrag)
+            if (Deleting)
             {
-                if (Deleting)
-                {
-                    OnDelete();
-                    return;
-                }
+                OnDelete();
+                return;
+            }
 
-                if (Selecting)
-                {
-                    OnSelect();
-                    return;
-                }
+            if (Selecting)
+            {
+                OnSelect();
+                return;
             }
 
             base.OnMouseDown();

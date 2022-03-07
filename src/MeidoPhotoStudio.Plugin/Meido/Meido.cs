@@ -120,7 +120,7 @@ namespace MeidoPhotoStudio.Plugin
                 {
                     Body.boEyeToCam = true;
                     Body.boHeadToCam = true;
-                    SetPose(CachedPose);
+                    SetPose(CachedPose.Pose);
                 }
 
                 OnUpdateMeido();
@@ -337,7 +337,7 @@ namespace MeidoPhotoStudio.Plugin
             Maid.Visible = false;
 
             IKManager.Destroy();
-
+            
             Active = false;
         }
 
@@ -359,24 +359,26 @@ namespace MeidoPhotoStudio.Plugin
 
         public void SetPose(PoseInfo poseInfo)
         {
-            if (!Body.isLoadedBody)
-                return;
+            CachedPose = poseInfo;
+            SetPose(poseInfo.Pose);
+        }
 
-            if (poseInfo.CustomPose)
+        public void SetPose(string pose)
+        {
+            if (!Body.isLoadedBody) return;
+
+            if (pose.StartsWith(Constants.customPosePath))
             {
+                string poseFilename = Path.GetFileNameWithoutExtension(pose);
                 try
                 {
-                    var poseData = File.ReadAllBytes(poseInfo.Pose);
-                    var poseHash = Path.GetFileName(poseInfo.Pose).GetHashCode().ToString();
-
-                    Body.CrossFade(poseHash, poseData, loop: true, fade: 0f);
-
-                    SetMune(true, true);
-                    SetMune(true);
+                    byte[] poseBuffer = File.ReadAllBytes(pose);
+                    string hash = Path.GetFileName(pose).GetHashCode().ToString();
+                    Body.CrossFade(hash, poseBuffer, loop: true, fade: 0f);
                 }
-                catch (IOException ioException)
+                catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
                 {
-                    Utility.LogWarning($"Could not open {poseInfo.Pose} because {ioException.Message}");
+                    Utility.LogWarning($"{poseFilename}: Could not open because {e.Message}");
                     Constants.InitializeCustomPoses();
                     SetPose(PoseInfo.DefaultPose);
                     OnUpdateMeido();
@@ -384,47 +386,31 @@ namespace MeidoPhotoStudio.Plugin
                 }
                 catch (Exception e)
                 {
-                    Utility.LogWarning($"Could not apply pose {poseInfo.Pose} because {e.Message}");
+                    Utility.LogWarning($"{poseFilename}: Could not apply pose because {e.Message}");
                     SetPose(PoseInfo.DefaultPose);
                     OnUpdateMeido();
                     return;
                 }
+                SetMune(true, left: true);
+                SetMune(true, left: false);
             }
             else
             {
-                const int poseName = 0;
-                const int poseTime = 1;
-                const char componentSeparator = ',';
+                string[] poseComponents = pose.Split(',');
+                pose = poseComponents[0] + ".anm";
 
-                var poseComponents = poseInfo.Pose.Split(componentSeparator);
-
-                var poseFilename = poseComponents[poseName] + ".anm";
-
-                var animeTag = Maid.CrossFade(poseFilename, loop: true, val: 0f);
-
-                if (string.IsNullOrEmpty(animeTag))
-                    return;
-
-                var animation = Maid.GetAnimation();
-                animation.Play();
+                Maid.CrossFade(pose, loop: true, val: 0f);
+                Maid.GetAnimation().Play();
 
                 if (poseComponents.Length > 1)
                 {
-                    if (float.TryParse(poseComponents[poseTime], out var animationTime))
-                    {
-                        animation[animeTag].time = animationTime;
-                        animation[animeTag].speed = 0f;
-                    }
+                    Maid.GetAnimation()[pose].time = float.Parse(poseComponents[1]);
+                    Maid.GetAnimation()[pose].speed = 0f;
                 }
-
-                var momiOrPaizuri = CachedPose.Pose.Contains("_momi") || CachedPose.Pose.Contains("paizuri_");
-                SetMune(!momiOrPaizuri, true);
-                SetMune(!momiOrPaizuri);
+                SetPoseMune();
             }
 
             Maid.SetAutoTwistAll(true);
-
-            CachedPose = poseInfo;
         }
 
         public KeyValuePair<bool, bool> SetFrameBinary(byte[] poseBuffer)
@@ -451,6 +437,13 @@ namespace MeidoPhotoStudio.Plugin
                 Body.MuneYureR(value);
                 Body.jbMuneR.enabled = enabled;
             }
+        }
+
+        private void SetPoseMune()
+        {
+            bool momiOrPaizuri = CachedPose.Pose.Contains("_momi") || CachedPose.Pose.Contains("paizuri_");
+            SetMune(!momiOrPaizuri, left: true);
+            SetMune(!momiOrPaizuri, left: false);
         }
 
         public void SetHandPreset(string filename, bool right)

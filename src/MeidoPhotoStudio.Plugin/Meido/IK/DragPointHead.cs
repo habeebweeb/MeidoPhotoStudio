@@ -51,8 +51,7 @@ namespace MeidoPhotoStudio.Plugin
         {
             base.OnMouseDown();
 
-            if (Selecting && !ReinitializeDrag)
-                Select?.Invoke(this, EventArgs.Empty);
+            if (CurrentDragType == DragType.Select) Select?.Invoke(this, EventArgs.Empty);
 
             headRotation = MyObject.rotation;
 
