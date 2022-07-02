@@ -1,28 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <Configurations>Debug;Release</Configurations>
-        <Platforms>AnyCPU</Platforms>
-    </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <DefineConstants>DEBUG;TRACE</DefineConstants>
-    </PropertyGroup>
+  <PropertyGroup>
+    <Configurations>Debug;Release</Configurations>
+    <Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <Reference Include="..\..\lib\Assembly-CSharp.dll" />
-        <Reference Include="..\..\lib\Assembly-CSharp-firstpass.dll" />
-        <Reference Include="..\..\lib\Assembly-UnityScript-firstpass.dll" />
-        <Reference Include="..\..\lib\UnityEngine.dll" />
-        <Reference Include="..\..\lib\UnityEngine.UI.dll" />
-        <Reference Include="..\..\lib\Newtonsoft.Json.dll" />
-        <Reference Include="..\..\lib\Ionic.Zlib.dll" />
-        <Reference Include="..\..\lib\BepInEx.dll" />
-        <Reference Include="..\..\lib\0Harmony.dll" />
-    </ItemGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <Content Include="Config\**">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
+  <ItemGroup>
+    <Reference Include="..\..\lib\Assembly-CSharp.dll" />
+    <Reference Include="..\..\lib\Assembly-CSharp-firstpass.dll" />
+    <Reference Include="..\..\lib\Assembly-UnityScript-firstpass.dll" />
+    <Reference Include="..\..\lib\UnityEngine.dll" />
+    <Reference Include="..\..\lib\UnityEngine.UI.dll" />
+    <Reference Include="..\..\lib\Newtonsoft.Json.dll" />
+    <Reference Include="..\..\lib\Ionic.Zlib.dll" />
+    <Reference Include="..\..\lib\BepInEx.dll" />
+    <Reference Include="..\..\lib\0Harmony.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Config\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
