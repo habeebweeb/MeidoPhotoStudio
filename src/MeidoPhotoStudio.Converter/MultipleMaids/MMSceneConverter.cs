@@ -350,7 +350,7 @@ namespace MeidoPhotoStudio.Converter.MultipleMaids
             }
 
             writer.Write(showingMessage);
-            writer.Write((int)MessageWindowManager.fontBounds.Left);
+            writer.Write((int)MessageWindowManager.FontBounds.Left);
             writer.Write(name);
             writer.Write(message);
         }
