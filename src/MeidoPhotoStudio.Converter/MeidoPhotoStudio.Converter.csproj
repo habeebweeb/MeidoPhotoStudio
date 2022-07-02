@@ -1,8 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net35</TargetFramework>
     <ProjectGuid>{19D28B0C-3537-4FEE-B7B3-1ABF70B16D5E}</ProjectGuid>
-    <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
