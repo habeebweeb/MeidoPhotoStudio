@@ -29,7 +29,7 @@ namespace MeidoPhotoStudio.Plugin
             this.messageWindowManager = messageWindowManager;
             nameTextField = new TextField();
 
-            fontSizeSlider = new Slider(MessageWindowManager.fontBounds);
+            fontSizeSlider = new Slider(MessageWindowManager.FontBounds);
             fontSizeSlider.ControlEvent += ChangeFontSize;
 
             messageTextArea = new TextArea();
@@ -47,6 +47,10 @@ namespace MeidoPhotoStudio.Plugin
         private void ChangeFontSize(object sender, EventArgs args)
         {
             fontSize = (int)fontSizeSlider.Value;
+
+            if (updating)
+                return;
+
             messageWindowManager.FontSize = fontSize;
         }
 
@@ -54,6 +58,17 @@ namespace MeidoPhotoStudio.Plugin
         {
             Visible = false;
             messageWindowManager.ShowMessage(nameTextField.Value, messageTextArea.Value);
+        }
+
+        private void ResetUI()
+        {
+            updating = true;
+
+            fontSizeSlider.Value = MessageWindowManager.FontBounds.Left;
+            nameTextField.Value = string.Empty;
+            messageTextArea.Value = string.Empty;
+
+            updating = false;
         }
 
         public override void Update()
@@ -83,6 +98,10 @@ namespace MeidoPhotoStudio.Plugin
         {
             messageWindowManager.CloseMessagePanel();
             Visible = false;
+            ResetUI();
         }
+
+        public override void Activate() =>
+            ResetUI();
     }
 }

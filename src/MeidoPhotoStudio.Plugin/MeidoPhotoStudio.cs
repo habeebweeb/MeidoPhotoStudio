@@ -19,12 +19,13 @@ namespace MeidoPhotoStudio.Plugin
         private const string pluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
         public const string pluginName = "MeidoPhotoStudio";
         public const string pluginVersion = "1.0.0";
-        public const string pluginSubVersion = "beta.3";
-        public const short sceneVersion = 1;
+        public const string pluginSubVersion = "beta.4.1";
+        public const short sceneVersion = 2;
         public const int kankyoMagic = -765;
         public static readonly string pluginString = $"{pluginName} {pluginVersion}";
         public static bool EditMode => currentScene == Constants.Scene.Edit;
         public static event EventHandler<ScreenshotEventArgs> NotifyRawScreenshot;
+        private HarmonyLib.Harmony harmony;
         private WindowManager windowManager;
         private SceneManager sceneManager;
         private MeidoManager meidoManager;
@@ -49,8 +50,9 @@ namespace MeidoPhotoStudio.Plugin
 
         private void Awake()
         {
-            var harmony = HarmonyLib.Harmony.CreateAndPatchAll(typeof(AllProcPropSeqStartPatcher));
+            harmony = HarmonyLib.Harmony.CreateAndPatchAll(typeof(AllProcPropSeqStartPatcher));
             harmony.PatchAll(typeof(BgMgrPatcher));
+            harmony.PatchAll(typeof(MeidoManager));
             ScreenshotEvent += OnScreenshotEvent;
             DontDestroyOnLoad(this);
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
@@ -140,6 +142,13 @@ namespace MeidoPhotoStudio.Plugin
 
             var metadata = SceneMetadata.ReadMetadata(headerReader);
 
+            if (metadata.Version > sceneVersion)
+            {
+                Utility.LogWarning("Cannot load scene. Scene is too new.");
+                Utility.LogWarning($"Your version: {sceneVersion}, Scene version: {metadata.Version}");
+                return;
+            }
+
             using var uncompressed = memoryStream.Decompress();
             using var dataReader = new BinaryReader(uncompressed, Encoding.UTF8);
 
@@ -181,7 +190,7 @@ namespace MeidoPhotoStudio.Plugin
             catch (Exception e)
             {
                 Utility.LogError(
-                    $"Failed to deserialize scene TEST because {e.Message}"
+                    $"Failed to deserialize scene because {e.Message}"
                     + $"\nCurrent header: '{header}'. Last header: '{previousHeader}'"
                 );
                 Utility.LogError(e.StackTrace);
@@ -360,6 +369,7 @@ namespace MeidoPhotoStudio.Plugin
             meidoManager = new MeidoManager();
             environmentManager = new EnvironmentManager();
             messageWindowManager = new MessageWindowManager();
+            messageWindowManager.Activate();
             lightManager = new LightManager();
             propManager = new PropManager(meidoManager);
             sceneManager = new SceneManager(this);
@@ -430,9 +440,32 @@ namespace MeidoPhotoStudio.Plugin
         {
             if (meidoManager.Busy || SceneManager.Busy) return;
 
-            SystemDialog sysDialog = GameMain.Instance.SysDlg;
+            var sysDialog = GameMain.Instance.SysDlg;
 
-            void exit()
+            if (!sysDialog.IsDecided && !force) return;
+
+            uiActive = false;
+            active = false;
+
+            if (force)
+            {
+                Exit();
+                return;
+            }
+
+            sysDialog.Show(
+                string.Format(Translation.Get("systemMessage", "exitConfirm"), pluginName),
+                SystemDialog.TYPE.OK_CANCEL,
+                Exit,
+                () =>
+                {
+                    sysDialog.Close();
+                    uiActive = true;
+                    active = true;
+                }
+            );
+
+            void Exit()
             {
                 sysDialog.Close();
 
@@ -448,34 +481,14 @@ namespace MeidoPhotoStudio.Plugin
 
                 Modal.Close();
 
-                if (!EditMode)
-                {
-                    GameObject dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
-                    dailyPanel?.SetActive(true);
-                }
-
                 Configuration.Config.Save();
-            }
 
-            if (sysDialog.IsDecided || EditMode || force)
-            {
-                uiActive = false;
-                active = false;
+                if (EditMode) return;
 
-                if (EditMode || force) exit();
-                else
-                {
-                    string exitMessage = string.Format(Translation.Get("systemMessage", "exitConfirm"), pluginName);
-                    sysDialog.Show(exitMessage, SystemDialog.TYPE.OK_CANCEL,
-                        f_dgOk: exit,
-                        f_dgCancel: () =>
-                        {
-                            sysDialog.Close();
-                            uiActive = true;
-                            active = true;
-                        }
-                    );
-                }
+                var dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
+
+                if (dailyPanel != null)
+                    dailyPanel.SetActive(true);
             }
         }
     }

@@ -35,11 +35,11 @@ namespace MeidoPhotoStudio.Plugin
 
     public class TransformDTO
     {
-        public Vector3 Position { get; init; }
-        public Vector3 LocalPosition { get; init; }
-        public Quaternion Rotation { get; init; } = Quaternion.identity;
-        public Quaternion LocalRotation { get; init; } = Quaternion.identity;
-        public Vector3 LocalScale { get; init; } = Vector3.one;
+        public Vector3 Position { get; set; }
+        public Vector3 LocalPosition { get; set; }
+        public Quaternion Rotation { get; set; } = Quaternion.identity;
+        public Quaternion LocalRotation { get; set; } = Quaternion.identity;
+        public Vector3 LocalScale { get; set; } = Vector3.one;
 
         public TransformDTO() { }
 

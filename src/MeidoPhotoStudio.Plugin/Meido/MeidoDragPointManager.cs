@@ -490,28 +490,38 @@ namespace MeidoPhotoStudio.Plugin
             InitializeMuneDragPoint(left: true);
             InitializeMuneDragPoint(left: false);
 
-            DragPointLimb[] armDragPointL = MakeIKChain(BoneTransform[Bone.HandL]);
+            var armDragPointL = MakeArmChain(BoneTransform[Bone.HandL], meido);
             DragPoints[Bone.UpperArmL] = armDragPointL[0];
             DragPoints[Bone.ForearmL] = armDragPointL[1];
             DragPoints[Bone.HandL] = armDragPointL[2];
 
-            DragPointLimb[] armDragPointR = MakeIKChain(BoneTransform[Bone.HandR]);
+            var armDragPointR = MakeArmChain(BoneTransform[Bone.HandR], meido);
             DragPoints[Bone.UpperArmR] = armDragPointR[0];
             DragPoints[Bone.ForearmR] = armDragPointR[1];
             DragPoints[Bone.HandR] = armDragPointR[2];
 
-            DragPointLimb[] legDragPointL = MakeIKChain(BoneTransform[Bone.FootL]);
+            var legDragPointL = MakeLegChain(BoneTransform[Bone.FootL]);
             DragPoints[Bone.CalfL] = legDragPointL[0];
             DragPoints[Bone.FootL] = legDragPointL[1];
 
-            DragPointLimb[] legDragPointR = MakeIKChain(BoneTransform[Bone.FootR]);
+            var legDragPointR = MakeLegChain(BoneTransform[Bone.FootR]);
             DragPoints[Bone.CalfR] = legDragPointR[0];
             DragPoints[Bone.FootR] = legDragPointR[1];
 
             InitializeSpineDragPoint(SpineBones);
 
-            InitializeFingerDragPoint(Bone.Finger0L, Bone.Finger4R);
-            InitializeFingerDragPoint(Bone.Toe0L, Bone.Toe2R);
+            for (var bone = Bone.Finger4NubR; bone >= Bone.Finger0L; bone -= 4)
+            {
+                var i = 2;
+                var chain = MakeFingerChain(BoneTransform[bone], meido);
+
+                for (var joint = bone - 1; joint > bone - 4; joint--)
+                {
+                    DragPoints[joint] = chain[i];
+                    i--;
+                }
+            }
+            MakeToeChain(Bone.Toe0L, Bone.Toe2R);
         }
 
         private void InitializeMuneDragPoint(bool left)
@@ -527,13 +537,11 @@ namespace MeidoPhotoStudio.Plugin
             DragPoints[mune] = muneDragPoint;
         }
 
-        private DragPointLimb[] MakeIKChain(Transform lower)
+        private DragPointLimb[] MakeLegChain(Transform lower)
         {
             Vector3 limbDragPointSize = Vector3.one * 0.12f;
-            // Ignore Thigh transform when making a leg IK chain
-            bool isLeg = lower.name.EndsWith("Foot");
-            DragPointLimb[] dragPoints = new DragPointLimb[isLeg ? 2 : 3];
-            for (int i = dragPoints.Length - 1; i >= 0; i--)
+            DragPointLimb[] dragPoints = new DragPointLimb[2];
+            for (var i = dragPoints.Length - 1; i >= 0; i--)
             {
                 Transform joint = lower;
                 dragPoints[i] = DragPoint.Make<DragPointLimb>(PrimitiveType.Sphere, limbDragPointSize);
@@ -545,10 +553,36 @@ namespace MeidoPhotoStudio.Plugin
             return dragPoints;
         }
 
-        private void InitializeFingerDragPoint(Bone start, Bone end)
+        private static DragPointLimb[] MakeArmChain(Transform lower, Meido meido)
+        {
+            var limbDragPointSize = Vector3.one * 0.12f;
+
+            var realLower = CMT.SearchObjName(meido.Body.goSlot[0].obj_tr, lower.name, false);
+
+            var dragPoints = new DragPointLimb[3];
+
+            for (var i = dragPoints.Length - 1; i >= 0; i--)
+            {
+                var joint = lower;
+                var positionJoint = realLower;
+
+                dragPoints[i] = DragPoint.Make<DragPointLimb>(PrimitiveType.Sphere, limbDragPointSize);
+                dragPoints[i].Initialize(meido, () => positionJoint.position, () => Vector3.zero);
+                dragPoints[i].Set(joint);
+                dragPoints[i].AddGizmo();
+                dragPoints[i].Gizmo.SetAlternateTarget(positionJoint);
+
+                lower = lower.parent;
+                realLower = realLower.parent;
+            }
+
+            return dragPoints;
+        }
+
+        private void MakeToeChain(Bone start, Bone end)
         {
             Vector3 fingerDragPointSize = Vector3.one * 0.01f;
-            int joints = BoneTransform[start].name.Split(' ')[2].StartsWith("Finger") ? 4 : 3;
+            const int joints = 3;
             for (Bone bone = start; bone <= end; bone += joints)
             {
                 for (int i = 1; i < joints; i++)
@@ -560,6 +594,30 @@ namespace MeidoPhotoStudio.Plugin
                     DragPoints[bone + i] = chain;
                 }
             }
+        }
+
+        private static DragPointFinger[] MakeFingerChain(Transform lower, Meido meido)
+        {
+            var fingerDragPointSize = Vector3.one * 0.01f;
+
+            var dragPoints = new DragPointFinger[3];
+
+            var realLower = CMT.SearchObjName(meido.Body.goSlot[0].obj_tr, lower.parent.name, false);
+
+            for (var i = dragPoints.Length - 1; i >= 0; i--)
+            {
+                var joint = lower;
+                var positionJoint = realLower;
+
+                dragPoints[i] = DragPoint.Make<DragPointFinger>(PrimitiveType.Sphere, fingerDragPointSize);
+                dragPoints[i].Initialize(meido, () => positionJoint.position, () => Vector3.zero);
+                dragPoints[i].Set(joint);
+
+                lower = lower.parent;
+                realLower = realLower.parent;
+            }
+
+            return dragPoints;
         }
 
         private void InitializeSpineDragPoint(params Bone[] bones)

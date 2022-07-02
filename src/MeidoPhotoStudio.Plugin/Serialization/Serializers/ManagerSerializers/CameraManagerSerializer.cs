@@ -19,6 +19,8 @@ namespace MeidoPhotoStudio.Plugin
             writer.Write(manager.CurrentCameraIndex);
             writer.Write(manager.CameraCount);
             foreach (var info in cameraInfos) InfoSerializer.Serialize(info, writer);
+
+            CameraUtility.StopAll();
         }
 
         public override void Deserialize(CameraManager manager, BinaryReader reader, SceneMetadata metadata)
@@ -38,6 +40,8 @@ namespace MeidoPhotoStudio.Plugin
             if (metadata.Environment) return;
 
             cameraInfos[manager.CurrentCameraIndex].Apply(camera);
+
+            CameraUtility.StopAll();
         }
 
         private static CameraInfo[] GetCameraInfos(CameraManager manager)

@@ -112,33 +112,51 @@ namespace MeidoPhotoStudio.Plugin
         {
             updating = true;
 
-            PoseInfo poseInfo = meidoManager.ActiveMeido.CachedPose;
-
-            bool oldPoseMode = customPoseMode;
-
-            poseModeGrid.SelectedItemIndex = poseInfo.CustomPose ? 1 : 0;
-
-            int poseGroupIndex = CurrentPoseGroupList.IndexOf(poseInfo.PoseGroup);
-
-            if (poseGroupIndex < 0) poseGroupIndex = 0;
-
-            int poseIndex = CurrentPoseDict[poseInfo.PoseGroup].IndexOf(poseInfo.Pose);
-
-            if (poseIndex < 0) poseIndex = 0;
-
-            if (oldPoseMode != customPoseMode)
+            try
             {
-                string[] list = customPoseMode
-                    ? CurrentPoseGroupList.ToArray()
-                    : Translation.GetArray("poseGroupDropdown", CurrentPoseGroupList);
+                var cachedPose = meidoManager.ActiveMeido.CachedPose;
 
-                poseGroupDropdown.SetDropdownItems(list);
+                poseModeGrid.SelectedItemIndex = cachedPose.CustomPose ? 1 : 0;
+
+                var oldCustomPoseMode = customPoseMode;
+                customPoseMode = cachedPose.CustomPose;
+
+                if (oldCustomPoseMode != customPoseMode)
+                    poseGroupDropdown.SetDropdownItems(
+                        customPoseMode ? CurrentPoseGroupList.ToArray() : Translation.GetArray(
+                            "poseGroupDropdown", CurrentPoseGroupList
+                        )
+                    );
+
+                var newPoseGroupIndex = CurrentPoseGroupList.IndexOf(cachedPose.PoseGroup);
+
+                if (newPoseGroupIndex < 0)
+                    poseGroupDropdown.SelectedItemIndex = 0;
+                else if (oldCustomPoseMode != customPoseMode
+                    || poseGroupDropdown.SelectedItemIndex != newPoseGroupIndex)
+                {
+                    poseGroupDropdown.SelectedItemIndex = newPoseGroupIndex;
+                    poseDropdown.SetDropdownItems(UIPoseList());
+                }
+
+                var newPoseIndex = CurrentPoseDict.TryGetValue(cachedPose.PoseGroup, out var poseList)
+                    ? poseList.IndexOf(cachedPose.Pose)
+                    : 0;
+
+                if (newPoseIndex < 0)
+                    newPoseIndex = 0;
+
+                poseDropdown.SelectedItemIndex = newPoseIndex;
+                poseListEnabled = CurrentPoseList.Count > 0;
             }
-
-            poseGroupDropdown.SelectedItemIndex = poseGroupIndex;
-            poseDropdown.SelectedItemIndex = poseIndex;
-
-            updating = false;
+            catch
+            {
+                // Do nothing
+            }
+            finally
+            {
+                updating = false;
+            }
         }
 
         private void OnPresetChange(object sender, PresetChangeEventArgs args)
@@ -169,9 +187,10 @@ namespace MeidoPhotoStudio.Plugin
 
         private void SetPoseMode()
         {
-            customPoseMode = poseModeGrid.SelectedItemIndex == 1;
+            if (updating)
+                return;
 
-            if (updating) return;
+            customPoseMode = poseModeGrid.SelectedItemIndex == 1;
 
             string[] list = customPoseMode
                 ? CurrentPoseGroupList.ToArray()
@@ -182,6 +201,9 @@ namespace MeidoPhotoStudio.Plugin
 
         private void ChangePoseGroup()
         {
+            if (updating)
+                return;
+
             poseListEnabled = CurrentPoseList.Count > 0;
             if (previousPoseGroup == SelectedPoseGroup)
             {

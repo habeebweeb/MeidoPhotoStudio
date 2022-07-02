@@ -7,6 +7,7 @@ using System.Linq;
 using System.Xml.Linq;
 using UnityEngine;
 using static TBody;
+using Object = UnityEngine.Object;
 
 namespace MeidoPhotoStudio.Plugin
 {
@@ -66,6 +67,7 @@ namespace MeidoPhotoStudio.Plugin
         public string FirstName => Maid.status.firstName;
         public string LastName => Maid.status.lastName;
         public bool Busy => Maid.IsBusy || Loading;
+        public bool Active { get; private set; }
         public bool CurlingFront => Maid.IsItemChange("skirt", "めくれスカート")
             || Maid.IsItemChange("onepiece", "めくれスカート");
         public bool CurlingBack => Maid.IsItemChange("skirt", "めくれスカート後ろ")
@@ -163,6 +165,9 @@ namespace MeidoPhotoStudio.Plugin
 
             Slot = slot;
 
+            if (Active) 
+                return;
+
             FreeLook = false;
             Maid.Visible = true;
             Body.boHeadToCam = true;
@@ -213,9 +218,13 @@ namespace MeidoPhotoStudio.Plugin
 
             IKManager.Initialize();
 
+            SetFaceBlendSet(defaultFaceBlendSet);
+
             IK = true;
             Stop = false;
             Bone = false;
+
+            Active = true;
         }
 
         private void ReinitializeBody(object sender, ProcStartEventArgs args)
@@ -229,31 +238,37 @@ namespace MeidoPhotoStudio.Plugin
                     MPN.hairf, MPN.hairr, MPN.hairs, MPN.hairt
                 };
 
+                Action action = null;
+
                 // Change body
                 if (Maid.GetProp(MPN.body).boDut)
                 {
                     IKManager.Destroy();
-                    StartLoad(reinitializeBody);
+                    action += ReinitializeBody;
                 }
+
                 // Change face
-                else if (Maid.GetProp(MPN.head).boDut)
+                if (Maid.GetProp(MPN.head).boDut)
                 {
                     SetFaceBlendSet(defaultFaceBlendSet);
-                    StartLoad(reinitializeFace);
+                    action += ReinitializeFace;
                 }
-                // Gravity control clothing/hair change
-                else if (gravityControlProps.Any(prop => Maid.GetProp(prop).boDut))
-                {
-                    if (HairGravityControl) GameObject.Destroy(HairGravityControl.gameObject);
-                    if (SkirtGravityControl) GameObject.Destroy(SkirtGravityControl.gameObject);
 
-                    StartLoad(reinitializeGravity);
+                // Gravity control clothing/hair change
+                if (gravityControlProps.Any(prop => Maid.GetProp(prop).boDut))
+                {
+                    if (HairGravityControl) Object.Destroy(HairGravityControl.gameObject);
+                    if (SkirtGravityControl) Object.Destroy(SkirtGravityControl.gameObject);
+                    action += ReinitializeGravity;
                 }
+
                 // Clothing/accessory changes
                 // Includes null_mpn too but any button click results in null_mpn bodut I think
-                else StartLoad(() => OnUpdateMeido());
+                action ??= () => OnUpdateMeido();
 
-                void reinitializeBody()
+                StartLoad(action);
+
+                void ReinitializeBody()
                 {
                     IKManager.Initialize();
                     Stop = false;
@@ -267,14 +282,14 @@ namespace MeidoPhotoStudio.Plugin
                     Utility.SetFieldValue(customPartsWindow, "animation", Maid.GetAnimation());
                 }
 
-                void reinitializeFace()
+                void ReinitializeFace()
                 {
                     DefaultEyeRotL = Body.quaDefEyeL;
                     DefaultEyeRotR = Body.quaDefEyeR;
                     BackupBlendSetValues();
                 }
 
-                void reinitializeGravity()
+                void ReinitializeGravity()
                 {
                     InitializeGravityControls();
                     OnUpdateMeido();
@@ -322,6 +337,8 @@ namespace MeidoPhotoStudio.Plugin
             Maid.Visible = false;
 
             IKManager.Destroy();
+            
+            Active = false;
         }
 
         public void Deactivate()
@@ -363,11 +380,15 @@ namespace MeidoPhotoStudio.Plugin
                 {
                     Utility.LogWarning($"{poseFilename}: Could not open because {e.Message}");
                     Constants.InitializeCustomPoses();
+                    SetPose(PoseInfo.DefaultPose);
+                    OnUpdateMeido();
                     return;
                 }
                 catch (Exception e)
                 {
                     Utility.LogWarning($"{poseFilename}: Could not apply pose because {e.Message}");
+                    SetPose(PoseInfo.DefaultPose);
+                    OnUpdateMeido();
                     return;
                 }
                 SetMune(true, left: true);

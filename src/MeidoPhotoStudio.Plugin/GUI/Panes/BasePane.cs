@@ -22,5 +22,9 @@ namespace MeidoPhotoStudio.Plugin
         public virtual void UpdatePane() { }
 
         public virtual void Draw() { }
+
+        public virtual void Activate() { }
+
+        public virtual void Deactivate() { }
     }
 }

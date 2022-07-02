@@ -4,10 +4,10 @@ namespace MeidoPhotoStudio.Plugin
 {
     public class SceneMetadata
     {
-        public short Version { get; init; }
-        public bool Environment { get; init; }
-        public int MaidCount { get; init; }
-        public bool MMConverted { get; init; }
+        public short Version { get; set; }
+        public bool Environment { get; set; }
+        public int MaidCount { get; set; }
+        public bool MMConverted { get; set; }
 
         public void WriteMetadata(BinaryWriter writer)
         {

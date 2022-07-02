@@ -9,7 +9,8 @@
     "maidCallWindow": {
         "okButton": "OK",
         "clearButton": "Clear",
-        "callButton": "Call"
+        "callButton": "Call",
+        "activeOnlyToggle": "Active Only"
     },
     "placementDropdown": {
         "normal": "Normal",
@@ -263,8 +264,8 @@
         "resetPosition": "Position",
         "resetProperties": "Properties",
         "clear": "Clear",
-        "colour": "Colour",
-        "disable": "On",
+        "colour": "Hide BG",
+        "disable": "Off",
         "resetLabel": "Reset"
     },
     "lightType": {
@@ -429,6 +430,8 @@
         "openSceneManager": "Open Scene Manager"
     },
     "settingsLabels": {
+        "settingsButton": "Settings",
+        "closeSettingsButton": "Close",
         "reloadTranslation": "Reload Translation",
         "reloadAllPresets": "Reload Presets"
     },

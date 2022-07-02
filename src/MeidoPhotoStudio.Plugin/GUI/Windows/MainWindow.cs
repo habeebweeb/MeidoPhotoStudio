@@ -12,6 +12,9 @@ namespace MeidoPhotoStudio.Plugin
         private readonly TabsPane tabsPane;
         private readonly Button settingsButton;
         private BaseMainWindowPane currentWindowPane;
+        private string settingsButtonLabel;
+        private string closeButtonLabel;
+
         public override Rect WindowRect
         {
             set
@@ -50,20 +53,31 @@ namespace MeidoPhotoStudio.Plugin
             tabsPane = new TabsPane();
             tabsPane.TabChange += (s, a) => ChangeTab();
 
-            settingsButton = new Button("Settings");
+            settingsButtonLabel = Translation.Get("settingsLabels", "settingsButton");
+            closeButtonLabel = Translation.Get("settingsLabels", "closeSettingsButton");
+
+            settingsButton = new(settingsButtonLabel);
             settingsButton.ControlEvent += (s, a) =>
             {
                 if (selectedWindow == Constants.Window.Settings) ChangeTab();
                 else
                 {
-                    settingsButton.Label = "Close";
+                    settingsButton.Label = closeButtonLabel;
                     SetCurrentWindow(Constants.Window.Settings);
                 }
             };
         }
 
+        protected override void ReloadTranslation()
+        {
+            settingsButtonLabel = Translation.Get("settingsLabels", "settingsButton");
+            closeButtonLabel = Translation.Get("settingsLabels", "closeSettingsButton");
+            settingsButton.Label = selectedWindow == Constants.Window.Settings ? closeButtonLabel : settingsButtonLabel;
+        }
+
         public override void Activate()
         {
+            base.Activate();
             updating = true;
             tabsPane.SelectedTab = Constants.Window.Call;
             updating = false;
@@ -84,7 +98,7 @@ namespace MeidoPhotoStudio.Plugin
 
         private void ChangeTab()
         {
-            settingsButton.Label = "Settings";
+            settingsButton.Label = Translation.Get("settingsLabels", "settingsButton");
             SetCurrentWindow(tabsPane.SelectedTab);
         }
 

@@ -108,8 +108,14 @@ NOTE: Environments, scenes, and each preset folder can have single level deep fo
 | `Shift + Scroll`
 | Zoom camera faster
 
+| `Control + Scroll`
+| Zoom camera slower
+
 | `Shift + Middle Drag`
 | Pan camera faster
+
+| `Control + Middle Drag`
+| Pan camera slower
 
 |===
 
@@ -257,6 +263,60 @@ NOTE: Environments, scenes, and each preset folder can have single level deep fo
 
 == Changelog
 
+=== {pluginname}.1.0.0-beta.4.1
+
+==== Enhancements
+
+* IK drag handles for the arms and fingers match body node position rather than bone position so drag handles are no
+longer offset from maid body.
+
+==== Fixes
+
+* Fix message box and text disappearing after leaving edit mode
+* Fix background switcher breaking when `MyRoom` directory is missing from game root
+* Fix blur effect not turning off properly
+* Fix issue where loading a scene that uses a non-existent pose breaks the pose selector
+* Fix MPS naively restoring edit mode's OK button's original functionality
+** Other plugins may have hooked onto the OK button and MPS restoring original functionality effectively removes those
+hooks
+
+=== {pluginname}.1.0.0-beta.4
+
+==== New Features
+
+* Add a toggle to only list active maids in the scene
+
+* Add hotkey to slow down camera zoom and movement
+** Added to ease the difficulty of manipulating objects at a very small scale.
+
+==== Enhancements
+
+* Remove exist check for mod prop icon files
+** Makes loading the mod prop list a lot faster.
+
+* Prevent already active maids from being reactivated when called again
+* Add confirmation when exiting MPS in edit mode
+
+==== Changes
+
+* Reduce drag point size for fingers/toes
+* Move "Colour" (now "Hide BG") toggle next to light type radio buttons
+
+* Set lower limit for object scale to 0x
+** Not a very comfortable experience but it's there now.
+
+* Update Translations
+
+==== Fixes
+
+* Fix preset change breaking hair/skirt gravity
+* Fix "Private Mode" maid interfering with MPS
+* Fix non-existent pose soft locking pose selector
+* Fix alternate mune rotation (control + alt + shift) not being saved
+
+* Stop camera movement and rotation when saving/loading scene
+** This was present before but was missing when save system was reworked.
+
 === {pluginname}.1.0.0-beta.3.1
 
 ==== Fixes
@@ -267,16 +327,6 @@ NOTE: Environments, scenes, and each preset folder can have single level deep fo
 ** SceneCaputre hides the background by destroying it so it caused issues for {pluginname}
 
 === {pluginname}.1.0.0-beta.3
-
-==== Fixes
-* Fix face tab sliders/toggles doing nothing when using face shapekeys in ShapeAnimator
-* Fix face blush toggles doing nothing
-
-==== Changes
-* Make bone mode drag handles way smaller and more transparent
-
-==== Enhancements
-* Add spine as attach points for props
 
 ==== New Features
 * Add camera Z rotation and FOV slider
@@ -293,3 +343,13 @@ NOTE: Environments, scenes, and each preset folder can have single level deep fo
 
 * Add user configurable face slider limits
 ** `Config\MeidoPhotoStudio\Database\face_slider_limits.json` has been added
+
+==== Enhancements
+* Add spine as attach points for props
+
+==== Changes
+* Make bone mode drag handles way smaller and more transparent
+
+==== Fixes
+* Fix face tab sliders/toggles doing nothing when using face shapekeys in ShapeAnimator
+* Fix face blush toggles doing nothing

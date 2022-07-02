@@ -258,6 +258,10 @@ namespace MeidoPhotoStudio.Plugin
                 GUI.enabled = true;
                 disableToggle.Draw();
             }
+
+            if (lightManager.SelectedLightIndex == 0 && currentLightType == MPSLightType.Normal) 
+                colorToggle.Draw();
+            
             GUILayout.EndHorizontal();
 
             GUI.enabled = !isDisabled;
@@ -280,8 +284,6 @@ namespace MeidoPhotoStudio.Plugin
             lightSlider[LightProp.Red].Draw();
             lightSlider[LightProp.Green].Draw();
             lightSlider[LightProp.Blue].Draw();
-
-            if (lightManager.SelectedLightIndex == 0 && currentLightType == MPSLightType.Normal) colorToggle.Draw();
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(resetLabel, noExpandWidth);

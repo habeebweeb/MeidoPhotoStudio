@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin
@@ -9,8 +10,9 @@ namespace MeidoPhotoStudio.Plugin
     {
         public const string header = "MEIDO";
         private static readonly CharacterMgr characterMgr = GameMain.Instance.CharacterMgr;
+        private static bool active;
+        private static int EditMaidIndex { get; set; }
         private int undress;
-        private int numberOfMeidos;
         private int tempEditMaidIndex = -1;
         public Meido[] Meidos { get; private set; }
         public HashSet<int> SelectedMeidoSet { get; } = new HashSet<int>();
@@ -28,7 +30,6 @@ namespace MeidoPhotoStudio.Plugin
             get => selectedMeido;
             private set => selectedMeido = Utility.Bound(value, 0, ActiveMeidoList.Count - 1);
         }
-        public int EditMaidIndex { get; private set; }
         public bool Busy => ActiveMeidoList.Any(meido => meido.Busy);
         private bool globalGravity;
         public bool GlobalGravity
@@ -62,37 +63,21 @@ namespace MeidoPhotoStudio.Plugin
 
         public void Activate()
         {
-            GameMain.Instance.CharacterMgr.ResetCharaPosAll();
-            numberOfMeidos = characterMgr.GetStockMaidCount();
-            Meidos = new Meido[numberOfMeidos];
+            characterMgr.ResetCharaPosAll();
+
+            if (!MeidoPhotoStudio.EditMode)
+                characterMgr.DeactivateMaid(0);
+
+            Meidos = characterMgr.GetStockMaidList()
+                .Select((_, stockNo) => new Meido(stockNo)).ToArray();
 
             tempEditMaidIndex = -1;
 
-            for (int stockMaidIndex = 0; stockMaidIndex < numberOfMeidos; stockMaidIndex++)
-            {
-                Meidos[stockMaidIndex] = new Meido(stockMaidIndex);
-            }
-
-            if (MeidoPhotoStudio.EditMode)
-            {
-                Maid editMaid = GameMain.Instance.CharacterMgr.GetMaid(0);
-                EditMaidIndex = Array.FindIndex(Meidos, meido => meido.Maid.status.guid == editMaid.status.guid);
-                EditMeido.IsEditMaid = true;
-
-                var editOkCancel = UTY.GetChildObject(GameObject.Find("UI Root"), "OkCancel")
-                    .GetComponent<EditOkCancel>();
-
-                // Ensure MPS resets editor state before setting maid
-                EditOkCancel.OnClick newEditOnClick = () => SetEditMaid(Meidos[EditMaidIndex]);
-                newEditOnClick += OkCancelDelegate();
-
-                Utility.SetFieldValue(editOkCancel, "m_dgOnClickOk", newEditOnClick);
-
-                // Only for setting custom parts placement animation just in case body was changed before activating MPS
-                SetEditMaid(Meidos[EditMaidIndex]);
-            }
+            if (MeidoPhotoStudio.EditMode && EditMaidIndex >= 0)
+                Meidos[EditMaidIndex].IsEditMaid = true;
 
             ClearSelectList();
+            active = true;
         }
 
         public void Deactivate()
@@ -113,22 +98,10 @@ namespace MeidoPhotoStudio.Plugin
                 meido.Stop = false;
                 meido.EyeToCam = true;
 
-                SetEditMaid(meido);
-
-                // Restore original OK button functionality
-                GameObject okButton = UTY.GetChildObjectNoError(GameObject.Find("UI Root"), "OkCancel");
-                if (okButton)
-                {
-                    EditOkCancel editOkCancel = okButton.GetComponent<EditOkCancel>();
-                    Utility.SetFieldValue(editOkCancel, "m_dgOnClickOk", OkCancelDelegate());
-                }
+                SetEditorMaid(meido.Maid);
             }
-        }
 
-        private EditOkCancel.OnClick OkCancelDelegate()
-        {
-            return (EditOkCancel.OnClick)Delegate
-                .CreateDelegate(typeof(EditOkCancel.OnClick), SceneEdit.Instance, "OnEditOk");
+            active = false;
         }
 
         public void Update()
@@ -139,12 +112,20 @@ namespace MeidoPhotoStudio.Plugin
         private void UnloadMeidos()
         {
             SelectedMeido = 0;
+
+            var commonMeidoIDs = new HashSet<int>(
+                ActiveMeidoList.Where(meido => SelectedMeidoSet.Contains(meido.StockNo)).Select(meido => meido.StockNo)
+            );
+
             foreach (Meido meido in ActiveMeidoList)
             {
                 meido.UpdateMeido -= OnUpdateMeido;
                 meido.GravityMove -= OnGravityMove;
-                meido.Unload();
+                
+                if (!commonMeidoIDs.Contains(meido.StockNo))
+                    meido.Unload();
             }
+
             ActiveMeidoList.Clear();
         }
 
@@ -215,46 +196,11 @@ namespace MeidoPhotoStudio.Plugin
 
             EditMeido.IsEditMaid = false;
 
-            tempEditMaidIndex = meido.Maid.status.guid == Meidos[EditMaidIndex].Maid.status.guid
-                ? -1
-                : Array.FindIndex(Meidos, maid => maid.Maid.status.guid == meido.Maid.status.guid);
+            tempEditMaidIndex = meido.StockNo == EditMaidIndex ? -1 : meido.StockNo;
 
             EditMeido.IsEditMaid = true;
 
-            Maid newEditMaid = EditMeido.Maid;
-
-            GameObject uiRoot = GameObject.Find("UI Root");
-
-            var presetCtrl = UTY.GetChildObjectNoError(uiRoot, "PresetPanel")?.GetComponent<PresetCtrl>();
-            var presetButton = UTY.GetChildObjectNoError(uiRoot, "PresetButtonPanel")?.GetComponent<PresetButtonCtrl>();
-            var profileCtrl = UTY.GetChildObjectNoError(uiRoot, "ProfilePanel")?.GetComponent<ProfileCtrl>();
-            var customPartsWindow = UTY.GetChildObjectNoError(uiRoot, "Window/CustomPartsWindow")
-                ?.GetComponent<SceneEditWindow.CustomPartsWindow>();
-
-            if (!(presetCtrl || presetButton || profileCtrl || customPartsWindow)) return;
-
-            // Preset application
-            Utility.SetFieldValue(presetCtrl, "m_maid", newEditMaid);
-
-            // Preset saving
-            Utility.SetFieldValue(presetButton, "m_maid", newEditMaid);
-
-            // Maid profile (name, description, experience etc)
-            Utility.SetFieldValue(profileCtrl, "m_maidStatus", newEditMaid.status);
-
-            // Accessory/Parts placement
-            Utility.SetFieldValue(customPartsWindow, "maid", newEditMaid);
-
-            // Stopping maid animation and head movement when customizing parts placement
-            Utility.SetFieldValue(customPartsWindow, "animation", newEditMaid.GetAnimation());
-
-            // Clothing/body in general and maybe other things
-            Utility.SetFieldValue(SceneEdit.Instance, "m_maid", newEditMaid);
-
-            // Body status, parts colours and maybe more
-            Utility.GetFieldValue<CharacterMgr, Maid[]>(
-                GameMain.Instance.CharacterMgr, "m_gcActiveMaid"
-            )[0] = newEditMaid;
+            SetEditorMaid(EditMeido.Maid);
         }
 
         public Meido GetMeido(string guid)
@@ -312,6 +258,117 @@ namespace MeidoPhotoStudio.Plugin
             foreach (Meido meido in ActiveMeidoList)
             {
                 meido.ApplyGravity(args.LocalPosition, args.IsSkirt);
+            }
+        }
+
+        private static void SetEditorMaid(Maid maid)
+        {
+            if (maid == null)
+            {
+                Utility.LogWarning("Refusing to change editing maid because the new maid is null!");
+                return;
+            }
+
+            if (SceneEdit.Instance.maid.status.guid == maid.status.guid)
+            {
+                Utility.LogDebug("Editing maid is the same as new maid");
+                return;
+            }
+
+            var uiRoot = GameObject.Find("UI Root");
+
+            if (!TryGetUIControl<PresetCtrl>(uiRoot, "PresetPanel", out var presetCtrl))
+                return;
+
+            if (!TryGetUIControl<PresetButtonCtrl>(uiRoot, "PresetButtonPanel", out var presetButtonCtrl))
+                return;
+
+            if (!TryGetUIControl<ProfileCtrl>(uiRoot, "ProfilePanel", out var profileCtrl))
+                return;
+
+            if (!TryGetUIControl<SceneEditWindow.CustomPartsWindow>(
+                uiRoot, "Window/CustomPartsWindow", out var sceneEditWindow
+            ))
+                return;
+
+            // Preset application
+            presetCtrl.m_maid = maid;
+
+            // Preset saving
+            presetButtonCtrl.m_maid = maid;
+
+            // Maid profile (name, description, experience etc)
+            profileCtrl.m_maidStatus = maid.status;
+
+            // Accessory/Parts placement
+            sceneEditWindow.maid = maid;
+
+            // Stopping maid animation and head movement when customizing parts placement
+            sceneEditWindow.animation = maid.GetAnimation();
+
+            // Clothing/body in general and maybe other things
+            SceneEdit.Instance.m_maid = maid;
+
+            // Body status, parts colours and maybe more
+            GameMain.Instance.CharacterMgr.m_gcActiveMaid[0] = maid;
+
+            static bool TryGetUIControl<T>(GameObject root, string hierarchy, out T uiControl) where T : MonoBehaviour
+            {
+                uiControl = null;
+
+                var uiElement = UTY.GetChildObjectNoError(root, hierarchy);
+
+                if (!uiElement)
+                    return false;
+
+                uiControl = uiElement.GetComponent<T>();
+
+                return uiControl;
+            }
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(SceneEdit), nameof(SceneEdit.Start))]
+        private static void SceneEditStartPostfix()
+        {
+            EditMaidIndex = -1;
+
+            if (SceneEdit.Instance.maid == null)
+                return;
+
+            var originalEditingMaid = SceneEdit.Instance.maid;
+
+            EditMaidIndex = GameMain.Instance.CharacterMgr.GetStockMaidList()
+                .FindIndex(maid => maid.status.guid == originalEditingMaid.status.guid);
+
+            try
+            {
+                var editOkCancelButton = UTY.GetChildObject(GameObject.Find("UI Root"), "OkCancel")
+                    .GetComponent<EditOkCancel>();
+
+                EditOkCancel.OnClick newEditOkCancelDelegate = RestoreOriginalEditingMaid;
+
+                newEditOkCancelDelegate += editOkCancelButton.m_dgOnClickOk;
+
+                editOkCancelButton.m_dgOnClickOk = newEditOkCancelDelegate;
+
+                void RestoreOriginalEditingMaid()
+                {
+                    // Only restore original editing maid when active.
+                    if (!active)
+                        return;
+
+                    Utility.LogDebug($"Setting Editing maid back to '{originalEditingMaid.status.fullNameJpStyle}'");
+
+                    SetEditorMaid(originalEditingMaid);
+
+                    // Set SceneEdit's maid regardless of UI integration failing
+                    SceneEdit.Instance.m_maid = originalEditingMaid;
+                }
+            }
+            catch (Exception e)
+            {
+                Utility.LogWarning($"Failed to hook onto Edit Mode OK button: {e}");
             }
         }
     }
