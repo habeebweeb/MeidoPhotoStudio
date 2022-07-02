@@ -172,8 +172,19 @@ namespace MeidoPhotoStudio.Plugin
 
             _ = reader.ReadVersion();
 
-            body.quaDefEyeL = reader.ReadQuaternion() * meido.DefaultEyeRotL;
-            body.quaDefEyeR = reader.ReadQuaternion() * meido.DefaultEyeRotR;
+            var mmConverted = metadata.MMConverted;
+
+            var eyeRotationL = reader.ReadQuaternion();
+            var eyeRotationR = reader.ReadQuaternion();
+
+            if (!mmConverted)
+            {
+                eyeRotationL *= meido.DefaultEyeRotL;
+                eyeRotationR *= meido.DefaultEyeRotR;
+            }
+
+            body.quaDefEyeL = eyeRotationL;
+            body.quaDefEyeR = eyeRotationR;
 
             var freeLook = meido.FreeLook = reader.ReadBoolean();
             var offsetLookTarget = reader.ReadVector3();
