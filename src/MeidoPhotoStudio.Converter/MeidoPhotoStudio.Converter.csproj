@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <Reference Include="..\..\lib\Assembly-CSharp.dll" />
-    <Reference Include="..\..\lib\Assembly-CSharp-firstpass.dll" />
     <Reference Include="..\..\lib\UnityEngine.dll" />
     <Reference Include="..\..\lib\Ionic.Zlib.dll" />
     <Reference Include="..\..\lib\ExIni.dll" />
