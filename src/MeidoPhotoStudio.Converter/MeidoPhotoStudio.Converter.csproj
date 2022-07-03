@@ -6,18 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="..\..\lib\Assembly-CSharp.dll" />
-    <Reference Include="..\..\lib\UnityEngine.dll" />
-    <Reference Include="..\..\lib\Ionic.Zlib.dll" />
-    <Reference Include="..\..\lib\ExIni.dll" />
-    <Reference Include="..\..\lib\BepInEx.dll" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\MeidoPhotoStudio.Plugin\MeidoPhotoStudio.Plugin.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ExIni" Version="1.0.2" />
     <PackageReference Include="LZMA-SDK" Version="18.1.0" />
   </ItemGroup>
 

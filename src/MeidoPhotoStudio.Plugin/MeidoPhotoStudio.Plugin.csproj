@@ -1,14 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <Reference Include="..\..\lib\Assembly-CSharp.dll" />
-    <Reference Include="..\..\lib\Assembly-CSharp-firstpass.dll" />
     <Reference Include="..\..\lib\Assembly-UnityScript-firstpass.dll" />
-    <Reference Include="..\..\lib\UnityEngine.dll" />
-    <Reference Include="..\..\lib\Newtonsoft.Json.dll" />
-    <Reference Include="..\..\lib\Ionic.Zlib.dll" />
-    <Reference Include="..\..\lib\BepInEx.dll" />
-    <Reference Include="..\..\lib\0Harmony.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ionic.Zlib" Version="1.9.1.*" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.*" />
   </ItemGroup>
 
   <ItemGroup>
