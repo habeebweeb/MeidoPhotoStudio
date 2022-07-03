@@ -14,7 +14,6 @@
     <Reference Include="..\..\lib\Assembly-CSharp-firstpass.dll" />
     <Reference Include="..\..\lib\Assembly-UnityScript-firstpass.dll" />
     <Reference Include="..\..\lib\UnityEngine.dll" />
-    <Reference Include="..\..\lib\UnityEngine.UI.dll" />
     <Reference Include="..\..\lib\Newtonsoft.Json.dll" />
     <Reference Include="..\..\lib\Ionic.Zlib.dll" />
     <Reference Include="..\..\lib\BepInEx.dll" />
