@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net35</TargetFramework>
-    <LangVersion>9</LangVersion>
+    <LangVersion>10</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
