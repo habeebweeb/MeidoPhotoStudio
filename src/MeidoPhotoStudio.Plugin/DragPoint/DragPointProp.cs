@@ -1,113 +1,94 @@
-﻿using System.Collections.Generic;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class DragPointProp : DragPointGeneral
 {
-    public class DragPointProp : DragPointGeneral
+    public string AssetName = string.Empty;
+
+    private List<Renderer> renderers;
+
+    public AttachPointInfo AttachPointInfo { get; private set; } = AttachPointInfo.Empty;
+
+    public PropInfo Info { get; set; }
+
+    public string Name =>
+        MyGameObject.name;
+
+    public bool ShadowCasting
     {
-        private List<Renderer> renderers;
-        public AttachPointInfo AttachPointInfo { get; private set; } = AttachPointInfo.Empty;
-        public string Name => MyGameObject.name;
-        public string assetName = string.Empty;
-        public PropInfo Info { get; set; }
-
-        public bool ShadowCasting
+        get => renderers.Count is not 0 && renderers.Any(r => r.shadowCastingMode is ShadowCastingMode.On);
+        set
         {
-            get => renderers.Count != 0 && renderers.Any(r => r.shadowCastingMode == ShadowCastingMode.On);
-            set
-            {
-                foreach (var renderer in renderers)
-                    renderer.shadowCastingMode = value ? ShadowCastingMode.On : ShadowCastingMode.Off;
-            }
-        }
-
-        public override void Set(Transform myObject)
-        {
-            base.Set(myObject);
-            DefaultRotation = MyObject.rotation;
-            DefaultPosition = MyObject.position;
-            DefaultScale = MyObject.localScale;
-            renderers = new List<Renderer>(MyObject.GetComponentsInChildren<Renderer>());
-        }
-
-        public void AttachTo(Meido meido, AttachPoint point, bool keepWorldPosition = true)
-        {
-            var attachPoint = meido?.IKManager.GetAttachPointTransform(point);
-
-            AttachPointInfo = meido == null ? AttachPointInfo.Empty : new AttachPointInfo(point, meido);
-
-            var position = MyObject.position;
-            var rotation = MyObject.rotation;
-            var scale = MyObject.localScale;
-
-            MyObject.transform.SetParent(attachPoint, keepWorldPosition);
-
-            if (keepWorldPosition)
-            {
-                MyObject.position = position;
-                MyObject.rotation = rotation;
-            }
-            else
-            {
-                MyObject.localPosition = Vector3.zero;
-                MyObject.rotation = Quaternion.identity;
-            }
-
-            MyObject.localScale = scale;
-
-            if (attachPoint == null) Utility.FixGameObjectScale(MyGameObject);
-        }
-
-        public void DetachFrom(bool keepWorldPosition = true) => AttachTo(null, AttachPoint.None, keepWorldPosition);
-
-        public void DetachTemporary()
-        {
-            MyObject.transform.SetParent(null, true);
-            Utility.FixGameObjectScale(MyGameObject);
-        }
-
-        protected override void ApplyDragType()
-        {
-            var active = DragPointEnabled && Transforming || Special;
-            ApplyProperties(active, active, GizmoEnabled && Rotating);
-            ApplyColours();
-        }
-
-        protected override void OnDestroy()
-        {
-            Destroy(MyGameObject);
-            base.OnDestroy();
+            foreach (var renderer in renderers)
+                renderer.shadowCastingMode = value ? ShadowCastingMode.On : ShadowCastingMode.Off;
         }
     }
 
-    public class PropInfo
+    public override void Set(Transform myObject)
     {
-        public enum PropType { Mod, MyRoom, Bg, Odogu }
+        base.Set(myObject);
 
-        public PropType Type { get; }
-        public string IconFile { get; set; }
-        public string Filename { get; set; }
-        public string SubFilename { get; set; }
-        public int MyRoomID { get; set; }
+        DefaultRotation = MyObject.rotation;
+        DefaultPosition = MyObject.position;
+        DefaultScale = MyObject.localScale;
+        renderers = new(MyObject.GetComponentsInChildren<Renderer>());
+    }
 
-        public PropInfo(PropType type) => Type = type;
+    public void AttachTo(Meido meido, AttachPoint point, bool keepWorldPosition = true)
+    {
+        var attachPoint = meido?.IKManager.GetAttachPointTransform(point);
 
-        public static PropInfo FromModItem(ModItem modItem) => new(PropType.Mod)
+        AttachPointInfo = meido is null ? AttachPointInfo.Empty : new(point, meido);
+
+        // TODO: Use transform.SetPositionAndRotation MyObject.position = position;
+        var position = MyObject.position;
+        var rotation = MyObject.rotation;
+        var scale = MyObject.localScale;
+
+        MyObject.transform.SetParent(attachPoint, keepWorldPosition);
+
+        if (keepWorldPosition)
         {
-            Filename = modItem.IsOfficialMod ? Path.GetFileName(modItem.MenuFile) : modItem.MenuFile,
-            SubFilename = modItem.BaseMenuFile
-        };
-
-        public static PropInfo FromMyRoom(MyRoomItem myRoomItem) => new(PropType.MyRoom)
+            MyObject.rotation = rotation;
+        }
+        else
         {
-            MyRoomID = myRoomItem.ID, Filename = myRoomItem.PrefabName
-        };
+            MyObject.localPosition = Vector3.zero;
+            MyObject.rotation = Quaternion.identity;
+        }
 
-        public static PropInfo FromBg(string name) => new(PropType.Bg) { Filename = name };
+        MyObject.localScale = scale;
 
-        public static PropInfo FromGameProp(string name) => new(PropType.Odogu) { Filename = name };
+        if (!attachPoint)
+            Utility.FixGameObjectScale(MyGameObject);
+    }
+
+    public void DetachFrom(bool keepWorldPosition = true) =>
+        AttachTo(null, AttachPoint.None, keepWorldPosition);
+
+    public void DetachTemporary()
+    {
+        MyObject.transform.SetParent(null, true);
+        Utility.FixGameObjectScale(MyGameObject);
+    }
+
+    protected override void ApplyDragType()
+    {
+        var active = DragPointEnabled && Transforming || Special;
+
+        ApplyProperties(active, active, GizmoEnabled && Rotating);
+        ApplyColours();
+    }
+
+    protected override void OnDestroy()
+    {
+        Destroy(MyGameObject);
+
+        base.OnDestroy();
     }
 }

@@ -1,112 +1,120 @@
 using System;
+
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+using Input = MeidoPhotoStudio.Plugin.InputManager;
+
+namespace MeidoPhotoStudio.Plugin;
+
+public class DragPointHead : DragPointMeido
 {
-    using Input = InputManager;
-    public class DragPointHead : DragPointMeido
+    private Quaternion headRotation;
+    private Vector3 eyeRotationL;
+    private Vector3 eyeRotationR;
+
+    public event EventHandler Select;
+
+    public bool IsIK { get; set; }
+
+    protected override void ApplyDragType()
     {
-        private Quaternion headRotation;
-        private Vector3 eyeRotationL;
-        private Vector3 eyeRotationR;
-        public event EventHandler Select;
-        public bool IsIK { get; set; }
-
-        protected override void ApplyDragType()
+        if (IsBone)
         {
-            if (IsBone)
-            {
-                DragType current = CurrentDragType;
-                bool active = current == DragType.MoveY || current == DragType.MoveXZ || current == DragType.Select;
-                ApplyProperties(active, false, false);
-            }
-            else ApplyProperties(CurrentDragType != DragType.None, false, false);
+            var current = CurrentDragType;
+            var active = current is DragType.MoveY or DragType.MoveXZ or DragType.Select;
+
+            ApplyProperties(active, false, false);
+        }
+        else
+        {
+            ApplyProperties(CurrentDragType is not DragType.None, false, false);
+        }
+    }
+
+    protected override void UpdateDragType()
+    {
+        var shift = Input.Shift;
+        var alt = Input.Alt;
+
+        if (alt && Input.Control)
+        {
+            // eyes
+            CurrentDragType = shift
+                ? DragType.MoveY
+                : DragType.MoveXZ;
+        }
+        else if (alt)
+        {
+            // head
+            CurrentDragType = shift
+                ? DragType.RotLocalY
+                : DragType.RotLocalXZ;
+        }
+        else
+        {
+            CurrentDragType = Input.GetKey(MpsKey.DragSelect)
+                ? DragType.Select
+                : DragType.None;
+        }
+    }
+
+    protected override void OnMouseDown()
+    {
+        base.OnMouseDown();
+
+        if (CurrentDragType is DragType.Select)
+            Select?.Invoke(this, EventArgs.Empty);
+
+        headRotation = MyObject.rotation;
+
+        eyeRotationL = meido.Body.quaDefEyeL.eulerAngles;
+        eyeRotationR = meido.Body.quaDefEyeR.eulerAngles;
+    }
+
+    protected override void OnDoubleClick()
+    {
+        if (CurrentDragType is DragType.MoveXZ or DragType.MoveY)
+        {
+            meido.Body.quaDefEyeL = meido.DefaultEyeRotL;
+            meido.Body.quaDefEyeR = meido.DefaultEyeRotR;
+        }
+        else if (CurrentDragType is DragType.RotLocalY or DragType.RotLocalXZ)
+        {
+            meido.FreeLook = !meido.FreeLook;
+        }
+    }
+
+    protected override void Drag()
+    {
+        if (IsIK || CurrentDragType is DragType.Select)
+            return;
+
+        if (CurrentDragType is not DragType.MoveXZ and not DragType.MoveY && isPlaying)
+            meido.Stop = true;
+
+        var mouseDelta = MouseDelta();
+
+        if (CurrentDragType is DragType.RotLocalXZ)
+        {
+            MyObject.rotation = headRotation;
+            MyObject.Rotate(camera.transform.forward, -mouseDelta.x / 3f, Space.World);
+            MyObject.Rotate(camera.transform.right, mouseDelta.y / 3f, Space.World);
         }
 
-        protected override void UpdateDragType()
+        if (CurrentDragType is DragType.RotLocalY)
         {
-            bool shift = Input.Shift;
-            bool alt = Input.Alt;
-            if (alt && Input.Control)
-            {
-                // eyes
-                CurrentDragType = shift ? DragType.MoveY : DragType.MoveXZ;
-            }
-            else if (alt)
-            {
-                // head
-                CurrentDragType = shift ? DragType.RotLocalY : DragType.RotLocalXZ;
-            }
-            else if (Input.GetKey(MpsKey.DragSelect))
-            {
-                CurrentDragType = DragType.Select;
-            }
-            else
-            {
-                CurrentDragType = DragType.None;
-            }
+            MyObject.rotation = headRotation;
+            MyObject.Rotate(Vector3.right * mouseDelta.x / 3f);
         }
 
-        protected override void OnMouseDown()
+        if (CurrentDragType is DragType.MoveXZ or DragType.MoveY)
         {
-            base.OnMouseDown();
+            var inv = CurrentDragType is DragType.MoveY ? -1 : 1;
 
-            if (CurrentDragType == DragType.Select) Select?.Invoke(this, EventArgs.Empty);
-
-            headRotation = MyObject.rotation;
-
-            eyeRotationL = meido.Body.quaDefEyeL.eulerAngles;
-            eyeRotationR = meido.Body.quaDefEyeR.eulerAngles;
-        }
-
-        protected override void OnDoubleClick()
-        {
-            if (CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY)
-            {
-                meido.Body.quaDefEyeL = meido.DefaultEyeRotL;
-                meido.Body.quaDefEyeR = meido.DefaultEyeRotR;
-            }
-            else if (CurrentDragType == DragType.RotLocalY || CurrentDragType == DragType.RotLocalXZ)
-            {
-                meido.FreeLook = !meido.FreeLook;
-            }
-        }
-
-        protected override void Drag()
-        {
-            if (IsIK || CurrentDragType == DragType.Select) return;
-
-            if (!(CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY) && isPlaying)
-            {
-                meido.Stop = true;
-            }
-
-            Vector3 mouseDelta = MouseDelta();
-
-            if (CurrentDragType == DragType.RotLocalXZ)
-            {
-                MyObject.rotation = headRotation;
-                MyObject.Rotate(camera.transform.forward, -mouseDelta.x / 3f, Space.World);
-                MyObject.Rotate(camera.transform.right, mouseDelta.y / 3f, Space.World);
-            }
-
-            if (CurrentDragType == DragType.RotLocalY)
-            {
-                MyObject.rotation = headRotation;
-                MyObject.Rotate(Vector3.right * mouseDelta.x / 3f);
-            }
-
-            if (CurrentDragType == DragType.MoveXZ || CurrentDragType == DragType.MoveY)
-            {
-                int inv = CurrentDragType == DragType.MoveY ? -1 : 1;
-
-                meido.Body.quaDefEyeL.eulerAngles = new Vector3(
-                    eyeRotationL.x, eyeRotationL.y - (mouseDelta.x / 10f), eyeRotationL.z - (mouseDelta.y / 10f)
-                );
-                meido.Body.quaDefEyeR.eulerAngles = new Vector3(
-                    eyeRotationR.x, eyeRotationR.y + (inv * mouseDelta.x / 10f), eyeRotationR.z + (mouseDelta.y / 10f)
-                );
-            }
+            meido.Body.quaDefEyeL.eulerAngles =
+                new(eyeRotationL.x, eyeRotationL.y - mouseDelta.x / 10f, eyeRotationL.z - mouseDelta.y / 10f);
+            meido.Body.quaDefEyeR.eulerAngles =
+                new(eyeRotationR.x, eyeRotationR.y + inv * mouseDelta.x / 10f, eyeRotationR.z + mouseDelta.y / 10f);
         }
     }
 }

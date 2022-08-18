@@ -1,168 +1,165 @@
 using System;
 using System.Globalization;
+
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class Slider : BaseControl
 {
-    public class Slider : BaseControl
+    private bool hasLabel;
+    private string label;
+    private float value;
+    private float left;
+    private float right;
+    private float defaultValue;
+    private string textFieldValue;
+    private bool hasTextField;
+
+    public Slider(string label, float left, float right, float value = 0, float defaultValue = 0)
     {
-        private bool hasLabel;
-        private string label;
-        public string Label
+        Label = label;
+        this.left = left;
+        this.right = right;
+        this.value = Utility.Bound(value, left, right);
+        textFieldValue = FormatValue(this.value);
+        DefaultValue = defaultValue;
+    }
+
+    public Slider(string label, SliderProp prop)
+        : this(label, prop.Left, prop.Right, prop.Initial, prop.Default)
+    {
+    }
+
+    public Slider(SliderProp prop)
+        : this(string.Empty, prop.Left, prop.Right, prop.Initial, prop.Default)
+    {
+    }
+
+    public bool HasReset { get; set; }
+
+    public string Label
+    {
+        get => label;
+        set
         {
-            get => label;
-            set
-            {
-                label = value;
-                hasLabel = !string.IsNullOrEmpty(label);
-            }
+            label = value;
+            hasLabel = !string.IsNullOrEmpty(label);
         }
+    }
 
-        private float value;
-
-        public float Value
+    public float Value
+    {
+        get => value;
+        set
         {
-            get => value;
-            set
-            {
-                this.value = Utility.Bound(value, Left, Right);
-                if (hasTextField) textFieldValue = FormatValue(value);
-                OnControlEvent(EventArgs.Empty);
-            }
+            this.value = Utility.Bound(value, Left, Right);
+
+            if (hasTextField)
+                textFieldValue = FormatValue(value);
+
+            OnControlEvent(EventArgs.Empty);
         }
+    }
 
-        private float left;
-
-        public float Left
+    public float Left
+    {
+        get => left;
+        set
         {
-            get => left;
-            set
-            {
-                left = value;
-                this.value = Utility.Bound(value, left, right);
-            }
-        }
-
-        private float right;
-
-        public float Right
-        {
-            get => right;
-            set
-            {
-                right = value;
-                this.value = Utility.Bound(value, left, right);
-            }
-        }
-        private float defaultValue;
-        public float DefaultValue
-        {
-            get => defaultValue;
-            set => defaultValue = Utility.Bound(value, Left, Right);
-        }
-
-        private string textFieldValue;
-        private bool hasTextField;
-        public bool HasTextField
-        {
-            get => hasTextField;
-            set
-            {
-                hasTextField = value;
-                if (hasTextField) textFieldValue = FormatValue(Value);
-            }
-        }
-        public bool HasReset { get; set; }
-
-        public Slider(string label, float left, float right, float value = 0, float defaultValue = 0)
-        {
-            Label = label;
-            this.left = left;
-            this.right = right;
+            left = value;
             this.value = Utility.Bound(value, left, right);
-            textFieldValue = FormatValue(this.value);
-            DefaultValue = defaultValue;
         }
+    }
 
-        public Slider(string label, SliderProp prop) : this(label, prop.Left, prop.Right, prop.Initial, prop.Default) { }
-
-        public Slider(SliderProp prop) : this(string.Empty, prop.Left, prop.Right, prop.Initial, prop.Default) { }
-
-        public void SetBounds(float left, float right)
+    public float Right
+    {
+        get => right;
+        set
         {
-            this.left = left;
-            this.right = right;
-            value = Utility.Bound(value, left, right);
+            right = value;
+            this.value = Utility.Bound(value, left, right);
         }
+    }
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
+    public float DefaultValue
+    {
+        get => defaultValue;
+        set => defaultValue = Utility.Bound(value, Left, Right);
+    }
+
+    public bool HasTextField
+    {
+        get => hasTextField;
+        set
         {
-            var hasUpper = hasLabel || HasTextField || HasReset;
+            hasTextField = value;
 
-            var tempText = string.Empty;
+            if (hasTextField)
+                textFieldValue = FormatValue(Value);
+        }
+    }
 
-            if (hasUpper)
+    public override void Draw(params GUILayoutOption[] layoutOptions)
+    {
+        var hasUpper = hasLabel || HasTextField || HasReset;
+        var tempText = string.Empty;
+
+        if (hasUpper)
+        {
+            GUILayout.BeginVertical(GUILayout.ExpandWidth(false));
+            GUILayout.BeginHorizontal();
+
+            if (hasLabel)
             {
-                GUILayout.BeginVertical(GUILayout.ExpandWidth(false));
-                GUILayout.BeginHorizontal();
-
-                if (hasLabel)
-                {
-                    GUILayout.Label(Label, MpsGui.SliderLabelStyle, GUILayout.ExpandWidth(false));
-                    GUILayout.FlexibleSpace();
-                }
-
-                if (HasTextField)
-                {
-                    tempText = GUILayout.TextField(textFieldValue, MpsGui.SliderTextBoxStyle, GUILayout.Width(60f));
-                }
-
-                if (HasReset && GUILayout.Button("|", MpsGui.SliderResetButtonStyle, GUILayout.Width(15f)))
-                {
-                    Value = DefaultValue;
-                    tempText = textFieldValue = FormatValue(Value);
-                }
-                GUILayout.EndHorizontal();
+                GUILayout.Label(Label, MpsGui.SliderLabelStyle, GUILayout.ExpandWidth(false));
+                GUILayout.FlexibleSpace();
             }
-
-            GUIStyle sliderStyle = hasUpper ? MpsGui.SliderStyle : MpsGui.SliderStyleNoLabel;
-
-            var tempValue = GUILayout.HorizontalSlider(
-                Value, Left, Right, sliderStyle, MpsGui.SliderThumbStyle, layoutOptions
-            );
-
-            if (hasUpper) GUILayout.EndVertical();
 
             if (HasTextField)
-            {
-                if (tempValue != Value) tempText = textFieldValue = FormatValue(tempValue);
+                tempText = GUILayout.TextField(textFieldValue, MpsGui.SliderTextBoxStyle, GUILayout.Width(60f));
 
-                if (tempText != textFieldValue)
-                {
-                    textFieldValue = tempText;
-                    if (float.TryParse(tempText, out var newValue)) tempValue = newValue;
-                }
+            if (HasReset && GUILayout.Button("|", MpsGui.SliderResetButtonStyle, GUILayout.Width(15f)))
+            {
+                Value = DefaultValue;
+                tempText = textFieldValue = FormatValue(Value);
             }
 
-            if (tempValue != Value) Value = tempValue;
+            GUILayout.EndHorizontal();
         }
 
-        private static string FormatValue(float value) => value.ToString("0.####", CultureInfo.InvariantCulture);
-    }
+        var sliderStyle = hasUpper ? MpsGui.SliderStyle : MpsGui.SliderStyleNoLabel;
+        var tempValue =
+            GUILayout.HorizontalSlider(Value, Left, Right, sliderStyle, MpsGui.SliderThumbStyle, layoutOptions);
 
-    public readonly struct SliderProp
-    {
-        public float Left { get; }
-        public float Right { get; }
-        public float Initial { get; }
-        public float Default { get; }
+        if (hasUpper)
+            GUILayout.EndVertical();
 
-        public SliderProp(float left, float right, float initial = 0f, float @default = 0f)
+        if (HasTextField)
         {
-            Left = left;
-            Right = right;
-            Initial = Utility.Bound(initial, left, right);
-            Default = Utility.Bound(@default, left, right);
+            if (tempValue != Value)
+                tempText = textFieldValue = FormatValue(tempValue);
+
+            if (tempText != textFieldValue)
+            {
+                textFieldValue = tempText;
+
+                if (float.TryParse(tempText, out var newValue))
+                    tempValue = newValue;
+            }
         }
+
+        if (tempValue != Value)
+            Value = tempValue;
     }
+
+    public void SetBounds(float left, float right)
+    {
+        this.left = left;
+        this.right = right;
+        value = Utility.Bound(value, left, right);
+    }
+
+    private static string FormatValue(float value) =>
+        value.ToString("0.####", CultureInfo.InvariantCulture);
 }

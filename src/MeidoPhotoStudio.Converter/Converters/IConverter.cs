@@ -1,7 +1,6 @@
-﻿namespace MeidoPhotoStudio.Converter.Converters
+namespace MeidoPhotoStudio.Converter.Converters;
+
+public interface IConverter
 {
-    public interface IConverter
-    {
-        void Convert(string workingDirectory);
-    }
+    void Convert(string workingDirectory);
 }

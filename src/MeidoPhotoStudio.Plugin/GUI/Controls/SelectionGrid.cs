@@ -1,102 +1,118 @@
 using System;
+
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class SelectionGrid : BaseControl
 {
-    public class SelectionGrid : BaseControl
+    private SimpleToggle[] toggles;
+    private int selectedItemIndex;
+
+    public SelectionGrid(string[] items, int selected = 0)
     {
-        private SimpleToggle[] toggles;
-        private int selectedItemIndex;
-        public int SelectedItemIndex
-        {
-            get => selectedItemIndex;
-            set
-            {
-                selectedItemIndex = Mathf.Clamp(value, 0, toggles.Length - 1);
-                foreach (SimpleToggle toggle in toggles)
-                {
-                    toggle.value = toggle.toggleIndex == selectedItemIndex;
-                }
-                OnControlEvent(EventArgs.Empty);
-            }
-        }
+        selectedItemIndex = Mathf.Clamp(selected, 0, items.Length - 1);
+        toggles = MakeToggles(items);
+    }
 
-        public SelectionGrid(string[] items, int selected = 0)
+    public int SelectedItemIndex
+    {
+        get => selectedItemIndex;
+        set
         {
-            selectedItemIndex = Mathf.Clamp(selected, 0, items.Length - 1);
+            selectedItemIndex = Mathf.Clamp(value, 0, toggles.Length - 1);
+
+            foreach (var toggle in toggles)
+                toggle.Value = toggle.ToggleIndex == selectedItemIndex;
+
+            OnControlEvent(EventArgs.Empty);
+        }
+    }
+
+    public override void Draw(params GUILayoutOption[] layoutOptions)
+    {
+        GUILayout.BeginHorizontal();
+
+        foreach (var toggle in toggles)
+            toggle.Draw(layoutOptions);
+
+        GUILayout.EndHorizontal();
+    }
+
+    public void SetItems(string[] items, int selectedItemIndex = -1)
+    {
+        if (selectedItemIndex < 0)
+            selectedItemIndex = SelectedItemIndex;
+
+        if (items.Length != toggles.Length)
             toggles = MakeToggles(items);
-        }
-
-        private SimpleToggle[] MakeToggles(string[] items)
-        {
-            SimpleToggle[] toggles = new SimpleToggle[items.Length];
-            for (int i = 0; i < items.Length; i++)
+        else
+            for (var i = 0; i < items.Length; i++)
             {
-                SimpleToggle toggle = new SimpleToggle(items[i], i == SelectedItemIndex) { toggleIndex = i };
-                toggle.ControlEvent += (s, a) =>
-                {
-                    int value = (s as SimpleToggle).toggleIndex;
-                    if (value != SelectedItemIndex) SelectedItemIndex = value;
-                };
-                toggles[i] = toggle;
+                var item = items[i];
+
+                toggles[i].Value = i == SelectedItemIndex;
+                toggles[i].Label = item;
             }
-            return toggles;
+
+        SelectedItemIndex = Mathf.Clamp(selectedItemIndex, 0, items.Length - 1);
+    }
+
+    private SimpleToggle[] MakeToggles(string[] items)
+    {
+        var toggles = new SimpleToggle[items.Length];
+
+        for (var i = 0; i < items.Length; i++)
+        {
+            var toggle = new SimpleToggle(items[i], i == SelectedItemIndex)
+            {
+                ToggleIndex = i,
+            };
+
+            toggle.ControlEvent += (sender, _) =>
+            {
+                var value = (sender as SimpleToggle).ToggleIndex;
+
+                if (value != SelectedItemIndex)
+                    SelectedItemIndex = value;
+            };
+
+            toggles[i] = toggle;
         }
 
-        public void SetItems(string[] items, int selectedItemIndex = -1)
+        return toggles;
+    }
+
+    private class SimpleToggle
+    {
+        public int ToggleIndex;
+        public bool Value;
+        public string Label;
+
+        public SimpleToggle(string label, bool value = false)
         {
-            if (selectedItemIndex < 0) selectedItemIndex = SelectedItemIndex;
-            if (items.Length != toggles.Length)
+            Label = label;
+            Value = value;
+        }
+
+        public event EventHandler ControlEvent;
+
+        public void Draw(params GUILayoutOption[] layoutOptions)
+        {
+            var value = GUILayout.Toggle(Value, Label, layoutOptions);
+
+            if (value == Value)
+                return;
+
+            if (!value)
             {
-                toggles = MakeToggles(items);
+                Value = true;
             }
             else
             {
-                for (int i = 0; i < items.Length; i++)
-                {
-                    string item = items[i];
-                    toggles[i].value = i == SelectedItemIndex;
-                    toggles[i].label = item;
-                }
-            }
-            SelectedItemIndex = Mathf.Clamp(selectedItemIndex, 0, items.Length - 1);
-        }
+                Value = value;
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
-        {
-            GUILayout.BeginHorizontal();
-            foreach (SimpleToggle toggle in toggles)
-            {
-                toggle.Draw(layoutOptions);
-            }
-            GUILayout.EndHorizontal();
-        }
-
-        private class SimpleToggle
-        {
-            public int toggleIndex;
-            public bool value;
-            public string label;
-            public event EventHandler ControlEvent;
-
-            public SimpleToggle(string label, bool value = false)
-            {
-                this.label = label;
-                this.value = value;
-            }
-
-            public void Draw(params GUILayoutOption[] layoutOptions)
-            {
-                bool value = GUILayout.Toggle(this.value, label, layoutOptions);
-                if (value != this.value)
-                {
-                    if (!value) this.value = true;
-                    else
-                    {
-                        this.value = value;
-                        ControlEvent?.Invoke(this, EventArgs.Empty);
-                    }
-                }
+                ControlEvent?.Invoke(this, EventArgs.Empty);
             }
         }
     }

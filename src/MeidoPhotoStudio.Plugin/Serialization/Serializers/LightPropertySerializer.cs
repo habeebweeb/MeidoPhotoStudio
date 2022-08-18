@@ -1,33 +1,32 @@
-﻿using System.IO;
+using System.IO;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class LightPropertySerializer : Serializer<LightProperty>
 {
-    public class LightPropertySerializer : Serializer<LightProperty>
+    private const short Version = 1;
+
+    public override void Serialize(LightProperty prop, BinaryWriter writer)
     {
-        private const short version = 1;
+        writer.WriteVersion(Version);
 
-        public override void Serialize(LightProperty prop, BinaryWriter writer)
-        {
-            writer.WriteVersion(version);
+        writer.Write(prop.Rotation);
+        writer.Write(prop.Intensity);
+        writer.Write(prop.Range);
+        writer.Write(prop.SpotAngle);
+        writer.Write(prop.ShadowStrength);
+        writer.Write(prop.LightColour);
+    }
 
-            writer.Write(prop.Rotation);
-            writer.Write(prop.Intensity);
-            writer.Write(prop.Range);
-            writer.Write(prop.SpotAngle);
-            writer.Write(prop.ShadowStrength);
-            writer.Write(prop.LightColour);
-        }
+    public override void Deserialize(LightProperty prop, BinaryReader reader, SceneMetadata metadata)
+    {
+        _ = reader.ReadVersion();
 
-        public override void Deserialize(LightProperty prop, BinaryReader reader, SceneMetadata metadata)
-        {
-            _ = reader.ReadVersion();
-
-            prop.Rotation = reader.ReadQuaternion();
-            prop.Intensity = reader.ReadSingle();
-            prop.Range = reader.ReadSingle();
-            prop.SpotAngle = reader.ReadSingle();
-            prop.ShadowStrength = reader.ReadSingle();
-            prop.LightColour = reader.ReadColour();
-        }
+        prop.Rotation = reader.ReadQuaternion();
+        prop.Intensity = reader.ReadSingle();
+        prop.Range = reader.ReadSingle();
+        prop.SpotAngle = reader.ReadSingle();
+        prop.ShadowStrength = reader.ReadSingle();
+        prop.LightColour = reader.ReadColour();
     }
 }

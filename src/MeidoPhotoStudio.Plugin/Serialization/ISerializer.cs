@@ -1,10 +1,10 @@
-﻿using System.IO;
+using System.IO;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public interface ISerializer
 {
-    public interface ISerializer
-    {
-        void Serialize(object thing, BinaryWriter writer);
-        void Deserialize(object thing, BinaryReader reader, SceneMetadata metadata);
-    }
+    void Serialize(object thing, BinaryWriter writer);
+
+    void Deserialize(object thing, BinaryReader reader, SceneMetadata metadata);
 }

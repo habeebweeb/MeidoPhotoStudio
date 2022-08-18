@@ -1,55 +1,33 @@
-﻿using System.IO;
-using UnityEngine;
+using System.IO;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class TransformDTOSerializer : SimpleSerializer<TransformDTO>
 {
-    public class TransformDTOSerializer : SimpleSerializer<TransformDTO>
+    private const short Version = 1;
+
+    public override void Serialize(TransformDTO transform, BinaryWriter writer)
     {
-        private const short version = 1;
+        writer.WriteVersion(Version);
 
-        public override void Serialize(TransformDTO transform, BinaryWriter writer)
-        {
-            writer.WriteVersion(version);
-
-            writer.Write(transform.Position);
-            writer.Write(transform.Rotation);
-            writer.Write(transform.LocalPosition);
-            writer.Write(transform.LocalRotation);
-            writer.Write(transform.LocalScale);
-        }
-
-        public override TransformDTO Deserialize(BinaryReader reader, SceneMetadata metadata)
-        {
-            _ = reader.ReadVersion();
-
-            return new TransformDTO
-            {
-                Position = reader.ReadVector3(),
-                Rotation = reader.ReadQuaternion(),
-                LocalPosition = reader.ReadVector3(),
-                LocalRotation = reader.ReadQuaternion(),
-                LocalScale = reader.ReadVector3()
-            };
-        }
+        writer.Write(transform.Position);
+        writer.Write(transform.Rotation);
+        writer.Write(transform.LocalPosition);
+        writer.Write(transform.LocalRotation);
+        writer.Write(transform.LocalScale);
     }
 
-    public class TransformDTO
+    public override TransformDTO Deserialize(BinaryReader reader, SceneMetadata metadata)
     {
-        public Vector3 Position { get; set; }
-        public Vector3 LocalPosition { get; set; }
-        public Quaternion Rotation { get; set; } = Quaternion.identity;
-        public Quaternion LocalRotation { get; set; } = Quaternion.identity;
-        public Vector3 LocalScale { get; set; } = Vector3.one;
+        _ = reader.ReadVersion();
 
-        public TransformDTO() { }
-
-        public TransformDTO(Transform transform)
+        return new TransformDTO
         {
-            Position = transform.position;
-            LocalPosition = transform.localPosition;
-            Rotation = transform.rotation;
-            LocalRotation = transform.localRotation;
-            LocalScale = transform.localScale;
-        }
+            Position = reader.ReadVector3(),
+            Rotation = reader.ReadQuaternion(),
+            LocalPosition = reader.ReadVector3(),
+            LocalRotation = reader.ReadQuaternion(),
+            LocalScale = reader.ReadVector3(),
+        };
     }
 }

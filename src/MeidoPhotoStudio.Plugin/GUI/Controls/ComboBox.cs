@@ -1,47 +1,57 @@
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class ComboBox : BaseControl
 {
-    public class ComboBox : BaseControl
+    private readonly TextField textField = new();
+
+    public ComboBox(string[] itemList)
     {
-        private readonly TextField textField = new TextField();
-        public Dropdown BaseDropDown { get; }
-        public string Value
+        BaseDropDown = new("▾", itemList);
+        BaseDropDown.SelectionChange += (_, _) =>
+            textField.Value = BaseDropDown.SelectedItem;
+
+        Value = itemList[0];
+    }
+
+    public Dropdown BaseDropDown { get; }
+
+    public string Value
+    {
+        get => textField.Value;
+        set => textField.Value = value;
+    }
+
+    public override void Draw(params GUILayoutOption[] layoutOptions)
+    {
+        var buttonStyle = new GUIStyle(GUI.skin.button)
         {
-            get => textField.Value;
-            set => textField.Value = value;
-        }
+            alignment = TextAnchor.MiddleCenter,
+        };
 
-        public ComboBox(string[] itemList)
-        {
-            BaseDropDown = new Dropdown("▾", itemList);
-            BaseDropDown.SelectionChange += (s, a) => textField.Value = BaseDropDown.SelectedItem;
-            Value = itemList[0];
-        }
+        Draw(buttonStyle, layoutOptions);
+    }
 
-        public void SetDropdownItems(string[] itemList)
-        {
-            string oldValue = Value;
-            BaseDropDown.SetDropdownItems(itemList);
-            Value = oldValue;
-        }
+    public void SetDropdownItems(string[] itemList)
+    {
+        var oldValue = Value;
 
-        public void SetDropdownItem(int index, string newItem) => BaseDropDown.SetDropdownItem(index, newItem);
+        BaseDropDown.SetDropdownItems(itemList);
+        Value = oldValue;
+    }
 
-        public void SetDropdownItem(string newItem) => BaseDropDown.SetDropdownItem(newItem);
+    public void SetDropdownItem(int index, string newItem) =>
+        BaseDropDown.SetDropdownItem(index, newItem);
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
-        {
-            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button) { alignment = TextAnchor.MiddleCenter };
-            Draw(buttonStyle, layoutOptions);
-        }
+    public void SetDropdownItem(string newItem) =>
+        BaseDropDown.SetDropdownItem(newItem);
 
-        public void Draw(GUIStyle style, params GUILayoutOption[] layoutOptions)
-        {
-            GUILayout.BeginHorizontal();
-            textField.Draw(new GUIStyle(GUI.skin.textField), layoutOptions);
-            BaseDropDown.Draw(style, GUILayout.ExpandWidth(false));
-            GUILayout.EndHorizontal();
-        }
+    public void Draw(GUIStyle style, params GUILayoutOption[] layoutOptions)
+    {
+        GUILayout.BeginHorizontal();
+        textField.Draw(new(GUI.skin.textField), layoutOptions);
+        BaseDropDown.Draw(style, GUILayout.ExpandWidth(false));
+        GUILayout.EndHorizontal();
     }
 }

@@ -1,34 +1,34 @@
-﻿using System.IO;
+using System.IO;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class BloomEffectSerializer : Serializer<BloomEffectManager>
 {
-    public class BloomEffectSerializer : Serializer<BloomEffectManager>
+    private const short Version = 1;
+
+    public override void Serialize(BloomEffectManager effect, BinaryWriter writer)
     {
-        private const short version = 1;
+        writer.Write(BloomEffectManager.Header);
+        writer.WriteVersion(Version);
 
-        public override void Serialize(BloomEffectManager effect, BinaryWriter writer)
-        {
-            writer.Write(BloomEffectManager.header);
-            writer.WriteVersion(version);
+        writer.Write(effect.Active);
+        writer.Write(effect.BloomValue);
+        writer.Write(effect.BlurIterations);
+        writer.Write(effect.BloomThresholdColour);
+        writer.Write(effect.BloomHDR);
+    }
 
-            writer.Write(effect.Active);
-            writer.Write(effect.BloomValue);
-            writer.Write(effect.BlurIterations);
-            writer.Write(effect.BloomThresholdColour);
-            writer.Write(effect.BloomHDR);
-        }
+    public override void Deserialize(BloomEffectManager effect, BinaryReader reader, SceneMetadata metadata)
+    {
+        _ = reader.ReadVersion();
 
-        public override void Deserialize(BloomEffectManager effect, BinaryReader reader, SceneMetadata metadata)
-        {
-            _ = reader.ReadVersion();
+        var active = reader.ReadBoolean();
 
-            var active = reader.ReadBoolean();
-            effect.BloomValue = reader.ReadSingle();
-            effect.BlurIterations = reader.ReadInt32();
-            effect.BloomThresholdColour = reader.ReadColour();
-            effect.BloomHDR = reader.ReadBoolean();
+        effect.BloomValue = reader.ReadSingle();
+        effect.BlurIterations = reader.ReadInt32();
+        effect.BloomThresholdColour = reader.ReadColour();
+        effect.BloomHDR = reader.ReadBoolean();
 
-            effect.SetEffectActive(active);
-        }
+        effect.SetEffectActive(active);
     }
 }

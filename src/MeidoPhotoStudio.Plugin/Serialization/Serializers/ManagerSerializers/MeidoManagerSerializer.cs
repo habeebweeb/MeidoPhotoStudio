@@ -1,86 +1,93 @@
-﻿using System.Collections.Generic;
 using System.IO;
+
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class MeidoManagerSerializer : Serializer<MeidoManager>
 {
-    public class MeidoManagerSerializer : Serializer<MeidoManager>
+    private const short Version = 1;
+
+    private static Serializer<Meido> MeidoSerializer =>
+        Serialization.Get<Meido>();
+
+    public override void Serialize(MeidoManager manager, BinaryWriter writer)
     {
-        private const short version = 1;
-        private static Serializer<Meido> MeidoSerializer => Serialization.Get<Meido>();
+        writer.Write(MeidoManager.Header);
+        writer.WriteVersion(Version);
 
-        public override void Serialize(MeidoManager manager, BinaryWriter writer)
+        var meidoList = manager.ActiveMeidoList;
+
+        var meidoCount = meidoList.Count;
+
+        var hairPosition = Vector3.zero;
+        var skirtPosition = Vector3.zero;
+
+        var hairMeidoFound = false;
+        var skirtMeidoFound = false;
+
+        var globalGravity = manager.GlobalGravity;
+
+        writer.Write(meidoCount);
+
+        foreach (var meido in meidoList)
         {
-            writer.Write(MeidoManager.header);
-            writer.WriteVersion(version);
+            MeidoSerializer.Serialize(meido, writer);
 
-            List<Meido> meidoList = manager.ActiveMeidoList;
+            if (!globalGravity || meidoCount <= 0)
+                continue;
 
-            var meidoCount = meidoList.Count;
-
-            var hairPosition = Vector3.zero;
-            var skirtPosition = Vector3.zero;
-
-            var hairMeidoFound = false;
-            var skirtMeidoFound = false;
-
-            var globalGravity = manager.GlobalGravity;
-
-            writer.Write(meidoCount);
-            foreach (var meido in meidoList)
+            // Get gravity and skirt control positions to apply to meidos past the meido count
+            if (!hairMeidoFound && meido.HairGravityControl.Valid)
             {
-                MeidoSerializer.Serialize(meido, writer);
-
-                if (!globalGravity || meidoCount <= 0) continue;
-
-                // Get gravity and skirt control positions to apply to meidos past the meido count
-                if (!hairMeidoFound && meido.HairGravityControl.Valid)
-                {
-                    hairPosition = meido.HairGravityControl.Control.transform.localPosition;
-                    hairMeidoFound = true;
-                }
-                else if (!skirtMeidoFound && meido.SkirtGravityControl.Valid)
-                {
-                    skirtPosition = meido.SkirtGravityControl.Control.transform.localPosition;
-                    skirtMeidoFound = true;
-                }
+                hairPosition = meido.HairGravityControl.Control.transform.localPosition;
+                hairMeidoFound = true;
             }
-
-            writer.Write(globalGravity);
-            writer.Write(hairPosition);
-            writer.Write(skirtPosition);
+            else if (!skirtMeidoFound && meido.SkirtGravityControl.Valid)
+            {
+                skirtPosition = meido.SkirtGravityControl.Control.transform.localPosition;
+                skirtMeidoFound = true;
+            }
         }
 
-        public override void Deserialize(MeidoManager manager, BinaryReader reader, SceneMetadata metadata)
+        writer.Write(globalGravity);
+        writer.Write(hairPosition);
+        writer.Write(skirtPosition);
+    }
+
+    public override void Deserialize(MeidoManager manager, BinaryReader reader, SceneMetadata metadata)
+    {
+        _ = reader.ReadVersion();
+
+        var meidoCount = reader.ReadInt32();
+
+        for (var i = 0; i < meidoCount; i++)
         {
-            _ = reader.ReadVersion();
-
-            var meidoCount = reader.ReadInt32();
-            for (var i = 0; i < meidoCount; i++)
+            if (i >= manager.ActiveMeidoList.Count)
             {
-                if (i >= manager.ActiveMeidoList.Count)
-                {
-                    reader.BaseStream.Seek(reader.ReadInt64(), SeekOrigin.Current);
-                    continue;
-                }
+                reader.BaseStream.Seek(reader.ReadInt64(), SeekOrigin.Current);
 
-                MeidoSerializer.Deserialize(manager.ActiveMeidoList[i], reader, metadata);
+                continue;
             }
 
-            var globalGravity = reader.ReadBoolean();
-            var hairPosition = reader.ReadVector3();
-            var skirtPosition = reader.ReadVector3();
-            Utility.SetFieldValue(manager, "globalGravity", globalGravity);
+            MeidoSerializer.Deserialize(manager.ActiveMeidoList[i], reader, metadata);
+        }
 
-            if (!globalGravity) return;
+        var globalGravity = reader.ReadBoolean();
+        var hairPosition = reader.ReadVector3();
+        var skirtPosition = reader.ReadVector3();
 
-            foreach (var meido in manager.ActiveMeidoList)
-            {
-                meido.HairGravityActive = true;
-                meido.SkirtGravityActive = true;
-                meido.ApplyGravity(hairPosition);
-                meido.ApplyGravity(skirtPosition, true);
-            }
+        Utility.SetFieldValue(manager, "globalGravity", globalGravity);
+
+        if (!globalGravity)
+            return;
+
+        foreach (var meido in manager.ActiveMeidoList)
+        {
+            meido.HairGravityActive = true;
+            meido.SkirtGravityActive = true;
+            meido.ApplyGravity(hairPosition);
+            meido.ApplyGravity(skirtPosition, true);
         }
     }
 }

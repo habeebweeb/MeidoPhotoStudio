@@ -1,39 +1,43 @@
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public static class Modal
 {
-    public static class Modal
+    private static BaseWindow currentModal;
+
+    public static bool Visible
     {
-        private static BaseWindow currentModal;
-        public static bool Visible
+        get => currentModal?.Visible ?? false;
+        set
         {
-            get => currentModal?.Visible ?? false;
-            set
-            {
-                if (currentModal == null) return;
-                currentModal.Visible = value;
-            }
-        }
+            if (currentModal is null)
+                return;
 
-        public static void Show(BaseWindow modalWindow)
-        {
-            if (currentModal != null) Close();
-            currentModal = modalWindow;
-            Visible = true;
+            currentModal.Visible = value;
         }
+    }
 
-        public static void Close()
-        {
-            Visible = false;
-            currentModal = null;
-        }
+    public static void Show(BaseWindow modalWindow)
+    {
+        if (currentModal is not null)
+            Close();
 
-        public static void Draw()
-        {
-            GUIStyle windowStyle = new GUIStyle(GUI.skin.box);
-            currentModal.WindowRect = GUI.ModalWindow(
-                currentModal.windowID, currentModal.WindowRect, currentModal.GUIFunc, "", windowStyle
-            );
-        }
+        currentModal = modalWindow;
+        Visible = true;
+    }
+
+    public static void Close()
+    {
+        Visible = false;
+        currentModal = null;
+    }
+
+    public static void Draw()
+    {
+        var windowStyle = new GUIStyle(GUI.skin.box);
+
+        currentModal.WindowRect =
+            GUI.ModalWindow(currentModal.WindowID, currentModal.WindowRect, currentModal.GUIFunc, string.Empty, windowStyle);
     }
 }

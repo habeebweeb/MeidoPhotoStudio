@@ -1,32 +1,42 @@
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class SepiaToneEffectManager : IEffectManager
 {
-    public class SepiaToneEffectManger : IEffectManager
+    public const string Header = "EFFECT_SEPIA";
+
+    public bool Ready { get; private set; }
+
+    public bool Active { get; private set; }
+
+    private SepiaToneEffect SepiaTone { get; set; }
+
+    public void Activate()
     {
-        public const string header = "EFFECT_SEPIA";
-        private SepiaToneEffect SepiaTone { get; set; }
-        public bool Ready { get; private set; }
-        public bool Active { get; private set; }
-
-        public void Activate()
+        if (!SepiaTone)
         {
-            if (SepiaTone == null)
-            {
-                Ready = true;
-                SepiaTone = GameMain.Instance.MainCamera.GetOrAddComponent<SepiaToneEffect>();
+            Ready = true;
+            SepiaTone = GameMain.Instance.MainCamera.GetOrAddComponent<SepiaToneEffect>();
 
-                if (SepiaTone.shader == null) SepiaTone.shader = Shader.Find("Hidden/Sepiatone Effect");
-            }
-            SetEffectActive(false);
+            if (!SepiaTone.shader)
+                SepiaTone.shader = Shader.Find("Hidden/Sepiatone Effect");
         }
 
-        public void Deactivate() => SetEffectActive(false);
+        SetEffectActive(false);
+    }
 
-        public void SetEffectActive(bool active) => SepiaTone.enabled = Active = active;
+    public void Deactivate() =>
+        SetEffectActive(false);
 
-        public void Reset() { }
+    public void SetEffectActive(bool active) =>
+        SepiaTone.enabled = Active = active;
 
-        public void Update() { }
+    public void Reset()
+    {
+    }
+
+    public void Update()
+    {
     }
 }

@@ -1,72 +1,84 @@
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class VignettePane : EffectPane<VignetteEffectManager>
 {
-    public class VignettePane : EffectPane<VignetteEffectManager>
+    private readonly Slider intensitySlider;
+    private readonly Slider blurSlider;
+    private readonly Slider blurSpreadSlider;
+    private readonly Slider aberrationSlider;
+
+    public VignettePane(EffectManager effectManager)
+        : base(effectManager)
     {
-        protected override VignetteEffectManager EffectManager { get; set; }
-        private readonly Slider intensitySlider;
-        private readonly Slider blurSlider;
-        private readonly Slider blurSpreadSlider;
-        private readonly Slider aberrationSlider;
-
-        public VignettePane(EffectManager effectManager) : base(effectManager)
+        intensitySlider = new(Translation.Get("effectVignette", "intensity"), -40f, 70f);
+        intensitySlider.ControlEvent += (_, _) =>
         {
-            intensitySlider = new Slider(Translation.Get("effectVignette", "intensity"), -40f, 70f);
-            intensitySlider.ControlEvent += (s, a) =>
-            {
-                if (updating) return;
-                EffectManager.Intensity = intensitySlider.Value;
-            };
-            blurSlider = new Slider(Translation.Get("effectVignette", "blur"), 0f, 5f);
-            blurSlider.ControlEvent += (s, a) =>
-            {
-                if (updating) return;
-                EffectManager.Blur = blurSlider.Value;
-            };
-            blurSpreadSlider = new Slider(Translation.Get("effectVignette", "blurSpread"), 0f, 40f);
-            blurSpreadSlider.ControlEvent += (s, a) =>
-            {
-                if (updating) return;
-                EffectManager.BlurSpread = blurSpreadSlider.Value;
-            };
-            aberrationSlider = new Slider(Translation.Get("effectVignette", "aberration"), -30f, 30f);
-            aberrationSlider.ControlEvent += (s, a) =>
-            {
-                if (updating) return;
-                EffectManager.ChromaticAberration = aberrationSlider.Value;
-            };
-        }
+            if (updating)
+                return;
 
-        protected override void TranslatePane()
+            EffectManager.Intensity = intensitySlider.Value;
+        };
+
+        blurSlider = new(Translation.Get("effectVignette", "blur"), 0f, 5f);
+        blurSlider.ControlEvent += (_, _) =>
         {
-            intensitySlider.Label = Translation.Get("effectVignette", "intensity");
-            blurSlider.Label = Translation.Get("effectVignette", "blur");
-            blurSpreadSlider.Label = Translation.Get("effectVignette", "blurSpread");
-            aberrationSlider.Label = Translation.Get("effectVignette", "aberration");
-        }
+            if (updating)
+                return;
 
-        protected override void UpdateControls()
+            EffectManager.Blur = blurSlider.Value;
+        };
+
+        blurSpreadSlider = new(Translation.Get("effectVignette", "blurSpread"), 0f, 40f);
+        blurSpreadSlider.ControlEvent += (_, _) =>
         {
-            intensitySlider.Value = EffectManager.Intensity;
-            blurSlider.Value = EffectManager.Blur;
-            blurSpreadSlider.Value = EffectManager.BlurSpread;
-            aberrationSlider.Value = EffectManager.ChromaticAberration;
-        }
+            if (updating)
+                return;
 
-        protected override void DrawPane()
+            EffectManager.BlurSpread = blurSpreadSlider.Value;
+        };
+
+        aberrationSlider = new(Translation.Get("effectVignette", "aberration"), -30f, 30f);
+        aberrationSlider.ControlEvent += (_, _) =>
         {
-            GUILayoutOption sliderWidth = MpsGui.HalfSlider;
+            if (updating)
+                return;
 
-            GUILayout.BeginHorizontal();
-            intensitySlider.Draw(sliderWidth);
-            blurSlider.Draw(sliderWidth);
-            GUILayout.EndHorizontal();
+            EffectManager.ChromaticAberration = aberrationSlider.Value;
+        };
+    }
 
-            GUILayout.BeginHorizontal();
-            blurSpreadSlider.Draw(sliderWidth);
-            aberrationSlider.Draw(sliderWidth);
-            GUILayout.EndHorizontal();
-        }
+    protected override VignetteEffectManager EffectManager { get; set; }
+
+    protected override void TranslatePane()
+    {
+        intensitySlider.Label = Translation.Get("effectVignette", "intensity");
+        blurSlider.Label = Translation.Get("effectVignette", "blur");
+        blurSpreadSlider.Label = Translation.Get("effectVignette", "blurSpread");
+        aberrationSlider.Label = Translation.Get("effectVignette", "aberration");
+    }
+
+    protected override void UpdateControls()
+    {
+        intensitySlider.Value = EffectManager.Intensity;
+        blurSlider.Value = EffectManager.Blur;
+        blurSpreadSlider.Value = EffectManager.BlurSpread;
+        aberrationSlider.Value = EffectManager.ChromaticAberration;
+    }
+
+    protected override void DrawPane()
+    {
+        var sliderWidth = MpsGui.HalfSlider;
+
+        GUILayout.BeginHorizontal();
+        intensitySlider.Draw(sliderWidth);
+        blurSlider.Draw(sliderWidth);
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        blurSpreadSlider.Draw(sliderWidth);
+        aberrationSlider.Draw(sliderWidth);
+        GUILayout.EndHorizontal();
     }
 }

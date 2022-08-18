@@ -1,82 +1,89 @@
-using UnityEngine;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace MeidoPhotoStudio.Plugin
+using UnityEngine;
+
+namespace MeidoPhotoStudio.Plugin;
+
+public class BackgroundSelectorPane : BasePane
 {
-    public class BackgroundSelectorPane : BasePane
+    private readonly EnvironmentManager environmentManager;
+    private readonly Dropdown bgDropdown;
+    private readonly Button prevBGButton;
+    private readonly Button nextBGButton;
+
+    public BackgroundSelectorPane(EnvironmentManager environmentManager)
     {
-        private readonly EnvironmentManager environmentManager;
-        private readonly Dropdown bgDropdown;
-        private readonly Button prevBGButton;
-        private readonly Button nextBGButton;
+        this.environmentManager = environmentManager;
 
-        public BackgroundSelectorPane(EnvironmentManager environmentManager)
+        var theaterIndex = Constants.BGList.FindIndex(bg => bg == EnvironmentManager.DefaultBg);
+        var bgList = new List<string>(Translation.GetList("bgNames", Constants.BGList));
+
+        if (Constants.MyRoomCustomBGIndex >= 0)
+            bgList.AddRange(Constants.MyRoomCustomBGList.Select(kvp => kvp.Value));
+
+        bgDropdown = new(bgList.ToArray(), theaterIndex);
+        bgDropdown.SelectionChange += (_, _) =>
+            ChangeBackground();
+
+        prevBGButton = new("<");
+        prevBGButton.ControlEvent += (_, _) =>
+            bgDropdown.Step(-1);
+
+        nextBGButton = new(">");
+        nextBGButton.ControlEvent += (_, _) =>
+            bgDropdown.Step(1);
+    }
+
+    public override void Draw()
+    {
+        const float buttonHeight = 30;
+
+        var arrowLayoutOptions = new[]
         {
-            this.environmentManager = environmentManager;
+            GUILayout.Width(buttonHeight),
+            GUILayout.Height(buttonHeight),
+        };
 
-            int theaterIndex = Constants.BGList.FindIndex(bg => bg == EnvironmentManager.defaultBg);
+        const float dropdownButtonWidth = 153f;
 
-            List<string> bgList = new List<string>(Translation.GetList("bgNames", Constants.BGList));
-            if (Constants.MyRoomCustomBGIndex >= 0)
-            {
-                bgList.AddRange(Constants.MyRoomCustomBGList.Select(kvp => kvp.Value));
-            }
-
-            bgDropdown = new Dropdown(bgList.ToArray(), theaterIndex);
-            bgDropdown.SelectionChange += (s, a) => ChangeBackground();
-
-            prevBGButton = new Button("<");
-            prevBGButton.ControlEvent += (s, a) => bgDropdown.Step(-1);
-
-            nextBGButton = new Button(">");
-            nextBGButton.ControlEvent += (s, a) => bgDropdown.Step(1);
-        }
-
-        protected override void ReloadTranslation()
+        var dropdownLayoutOptions = new[]
         {
-            List<string> bgList = new List<string>(Translation.GetList("bgNames", Constants.BGList));
-            if (Constants.MyRoomCustomBGIndex >= 0)
-            {
-                bgList.AddRange(Constants.MyRoomCustomBGList.Select(kvp => kvp.Value));
-            }
+            GUILayout.Height(buttonHeight),
+            GUILayout.Width(dropdownButtonWidth),
+        };
 
-            updating = true;
-            bgDropdown.SetDropdownItems(bgList.ToArray());
-            updating = false;
-        }
+        GUILayout.BeginHorizontal();
+        prevBGButton.Draw(arrowLayoutOptions);
+        bgDropdown.Draw(dropdownLayoutOptions);
+        nextBGButton.Draw(arrowLayoutOptions);
+        GUILayout.EndHorizontal();
+    }
 
-        public override void Draw()
-        {
-            const float buttonHeight = 30;
-            GUILayoutOption[] arrowLayoutOptions = {
-                GUILayout.Width(buttonHeight),
-                GUILayout.Height(buttonHeight)
-            };
+    protected override void ReloadTranslation()
+    {
+        var bgList = new List<string>(Translation.GetList("bgNames", Constants.BGList));
 
-            const float dropdownButtonWidth = 153f;
-            GUILayoutOption[] dropdownLayoutOptions = new GUILayoutOption[] {
-                GUILayout.Height(buttonHeight),
-                GUILayout.Width(dropdownButtonWidth)
-            };
+        if (Constants.MyRoomCustomBGIndex >= 0)
+            bgList.AddRange(Constants.MyRoomCustomBGList.Select(kvp => kvp.Value));
 
-            GUILayout.BeginHorizontal();
-            prevBGButton.Draw(arrowLayoutOptions);
-            bgDropdown.Draw(dropdownLayoutOptions);
-            nextBGButton.Draw(arrowLayoutOptions);
-            GUILayout.EndHorizontal();
-        }
+        updating = true;
+        bgDropdown.SetDropdownItems(bgList.ToArray());
+        updating = false;
+    }
 
-        private void ChangeBackground()
-        {
-            if (updating) return;
-            int selectedIndex = bgDropdown.SelectedItemIndex;
-            bool isCreative = bgDropdown.SelectedItemIndex >= Constants.MyRoomCustomBGIndex;
-            string bg = isCreative
-                ? Constants.MyRoomCustomBGList[selectedIndex - Constants.MyRoomCustomBGIndex].Key
-                : Constants.BGList[selectedIndex];
+    private void ChangeBackground()
+    {
+        if (updating)
+            return;
 
-            environmentManager.ChangeBackground(bg, isCreative);
-        }
+        var selectedIndex = bgDropdown.SelectedItemIndex;
+        var isCreative = bgDropdown.SelectedItemIndex >= Constants.MyRoomCustomBGIndex;
+
+        var bg = isCreative
+            ? Constants.MyRoomCustomBGList[selectedIndex - Constants.MyRoomCustomBGIndex].Key
+            : Constants.BGList[selectedIndex];
+
+        environmentManager.ChangeBackground(bg, isCreative);
     }
 }

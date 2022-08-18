@@ -1,144 +1,134 @@
 using System;
-using System.Linq;
-using System.IO;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
+using System.IO;
+using System.Linq;
+
 using BepInEx.Configuration;
+using Newtonsoft.Json.Linq;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public static class Translation
 {
-    public static class Translation
+    private const string SettingsHeader = "Translation";
+
+    private static readonly string[] Props = { "ui", "props", "bg", "face" };
+    private static readonly ConfigEntry<string> CurrentLanguageConfig = Configuration.Config.Bind(
+        SettingsHeader,
+        "Language",
+        "en",
+        "Directory to pull translations from\nTranslations are found in the 'Translations' folder");
+
+    private static readonly ConfigEntry<bool> SuppressWarningsConfig = Configuration.Config.Bind(
+        SettingsHeader,
+        "SuppressWarnings",
+        false,
+        "Suppress translation warnings from showing up in the console");
+
+    private static Dictionary<string, Dictionary<string, string>> translations;
+    private static bool forceSuppressWarnings;
+    private static bool suppressWarningsCached;
+
+    static Translation() =>
+        suppressWarningsCached = !SuppressWarningsConfig.Value;
+
+    public static event EventHandler ReloadTranslationEvent;
+
+    public static bool SuppressWarnings
     {
-        private const string settingsHeader = "Translation";
-        private static readonly string[] props = { "ui", "props", "bg", "face" };
-        private static Dictionary<string, Dictionary<string, string>> Translations;
-        private static readonly ConfigEntry<string> currentLanguage;
-        private static readonly ConfigEntry<bool> suppressWarnings;
-        private static bool forceSuppressWarnings;
-        private static bool suppressWarningsCached;
-        public static bool SuppressWarnings
+        get => suppressWarningsCached;
+        set
         {
-            get => suppressWarningsCached;
-            set
-            {
-                suppressWarningsCached = value;
-                suppressWarnings.Value = value;
-            }
-        }
-        public static string CurrentLanguage
-        {
-            get => currentLanguage.Value;
-            set => currentLanguage.Value = value;
-        }
-        public static event EventHandler ReloadTranslationEvent;
-
-        static Translation()
-        {
-            currentLanguage = Configuration.Config.Bind(
-                settingsHeader, "Language",
-                "en",
-                "Directory to pull translations from"
-                + "\nTranslations are found in the 'Translations' folder"
-            );
-
-            suppressWarnings = Configuration.Config.Bind(
-                settingsHeader, "SuppressWarnings",
-                false,
-                "Suppress translation warnings from showing up in the console"
-            );
-
-            suppressWarningsCached = !suppressWarnings.Value;
-        }
-
-        public static void Initialize(string language)
-        {
-            forceSuppressWarnings = false;
-
-            string rootTranslationPath = Path.Combine(Constants.configPath, Constants.translationDirectory);
-            string currentTranslationPath = Path.Combine(rootTranslationPath, language);
-
-            Translations = new Dictionary<string, Dictionary<string, string>>(
-                StringComparer.InvariantCultureIgnoreCase
-            );
-
-            if (!Directory.Exists(currentTranslationPath))
-            {
-                Utility.LogError(
-                    $"No translations found for '{language}' in '{currentTranslationPath}'"
-                );
-                forceSuppressWarnings = true;
-                return;
-            }
-
-            foreach (string prop in props)
-            {
-                string translationFile = $"translation.{prop}.json";
-                try
-                {
-                    string translationPath = Path.Combine(currentTranslationPath, translationFile);
-
-                    string translationJson = File.ReadAllText(translationPath);
-
-                    JObject translation = JObject.Parse(translationJson);
-
-                    foreach (JProperty translationProp in translation.AsJEnumerable())
-                    {
-                        JToken token = translationProp.Value;
-                        Translations[translationProp.Path] = new Dictionary<string, string>(
-                            token.ToObject<Dictionary<string, string>>(), StringComparer.InvariantCultureIgnoreCase
-                        );
-                    }
-                }
-                catch
-                {
-                    forceSuppressWarnings = true;
-                    Utility.LogError($"Could not find translation file '{translationFile}'");
-                }
-            }
-        }
-
-        public static void ReinitializeTranslation()
-        {
-            Initialize(CurrentLanguage);
-            ReloadTranslationEvent?.Invoke(null, EventArgs.Empty);
-        }
-
-        public static bool Has(string category, string text, bool warn = false)
-        {
-            warn = !forceSuppressWarnings && !SuppressWarnings && warn;
-            if (!Translations.ContainsKey(category))
-            {
-                if (warn) Utility.LogWarning($"Could not translate '{text}': category '{category}' was not found");
-                return false;
-            }
-
-            if (!Translations[category].ContainsKey(text))
-            {
-                if (warn)
-                {
-                    Utility.LogWarning(
-                        $"Could not translate '{text}': '{text}' was not found in category '{category}'"
-                    );
-                }
-                return false;
-            }
-
-            return true;
-        }
-
-        public static string Get(string category, string text, bool warn = true)
-        {
-            return Has(category, text, warn) ? Translations[category][text] : text;
-        }
-
-        public static string[] GetArray(string category, IEnumerable<string> list)
-        {
-            return GetList(category, list).ToArray();
-        }
-
-        public static IEnumerable<string> GetList(string category, IEnumerable<string> list)
-        {
-            return list.Select(uiName => Get(category, uiName));
+            suppressWarningsCached = value;
+            SuppressWarningsConfig.Value = value;
         }
     }
+
+    public static string CurrentLanguage
+    {
+        get => CurrentLanguageConfig.Value;
+        set => CurrentLanguageConfig.Value = value;
+    }
+
+    public static void Initialize(string language)
+    {
+        forceSuppressWarnings = false;
+
+        var rootTranslationPath = Path.Combine(Constants.ConfigPath, Constants.TranslationDirectory);
+        var currentTranslationPath = Path.Combine(rootTranslationPath, language);
+
+        translations = new(StringComparer.InvariantCultureIgnoreCase);
+
+        if (!Directory.Exists(currentTranslationPath))
+        {
+            Utility.LogError($"No translations found for '{language}' in '{currentTranslationPath}'");
+            forceSuppressWarnings = true;
+
+            return;
+        }
+
+        foreach (var prop in Props)
+        {
+            var translationFile = $"translation.{prop}.json";
+
+            try
+            {
+                var translationPath = Path.Combine(currentTranslationPath, translationFile);
+                var translationJson = File.ReadAllText(translationPath);
+                var translation = JObject.Parse(translationJson);
+
+                foreach (var translationProp in translation.AsJEnumerable().Cast<JProperty>())
+                {
+                    var token = translationProp.Value;
+
+                    translations[translationProp.Path] =
+                        new(token.ToObject<Dictionary<string, string>>(), StringComparer.InvariantCultureIgnoreCase);
+                }
+            }
+            catch
+            {
+                forceSuppressWarnings = true;
+                Utility.LogError($"Could not find translation file '{translationFile}'");
+            }
+        }
+    }
+
+    public static void ReinitializeTranslation()
+    {
+        Initialize(CurrentLanguage);
+        ReloadTranslationEvent?.Invoke(null, EventArgs.Empty);
+    }
+
+    public static bool Has(string category, string text, bool warn = false)
+    {
+        warn = !forceSuppressWarnings && !SuppressWarnings && warn;
+
+        if (!translations.ContainsKey(category))
+        {
+            if (warn)
+                Utility.LogWarning($"Could not translate '{text}': category '{category}' was not found");
+
+            return false;
+        }
+
+        if (!translations[category].ContainsKey(text))
+        {
+            if (warn)
+                Utility.LogWarning(
+                    $"Could not translate '{text}': '{text}' was not found in category '{category}'");
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public static string Get(string category, string text, bool warn = true) =>
+        Has(category, text, warn) ? translations[category][text] : text;
+
+    public static string[] GetArray(string category, IEnumerable<string> list) =>
+        GetList(category, list).ToArray();
+
+    public static IEnumerable<string> GetList(string category, IEnumerable<string> list) =>
+        list.Select(uiName => Get(category, uiName));
 }

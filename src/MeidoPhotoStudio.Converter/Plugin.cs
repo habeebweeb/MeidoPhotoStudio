@@ -1,46 +1,47 @@
-﻿using System.IO;
+using System.IO;
+
 using BepInEx;
 using BepInEx.Logging;
 using MeidoPhotoStudio.Converter.Converters;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace MeidoPhotoStudio.Converter
+namespace MeidoPhotoStudio.Converter;
+
+[BepInPlugin(PluginGuid, PluginName, PluginVersion)]
+[BepInDependency("com.habeebweeb.com3d2.meidophotostudio")]
+public class Plugin : BaseUnityPlugin
 {
-    [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
-    [BepInDependency("com.habeebweeb.com3d2.meidophotostudio")]
-    public class Plugin : BaseUnityPlugin
+    public const string PluginName = "MeidoPhotoStudio Converter";
+    public const string PluginVersion = "0.0.1";
+
+    private const string PluginGuid = "com.habeebweeb.com3d2.meidophotostudio.converter";
+
+    private PluginCore? pluginCore;
+    private UI? ui;
+
+    public static Plugin? Instance { get; private set; }
+
+    public new ManualLogSource? Logger { get; private set; }
+
+    private void Awake()
     {
-        private const string PluginGuid = "com.habeebweeb.com3d2.meidophotostudio.converter";
-        public const string PluginName = "MeidoPhotoStudio Converter";
-        public const string PluginVersion = "0.0.1";
+        DontDestroyOnLoad(this);
 
-        private PluginCore pluginCore;
-        private UI ui;
+        Instance = this;
+        Logger = base.Logger;
 
-        public static Plugin? Instance { get; private set; }
-        public new ManualLogSource Logger { get; private set; }
+        var workingDirectory = Path.Combine(Paths.ConfigPath, PluginName);
 
-        private void Awake()
-        {
-            DontDestroyOnLoad(this);
+        if (!Directory.Exists(workingDirectory))
+            Directory.CreateDirectory(workingDirectory);
 
-            Instance = this;
-            Logger = base.Logger;
+        pluginCore = new(workingDirectory, new MMConverter(), new MMPngConverter());
+        ui = new(pluginCore);
 
-            var workingDirectory = Path.Combine(Paths.ConfigPath, PluginName);
-
-            if (!Directory.Exists(workingDirectory))
-                Directory.CreateDirectory(workingDirectory);
-
-            pluginCore = new(workingDirectory, new MMConverter(), new MMPngConverter());
-            ui = new(pluginCore);
-
-            SceneManager.sceneLoaded += (scene, _) =>
-                ui.Visible = scene.buildIndex is 3 or 9;
-        }
-
-        private void OnGUI() =>
-            ui.Draw();
+        SceneManager.sceneLoaded += (scene, _) =>
+            ui.Visible = scene.buildIndex is 3 or 9;
     }
+
+    private void OnGUI() =>
+        ui!.Draw();
 }

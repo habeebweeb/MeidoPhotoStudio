@@ -1,60 +1,60 @@
-﻿using System;
+using System;
 using System.IO;
 
-namespace MeidoPhotoStudio.Converter.Utility
+namespace MeidoPhotoStudio.Converter.Utility;
+
+internal static class PngUtility
 {
-    internal static class PngUtility
+    private static readonly byte[] PngHeader = { 137, 80, 78, 71, 13, 10, 26, 10 };
+    private static readonly byte[] PngEnd = System.Text.Encoding.ASCII.GetBytes("IEND");
+
+    public static byte[]? ExtractPng(Stream stream)
     {
-        private static readonly byte[] PngHeader = { 137, 80, 78, 71, 13, 10, 26, 10 };
-        private static readonly byte[] PngEnd = System.Text.Encoding.ASCII.GetBytes("IEND");
+        var memoryStream = new MemoryStream();
+        var headerBuffer = new byte[PngHeader.Length];
 
-        public static byte[]? ExtractPng(Stream stream)
+        stream.Read(headerBuffer, 0, headerBuffer.Length);
+
+        if (!MeidoPhotoStudio.Plugin.Utility.BytesEqual(headerBuffer, PngHeader))
+            return null;
+
+        memoryStream.Write(headerBuffer, 0, headerBuffer.Length);
+
+        var fourByteBuffer = new byte[4];
+        var chunkBuffer = new byte[1024];
+
+        try
         {
-            var memoryStream = new MemoryStream();
-
-            var headerBuffer = new byte[PngHeader.Length];
-
-            stream.Read(headerBuffer, 0, headerBuffer.Length);
-
-            if (!MeidoPhotoStudio.Plugin.Utility.BytesEqual(headerBuffer, PngHeader))
-                return null;
-
-            memoryStream.Write(headerBuffer, 0, headerBuffer.Length);
-
-            var fourByteBuffer = new byte[4];
-            var chunkBuffer = new byte[1024];
-
-            try
+            do
             {
-                do
-                {
-                    // chunk length
-                    var read = stream.Read(fourByteBuffer, 0, 4);
-                    memoryStream.Write(fourByteBuffer, 0, read);
+                // chunk length
+                var read = stream.Read(fourByteBuffer, 0, 4);
 
-                    if (BitConverter.IsLittleEndian)
-                        Array.Reverse(fourByteBuffer);
+                memoryStream.Write(fourByteBuffer, 0, read);
 
-                    var length = BitConverter.ToUInt32(fourByteBuffer, 0);
+                if (BitConverter.IsLittleEndian)
+                    Array.Reverse(fourByteBuffer);
 
-                    // chunk type
-                    read = stream.Read(fourByteBuffer, 0, 4);
-                    memoryStream.Write(fourByteBuffer, 0, read);
+                var length = BitConverter.ToUInt32(fourByteBuffer, 0);
 
-                    if (chunkBuffer.Length < length + 4L)
-                        chunkBuffer = new byte[length + 4L];
+                // chunk type
+                read = stream.Read(fourByteBuffer, 0, 4);
+                memoryStream.Write(fourByteBuffer, 0, read);
 
-                    // chunk data + CRC
-                    read = stream.Read(chunkBuffer, 0, (int)(length + 4L));
-                    memoryStream.Write(chunkBuffer, 0, read);
-                } while (!MeidoPhotoStudio.Plugin.Utility.BytesEqual(fourByteBuffer, PngEnd));
+                if (chunkBuffer.Length < length + 4L)
+                    chunkBuffer = new byte[length + 4L];
+
+                // chunk data + CRC
+                read = stream.Read(chunkBuffer, 0, (int)(length + 4L));
+                memoryStream.Write(chunkBuffer, 0, read);
             }
-            catch
-            {
-                return null;
-            }
-
-            return memoryStream.ToArray();
+            while (!MeidoPhotoStudio.Plugin.Utility.BytesEqual(fourByteBuffer, PngEnd));
         }
+        catch
+        {
+            return null;
+        }
+
+        return memoryStream.ToArray();
     }
 }

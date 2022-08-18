@@ -1,70 +1,80 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
+
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class MPSScene
 {
-    public class MPSScene
+    private byte[] data;
+
+    public MPSScene(string path, Texture2D thumbnail = null)
     {
-        public Texture2D Thumbnail { get; }
-        public FileInfo FileInfo { get; }
-        public bool Environment { get; private set; }
-        public int NumberOfMaids { get; private set; }
+        FileInfo = new(path);
 
-        private byte[] data;
-
-        public byte[] Data
+        if (!thumbnail)
         {
-            get
-            {
-                if (data == null) Preload();
-                return data;
-            }
-            private set => data = value;
+            thumbnail = new(1, 1, TextureFormat.ARGB32, false);
+            thumbnail.LoadImage(File.ReadAllBytes(FileInfo.FullName));
         }
 
-        public MPSScene(string path, Texture2D thumbnail = null)
+        Thumbnail = thumbnail;
+    }
+
+    public Texture2D Thumbnail { get; }
+
+    public FileInfo FileInfo { get; }
+
+    public bool Environment { get; private set; }
+
+    public int NumberOfMaids { get; private set; }
+
+    public byte[] Data
+    {
+        get
         {
-            FileInfo = new FileInfo(path);
+            if (data is null)
+                Preload();
 
-            if (!thumbnail)
-            {
-                thumbnail = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-                thumbnail.LoadImage(File.ReadAllBytes(FileInfo.FullName));
-            }
+            return data;
+        }
+        private set => data = value;
+    }
 
-            Thumbnail = thumbnail;
+    public void Preload()
+    {
+        if (data is not null)
+            return;
+
+        using var fileStream = FileInfo.OpenRead();
+
+        Utility.SeekPngEnd(fileStream);
+
+        using var memoryStream = new MemoryStream();
+
+        fileStream.CopyTo(memoryStream);
+        memoryStream.Position = 0L;
+
+        using var binaryReader = new BinaryReader(memoryStream, Encoding.UTF8);
+
+        var sceneHeader = MeidoPhotoStudio.SceneHeader;
+
+        if (!Utility.BytesEqual(binaryReader.ReadBytes(sceneHeader.Length), sceneHeader))
+        {
+            Utility.LogWarning($"'{FileInfo.FullName}' is not a MPS Scene");
+
+            return;
         }
 
-        public void Preload()
-        {
-            if (data != null) return;
+        (_, Environment, NumberOfMaids, _) = SceneMetadata.ReadMetadata(binaryReader);
 
-            using var fileStream = FileInfo.OpenRead();
-            Utility.SeekPngEnd(fileStream);
+        Data = memoryStream.ToArray();
+    }
 
-            using var memoryStream = new MemoryStream();
-
-            fileStream.CopyTo(memoryStream);
-            memoryStream.Position = 0L;
-
-            using var binaryReader = new BinaryReader(memoryStream, Encoding.UTF8);
-
-            var sceneHeader = MeidoPhotoStudio.SceneHeader;
-            if (!Utility.BytesEqual(binaryReader.ReadBytes(sceneHeader.Length), sceneHeader))
-            {
-                Utility.LogWarning($"'{FileInfo.FullName}' is not a MPS Scene");
-                return;
-            }
-
-            (_, Environment, NumberOfMaids, _) = SceneMetadata.ReadMetadata(binaryReader);
-
-            Data = memoryStream.ToArray();
-        }
-
-        public void Destroy()
-        {
-            if (Thumbnail) Object.DestroyImmediate(Thumbnail);
-        }
+    public void Destroy()
+    {
+        if (Thumbnail)
+            Object.DestroyImmediate(Thumbnail);
     }
 }

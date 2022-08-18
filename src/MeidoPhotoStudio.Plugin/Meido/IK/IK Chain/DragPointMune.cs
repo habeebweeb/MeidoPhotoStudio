@@ -1,57 +1,69 @@
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+using Input = MeidoPhotoStudio.Plugin.InputManager;
+
+namespace MeidoPhotoStudio.Plugin;
+
+public class DragPointMune : DragPointChain
 {
-    using Input = InputManager;
-    public class DragPointMune : DragPointChain
+    private bool isMuneL;
+    private int inv = 1;
+
+    public override void Set(Transform myObject)
     {
-        private bool isMuneL;
-        private int inv = 1;
+        base.Set(myObject);
 
-        public override void Set(Transform myObject)
+        isMuneL = myObject.name[5] is 'L'; // Mune_L_Sub
+
+        if (isMuneL)
+            inv *= -1;
+    }
+
+    protected override void ApplyDragType() =>
+        ApplyProperties(CurrentDragType is not DragType.None, false, false);
+
+    protected override void OnMouseDown()
+    {
+        base.OnMouseDown();
+
+        meido.SetMune(false, isMuneL);
+    }
+
+    protected override void OnDoubleClick()
+    {
+        if (CurrentDragType is not DragType.None)
+            meido.SetMune(true, isMuneL);
+    }
+
+    protected override void UpdateDragType() =>
+
+        // TODO: Rethink this formatting
+        CurrentDragType = Input.Control && Input.Alt
+            ? Input.Shift
+            ? DragType.RotLocalY
+            : DragType.RotLocalXZ
+            : DragType.None;
+
+    protected override void Drag()
+    {
+        if (isPlaying)
+            meido.Stop = true;
+
+        if (CurrentDragType is DragType.RotLocalXZ)
         {
-            base.Set(myObject);
-            isMuneL = myObject.name[5] == 'L'; // Mune_L_Sub
-            if (isMuneL) inv *= -1;
+            Porc(IK, ikCtrlData, ikChain[JointUpper], ikChain[JointMiddle], ikChain[JointLower]);
+            InitializeRotation();
         }
 
-        protected override void ApplyDragType() => ApplyProperties(CurrentDragType != DragType.None, false, false);
-
-        protected override void OnMouseDown()
+        if (CurrentDragType is DragType.RotLocalY)
         {
-            base.OnMouseDown();
+            var mouseDelta = MouseDelta();
 
-            meido.SetMune(false, isMuneL);
-        }
+            ikChain[JointLower].localRotation = jointRotation[JointLower];
 
-        protected override void OnDoubleClick()
-        {
-            if (CurrentDragType != DragType.None) meido.SetMune(true, isMuneL);
-        }
-
-        protected override void UpdateDragType()
-        {
-            if (Input.Control && Input.Alt) CurrentDragType = Input.Shift ? DragType.RotLocalY : DragType.RotLocalXZ;
-            else CurrentDragType = DragType.None;
-        }
-
-        protected override void Drag()
-        {
-            if (isPlaying) meido.Stop = true;
-
-            if (CurrentDragType == DragType.RotLocalXZ)
-            {
-                Porc(IK, ikCtrlData, ikChain[jointUpper], ikChain[jointMiddle], ikChain[jointLower]);
-                InitializeRotation();
-            }
-
-            if (CurrentDragType == DragType.RotLocalY)
-            {
-                Vector3 mouseDelta = MouseDelta();
-                ikChain[jointLower].localRotation = jointRotation[jointLower];
-                ikChain[jointLower].Rotate(Vector3.up * (-mouseDelta.x / 1.5f) * inv);
-                ikChain[jointLower].Rotate(Vector3.forward * (mouseDelta.y / 1.5f) * inv);
-            }
+            // TODO: Reorder operands for better performance
+            ikChain[JointLower].Rotate(Vector3.up * (-mouseDelta.x / 1.5f) * inv);
+            ikChain[JointLower].Rotate(Vector3.forward * (mouseDelta.y / 1.5f) * inv);
         }
     }
 }

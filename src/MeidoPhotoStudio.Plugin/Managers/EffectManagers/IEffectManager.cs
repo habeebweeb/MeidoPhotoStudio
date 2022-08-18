@@ -1,10 +1,12 @@
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public interface IEffectManager : IManager
 {
-    public interface IEffectManager : IManager
-    {
-        bool Ready { get; }
-        bool Active { get; }
-        void SetEffectActive(bool active);
-        void Reset();
-    }
+    bool Ready { get; }
+
+    bool Active { get; }
+
+    void SetEffectActive(bool active);
+
+    void Reset();
 }

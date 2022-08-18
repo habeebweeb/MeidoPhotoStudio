@@ -1,50 +1,56 @@
-﻿using System.IO;
+using System.IO;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class CameraManagerSerializer : Serializer<CameraManager>
 {
-    public class CameraManagerSerializer : Serializer<CameraManager>
+    private const short Version = 1;
+
+    private static readonly CameraInfo DummyInfo = new();
+
+    private static Serializer<CameraInfo> InfoSerializer =>
+        Serialization.Get<CameraInfo>();
+
+    public override void Serialize(CameraManager manager, BinaryWriter writer)
     {
-        private const short version = 1;
-        private static Serializer<CameraInfo> InfoSerializer => Serialization.Get<CameraInfo>();
-        private static readonly CameraInfo dummyInfo = new();
+        writer.Write(CameraManager.Header);
+        writer.WriteVersion(Version);
 
-        public override void Serialize(CameraManager manager, BinaryWriter writer)
-        {
-            writer.Write(CameraManager.header);
-            writer.WriteVersion(version);
+        var cameraInfos = GetCameraInfos(manager);
 
-            CameraInfo[] cameraInfos = GetCameraInfos(manager);
-            cameraInfos[manager.CurrentCameraIndex].UpdateInfo(CameraUtility.MainCamera);
+        cameraInfos[manager.CurrentCameraIndex].UpdateInfo(CameraUtility.MainCamera);
 
-            writer.Write(manager.CurrentCameraIndex);
-            writer.Write(manager.CameraCount);
-            foreach (var info in cameraInfos) InfoSerializer.Serialize(info, writer);
+        writer.Write(manager.CurrentCameraIndex);
+        writer.Write(manager.CameraCount);
 
-            CameraUtility.StopAll();
-        }
+        foreach (var info in cameraInfos)
+            InfoSerializer.Serialize(info, writer);
 
-        public override void Deserialize(CameraManager manager, BinaryReader reader, SceneMetadata metadata)
-        {
-            _ = reader.ReadVersion();
-
-            var camera = CameraUtility.MainCamera;
-
-            manager.CurrentCameraIndex = reader.ReadInt32();
-
-            var cameraCount = reader.ReadInt32();
-
-            CameraInfo[] cameraInfos = GetCameraInfos(manager);
-            for (var i = 0; i < cameraCount; i++)
-                InfoSerializer.Deserialize(i >= manager.CameraCount ? dummyInfo : cameraInfos[i], reader, metadata);
-
-            if (metadata.Environment) return;
-
-            cameraInfos[manager.CurrentCameraIndex].Apply(camera);
-
-            CameraUtility.StopAll();
-        }
-
-        private static CameraInfo[] GetCameraInfos(CameraManager manager)
-            => Utility.GetFieldValue<CameraManager, CameraInfo[]>(manager, "cameraInfos");
+        CameraUtility.StopAll();
     }
+
+    public override void Deserialize(CameraManager manager, BinaryReader reader, SceneMetadata metadata)
+    {
+        _ = reader.ReadVersion();
+
+        var camera = CameraUtility.MainCamera;
+
+        manager.CurrentCameraIndex = reader.ReadInt32();
+
+        var cameraCount = reader.ReadInt32();
+        var cameraInfos = GetCameraInfos(manager);
+
+        for (var i = 0; i < cameraCount; i++)
+            InfoSerializer.Deserialize(i >= manager.CameraCount ? DummyInfo : cameraInfos[i], reader, metadata);
+
+        if (metadata.Environment)
+            return;
+
+        cameraInfos[manager.CurrentCameraIndex].Apply(camera);
+
+        CameraUtility.StopAll();
+    }
+
+    private static CameraInfo[] GetCameraInfos(CameraManager manager) =>
+        Utility.GetFieldValue<CameraManager, CameraInfo[]>(manager, "cameraInfos");
 }

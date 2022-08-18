@@ -1,70 +1,73 @@
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class SaveHandPane : BasePane
 {
-    public class SaveHandPane : BasePane
+    private readonly MeidoManager meidoManager;
+    private readonly ComboBox categoryComboBox;
+    private readonly TextField handNameTextField;
+    private readonly Button saveLeftHandButton;
+    private readonly Button saveRightHandButton;
+
+    private string categoryHeader;
+    private string nameHeader;
+
+    public SaveHandPane(MeidoManager meidoManager)
     {
-        private readonly MeidoManager meidoManager;
-        private readonly ComboBox categoryComboBox;
-        private readonly TextField handNameTextField;
-        private readonly Button saveLeftHandButton;
-        private readonly Button saveRightHandButton;
-        private string categoryHeader;
-        private string nameHeader;
+        Constants.CustomHandChange += (_, _) =>
+            categoryComboBox.SetDropdownItems(Constants.CustomHandGroupList.ToArray());
 
-        public SaveHandPane(MeidoManager meidoManager)
-        {
-            Constants.CustomHandChange += (s, a)
-                => categoryComboBox.SetDropdownItems(Constants.CustomHandGroupList.ToArray());
+        this.meidoManager = meidoManager;
 
-            this.meidoManager = meidoManager;
+        categoryHeader = Translation.Get("handPane", "categoryHeader");
 
-            categoryHeader = Translation.Get("handPane", "categoryHeader");
+        nameHeader = Translation.Get("handPane", "nameHeader");
 
-            nameHeader = Translation.Get("handPane", "nameHeader");
+        saveLeftHandButton = new(Translation.Get("handPane", "saveLeftButton"));
+        saveLeftHandButton.ControlEvent += (_, _) =>
+            SaveHand(right: false);
 
-            saveLeftHandButton = new Button(Translation.Get("handPane", "saveLeftButton"));
-            saveLeftHandButton.ControlEvent += (s, a) => SaveHand(right: false);
+        saveRightHandButton = new(Translation.Get("handPane", "saveRightButton"));
+        saveRightHandButton.ControlEvent += (_, _) =>
+            SaveHand(right: true);
 
-            saveRightHandButton = new Button(Translation.Get("handPane", "saveRightButton"));
-            saveRightHandButton.ControlEvent += (s, a) => SaveHand(right: true);
+        categoryComboBox = new(Constants.CustomHandGroupList.ToArray());
 
-            categoryComboBox = new ComboBox(Constants.CustomHandGroupList.ToArray());
+        handNameTextField = new();
+    }
 
-            handNameTextField = new TextField();
-        }
+    public override void Draw()
+    {
+        GUI.enabled = meidoManager.HasActiveMeido;
 
-        protected override void ReloadTranslation()
-        {
-            categoryHeader = Translation.Get("handPane", "categoryHeader");
-            nameHeader = Translation.Get("handPane", "nameHeader");
-            saveLeftHandButton.Label = Translation.Get("handPane", "saveLeftButton");
-            saveRightHandButton.Label = Translation.Get("handPane", "saveRightButton");
-        }
+        MpsGui.Header(categoryHeader);
+        categoryComboBox.Draw(GUILayout.Width(165f));
 
-        public override void Draw()
-        {
-            GUI.enabled = meidoManager.HasActiveMeido;
+        MpsGui.Header(nameHeader);
+        handNameTextField.Draw(GUILayout.Width(165f));
 
-            MpsGui.Header(categoryHeader);
-            categoryComboBox.Draw(GUILayout.Width(165f));
+        GUILayout.BeginHorizontal();
+        saveRightHandButton.Draw();
+        saveLeftHandButton.Draw();
+        GUILayout.EndHorizontal();
 
-            MpsGui.Header(nameHeader);
-            handNameTextField.Draw(GUILayout.Width(165f));
+        GUI.enabled = true;
+    }
 
-            GUILayout.BeginHorizontal();
-            saveRightHandButton.Draw();
-            saveLeftHandButton.Draw();
-            GUILayout.EndHorizontal();
+    protected override void ReloadTranslation()
+    {
+        categoryHeader = Translation.Get("handPane", "categoryHeader");
+        nameHeader = Translation.Get("handPane", "nameHeader");
+        saveLeftHandButton.Label = Translation.Get("handPane", "saveLeftButton");
+        saveRightHandButton.Label = Translation.Get("handPane", "saveRightButton");
+    }
 
-            GUI.enabled = true;
-        }
+    private void SaveHand(bool right)
+    {
+        var handBinary = meidoManager.ActiveMeido.IKManager.SerializeHand(right);
 
-        private void SaveHand(bool right)
-        {
-            byte[] handBinary = meidoManager.ActiveMeido.IKManager.SerializeHand(right);
-            Constants.AddHand(handBinary, right, handNameTextField.Value, categoryComboBox.Value);
-            handNameTextField.Value = string.Empty;
-        }
+        Constants.AddHand(handBinary, right, handNameTextField.Value, categoryComboBox.Value);
+        handNameTextField.Value = string.Empty;
     }
 }

@@ -1,39 +1,41 @@
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public abstract class DragPointChain : DragPointMeido
 {
-    public abstract class DragPointChain : DragPointMeido
+    protected readonly TBody.IKCMO IK = new();
+    protected readonly Quaternion[] jointRotation = new Quaternion[3];
+
+    protected IKCtrlData ikCtrlData;
+    protected Transform[] ikChain;
+
+    public override void Set(Transform myObject)
     {
-        protected readonly TBody.IKCMO IK = new TBody.IKCMO();
-        protected readonly Quaternion[] jointRotation = new Quaternion[3];
-        protected IKCtrlData ikCtrlData;
-        protected Transform[] ikChain;
+        base.Set(myObject);
 
-        public override void Set(Transform myObject)
+        ikChain = new Transform[]
         {
-            base.Set(myObject);
+            myObject.parent,
+            myObject.parent,
+            myObject,
+        };
 
-            ikChain = new Transform[] {
-                myObject.parent,
-                myObject.parent,
-                myObject
-            };
+        ikCtrlData = IkCtrlData;
+    }
 
-            ikCtrlData = IkCtrlData;
-        }
+    protected override void OnMouseDown()
+    {
+        base.OnMouseDown();
 
-        protected void InitializeRotation()
-        {
-            for (int i = 0; i < jointRotation.Length; i++) jointRotation[i] = ikChain[i].localRotation;
-        }
+        InitializeRotation();
 
-        protected override void OnMouseDown()
-        {
-            base.OnMouseDown();
+        InitializeIK(IK, ikChain[JointUpper], ikChain[JointMiddle], ikChain[JointLower]);
+    }
 
-            InitializeRotation();
-
-            InitializeIK(IK, ikChain[jointUpper], ikChain[jointMiddle], ikChain[jointLower]);
-        }
+    protected void InitializeRotation()
+    {
+        for (var i = 0; i < jointRotation.Length; i++)
+            jointRotation[i] = ikChain[i].localRotation;
     }
 }

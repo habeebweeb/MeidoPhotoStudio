@@ -1,74 +1,86 @@
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public abstract class EffectPane<T> : BasePane
+    where T : IEffectManager
 {
-    public abstract class EffectPane<T> : BasePane where T : IEffectManager
+    protected readonly Toggle effectToggle;
+    protected readonly Button resetEffectButton;
+
+    private bool enabled;
+
+    protected EffectPane(EffectManager effectManager)
     {
-        protected abstract T EffectManager { get; set; }
-        protected readonly Toggle effectToggle;
-        protected readonly Button resetEffectButton;
-        private bool enabled;
-        public override bool Enabled
+        EffectManager = effectManager.Get<T>();
+
+        resetEffectButton = new(Translation.Get("effectsPane", "reset"));
+        resetEffectButton.ControlEvent += (_, _) =>
+            ResetEffect();
+
+        effectToggle = new(Translation.Get("effectsPane", "onToggle"));
+        effectToggle.ControlEvent += (_, _) =>
+            Enabled = effectToggle.Value;
+    }
+
+    public override bool Enabled
+    {
+        get => enabled;
+        set
         {
-            get => enabled;
-            set
-            {
-                enabled = value;
-                if (updating) return;
-                EffectManager.SetEffectActive(enabled);
-            }
+            enabled = value;
+
+            if (updating)
+                return;
+
+            EffectManager.SetEffectActive(enabled);
         }
+    }
 
-        protected EffectPane(EffectManager effectManager)
-        {
-            EffectManager = effectManager.Get<T>();
-            resetEffectButton = new Button(Translation.Get("effectsPane", "reset"));
-            resetEffectButton.ControlEvent += (s, a) => ResetEffect();
-            effectToggle = new Toggle(Translation.Get("effectsPane", "onToggle"));
-            effectToggle.ControlEvent += (s, a) => Enabled = effectToggle.Value;
-        }
+    protected abstract T EffectManager { get; set; }
 
-        protected override void ReloadTranslation()
-        {
-            updating = true;
-            effectToggle.Label = Translation.Get("effectsPane", "onToggle");
-            resetEffectButton.Label = Translation.Get("effectsPane", "reset");
-            TranslatePane();
-            updating = false;
-        }
+    public override void UpdatePane()
+    {
+        if (!EffectManager.Ready)
+            return;
 
-        protected abstract void TranslatePane();
+        updating = true;
+        effectToggle.Value = EffectManager.Active;
+        UpdateControls();
+        updating = false;
+    }
 
-        public override void UpdatePane()
-        {
-            if (!EffectManager.Ready) return;
-            updating = true;
-            effectToggle.Value = EffectManager.Active;
-            UpdateControls();
-            updating = false;
-        }
+    public override void Draw()
+    {
+        GUILayout.BeginHorizontal();
+        effectToggle.Draw();
+        GUILayout.FlexibleSpace();
+        GUI.enabled = Enabled;
+        resetEffectButton.Draw();
+        GUILayout.EndHorizontal();
+        DrawPane();
+        GUI.enabled = true;
+    }
 
-        protected abstract void UpdateControls();
+    protected override void ReloadTranslation()
+    {
+        updating = true;
+        effectToggle.Label = Translation.Get("effectsPane", "onToggle");
+        resetEffectButton.Label = Translation.Get("effectsPane", "reset");
+        TranslatePane();
+        updating = false;
+    }
 
-        public override void Draw()
-        {
-            GUILayout.BeginHorizontal();
-            effectToggle.Draw();
-            GUILayout.FlexibleSpace();
-            GUI.enabled = Enabled;
-            resetEffectButton.Draw();
-            GUILayout.EndHorizontal();
-            DrawPane();
-            GUI.enabled = true;
-        }
+    protected abstract void TranslatePane();
 
-        protected abstract void DrawPane();
+    protected abstract void UpdateControls();
 
-        private void ResetEffect()
-        {
-            EffectManager.Deactivate();
-            EffectManager.SetEffectActive(true);
-            UpdatePane();
-        }
+    protected abstract void DrawPane();
+
+    private void ResetEffect()
+    {
+        EffectManager.Deactivate();
+        EffectManager.SetEffectActive(true);
+        UpdatePane();
     }
 }

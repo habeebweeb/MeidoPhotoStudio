@@ -1,44 +1,48 @@
 using System;
+
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class Toggle : BaseControl
 {
-    public class Toggle : BaseControl
+    private bool value;
+
+    public Toggle(string label, bool state = false)
     {
-        private bool value;
-        public bool Value
-        {
-            get => value;
-            set
-            {
-                this.value = value;
-                OnControlEvent(EventArgs.Empty);
-            }
-        }
+        Label = label;
+        value = state;
+    }
 
-        public string Label { get; set; }
+    public string Label { get; set; }
 
-        public Toggle(string label, bool state = false)
+    public bool Value
+    {
+        get => value;
+        set
         {
-            Label = label;
-            value = state;
-        }
+            this.value = value;
 
-        public override void Draw(params GUILayoutOption[] layoutOptions)
-        {
-            Draw(new GUIStyle(GUI.skin.toggle), layoutOptions);
+            OnControlEvent(EventArgs.Empty);
         }
+    }
 
-        public void Draw(GUIStyle toggleStyle, params GUILayoutOption[] layoutOptions)
-        {
-            bool value = GUILayout.Toggle(Value, Label, toggleStyle, layoutOptions);
-            if (value != Value) Value = value;
-        }
+    public override void Draw(params GUILayoutOption[] layoutOptions) =>
+        Draw(new(GUI.skin.toggle), layoutOptions);
 
-        public void Draw(Rect rect)
-        {
-            bool value = GUI.Toggle(rect, Value, Label);
-            if (value != Value) Value = value;
-        }
+    public void Draw(GUIStyle toggleStyle, params GUILayoutOption[] layoutOptions)
+    {
+        var value = GUILayout.Toggle(Value, Label, toggleStyle, layoutOptions);
+
+        if (value != Value)
+            Value = value;
+    }
+
+    public void Draw(Rect rect)
+    {
+        var value = GUI.Toggle(rect, Value, Label);
+
+        if (value != Value)
+            Value = value;
     }
 }

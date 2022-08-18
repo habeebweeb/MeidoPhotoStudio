@@ -1,47 +1,44 @@
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class CallWindowPane : BaseMainWindowPane
 {
-    public class CallWindowPane : BaseMainWindowPane
+    private readonly MeidoManager meidoManager;
+    private readonly MaidSelectorPane maidSelectorPane;
+    private readonly Dropdown placementDropdown;
+    private readonly Button placementOKButton;
+
+    public CallWindowPane(MeidoManager meidoManager)
     {
-        private readonly MeidoManager meidoManager;
-        private readonly MaidSelectorPane maidSelectorPane;
-        private readonly Dropdown placementDropdown;
-        private readonly Button placementOKButton;
+        this.meidoManager = meidoManager;
 
-        public CallWindowPane(MeidoManager meidoManager)
-        {
-            this.meidoManager = meidoManager;
-            placementDropdown = new Dropdown(
-                Translation.GetArray("placementDropdown", MaidPlacementUtility.placementTypes)
-            );
+        placementDropdown = new(Translation.GetArray("placementDropdown", MaidPlacementUtility.PlacementTypes));
 
-            placementOKButton = new Button(Translation.Get("maidCallWindow", "okButton"));
-            placementOKButton.ControlEvent += (o, a) => this.meidoManager.PlaceMeidos(
-                MaidPlacementUtility.placementTypes[placementDropdown.SelectedItemIndex]
-            );
+        placementOKButton = new(Translation.Get("maidCallWindow", "okButton"));
+        placementOKButton.ControlEvent += (_, _) =>
+            this.meidoManager.PlaceMeidos(MaidPlacementUtility.PlacementTypes[placementDropdown.SelectedItemIndex]);
 
-            maidSelectorPane = AddPane(new MaidSelectorPane(this.meidoManager));
-        }
+        maidSelectorPane = AddPane(new MaidSelectorPane(this.meidoManager));
+    }
 
-        protected override void ReloadTranslation()
-        {
-            placementDropdown.SetDropdownItems(
-                Translation.GetArray("placementDropdown", MaidPlacementUtility.placementTypes)
-            );
-            placementOKButton.Label = Translation.Get("maidCallWindow", "okButton");
-        }
+    public override void Draw()
+    {
+        tabsPane.Draw();
 
-        public override void Draw()
-        {
-            tabsPane.Draw();
+        GUILayout.BeginHorizontal();
+        placementDropdown.Draw(GUILayout.Width(150));
+        placementOKButton.Draw();
+        GUILayout.EndHorizontal();
 
-            GUILayout.BeginHorizontal();
-            placementDropdown.Draw(GUILayout.Width(150));
-            placementOKButton.Draw();
-            GUILayout.EndHorizontal();
+        maidSelectorPane.Draw();
+    }
 
-            maidSelectorPane.Draw();
-        }
+    protected override void ReloadTranslation()
+    {
+        placementDropdown.SetDropdownItems(
+            Translation.GetArray("placementDropdown", MaidPlacementUtility.PlacementTypes));
+
+        placementOKButton.Label = Translation.Get("maidCallWindow", "okButton");
     }
 }

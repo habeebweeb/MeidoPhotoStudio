@@ -1,37 +1,39 @@
-﻿using System;
+using System;
 using System.IO;
+
 using MeidoPhotoStudio.Converter.Converters;
 
-namespace MeidoPhotoStudio.Converter
+namespace MeidoPhotoStudio.Converter;
+
+public class PluginCore
 {
-    public class PluginCore
+    private readonly IConverter[] converters;
+
+    public PluginCore(string workingDirectory, params IConverter[] converters)
     {
-        private readonly IConverter[] converters;
-        public string WorkingDirectory { get; set; }
+        WorkingDirectory = workingDirectory;
 
-        public PluginCore(string workingDirectory, params IConverter[] converters)
+        this.converters = converters;
+    }
+
+    public string WorkingDirectory { get; set; }
+
+    public void Convert()
+    {
+        Directory.CreateDirectory(WorkingDirectory);
+
+        foreach (var converter in converters)
         {
-            WorkingDirectory = workingDirectory;
-            this.converters = converters;
-        }
-
-        public void Convert()
-        {
-            Directory.CreateDirectory(WorkingDirectory);
-
-            foreach (var converter in converters)
+            try
             {
-                try
-                {
-                    converter.Convert(WorkingDirectory);
-                }
-                catch (Exception e)
-                {
-                    if (Plugin.Instance == null)
-                        continue;
+                converter.Convert(WorkingDirectory);
+            }
+            catch (Exception e)
+            {
+                if (!Plugin.Instance)
+                    continue;
 
-                    Plugin.Instance.Logger.LogError($"Could not convert data because {e}");
-                }
+                Plugin.Instance!.Logger!.LogError($"Could not convert data because {e}");
             }
         }
     }

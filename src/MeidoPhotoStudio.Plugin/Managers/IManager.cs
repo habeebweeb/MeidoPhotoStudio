@@ -1,9 +1,10 @@
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public interface IManager
 {
-    public interface IManager
-    {
-        void Update();
-        void Activate();
-        void Deactivate();
-    }
+    void Update();
+
+    void Activate();
+
+    void Deactivate();
 }

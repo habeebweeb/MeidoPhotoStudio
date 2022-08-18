@@ -1,332 +1,380 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using UnityEngine;
+
 using BepInEx.Configuration;
+using UnityEngine;
+
+using Input = MeidoPhotoStudio.Plugin.InputManager;
 using Object = UnityEngine.Object;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class SceneManager : IManager
 {
-    using Input = InputManager;
-    public class SceneManager : IManager
+    public static readonly Vector2 SceneDimensions = new(480, 270);
+
+    private static readonly ConfigEntry<bool> SortDescendingConfig =
+        Configuration.Config.Bind("SceneManager", "SortDescending", false, "Sort scenes descending (Z-A)");
+
+    private static readonly ConfigEntry<SortMode> CurrentSortModeConfig =
+        Configuration.Config.Bind("SceneManager", "SortMode", SortMode.Name, "Scene sorting mode");
+
+    private static byte[] tempSceneData;
+
+    private readonly MeidoPhotoStudio meidoPhotoStudio;
+
+    static SceneManager()
     {
+        Input.Register(MpsKey.OpenSceneManager, KeyCode.F8, "Hide/show scene manager");
+        Input.Register(MpsKey.SaveScene, KeyCode.S, "Quick save scene");
+        Input.Register(MpsKey.LoadScene, KeyCode.A, "Load quick saved scene");
+    }
 
-        private static byte[] tempSceneData;
-        private static string TempScenePath => Path.Combine(Constants.configPath, "mpstempscene");
-        public static bool Busy { get; private set; }
-        public static readonly Vector2 sceneDimensions = new Vector2(480, 270);
-        private static readonly ConfigEntry<bool> sortDescending;
-        private static readonly ConfigEntry<SortMode> currentSortMode;
-        private readonly MeidoPhotoStudio meidoPhotoStudio;
-        private int SortDirection => SortDescending ? -1 : 1;
-        public bool Initialized { get; private set; }
-        public bool KankyoMode { get; set; }
-        public bool SortDescending
+    public SceneManager(MeidoPhotoStudio meidoPhotoStudio)
+    {
+        this.meidoPhotoStudio = meidoPhotoStudio;
+
+        Activate();
+    }
+
+    public enum SortMode
+    {
+        Name,
+        DateCreated,
+        DateModified,
+    }
+
+    public static bool Busy { get; private set; }
+
+    public bool Initialized { get; private set; }
+
+    public bool KankyoMode { get; set; }
+
+    public int CurrentSceneIndex { get; private set; } = -1;
+
+    public List<MPSScene> SceneList { get; } = new();
+
+    public int CurrentDirectoryIndex { get; private set; } = -1;
+
+    public bool SortDescending
+    {
+        get => SortDescendingConfig.Value;
+        set => SortDescendingConfig.Value = value;
+    }
+
+    public string CurrentDirectoryName =>
+        CurrentDirectoryList[CurrentDirectoryIndex];
+
+    public List<string> CurrentDirectoryList =>
+        KankyoMode ? Constants.KankyoDirectoryList : Constants.SceneDirectoryList;
+
+    public string CurrentBasePath =>
+        KankyoMode ? Constants.KankyoPath : Constants.ScenesPath;
+
+    public string CurrentScenesDirectory =>
+        CurrentDirectoryIndex is 0 ? CurrentBasePath : Path.Combine(CurrentBasePath, CurrentDirectoryName);
+
+    public SortMode CurrentSortMode
+    {
+        get => CurrentSortModeConfig.Value;
+        private set => CurrentSortModeConfig.Value = value;
+    }
+
+    public MPSScene CurrentScene =>
+        SceneList.Count is 0 ? null : SceneList[CurrentSceneIndex];
+
+    private static string TempScenePath =>
+        Path.Combine(Constants.ConfigPath, "mpstempscene");
+
+    private int SortDirection =>
+        SortDescending ? -1 : 1;
+
+    public void Activate()
+    {
+    }
+
+    public void Initialize()
+    {
+        if (Initialized)
+            return;
+
+        Initialized = true;
+        SelectDirectory(0);
+    }
+
+    public void Deactivate() =>
+        ClearSceneList();
+
+    public void Update()
+    {
+        if (!Input.Control)
+            return;
+
+        if (Input.GetKeyDown(MpsKey.SaveScene))
+            QuickSaveScene();
+        else if (Input.GetKeyDown(MpsKey.LoadScene))
+            QuickLoadScene();
+    }
+
+    public void DeleteDirectory()
+    {
+        if (Directory.Exists(CurrentScenesDirectory))
+            Directory.Delete(CurrentScenesDirectory, true);
+
+        CurrentDirectoryList.RemoveAt(CurrentDirectoryIndex);
+        CurrentDirectoryIndex = Mathf.Clamp(CurrentDirectoryIndex, 0, CurrentDirectoryList.Count - 1);
+
+        UpdateSceneList();
+    }
+
+    public void OverwriteScene() =>
+        SaveScene(overwrite: true);
+
+    public void ToggleKankyoMode()
+    {
+        KankyoMode = !KankyoMode;
+        CurrentDirectoryIndex = 0;
+
+        UpdateSceneList();
+    }
+
+    public void SaveScene(bool overwrite = false)
+    {
+        if (Busy)
+            return;
+
+        Busy = true;
+
+        if (!Directory.Exists(CurrentScenesDirectory))
+            Directory.CreateDirectory(CurrentScenesDirectory);
+
+        MeidoPhotoStudio.NotifyRawScreenshot += SaveScene;
+
+        MeidoPhotoStudio.TakeScreenshot(new() { InMemory = true });
+
+        void SaveScene(object sender, ScreenshotEventArgs args)
         {
-            get => sortDescending.Value;
-            set => sortDescending.Value = value;
+            MeidoPhotoStudio.NotifyRawScreenshot -= SaveScene;
+
+            SaveSceneToFile(args.Screenshot, overwrite);
         }
-        public List<MPSScene> SceneList { get; } = new();
-        public int CurrentDirectoryIndex { get; private set; } = -1;
-        public string CurrentDirectoryName => CurrentDirectoryList[CurrentDirectoryIndex];
-        public List<string> CurrentDirectoryList
-            => KankyoMode ? Constants.KankyoDirectoryList : Constants.SceneDirectoryList;
-        public string CurrentBasePath => KankyoMode ? Constants.kankyoPath : Constants.scenesPath;
-        public string CurrentScenesDirectory
-            => CurrentDirectoryIndex == 0 ? CurrentBasePath : Path.Combine(CurrentBasePath, CurrentDirectoryName);
-        public SortMode CurrentSortMode
-        {
-            get => currentSortMode.Value;
-            private set => currentSortMode.Value = value;
-        }
-        public int CurrentSceneIndex { get; private set; } = -1;
-        public MPSScene CurrentScene => SceneList.Count == 0 ? null : SceneList[CurrentSceneIndex];
-        public enum SortMode
-        {
-            Name, DateCreated, DateModified
-        }
+    }
 
-        static SceneManager()
+    public void SelectDirectory(int directoryIndex)
+    {
+        directoryIndex = Mathf.Clamp(directoryIndex, 0, CurrentDirectoryList.Count - 1);
+
+        if (directoryIndex == CurrentDirectoryIndex)
+            return;
+
+        CurrentDirectoryIndex = directoryIndex;
+
+        UpdateSceneList();
+    }
+
+    public void SelectScene(int sceneIndex)
+    {
+        CurrentSceneIndex = Mathf.Clamp(sceneIndex, 0, SceneList.Count - 1);
+        CurrentScene.Preload();
+    }
+
+    public void AddDirectory(string directoryName)
+    {
+        directoryName = Utility.SanitizePathPortion(directoryName);
+
+        if (CurrentDirectoryList.Contains(directoryName, StringComparer.InvariantCultureIgnoreCase))
+            return;
+
+        var finalPath = Path.Combine(CurrentBasePath, directoryName);
+        var fullPath = Path.GetFullPath(finalPath);
+
+        if (!fullPath.StartsWith(CurrentBasePath))
         {
-            sortDescending = Configuration.Config.Bind(
-                "SceneManager", "SortDescending",
-                false,
-                "Sort scenes descending (Z-A)"
-            );
+            var baseDirectoryName = KankyoMode ? Constants.KankyoDirectory : Constants.SceneDirectory;
 
-            currentSortMode = Configuration.Config.Bind(
-                "SceneManager", "SortMode",
-                SortMode.Name,
-                "Scene sorting mode"
-            );
+            Utility.LogError($"Could not add directory to {baseDirectoryName}. Path is invalid: '{fullPath}'");
 
-            Input.Register(MpsKey.OpenSceneManager, KeyCode.F8, "Hide/show scene manager");
-            Input.Register(MpsKey.SaveScene, KeyCode.S, "Quick save scene");
-            Input.Register(MpsKey.LoadScene, KeyCode.A, "Load quick saved scene");
-        }
-
-        public SceneManager(MeidoPhotoStudio meidoPhotoStudio)
-        {
-            this.meidoPhotoStudio = meidoPhotoStudio;
-            Activate();
+            return;
         }
 
-        public void Activate() { }
+        CurrentDirectoryList.Add(directoryName);
+        Directory.CreateDirectory(finalPath);
 
-        public void Initialize()
-        {
-            if (!Initialized)
-            {
-                Initialized = true;
-                SelectDirectory(0);
-            }
-        }
+        UpdateDirectoryList();
+        CurrentDirectoryIndex = CurrentDirectoryList.IndexOf(directoryName);
 
-        public void Deactivate() => ClearSceneList();
+        UpdateSceneList();
+    }
 
-        public void Update()
-        {
-            if (Input.Control)
-            {
-                if (Input.GetKeyDown(MpsKey.SaveScene)) QuickSaveScene();
-                else if (Input.GetKeyDown(MpsKey.LoadScene)) QuickLoadScene();
-            }
-        }
-
-        public void DeleteDirectory()
-        {
-            if (Directory.Exists(CurrentScenesDirectory)) Directory.Delete(CurrentScenesDirectory, true);
-
-            CurrentDirectoryList.RemoveAt(CurrentDirectoryIndex);
-            CurrentDirectoryIndex = Mathf.Clamp(CurrentDirectoryIndex, 0, CurrentDirectoryList.Count - 1);
-            UpdateSceneList();
-        }
-
-        public void OverwriteScene() => SaveScene(overwrite: true);
-
-        public void ToggleKankyoMode()
-        {
-            KankyoMode = !KankyoMode;
+    public void Refresh()
+    {
+        if (!Directory.Exists(CurrentScenesDirectory))
             CurrentDirectoryIndex = 0;
-            UpdateSceneList();
+
+        if (KankyoMode)
+            Constants.InitializeKankyoDirectories();
+        else
+            Constants.InitializeSceneDirectories();
+
+        UpdateSceneList();
+    }
+
+    public void SortScenes(SortMode sortMode)
+    {
+        CurrentSortMode = sortMode;
+
+        Comparison<MPSScene> comparator = CurrentSortMode switch
+        {
+            SortMode.DateModified => SortByDateModified,
+            SortMode.DateCreated => SortByDateCreated,
+            SortMode.Name => SortByName,
+            _ => SortByName,
+        };
+
+        SceneList.Sort(comparator);
+    }
+
+    public void DeleteScene()
+    {
+        if (CurrentScene.FileInfo.Exists)
+            CurrentScene.FileInfo.Delete();
+
+        SceneList.RemoveAt(CurrentSceneIndex);
+        CurrentSceneIndex = Mathf.Clamp(CurrentSceneIndex, 0, SceneList.Count - 1);
+    }
+
+    public void LoadScene(MPSScene scene) =>
+        meidoPhotoStudio.LoadScene(scene.Data);
+
+    private int SortByName(MPSScene a, MPSScene b) =>
+        SortDirection * WindowsLogicalComparer.StrCmpLogicalW(a.FileInfo.Name, b.FileInfo.Name);
+
+    private int SortByDateCreated(MPSScene a, MPSScene b) =>
+        SortDirection * DateTime.Compare(a.FileInfo.CreationTime, b.FileInfo.CreationTime);
+
+    private int SortByDateModified(MPSScene a, MPSScene b) =>
+        SortDirection * DateTime.Compare(a.FileInfo.LastWriteTime, b.FileInfo.LastWriteTime);
+
+    private void UpdateSceneList()
+    {
+        ClearSceneList();
+
+        if (!Directory.Exists(CurrentScenesDirectory))
+            Directory.CreateDirectory(CurrentScenesDirectory);
+
+        foreach (var filename in Directory.GetFiles(CurrentScenesDirectory))
+            if (Path.GetExtension(filename) is ".png")
+                SceneList.Add(new(filename));
+
+        SortScenes(CurrentSortMode);
+
+        CurrentSceneIndex = Mathf.Clamp(CurrentSceneIndex, 0, SceneList.Count - 1);
+    }
+
+    private void UpdateDirectoryList()
+    {
+        var baseDirectoryName = KankyoMode ? Constants.KankyoDirectory : Constants.SceneDirectory;
+
+        CurrentDirectoryList.Sort((a, b) =>
+            a.Equals(baseDirectoryName, StringComparison.InvariantCultureIgnoreCase)
+                ? -1
+                : WindowsLogicalComparer.StrCmpLogicalW(a, b));
+    }
+
+    private void ClearSceneList()
+    {
+        foreach (var scene in SceneList)
+            scene.Destroy();
+
+        SceneList.Clear();
+    }
+
+    private void QuickSaveScene()
+    {
+        if (Busy)
+            return;
+
+        var data = meidoPhotoStudio.SaveScene();
+
+        if (data is null)
+            return;
+
+        tempSceneData = data;
+
+        File.WriteAllBytes(TempScenePath, data);
+    }
+
+    private void QuickLoadScene()
+    {
+        if (Busy)
+            return;
+
+        if (tempSceneData is null)
+        {
+            if (File.Exists(TempScenePath))
+                tempSceneData = File.ReadAllBytes(TempScenePath);
+            else
+                return;
         }
 
-        public void SaveScene(bool overwrite = false)
+        meidoPhotoStudio.LoadScene(tempSceneData);
+    }
+
+    private void SaveSceneToFile(Texture2D screenshot, bool overwrite = false)
+    {
+        Busy = true;
+
+        var sceneData = meidoPhotoStudio.SaveScene(KankyoMode);
+
+        if (sceneData is not null)
         {
-            if (Busy) return;
-            Busy = true;
+            var scenePrefix = KankyoMode ? "mpskankyo" : "mpsscene";
+            var fileName = $"{scenePrefix}{Utility.Timestamp}.png";
+            var savePath = Path.Combine(CurrentScenesDirectory, fileName);
 
-            if (!Directory.Exists(CurrentScenesDirectory)) Directory.CreateDirectory(CurrentScenesDirectory);
+            Utility.ResizeToFit(screenshot, (int)SceneDimensions.x, (int)SceneDimensions.y);
 
-            MeidoPhotoStudio.NotifyRawScreenshot += SaveScene;
-
-            MeidoPhotoStudio.TakeScreenshot(new ScreenshotEventArgs() { InMemory = true });
-
-            void SaveScene(object sender, ScreenshotEventArgs args)
+            try
             {
-                MeidoPhotoStudio.NotifyRawScreenshot -= SaveScene;
-                SaveSceneToFile(args.Screenshot, overwrite);
-            }
-        }
+                if (overwrite && CurrentScene?.FileInfo is not null)
+                    savePath = CurrentScene.FileInfo.FullName;
+                else
+                    overwrite = false;
 
-        public void SelectDirectory(int directoryIndex)
-        {
-            directoryIndex = Mathf.Clamp(directoryIndex, 0, CurrentDirectoryList.Count - 1);
-
-            if (directoryIndex == CurrentDirectoryIndex) return;
-
-            CurrentDirectoryIndex = directoryIndex;
-
-            UpdateSceneList();
-        }
-
-        public void SelectScene(int sceneIndex)
-        {
-            CurrentSceneIndex = Mathf.Clamp(sceneIndex, 0, SceneList.Count - 1);
-            CurrentScene.Preload();
-        }
-
-        public void AddDirectory(string directoryName)
-        {
-            directoryName = Utility.SanitizePathPortion(directoryName);
-
-            if (!CurrentDirectoryList.Contains(directoryName, StringComparer.InvariantCultureIgnoreCase))
-            {
-                string finalPath = Path.Combine(CurrentBasePath, directoryName);
-                string fullPath = Path.GetFullPath(finalPath);
-
-                if (!fullPath.StartsWith(CurrentBasePath))
+                using (var fileStream = File.Create(savePath))
                 {
-                    string baseDirectoryName = KankyoMode ? Constants.kankyoDirectory : Constants.sceneDirectory;
-                    Utility.LogError($"Could not add directory to {baseDirectoryName}. Path is invalid: '{fullPath}'");
-                    return;
+                    var encodedPng = screenshot.EncodeToPNG();
+
+                    fileStream.Write(encodedPng, 0, encodedPng.Length);
+                    fileStream.Write(sceneData, 0, sceneData.Length);
                 }
 
-                CurrentDirectoryList.Add(directoryName);
-                Directory.CreateDirectory(finalPath);
-
-                UpdateDirectoryList();
-                CurrentDirectoryIndex = CurrentDirectoryList.IndexOf(directoryName);
-
-                UpdateSceneList();
+                if (overwrite)
+                {
+                    File.SetCreationTime(savePath, CurrentScene.FileInfo.CreationTime);
+                    CurrentScene.Destroy();
+                    SceneList.RemoveAt(CurrentSceneIndex);
+                }
             }
-        }
-
-        public void Refresh()
-        {
-            if (!Directory.Exists(CurrentScenesDirectory)) CurrentDirectoryIndex = 0;
-
-            if (KankyoMode) Constants.InitializeKankyoDirectories();
-            else Constants.InitializeSceneDirectories();
-
-            UpdateSceneList();
-        }
-
-        public void SortScenes(SortMode sortMode)
-        {
-            CurrentSortMode = sortMode;
-            Comparison<MPSScene> comparator = CurrentSortMode switch
+            catch (Exception e)
             {
-                SortMode.DateModified => SortByDateModified,
-                SortMode.DateCreated => SortByDateCreated,
-                _ => SortByName,
-            };
-            SceneList.Sort(comparator);
-        }
+                Utility.LogError($"Failed to save scene to disk because {e.Message}\n{e.StackTrace}");
+                Object.DestroyImmediate(screenshot);
+                Busy = false;
 
-        public void DeleteScene()
-        {
-            if (CurrentScene.FileInfo.Exists)
-            {
-                CurrentScene.FileInfo.Delete();
-            }
-            SceneList.RemoveAt(CurrentSceneIndex);
-            CurrentSceneIndex = Mathf.Clamp(CurrentSceneIndex, 0, SceneList.Count - 1);
-        }
-
-        public void LoadScene(MPSScene scene) => meidoPhotoStudio.LoadScene(scene.Data);
-
-        private int SortByName(MPSScene a, MPSScene b)
-        {
-            return SortDirection * WindowsLogicalComparer.StrCmpLogicalW(a.FileInfo.Name, b.FileInfo.Name);
-        }
-
-        private int SortByDateCreated(MPSScene a, MPSScene b)
-        {
-            return SortDirection * DateTime.Compare(a.FileInfo.CreationTime, b.FileInfo.CreationTime);
-        }
-
-        private int SortByDateModified(MPSScene a, MPSScene b)
-        {
-            return SortDirection * DateTime.Compare(a.FileInfo.LastWriteTime, b.FileInfo.LastWriteTime);
-        }
-
-        private void UpdateSceneList()
-        {
-            ClearSceneList();
-
-            if (!Directory.Exists(CurrentScenesDirectory))
-            {
-                Directory.CreateDirectory(CurrentScenesDirectory);
+                return;
             }
 
-            foreach (string filename in Directory.GetFiles(CurrentScenesDirectory))
-            {
-                if (Path.GetExtension(filename) == ".png") SceneList.Add(new MPSScene(filename));
-            }
-
+            SceneList.Add(new(savePath, screenshot));
             SortScenes(CurrentSortMode);
-
-            CurrentSceneIndex = Mathf.Clamp(CurrentSceneIndex, 0, SceneList.Count - 1);
         }
-
-        private void UpdateDirectoryList()
+        else
         {
-            string baseDirectoryName = KankyoMode ? Constants.kankyoDirectory : Constants.sceneDirectory;
-            CurrentDirectoryList.Sort((a, b)
-                => a.Equals(baseDirectoryName, StringComparison.InvariantCultureIgnoreCase) 
-                    ? -1 : WindowsLogicalComparer.StrCmpLogicalW(a, b));
+            Object.DestroyImmediate(screenshot);
         }
 
-        private void ClearSceneList()
-        {
-            foreach (MPSScene scene in SceneList) scene.Destroy();
-            SceneList.Clear();
-        }
-
-        private void QuickSaveScene()
-        {
-            if (Busy) return;
-            
-            var data = meidoPhotoStudio.SaveScene();
-            if (data == null) return;
-
-            tempSceneData = data;
-            
-            File.WriteAllBytes(TempScenePath, data);
-        }
-
-        private void QuickLoadScene()
-        {
-            if (Busy) return;
-
-            if (tempSceneData == null)
-            {
-                if (File.Exists(TempScenePath)) tempSceneData = File.ReadAllBytes(TempScenePath);
-                else return;
-            }
-
-            meidoPhotoStudio.LoadScene(tempSceneData);
-        }
-
-        private void SaveSceneToFile(Texture2D screenshot, bool overwrite = false)
-        {
-            Busy = true;
-
-            byte[] sceneData = meidoPhotoStudio.SaveScene(KankyoMode);
-
-            if (sceneData != null)
-            {
-                string scenePrefix = KankyoMode ? "mpskankyo" : "mpsscene";
-                string fileName = $"{scenePrefix}{Utility.Timestamp}.png";
-                string savePath = Path.Combine(CurrentScenesDirectory, fileName);
-
-                Utility.ResizeToFit(screenshot, (int) sceneDimensions.x, (int) sceneDimensions.y);
-
-                try
-                {
-                    if (overwrite && CurrentScene?.FileInfo != null) savePath = CurrentScene.FileInfo.FullName;
-                    else overwrite = false;
-
-                    using (FileStream fileStream = File.Create(savePath))
-                    {
-                        byte[] encodedPng = screenshot.EncodeToPNG();
-                        fileStream.Write(encodedPng, 0, encodedPng.Length);
-                        fileStream.Write(sceneData, 0, sceneData.Length);
-                    }
-
-                    if (overwrite)
-                    {
-                        File.SetCreationTime(savePath, CurrentScene.FileInfo.CreationTime);
-                        CurrentScene.Destroy();
-                        SceneList.RemoveAt(CurrentSceneIndex);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Utility.LogError($"Failed to save scene to disk because {e.Message}\n{e.StackTrace}");
-                    Object.DestroyImmediate(screenshot);
-                    Busy = false;
-                    return;
-                }
-
-                SceneList.Add(new MPSScene(savePath, screenshot));
-                SortScenes(CurrentSortMode);
-            }
-            else Object.DestroyImmediate(screenshot);
-
-            Busy = false;
-        }
+        Busy = false;
     }
 }

@@ -1,35 +1,43 @@
 using System;
 using System.Collections.Generic;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class EffectManager : IManager
 {
-    public class EffectManager : IManager
+    public const string Header = "EFFECT";
+    public const string Footer = "END_EFFECT";
+
+    private readonly Dictionary<Type, IEffectManager> effectManagers = new();
+
+    public T Get<T>()
+        where T : IEffectManager =>
+        effectManagers.ContainsKey(typeof(T)) ? (T)effectManagers[typeof(T)] : default;
+
+    public T AddManager<T>()
+        where T : IEffectManager, new()
     {
-        public const string header = "EFFECT";
-        public const string footer = "END_EFFECT";
-        private readonly Dictionary<Type, IEffectManager> EffectManagers = new Dictionary<Type, IEffectManager>();
+        var manager = new T();
 
-        public T Get<T>() where T : IEffectManager
-            => EffectManagers.ContainsKey(typeof(T)) ? (T)EffectManagers[typeof(T)] : default;
+        effectManagers[typeof(T)] = manager;
+        manager.Activate();
 
-        public T AddManager<T>() where T : IEffectManager, new()
-        {
-            T manager = new T();
-            EffectManagers[typeof(T)] = manager;
-            manager.Activate();
-            return manager;
-        }
+        return manager;
+    }
 
-        public void Activate()
-        {
-            foreach (IEffectManager effectManager in EffectManagers.Values) effectManager.Activate();
-        }
+    public void Activate()
+    {
+        foreach (var effectManager in effectManagers.Values)
+            effectManager.Activate();
+    }
 
-        public void Deactivate()
-        {
-            foreach (IEffectManager effectManager in EffectManagers.Values) effectManager.Deactivate();
-        }
+    public void Deactivate()
+    {
+        foreach (var effectManager in effectManagers.Values)
+            effectManager.Deactivate();
+    }
 
-        public void Update() { }
+    public void Update()
+    {
     }
 }

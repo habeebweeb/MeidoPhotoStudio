@@ -1,134 +1,129 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
+
 using ExIni;
 using MeidoPhotoStudio.Converter.MultipleMaids;
 
-namespace MeidoPhotoStudio.Converter.Converters
+namespace MeidoPhotoStudio.Converter.Converters;
+
+public class MMConverter : IConverter
 {
-    public class MMConverter : IConverter
+    public const string ConverterName = "MultipleMaids";
+
+    private const string InputDirectoryName = "Input";
+
+    public void Convert(string workingDirectory)
     {
-        private const string InputDirectoryName = "Input";
-        public const string ConverterName = "MultipleMaids";
+        var baseDirectory = Path.Combine(workingDirectory, ConverterName);
+        var baseInputDirectory = Path.Combine(baseDirectory, InputDirectoryName);
+        var baseOutputDirectory = Path.Combine(baseDirectory, MPSSceneSerializer.FormatDate(DateTime.Now));
 
-        public void Convert(string workingDirectory)
+        Convert(baseInputDirectory, baseOutputDirectory);
+    }
+
+    private static void Convert(string workingDirectory, string destination)
+    {
+        var directory = new DirectoryInfo(workingDirectory);
+
+        if (!directory.Exists)
+            return;
+
+        Directory.CreateDirectory(destination);
+
+        foreach (var iniFile in directory.GetFiles("*.ini"))
+            ConvertIniFile(iniFile, destination);
+
+        foreach (var subDirectory in directory.GetDirectories())
         {
-            var baseDirectory = Path.Combine(workingDirectory, ConverterName);
-            var baseInputDirectory = Path.Combine(baseDirectory, InputDirectoryName);
-            var baseOutputDirectory = Path.Combine(baseDirectory, MPSSceneSerializer.FormatDate(DateTime.Now));
+            var subDestination = Path.Combine(destination, subDirectory.Name);
 
-            Convert(baseInputDirectory, baseOutputDirectory);
+            Convert(subDirectory.FullName, subDestination);
         }
+    }
 
-        private static void Convert(string workingDirectory, string destination)
+    private static void ConvertIniFile(FileInfo iniFile, string destination)
+    {
+        var section = GetSceneSection(iniFile.FullName);
+
+        if (section is null)
+            return;
+
+        var outputDirectory = Path.Combine(destination, Path.GetFileNameWithoutExtension(iniFile.Name));
+
+        Directory.CreateDirectory(outputDirectory);
+
+        foreach (var key in section.Keys.Where(key => !key.Key.StartsWith("ss") && !string.IsNullOrEmpty(key.Value)))
+            ConvertScene(section, key, Path.Combine(outputDirectory, GenerateFilename(iniFile.Name, key)));
+    }
+
+    private static void ConvertScene(IniSection section, IniKey key, string filePath)
+    {
+        var background = int.Parse(key.Key.Substring(1)) >= 10000;
+
+        byte[] convertedData;
+        MeidoPhotoStudio.Plugin.SceneMetadata sceneMetadata;
+
+        try
         {
-            var directory = new DirectoryInfo(workingDirectory);
-
-            if (!directory.Exists)
+            convertedData = MMSceneConverter.Convert(key.Value, background);
+            sceneMetadata = MMSceneConverter.GetSceneMetadata(key.Value, background);
+        }
+        catch (Exception e)
+        {
+            if (!Plugin.Instance || Plugin.Instance!.Logger is null)
                 return;
 
-            Directory.CreateDirectory(destination);
+            Plugin.Instance.Logger.LogError($"Could not convert {Path.GetFileName(filePath)} scene because {e}");
 
-            foreach (var iniFile in directory.GetFiles("*.ini"))
-                ConvertIniFile(iniFile, destination);
-
-            foreach (var subDirectory in directory.GetDirectories())
-            {
-                var subDestination = Path.Combine(destination, subDirectory.Name);
-                Convert(subDirectory.FullName, subDestination);
-            }
+            return;
         }
 
-        private static void ConvertIniFile(FileInfo iniFile, string destination)
+        var screenshotKey = $"s{key.Key}"; // ex. ss100=thumb_base64
+        string? screenshotBase64 = null;
+
+        if (section.HasKey(screenshotKey) && !string.IsNullOrEmpty(section[screenshotKey].Value))
+            screenshotBase64 = section[screenshotKey].Value;
+
+        MPSSceneSerializer.SaveToFile(filePath, sceneMetadata, convertedData, screenshotBase64);
+    }
+
+    private static string GenerateFilename(string iniFilePath, IniKey sceneKey)
+    {
+        var background = int.Parse(sceneKey.Key.Substring(1)) >= 10000;
+        var iniFilename = Path.GetFileNameWithoutExtension(iniFilePath);
+        var sceneName = sceneKey.Key;
+        var data = sceneKey.Value;
+        var date = DateTime.Parse(data.Substring(0, data.IndexOf(',')));
+        var sceneDate = MPSSceneSerializer.FormatDate(date);
+
+        return $"mm{(background ? "kankyo" : "scene")}_{iniFilename}_{sceneName}_{sceneDate}.png";
+    }
+
+    private static IniSection? GetSceneSection(string filePath)
+    {
+        IniFile iniFile;
+
+        try
         {
-            var section = GetSceneSection(iniFile.FullName);
-
-            if (section is null)
-                return;
-
-            var outputDirectory = Path.Combine(destination, Path.GetFileNameWithoutExtension(iniFile.Name));
-
-            Directory.CreateDirectory(outputDirectory);
-
-            foreach (var key in section.Keys.Where(
-                key => !key.Key.StartsWith("ss") && !string.IsNullOrEmpty(key.Value)
-            ))
-                ConvertScene(section, key, Path.Combine(outputDirectory, GenerateFilename(iniFile.Name, key)));
+            iniFile = IniFile.FromFile(filePath);
         }
-
-        private static void ConvertScene(IniSection section, IniKey key, string filePath)
+        catch (Exception e)
         {
-            var background = int.Parse(key.Key.Substring(1)) >= 10000;
-
-            byte[] convertedData;
-            MeidoPhotoStudio.Plugin.SceneMetadata sceneMetadata;
-
-            try
-            {
-                convertedData = MMSceneConverter.Convert(key.Value, background);
-                sceneMetadata = MMSceneConverter.GetSceneMetadata(key.Value, background);
-            }
-            catch (Exception e)
-            {
-                if (Plugin.Instance == null)
-                    return;
-
-                Plugin.Instance.Logger.LogError($"Could not convert {Path.GetFileName(filePath)} scene because {e}");
-                return;
-            }
-
-            var screenshotKey = $"s{key.Key}"; // ex. ss100=thumb_base64
-            string? screenshotBase64 = null;
-
-            if (section.HasKey(screenshotKey) && !string.IsNullOrEmpty(section[screenshotKey].Value))
-                screenshotBase64 = section[screenshotKey].Value;
-
-            MPSSceneSerializer.SaveToFile(filePath, sceneMetadata, convertedData, screenshotBase64);
-        }
-
-        private static string GenerateFilename(string iniFilePath, IniKey sceneKey)
-        {
-            var background = int.Parse(sceneKey.Key.Substring(1)) >= 10000;
-
-            var iniFilename = Path.GetFileNameWithoutExtension(iniFilePath);
-
-            var sceneName = sceneKey.Key;
-
-            var data = sceneKey.Value;
-            var date = DateTime.Parse(data.Substring(0, data.IndexOf(',')));
-
-            var sceneDate = MPSSceneSerializer.FormatDate(date);
-
-            return $"mm{(background ? "kankyo" : "scene")}_{iniFilename}_{sceneName}_{sceneDate}.png";
-        }
-
-        private static IniSection? GetSceneSection(string filePath)
-        {
-            IniFile iniFile;
-
-            try
-            {
-                iniFile = IniFile.FromFile(filePath);
-            }
-            catch (Exception e)
-            {
-                if (Plugin.Instance != null)
-                    Plugin.Instance.Logger.LogWarning(
-                        $"Could not {(e is IOException ? "read" : "parse")} ini file {filePath}"
-                    );
-
-                return null;
-            }
-
-            if (iniFile.HasSection("scene"))
-                return iniFile.GetSection("scene");
-
-            if (Plugin.Instance != null)
+            if (Plugin.Instance && Plugin.Instance!.Logger is not null)
                 Plugin.Instance.Logger.LogWarning(
-                    $"{filePath} is not a valid MM config because '[scene]' section is missing"
-                );
+                    $"Could not {(e is IOException ? "read" : "parse")} ini file {filePath}");
 
             return null;
         }
+
+        if (iniFile.HasSection("scene"))
+            return iniFile.GetSection("scene");
+
+        if (Plugin.Instance && Plugin.Instance!.Logger is not null)
+            Plugin.Instance.Logger.LogWarning(
+                $"{filePath} is not a valid MM config because '[scene]' section is missing");
+
+        return null;
     }
 }

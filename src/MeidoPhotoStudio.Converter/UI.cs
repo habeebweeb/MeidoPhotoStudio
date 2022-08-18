@@ -1,40 +1,40 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-namespace MeidoPhotoStudio.Converter
+namespace MeidoPhotoStudio.Converter;
+
+public class UI
 {
-    public class UI
+    public bool Visible;
+
+    private const int WindowID = 0xEA4040;
+    private const string WindowTitle = Plugin.PluginName + " " + Plugin.PluginVersion;
+
+    private readonly PluginCore core;
+
+    private Rect windowRect;
+
+    public UI(PluginCore pluginCore) =>
+        core = pluginCore;
+
+    public void Draw()
     {
-        private const int WindowID = 0xEA4040;
-        private const string WindowTitle = Plugin.PluginName + " " + Plugin.PluginVersion;
-        private Rect windowRect;
+        if (!Visible)
+            return;
 
-        private PluginCore core;
+        windowRect.width = 230f;
+        windowRect.height = 100f;
+        windowRect.x = Mathf.Clamp(windowRect.x, 0, Screen.width - windowRect.width);
+        windowRect.y = Mathf.Clamp(windowRect.y, 0, Screen.height - windowRect.height);
+        windowRect = GUI.Window(WindowID, windowRect, GUIFunc, WindowTitle);
+    }
 
-        public bool Visible;
+    private void GUIFunc(int windowId)
+    {
+        GUILayout.FlexibleSpace();
 
-        public UI(PluginCore pluginCore) =>
-            core = pluginCore;
+        if (GUILayout.Button("Convert"))
+            core.Convert();
 
-        public void Draw()
-        {
-            if (!Visible)
-                return;
-
-            windowRect.width = 230f;
-            windowRect.height = 100f;
-            windowRect.x = Mathf.Clamp(windowRect.x, 0, Screen.width - windowRect.width);
-            windowRect.y = Mathf.Clamp(windowRect.y, 0, Screen.height - windowRect.height);
-            windowRect = GUI.Window(WindowID, windowRect, GUIFunc, WindowTitle);
-        }
-
-        private void GUIFunc(int windowId)
-        {
-            GUILayout.FlexibleSpace();
-
-            if (GUILayout.Button("Convert"))
-                core.Convert();
-
-            GUI.DragWindow();
-        }
+        GUI.DragWindow();
     }
 }

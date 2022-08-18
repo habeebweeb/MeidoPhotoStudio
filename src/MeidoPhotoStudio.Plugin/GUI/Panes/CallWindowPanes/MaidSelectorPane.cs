@@ -1,126 +1,133 @@
 using System.Collections.Generic;
+
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class MaidSelectorPane : BasePane
 {
-    public class MaidSelectorPane : BasePane
+    private readonly MeidoManager meidoManager;
+    private readonly Button clearMaidsButton;
+    private readonly Button callMaidsButton;
+    private readonly Toggle activeMeidoListToggle;
+
+    private Vector2 maidListScrollPos;
+    private Vector2 activeMaidListScrollPos;
+
+    public MaidSelectorPane(MeidoManager meidoManager)
     {
-        private readonly MeidoManager meidoManager;
-        private Vector2 maidListScrollPos;
-        private Vector2 activeMaidListScrollPos;
-        private readonly Button clearMaidsButton;
-        private readonly Button callMaidsButton;
-        private readonly Toggle activeMeidoListToggle;
+        this.meidoManager = meidoManager;
 
-        public MaidSelectorPane(MeidoManager meidoManager)
+        clearMaidsButton = new(Translation.Get("maidCallWindow", "clearButton"));
+        clearMaidsButton.ControlEvent += (_, _) =>
+            this.meidoManager.ClearSelectList();
+
+        callMaidsButton = new(Translation.Get("maidCallWindow", "callButton"));
+        callMaidsButton.ControlEvent += (_, _) =>
+            this.meidoManager.CallMeidos();
+
+        activeMeidoListToggle = new(Translation.Get("maidCallWindow", "activeOnlyToggle"));
+        this.meidoManager.BeginCallMeidos += (_, _) =>
         {
-            this.meidoManager = meidoManager;
-            clearMaidsButton = new Button(Translation.Get("maidCallWindow", "clearButton"));
-            clearMaidsButton.ControlEvent += (s, a) => this.meidoManager.ClearSelectList();
+            if (meidoManager.SelectedMeidoSet.Count is 0)
+                activeMeidoListToggle.Value = false;
+        };
+    }
 
-            callMaidsButton = new Button(Translation.Get("maidCallWindow", "callButton"));
-            callMaidsButton.ControlEvent += (s, a) => this.meidoManager.CallMeidos();
+    public override void Activate()
+    {
+        base.Activate();
 
-            activeMeidoListToggle = new(Translation.Get("maidCallWindow", "activeOnlyToggle"));
+        // NOTE: Leaving this mode enabled pretty much softlocks meido selection so disable it on activation
+        activeMeidoListToggle.Value = false;
+    }
 
-            this.meidoManager.BeginCallMeidos += (_, _) =>
-            {
-                if (meidoManager.SelectedMeidoSet.Count == 0)
-                    activeMeidoListToggle.Value = false;
-            };
-        }
+    public override void Draw()
+    {
+        GUILayout.BeginHorizontal();
+        clearMaidsButton.Draw(GUILayout.ExpandWidth(false));
+        callMaidsButton.Draw();
+        GUILayout.EndHorizontal();
 
-        protected override void ReloadTranslation()
+        MpsGui.WhiteLine();
+
+        GUI.enabled = meidoManager.HasActiveMeido;
+
+        activeMeidoListToggle.Draw();
+
+        GUI.enabled = true;
+
+        var onlyActiveMeido = activeMeidoListToggle.Value;
+
+        IList<Meido> meidoList = onlyActiveMeido
+            ? meidoManager.ActiveMeidoList
+            : meidoManager.Meidos;
+
+        var labelStyle = new GUIStyle(GUI.skin.label)
         {
-            clearMaidsButton.Label = Translation.Get("maidCallWindow", "clearButton");
-            callMaidsButton.Label = Translation.Get("maidCallWindow", "callButton");
-            activeMeidoListToggle.Label = Translation.Get("maidCallWindow", "activeOnlyToggle");
-        }
-        
-        public override void Activate()
+            fontSize = 14,
+        };
+
+        var selectLabelStyle = new GUIStyle(labelStyle)
         {
-            base.Activate();
-            // Leaving this mode enabled pretty much softlocks meido selection so disable it on activation
-            activeMeidoListToggle.Value = false;
-        }
+            normal = { textColor = Color.black },
+            alignment = TextAnchor.UpperRight,
+        };
 
-        public override void Draw()
+        var labelSelectedStyle = new GUIStyle(labelStyle)
         {
-            GUILayout.BeginHorizontal();
-            clearMaidsButton.Draw(GUILayout.ExpandWidth(false));
-            callMaidsButton.Draw();
-            GUILayout.EndHorizontal();
+            normal = { textColor = Color.black },
+        };
 
-            MpsGui.WhiteLine();
+        var windowRect = parent.WindowRect;
+        var windowHeight = windowRect.height;
+        var buttonWidth = windowRect.width - 30f;
 
-            GUI.enabled = meidoManager.HasActiveMeido;
+        const float buttonHeight = 85f;
+        const float offsetTop = 130f;
 
-            activeMeidoListToggle.Draw();
+        var positionRect = new Rect(5f, offsetTop, windowRect.width - 10f, windowHeight - (offsetTop + 35));
+        var viewRect = new Rect(0f, 0f, buttonWidth, buttonHeight * meidoList.Count + 5f);
 
-            GUI.enabled = true;
+        if (onlyActiveMeido)
+            activeMaidListScrollPos = GUI.BeginScrollView(positionRect, activeMaidListScrollPos, viewRect);
+        else
+            maidListScrollPos = GUI.BeginScrollView(positionRect, maidListScrollPos, viewRect);
 
-            var onlyActiveMeido = activeMeidoListToggle.Value;
+        for (var i = 0; i < meidoList.Count; i++)
+        {
+            var meido = meidoList[i];
+            var y = i * buttonHeight;
+            var selectedMaid = meidoManager.SelectedMeidoSet.Contains(meido.StockNo);
 
-            IList<Meido> meidoList = onlyActiveMeido
-                ? meidoManager.ActiveMeidoList
-                : meidoManager.Meidos;
+            if (GUI.Button(new(0f, y, buttonWidth, buttonHeight), string.Empty))
+                meidoManager.SelectMeido(meido.StockNo);
 
-            var labelStyle = new GUIStyle(GUI.skin.label) { fontSize = 14 };
-
-            var selectLabelStyle = new GUIStyle(labelStyle)
+            if (selectedMaid)
             {
-                normal = { textColor = Color.black },
-                alignment = TextAnchor.UpperRight,
-            };
+                var selectedIndex = meidoManager.SelectMeidoList.IndexOf(meido.StockNo) + 1;
 
-            var labelSelectedStyle = new GUIStyle(labelStyle)
-            {
-                normal = { textColor = Color.black },
-            };
+                GUI.DrawTexture(new(5f, y + 5f, buttonWidth - 10f, buttonHeight - 10f), Texture2D.whiteTexture);
 
-            var windowRect = parent.WindowRect;
-            var windowHeight = windowRect.height;
-            var buttonWidth = windowRect.width - 30f;
-            const float buttonHeight = 85f;
-            const float offsetTop = 130f;
-
-            var positionRect = new Rect(5f, offsetTop, windowRect.width - 10f, windowHeight - (offsetTop + 35));
-            var viewRect = new Rect(0f, 0f, buttonWidth, buttonHeight * meidoList.Count + 5f);
-
-            if (onlyActiveMeido)
-                activeMaidListScrollPos = GUI.BeginScrollView(positionRect, activeMaidListScrollPos, viewRect);
-            else
-                maidListScrollPos = GUI.BeginScrollView(positionRect, maidListScrollPos, viewRect);
-
-            for (var i = 0; i < meidoList.Count; i++)
-            {
-                var meido = meidoList[i];
-                var y = i * buttonHeight;
-                var selectedMaid = meidoManager.SelectedMeidoSet.Contains(meido.StockNo);
-
-                if (GUI.Button(new(0f, y, buttonWidth, buttonHeight), string.Empty))
-                    meidoManager.SelectMeido(meido.StockNo);
-
-                if (selectedMaid)
-                {
-                    var selectedIndex = meidoManager.SelectMeidoList.IndexOf(meido.StockNo) + 1;
-                    GUI.DrawTexture(new(5f, y + 5f, buttonWidth - 10f, buttonHeight - 10f), Texture2D.whiteTexture);
-
-                    GUI.Label(
-                        new(0f, y + 5f, buttonWidth - 10f, buttonHeight), selectedIndex.ToString(), selectLabelStyle
-                    );
-                }
-
-                if (meido.Portrait != null)
-                    GUI.DrawTexture(new(5f, y, buttonHeight, buttonHeight), meido.Portrait);
-
-                GUI.Label(
-                    new(95f, y + 30f, buttonWidth - 80f, buttonHeight),
-                    $"{meido.LastName}\n{meido.FirstName}", selectedMaid ? labelSelectedStyle : labelStyle
-                );
+                GUI.Label(new(0f, y + 5f, buttonWidth - 10f, buttonHeight), selectedIndex.ToString(), selectLabelStyle);
             }
 
-            GUI.EndScrollView();
+            if (meido.Portrait)
+                GUI.DrawTexture(new(5f, y, buttonHeight, buttonHeight), meido.Portrait);
+
+            GUI.Label(
+                new(95f, y + 30f, buttonWidth - 80f, buttonHeight),
+                $"{meido.LastName}\n{meido.FirstName}",
+                selectedMaid ? labelSelectedStyle : labelStyle);
         }
+
+        GUI.EndScrollView();
+    }
+
+    protected override void ReloadTranslation()
+    {
+        clearMaidsButton.Label = Translation.Get("maidCallWindow", "clearButton");
+        callMaidsButton.Label = Translation.Get("maidCallWindow", "callButton");
+        activeMeidoListToggle.Label = Translation.Get("maidCallWindow", "activeOnlyToggle");
     }
 }

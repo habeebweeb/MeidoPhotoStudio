@@ -1,41 +1,44 @@
-﻿using System.IO;
+using System.IO;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class DragPointLightSerializer : Serializer<DragPointLight>
 {
-    public class DragPointLightSerializer : Serializer<DragPointLight>
+    private const short Version = 1;
+
+    private static Serializer<LightProperty> LightPropertySerializer =>
+        Serialization.Get<LightProperty>();
+
+    public override void Serialize(DragPointLight light, BinaryWriter writer)
     {
-        private const short version = 1;
-        private static Serializer<LightProperty> LightPropertySerializer => Serialization.Get<LightProperty>();
+        writer.WriteVersion(Version);
 
-        public override void Serialize(DragPointLight light, BinaryWriter writer)
-        {
-            writer.WriteVersion(version);
+        var lightList = GetLightProperties(light);
 
-            LightProperty[] lightList = GetLightProperties(light);
+        for (var i = 0; i < 3; i++)
+            LightPropertySerializer.Serialize(lightList[i], writer);
 
-            for (var i = 0; i < 3; i++) LightPropertySerializer.Serialize(lightList[i], writer);
-
-            writer.Write(light.MyObject.position);
-            writer.Write((int) light.SelectedLightType);
-            writer.Write(light.IsColourMode);
-            writer.Write(light.IsDisabled);
-        }
-
-        public override void Deserialize(DragPointLight light, BinaryReader reader, SceneMetadata metadata)
-        {
-            _ = reader.ReadVersion();
-
-            LightProperty[] lightList = GetLightProperties(light);
-            
-            for (var i = 0; i < 3; i++) LightPropertySerializer.Deserialize(lightList[i], reader, metadata);
-
-            light.MyObject.position = reader.ReadVector3();
-            light.SetLightType((DragPointLight.MPSLightType) reader.ReadInt32());
-            light.IsColourMode = reader.ReadBoolean();
-            light.IsDisabled = reader.ReadBoolean();
-        }
-
-        private static LightProperty[] GetLightProperties(DragPointLight light)
-            => Utility.GetFieldValue<DragPointLight, LightProperty[]>(light, "LightProperties");
+        writer.Write(light.MyObject.position);
+        writer.Write((int)light.SelectedLightType);
+        writer.Write(light.IsColourMode);
+        writer.Write(light.IsDisabled);
     }
+
+    public override void Deserialize(DragPointLight light, BinaryReader reader, SceneMetadata metadata)
+    {
+        _ = reader.ReadVersion();
+
+        var lightList = GetLightProperties(light);
+
+        for (var i = 0; i < 3; i++)
+            LightPropertySerializer.Deserialize(lightList[i], reader, metadata);
+
+        light.MyObject.position = reader.ReadVector3();
+        light.SetLightType((DragPointLight.MPSLightType)reader.ReadInt32());
+        light.IsColourMode = reader.ReadBoolean();
+        light.IsDisabled = reader.ReadBoolean();
+    }
+
+    private static LightProperty[] GetLightProperties(DragPointLight light) =>
+        Utility.GetFieldValue<DragPointLight, LightProperty[]>(light, "LightProperties");
 }

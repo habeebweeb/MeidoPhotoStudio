@@ -1,71 +1,72 @@
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class OtherEffectsPane : BasePane
 {
-    public class OtherEffectsPane : BasePane
+    private readonly EffectManager effectManager;
+    private readonly SepiaToneEffectManager sepiaToneEffectManger;
+    private readonly BlurEffectManager blurEffectManager;
+    private readonly Toggle sepiaToggle;
+    private readonly Slider blurSlider;
+
+    public OtherEffectsPane(EffectManager effectManager)
     {
-        private readonly EffectManager effectManager;
-        private readonly SepiaToneEffectManger sepiaToneEffectManger;
-        private readonly BlurEffectManager blurEffectManager;
-        private readonly Toggle sepiaToggle;
-        private readonly Slider blurSlider;
+        this.effectManager = effectManager;
 
-        public OtherEffectsPane(EffectManager effectManager)
+        sepiaToneEffectManger = this.effectManager.Get<SepiaToneEffectManager>();
+        blurEffectManager = this.effectManager.Get<BlurEffectManager>();
+
+        sepiaToggle = new(Translation.Get("otherEffectsPane", "sepiaToggle"));
+        sepiaToggle.ControlEvent += (_, _) =>
         {
-            this.effectManager = effectManager;
+            if (updating)
+                return;
 
-            sepiaToneEffectManger = this.effectManager.Get<SepiaToneEffectManger>();
-            blurEffectManager = this.effectManager.Get<BlurEffectManager>();
+            sepiaToneEffectManger.SetEffectActive(sepiaToggle.Value);
+        };
 
-            sepiaToggle = new Toggle(Translation.Get("otherEffectsPane", "sepiaToggle"));
-            sepiaToggle.ControlEvent += (s, a) =>
-            {
-                if (updating) return;
-                sepiaToneEffectManger.SetEffectActive(sepiaToggle.Value);
-            };
-
-            blurSlider = new Slider(Translation.Get("otherEffectsPane", "blurSlider"), 0f, 18f);
-            blurSlider.ControlEvent += (s, a) =>
-            {
-                if (updating)
-                    return;
-
-                var value = blurSlider.Value;
-
-                if (!blurEffectManager.Active && value > 0f)
-                    blurEffectManager.SetEffectActive(true);
-                else if (blurEffectManager.Active && Mathf.Approximately(value, 0f))
-                    blurEffectManager.SetEffectActive(false);
-
-                blurEffectManager.BlurSize = value;
-            };
-        }
-
-        protected override void ReloadTranslation()
+        blurSlider = new(Translation.Get("otherEffectsPane", "blurSlider"), 0f, 18f);
+        blurSlider.ControlEvent += (_, _) =>
         {
-            sepiaToggle.Label = Translation.Get("otherEffectsPane", "sepiaToggle");
-            blurSlider.Label = Translation.Get("otherEffectsPane", "blurSlider");
-        }
+            if (updating)
+                return;
 
-        public override void Draw()
-        {
-            GUILayout.BeginHorizontal();
-            sepiaToggle.Draw();
-            blurSlider.Draw();
-            GUILayout.EndHorizontal();
-        }
+            var value = blurSlider.Value;
 
-        public override void UpdatePane()
-        {
-            updating = true;
+            if (!blurEffectManager.Active && value > 0f)
+                blurEffectManager.SetEffectActive(true);
+            else if (blurEffectManager.Active && Mathf.Approximately(value, 0f))
+                blurEffectManager.SetEffectActive(false);
 
-            if (sepiaToneEffectManger.Ready)
-                sepiaToggle.Value = sepiaToneEffectManger.Active;
+            blurEffectManager.BlurSize = value;
+        };
+    }
 
-            if (blurEffectManager.Ready)
-                blurSlider.Value = blurEffectManager.BlurSize;
+    public override void Draw()
+    {
+        GUILayout.BeginHorizontal();
+        sepiaToggle.Draw();
+        blurSlider.Draw();
+        GUILayout.EndHorizontal();
+    }
 
-            updating = false;
-        }
+    public override void UpdatePane()
+    {
+        updating = true;
+
+        if (sepiaToneEffectManger.Ready)
+            sepiaToggle.Value = sepiaToneEffectManger.Active;
+
+        if (blurEffectManager.Ready)
+            blurSlider.Value = blurEffectManager.BlurSize;
+
+        updating = false;
+    }
+
+    protected override void ReloadTranslation()
+    {
+        sepiaToggle.Label = Translation.Get("otherEffectsPane", "sepiaToggle");
+        blurSlider.Label = Translation.Get("otherEffectsPane", "blurSlider");
     }
 }

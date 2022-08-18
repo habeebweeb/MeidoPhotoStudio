@@ -1,62 +1,75 @@
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 
 /*
     All of this is pretty much stolen from COM3D2.CacheEditMenu. Thanks Mr. Horsington.
     https://git.coder.horse/ghorsington/COM3D2.CacheEditMenu
 */
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class MenuFileCache
 {
-    using static MenuFileUtility;
+    public static readonly string CachePath = Path.Combine(Constants.ConfigPath, "cache.dat");
 
-    public class MenuFileCache
+    private const int CacheVersion = 765;
+
+    private readonly Dictionary<string, ModItem> modItems;
+
+    private bool rebuild;
+
+    public MenuFileCache()
     {
-        private const int cacheVersion = 765;
-        public static readonly string cachePath = Path.Combine(Constants.configPath, "cache.dat");
-        private readonly Dictionary<string, ModItem> modItems;
-        private bool rebuild;
-        public ModItem this[string menu]
-        {
-            get => modItems[menu];
-            set
-            {
-                if (!modItems.ContainsKey(menu))
-                {
-                    rebuild = true;
-                    modItems[menu] = value;
-                }
-            }
-        }
+        modItems = new();
 
-        public MenuFileCache()
-        {
-            modItems = new Dictionary<string, ModItem>();
-            if (File.Exists(cachePath)) Deserialize();
-        }
+        if (File.Exists(CachePath))
+            Deserialize();
+    }
 
-        public bool Has(string menuFileName) => modItems.ContainsKey(menuFileName);
-
-        private void Deserialize()
+    public ModItem this[string menu]
+    {
+        get => modItems[menu];
+        set
         {
-            using BinaryReader binaryReader = new BinaryReader(File.OpenRead(cachePath));
-            if (binaryReader.ReadInt32() != cacheVersion)
-            {
-                Utility.LogInfo("Cache version out of date. Rebuilding");
+            if (modItems.ContainsKey(menu))
                 return;
-            }
-            while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
-            {
-                ModItem item = ModItem.Deserialize(binaryReader);
-                modItems[item.MenuFile] = item;
-            }
+
+            rebuild = true;
+            modItems[menu] = value;
+        }
+    }
+
+    public bool Has(string menuFileName) =>
+        modItems.ContainsKey(menuFileName);
+
+    public void Serialize()
+    {
+        if (!rebuild)
+            return;
+
+        using var binaryWriter = new BinaryWriter(File.OpenWrite(CachePath));
+
+        binaryWriter.Write(CacheVersion);
+
+        foreach (var item in modItems.Values)
+            item.Serialize(binaryWriter);
+    }
+
+    private void Deserialize()
+    {
+        using var binaryReader = new BinaryReader(File.OpenRead(CachePath));
+
+        if (binaryReader.ReadInt32() is not CacheVersion)
+        {
+            Utility.LogInfo("Cache version out of date. Rebuilding");
+
+            return;
         }
 
-        public void Serialize()
+        while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
         {
-            if (!rebuild) return;
-            using BinaryWriter binaryWriter = new BinaryWriter(File.OpenWrite(cachePath));
-            binaryWriter.Write(cacheVersion);
-            foreach (ModItem item in modItems.Values) item.Serialize(binaryWriter);
+            var item = ModItem.Deserialize(binaryReader);
+
+            modItems[item.MenuFile] = item;
         }
     }
 }

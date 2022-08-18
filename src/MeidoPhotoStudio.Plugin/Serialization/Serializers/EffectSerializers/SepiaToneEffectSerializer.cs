@@ -1,24 +1,24 @@
-﻿using System.IO;
+using System.IO;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class SepiaToneEffectSerializer : Serializer<SepiaToneEffectManager>
 {
-    public class SepiaToneEffectSerializer : Serializer<SepiaToneEffectManger>
+    private const short Version = 1;
+
+    public override void Serialize(SepiaToneEffectManager effect, BinaryWriter writer)
     {
-        private const short version = 1;
+        writer.Write(SepiaToneEffectManager.Header);
 
-        public override void Serialize(SepiaToneEffectManger effect, BinaryWriter writer)
-        {
-            writer.Write(SepiaToneEffectManger.header);
-            writer.WriteVersion(version);
+        writer.WriteVersion(Version);
 
-            writer.Write(effect.Active);
-        }
+        writer.Write(effect.Active);
+    }
 
-        public override void Deserialize(SepiaToneEffectManger effect, BinaryReader reader, SceneMetadata metadata)
-        {
-            _ = reader.ReadVersion();
+    public override void Deserialize(SepiaToneEffectManager effect, BinaryReader reader, SceneMetadata metadata)
+    {
+        _ = reader.ReadVersion();
 
-            effect.SetEffectActive(reader.ReadBoolean());
-        }
+        effect.SetEffectActive(reader.ReadBoolean());
     }
 }

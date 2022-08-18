@@ -1,15 +1,15 @@
 using BepInEx.Configuration;
 
-namespace MeidoPhotoStudio.Plugin
-{
-    public static class Configuration
-    {
-        public static ConfigFile Config { get; }
+namespace MeidoPhotoStudio.Plugin;
 
-        static Configuration()
-        {
-            string configPath = System.IO.Path.Combine(Constants.configPath, $"{MeidoPhotoStudio.pluginName}.cfg");
-            Config = new ConfigFile(configPath, false);
-        }
+public static class Configuration
+{
+    static Configuration()
+    {
+        var configPath = System.IO.Path.Combine(Constants.ConfigPath, $"{MeidoPhotoStudio.PluginName}.cfg");
+
+        Config = new(configPath, false);
     }
+
+    public static ConfigFile Config { get; }
 }

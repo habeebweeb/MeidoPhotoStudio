@@ -1,15 +1,16 @@
-﻿using System.IO;
+using System.IO;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public abstract class Serializer<T> : ISerializer
 {
-    public abstract class Serializer<T> : ISerializer
-    {
-        void ISerializer.Serialize(object obj, BinaryWriter writer) => Serialize((T) obj, writer);
+    void ISerializer.Serialize(object obj, BinaryWriter writer) =>
+        Serialize((T)obj, writer);
 
-        void ISerializer.Deserialize(object obj, BinaryReader reader, SceneMetadata metadata)
-            => Deserialize((T) obj, reader, metadata);
+    void ISerializer.Deserialize(object obj, BinaryReader reader, SceneMetadata metadata) =>
+        Deserialize((T)obj, reader, metadata);
 
-        public abstract void Serialize(T obj, BinaryWriter writer);
-        public abstract void Deserialize(T obj, BinaryReader reader, SceneMetadata metadata);
-    }
+    public abstract void Serialize(T obj, BinaryWriter writer);
+
+    public abstract void Deserialize(T obj, BinaryReader reader, SceneMetadata metadata);
 }

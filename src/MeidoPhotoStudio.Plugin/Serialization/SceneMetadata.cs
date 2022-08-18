@@ -1,41 +1,39 @@
-﻿using System.IO;
+using System.IO;
 
-namespace MeidoPhotoStudio.Plugin
+namespace MeidoPhotoStudio.Plugin;
+
+public class SceneMetadata
 {
-    public class SceneMetadata
+    public short Version { get; set; }
+
+    public bool Environment { get; set; }
+
+    public int MaidCount { get; set; }
+
+    public bool MMConverted { get; set; }
+
+    public static SceneMetadata ReadMetadata(BinaryReader reader) =>
+        new()
+        {
+            Version = reader.ReadVersion(),
+            Environment = reader.ReadBoolean(),
+            MaidCount = reader.ReadInt32(),
+            MMConverted = reader.ReadBoolean(),
+        };
+
+    public void WriteMetadata(BinaryWriter writer)
     {
-        public short Version { get; set; }
-        public bool Environment { get; set; }
-        public int MaidCount { get; set; }
-        public bool MMConverted { get; set; }
+        writer.Write(Version);
+        writer.Write(Environment);
+        writer.Write(MaidCount);
+        writer.Write(MMConverted);
+    }
 
-        public void WriteMetadata(BinaryWriter writer)
-        {
-            writer.Write(Version);
-            writer.Write(Environment);
-            writer.Write(MaidCount);
-            writer.Write(MMConverted);
-        }
-
-        public static SceneMetadata ReadMetadata(BinaryReader reader)
-        {
-            return new()
-            {
-                Version = reader.ReadVersion(),
-                Environment = reader.ReadBoolean(),
-                MaidCount = reader.ReadInt32(),
-                MMConverted = reader.ReadBoolean()
-            };
-        }
-
-        public void Deconstruct(
-            out short version, out bool environment, out int maidCount, out bool mmConverted
-        )
-        {
-            version = Version;
-            environment = Environment;
-            mmConverted = MMConverted;
-            maidCount = MaidCount;
-        }
+    public void Deconstruct(out short version, out bool environment, out int maidCount, out bool mmConverted)
+    {
+        version = Version;
+        environment = Environment;
+        mmConverted = MMConverted;
+        maidCount = MaidCount;
     }
 }
