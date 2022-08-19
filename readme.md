@@ -55,18 +55,20 @@ streamlined screenshot making experience that is familiar to MultipleMaids users
 
 MeidoPhotoStudio is not based on and does not use any MultipleMaids source code.
 
+
 ## Building
 
-### Libraries for MeidoPhotoStudio
+MeidoPhotoStudio requires [.NET 6.0 SDK](https://dot.net) to build.
 
-These libraries (aside from BepInEx) are all found in COM3D2's Managed folder
+```
+$ git clone 'https://git.coder.horse/habeebweeb/COM3D2.MeidoPhotoStudio.git'
+$ cd COM3D2.MeidoPhotoStudio
 
-Place these in a folder called `lib`
+Copy 'Assembly-UnityScript-firstpass.dll' from your COM3D2 Managed directory (e.g. D:/COM3D2/COM3D2x64_Data/Managed/)
+into a directory called ./lib
 
-* `Assembly-CSharp.dll`
-* `Assembly-CSharp-firstpass.dll`
-* `Assembly-UnityScript-firstpass.dll`
-* `Newtonsoft.json.dll`
-* `UnityEngine.dll`
-* `Ionic.Zlib.dll`
-* [`BepInEx.dll`](https://github.com/BepInEx/BepInEx/releases) from `BepInEx\core`
+$ dotnet restore
+$ dotnet build -c Release
+
+Binaries are exported to ./src/MeidoPhotoStudio.Plugin/bin/Release/net35
+```
