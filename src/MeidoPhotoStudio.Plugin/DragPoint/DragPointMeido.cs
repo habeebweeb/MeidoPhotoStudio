@@ -19,6 +19,8 @@ public abstract class DragPointMeido : DragPoint
     protected bool isPlaying;
     protected bool isBone;
 
+    private const string IkDataTag = "左手";
+
     public virtual bool IsBone
     {
         get => isBone;
@@ -32,8 +34,14 @@ public abstract class DragPointMeido : DragPoint
         }
     }
 
-    protected IKCtrlData IkCtrlData =>
-        meido.Body.IKCtrl.GetIKData("左手");
+    // TODO: Come up with an intermediary fix for this until I can rewrite the IK system.
+    // WARN: This does NOT work and is only done so the compiler does not complain
+    protected
+#if COM25
+        AIKCtrl IkCtrlData => meido.Body.fullBodyIK.GetIKCtrl(IkDataTag);
+#else
+        IKCtrlData IkCtrlData => meido.Body.IKCtrl.GetIKData(IkDataTag);
+#endif
 
     public virtual void Initialize(Meido meido, Func<Vector3> position, Func<Vector3> rotation)
     {
@@ -65,6 +73,17 @@ public abstract class DragPointMeido : DragPoint
     protected void InitializeIK(TBody.IKCMO iKCmo, Transform upper, Transform middle, Transform lower) =>
         iKCmo.Init(upper, middle, lower, maid.body0);
 
-    protected void Porc(TBody.IKCMO ikCmo, IKCtrlData ikData, Transform upper, Transform middle, Transform lower) =>
+    // WARN: This does NOT work and is only done so the compiler does not complain
+    protected void Porc(
+        TBody.IKCMO ikCmo,
+#if COM25
+        AIKCtrl
+#else
+        IKCtrlData
+#endif
+        ikData,
+        Transform upper,
+        Transform middle,
+        Transform lower) =>
         ikCmo.Porc(upper, middle, lower, CursorPosition(), Vector3.zero, ikData);
 }
