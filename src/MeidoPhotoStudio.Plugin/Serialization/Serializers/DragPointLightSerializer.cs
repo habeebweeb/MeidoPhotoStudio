@@ -40,5 +40,5 @@ public class DragPointLightSerializer : Serializer<DragPointLight>
     }
 
     private static LightProperty[] GetLightProperties(DragPointLight light) =>
-        Utility.GetFieldValue<DragPointLight, LightProperty[]>(light, "LightProperties");
+        Utility.GetFieldValue<DragPointLight, LightProperty[]>(light, "lightProperties");
 }

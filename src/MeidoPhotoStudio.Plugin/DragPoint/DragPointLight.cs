@@ -193,7 +193,7 @@ public class DragPointLight : DragPointGeneral
         const string spotName = "spot";
         const string normalName = "normal";
         const string pointName = "point";
-        const string mainName = "name";
+        const string mainName = "main";
 
         var lightType = LightType.Directional;
         var name = normalName;

@@ -11,9 +11,6 @@ namespace MeidoPhotoStudio.Plugin;
 
 public static class Utility
 {
-    public static readonly BepInEx.Logging.ManualLogSource Logger =
-        ManualLogSource;
-
     internal static readonly byte[] PngHeader = { 137, 80, 78, 71, 13, 10, 26, 10 };
     internal static readonly byte[] PngEnd = System.Text.Encoding.ASCII.GetBytes("IEND");
     internal static readonly Regex GuidRegEx =
@@ -25,7 +22,7 @@ public static class Utility
     private const BindingFlags ReflectionFlags =
         BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
-    private static readonly BepInEx.Logging.ManualLogSource ManualLogSource =
+    private static readonly BepInEx.Logging.ManualLogSource Logger =
         BepInEx.Logging.Logger.CreateLogSource(MeidoPhotoStudio.PluginName);
 
     static Utility()

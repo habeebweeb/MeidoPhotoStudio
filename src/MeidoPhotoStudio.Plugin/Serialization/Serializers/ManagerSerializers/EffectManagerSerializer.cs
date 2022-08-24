@@ -26,7 +26,7 @@ public class EffectManagerSerializer : Serializer<EffectManager>
 
         var headerToManager =
             GetEffectManagers(manager).ToDictionary(
-                x => (string)x.Key.GetField("header").GetValue(null),
+                x => (string)x.Key.GetField("Header").GetValue(null),
                 y => y.Value);
 
         string header;
@@ -40,5 +40,5 @@ public class EffectManagerSerializer : Serializer<EffectManager>
     }
 
     private static Dictionary<Type, IEffectManager> GetEffectManagers(EffectManager manager) =>
-        Utility.GetFieldValue<EffectManager, Dictionary<Type, IEffectManager>>(manager, "EffectManagers");
+        Utility.GetFieldValue<EffectManager, Dictionary<Type, IEffectManager>>(manager, "effectManagers");
 }
