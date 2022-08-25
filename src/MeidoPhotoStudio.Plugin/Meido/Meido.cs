@@ -214,7 +214,7 @@ public class Meido
             {
                 Body.boEyeToCam = true;
                 Body.boHeadToCam = true;
-                SetPose(CachedPose.Pose);
+                SetPose(CachedPose);
             }
 
             OnUpdateMeido();
@@ -337,16 +337,13 @@ public class Meido
 
     public void SetPose(PoseInfo poseInfo)
     {
-        CachedPose = poseInfo;
-        SetPose(poseInfo.Pose);
-    }
-
-    public void SetPose(string pose)
-    {
         if (!Body.isLoadedBody)
             return;
 
-        if (pose.StartsWith(Constants.CustomPosePath))
+        var pose = poseInfo.Pose;
+        var custom = poseInfo.CustomPose;
+
+        if (custom)
         {
             var poseFilename = Path.GetFileNameWithoutExtension(pose);
 
@@ -359,17 +356,17 @@ public class Meido
             }
             catch (Exception e) when (e is DirectoryNotFoundException or FileNotFoundException)
             {
-                Utility.LogWarning($"{poseFilename}: Could not open because {e.Message}");
+                Utility.LogWarning($"Could not open '{poseFilename}' because {e.Message}");
                 Constants.InitializeCustomPoses();
-                SetPose(PoseInfo.DefaultPose);
+                SetDefaultPose();
                 OnUpdateMeido();
 
                 return;
             }
             catch (Exception e)
             {
-                Utility.LogWarning($"{poseFilename}: Could not apply pose because {e.Message}");
-                SetPose(PoseInfo.DefaultPose);
+                Utility.LogWarning($"Could not apply pose '{poseFilename}' because {e.Message}");
+                SetDefaultPose();
                 OnUpdateMeido();
 
                 return;
@@ -381,22 +378,46 @@ public class Meido
         else
         {
             var poseComponents = pose.Split(',');
+            var poseFilename = poseComponents[0] + ".anm";
 
-            pose = poseComponents[0] + ".anm";
+            var tag = Maid.CrossFade(poseFilename, loop: true, val: 0f);
 
-            Maid.CrossFade(pose, loop: true, val: 0f);
+            if (string.IsNullOrEmpty(tag))
+            {
+                Utility.LogWarning($"Pose could not be loaded: {poseFilename}");
+                SetDefaultPose();
+
+                return;
+            }
+
             Maid.GetAnimation().Play();
 
             if (poseComponents.Length > 1)
             {
-                Maid.GetAnimation()[pose].time = float.Parse(poseComponents[1]);
-                Maid.GetAnimation()[pose].speed = 0f;
+                var animation = Maid.GetAnimation()[poseFilename];
+                var time = float.Parse(poseComponents[1]);
+
+                animation.time = time;
+                animation.speed = 0f;
             }
 
-            SetPoseMune();
+            SetPoseMune(poseFilename);
         }
 
         Maid.SetAutoTwistAll(true);
+
+        CachedPose = poseInfo;
+
+        void SetDefaultPose() =>
+            SetPose(PoseInfo.DefaultPose);
+
+        void SetPoseMune(string pose)
+        {
+            var momiOrPaizuri = pose.Contains("_momi") || pose.Contains("paizuri_");
+
+            SetMune(!momiOrPaizuri, left: true);
+            SetMune(!momiOrPaizuri, left: false);
+        }
     }
 
     public KeyValuePair<bool, bool> SetFrameBinary(byte[] poseBuffer) =>
@@ -859,14 +880,6 @@ public class Meido
 
         void Default() =>
             OnUpdateMeido();
-    }
-
-    private void SetPoseMune()
-    {
-        var momiOrPaizuri = CachedPose.Pose.Contains("_momi") || CachedPose.Pose.Contains("paizuri_");
-
-        SetMune(!momiOrPaizuri, left: true);
-        SetMune(!momiOrPaizuri, left: false);
     }
 
     private void BackupBlendSetValues()
