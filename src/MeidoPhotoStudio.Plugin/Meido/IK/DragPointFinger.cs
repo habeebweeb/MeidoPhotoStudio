@@ -11,7 +11,6 @@ public class DragPointFinger : DragPointMeido
     private readonly TBody.IKCMO ik = new();
     private readonly Quaternion[] jointRotation = new Quaternion[2];
 
-    // WARN: This does NOT work and is only done so the compiler does not complain
     private
 #if COM25
             AIKCtrl

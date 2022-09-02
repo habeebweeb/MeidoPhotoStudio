@@ -34,8 +34,6 @@ public abstract class DragPointMeido : DragPoint
         }
     }
 
-    // TODO: Come up with an intermediary fix for this until I can rewrite the IK system.
-    // WARN: This does NOT work and is only done so the compiler does not complain
     protected
 #if COM25
         AIKCtrl IkCtrlData => meido.Body.fullBodyIK.GetIKCtrl(IkDataTag);
@@ -73,7 +71,6 @@ public abstract class DragPointMeido : DragPoint
     protected void InitializeIK(TBody.IKCMO iKCmo, Transform upper, Transform middle, Transform lower) =>
         iKCmo.Init(upper, middle, lower, maid.body0);
 
-    // WARN: This does NOT work and is only done so the compiler does not complain
     protected void Porc(
         TBody.IKCMO ikCmo,
 #if COM25

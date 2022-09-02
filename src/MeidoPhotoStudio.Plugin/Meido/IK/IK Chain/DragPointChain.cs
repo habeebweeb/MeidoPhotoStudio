@@ -7,7 +7,6 @@ public abstract class DragPointChain : DragPointMeido
     protected readonly TBody.IKCMO IK = new();
     protected readonly Quaternion[] jointRotation = new Quaternion[3];
 
-    // WARN: This does NOT work and is only done so the compiler does not complain
     protected
 #if COM25
     AIKCtrl

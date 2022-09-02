@@ -246,6 +246,70 @@ public class Meido
         }
     }
 
+    private bool MuneLEnabled
+    {
+        set
+        {
+            if (!Body.isLoadedBody)
+                return;
+
+            MonoBehaviour mune = Body.jbMuneL;
+
+#if COM25
+            if (Body.IsCrcBody)
+                mune = Body.dbMuneL;
+#endif
+
+            if (mune)
+                mune.enabled = value;
+        }
+    }
+
+    private bool MuneREnabled
+    {
+        set
+        {
+            if (!Body.isLoadedBody)
+                return;
+
+            MonoBehaviour mune = Body.jbMuneR;
+
+#if COM25
+            if (Body.IsCrcBody)
+                mune = Body.dbMuneR;
+#endif
+
+            if (mune)
+                mune.enabled = value;
+        }
+    }
+
+    private bool MuneYureLEnabled
+    {
+        set
+        {
+#if COM25
+            Body.SetMuneYureL(value);
+#else
+            if (Body.jbMuneL)
+                Body.jbMuneL.BlendValueON = Convert.ToSingle(value);
+#endif
+        }
+    }
+
+    private bool MuneYureREnabled
+    {
+        set
+        {
+#if COM25
+            Body.SetMuneYureR(value);
+#else
+            if (Body.jbMuneR)
+                Body.jbMuneR.BlendValueON = Convert.ToSingle(value);
+#endif
+        }
+    }
+
     public void Load(int slot)
     {
         if (Busy)
@@ -277,8 +341,8 @@ public class Meido
         {
             DetachAllMpnAttach();
 
-            Body.jbMuneL.enabled = true;
-            Body.jbMuneR.enabled = true;
+            MuneLEnabled = true;
+            MuneREnabled = true;
 
             Body.quaDefEyeL = DefaultEyeRotL;
             Body.quaDefEyeR = DefaultEyeRotR;
@@ -303,8 +367,8 @@ public class Meido
 
         AllProcPropSeqStartPatcher.SequenceStart -= ReinitializeBody;
 
-        Body.MuneYureL(1f);
-        Body.MuneYureR(1f);
+        MuneYureLEnabled = true;
+        MuneYureREnabled = true;
 
         Body.SetMaskMode(MaskMode.None);
         Body.SetBoneHitHeightY(0f);
@@ -434,17 +498,15 @@ public class Meido
 
     public void SetMune(bool enabled, bool left = false)
     {
-        var value = enabled ? 1f : 0f;
-
         if (left)
         {
-            Body.MuneYureL(value);
-            Body.jbMuneL.enabled = enabled;
+            MuneLEnabled = enabled;
+            MuneYureLEnabled = enabled;
         }
         else
         {
-            Body.MuneYureR(value);
-            Body.jbMuneR.enabled = enabled;
+            MuneREnabled = enabled;
+            MuneYureREnabled = enabled;
         }
     }
 
@@ -792,6 +854,10 @@ public class Meido
         if (MeidoPhotoStudio.EditMode)
             AllProcPropSeqStartPatcher.SequenceStart += ReinitializeBody;
 
+#if COM25
+        // NOTE: This is required for IK to work in COM3D2.5
+        Body.motionBlendTime = 0f;
+#endif
         IKManager.Initialize();
 
         SetFaceBlendSet(DefaultFaceBlendSet);
