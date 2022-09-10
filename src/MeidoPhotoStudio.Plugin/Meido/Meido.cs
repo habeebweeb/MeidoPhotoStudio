@@ -88,8 +88,6 @@ public class Meido
 
     public bool Active { get; private set; }
 
-    public bool IsEditMaid { get; set; }
-
     public PoseInfo CachedPose { get; private set; } = PoseInfo.DefaultPose;
 
     public string CurrentFaceBlendSet { get; private set; } = DefaultFaceBlendSet;

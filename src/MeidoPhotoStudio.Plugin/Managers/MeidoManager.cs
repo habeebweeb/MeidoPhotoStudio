@@ -11,14 +11,13 @@ public class MeidoManager : IManager
 {
     public const string Header = "MEIDO";
 
-    private static readonly CharacterMgr CharacterMgr = GameMain.Instance.CharacterMgr;
-
     private static bool active;
 
     private int selectedMeido;
     private bool globalGravity;
     private int undress;
-    private int tempEditMaidIndex = -1;
+    private Meido editingMeido;
+    private Meido temporaryEditingMeido;
 
     static MeidoManager() =>
         InputManager.Register(MpsKey.MeidoUndressing, KeyCode.H, "All maid undressing");
@@ -34,10 +33,6 @@ public class MeidoManager : IManager
 
     public Meido[] Meidos { get; private set; }
 
-    public HashSet<int> SelectedMeidoSet { get; } = new();
-
-    public List<int> SelectMeidoList { get; } = new();
-
     public List<Meido> ActiveMeidoList { get; } = new();
 
     public int SelectedMeido
@@ -52,8 +47,26 @@ public class MeidoManager : IManager
     public Meido ActiveMeido =>
         ActiveMeidoList.Count > 0 ? ActiveMeidoList[SelectedMeido] : null;
 
-    public Meido EditMeido =>
-        tempEditMaidIndex >= 0 ? Meidos[tempEditMaidIndex] : Meidos[EditMaidIndex];
+    public Meido EditingMeido
+    {
+        get => MeidoPhotoStudio.EditMode ? editingMeido : null;
+        set
+        {
+            if (!MeidoPhotoStudio.EditMode || value is null)
+                return;
+
+            editingMeido = value;
+            temporaryEditingMeido = editingMeido == OriginalEditingMeido ? null : editingMeido;
+
+            SetEditorMaid(editingMeido.Maid);
+        }
+    }
+
+    public Meido TemporaryEditingMeido =>
+        MeidoPhotoStudio.EditMode ? temporaryEditingMeido : null;
+
+    public Meido OriginalEditingMeido =>
+        MeidoPhotoStudio.EditMode && OriginalEditingMaidIndex >= 0 ? Meidos[OriginalEditingMaidIndex] : null;
 
     public bool HasActiveMeido =>
         ActiveMeido is not null;
@@ -82,28 +95,35 @@ public class MeidoManager : IManager
         }
     }
 
-    private static int EditMaidIndex { get; set; }
+    private static CharacterMgr CharacterMgr =>
+        GameMain.Instance.CharacterMgr;
+
+    private static int OriginalEditingMaidIndex { get; set; }
 
     public void ChangeMaid(int index) =>
         OnUpdateMeido(null, new(index));
 
     public void Activate()
     {
-        CharacterMgr.ResetCharaPosAll();
-
-        if (!MeidoPhotoStudio.EditMode)
-            CharacterMgr.DeactivateMaid(0);
-
         Meidos = CharacterMgr.GetStockMaidList()
             .Select((_, stockNo) => new Meido(stockNo))
             .ToArray();
 
-        tempEditMaidIndex = -1;
+        CharacterMgr.ResetCharaPosAll();
 
-        if (MeidoPhotoStudio.EditMode && EditMaidIndex >= 0)
-            Meidos[EditMaidIndex].IsEditMaid = true;
+        if (MeidoPhotoStudio.EditMode)
+        {
+            temporaryEditingMeido = null;
+            editingMeido = OriginalEditingMeido;
 
-        ClearSelectList();
+            if (OriginalEditingMeido is not null)
+                CallMeidos(new List<Meido>() { OriginalEditingMeido });
+        }
+        else
+        {
+            CharacterMgr.DeactivateMaid(0);
+        }
+
         active = true;
     }
 
@@ -120,7 +140,7 @@ public class MeidoManager : IManager
 
         if (MeidoPhotoStudio.EditMode && !GameMain.Instance.MainCamera.IsFadeOut())
         {
-            var meido = Meidos[EditMaidIndex];
+            var meido = OriginalEditingMeido;
 
             meido.Maid.Visible = true;
             meido.Stop = false;
@@ -138,71 +158,27 @@ public class MeidoManager : IManager
             UndressAll();
     }
 
-    public void CallMeidos()
+    public void CallMeidos(IList<Meido> meidoToCall)
     {
         BeginCallMeidos?.Invoke(this, EventArgs.Empty);
 
-        var moreThanEditMaid = ActiveMeidoList.Count > 1;
+        SelectedMeido = 0;
 
-        UnloadMeidos();
+        if (MeidoPhotoStudio.EditMode && meidoToCall.Count is 0)
+            meidoToCall.Add(OriginalEditingMeido);
 
-        if (SelectMeidoList.Count is 0)
+        UnloadMeidos(meidoToCall);
+
+        if (meidoToCall.Count is 0)
         {
             OnEndCallMeidos(this, EventArgs.Empty);
 
             return;
         }
 
-        void LoadMeido() =>
-            GameMain.Instance.StartCoroutine(LoadMeidos());
+        ActiveMeidoList.AddRange(meidoToCall);
 
-        if (MeidoPhotoStudio.EditMode && !moreThanEditMaid && SelectMeidoList.Count is 1)
-            LoadMeido();
-        else
-            GameMain.Instance.MainCamera.FadeOut(0.01f, f_bSkipable: false, f_dg: LoadMeido);
-    }
-
-    public void SelectMeido(int index)
-    {
-        if (SelectedMeidoSet.Contains(index))
-        {
-            if (!MeidoPhotoStudio.EditMode || index != EditMaidIndex)
-            {
-                SelectedMeidoSet.Remove(index);
-                SelectMeidoList.Remove(index);
-            }
-        }
-        else
-        {
-            SelectedMeidoSet.Add(index);
-            SelectMeidoList.Add(index);
-        }
-    }
-
-    public void ClearSelectList()
-    {
-        SelectedMeidoSet.Clear();
-        SelectMeidoList.Clear();
-
-        if (MeidoPhotoStudio.EditMode)
-        {
-            SelectedMeidoSet.Add(EditMaidIndex);
-            SelectMeidoList.Add(EditMaidIndex);
-        }
-    }
-
-    public void SetEditMaid(Meido meido)
-    {
-        if (!MeidoPhotoStudio.EditMode)
-            return;
-
-        EditMeido.IsEditMaid = false;
-
-        tempEditMaidIndex = meido.StockNo == EditMaidIndex ? -1 : meido.StockNo;
-
-        EditMeido.IsEditMaid = true;
-
-        SetEditorMaid(EditMeido.Maid);
+        GameMain.Instance.StartCoroutine(LoadMeidos(meidoToCall));
     }
 
     public Meido GetMeido(string guid) =>
@@ -286,14 +262,12 @@ public class MeidoManager : IManager
     [HarmonyPatch(typeof(SceneEdit), nameof(SceneEdit.Start))]
     private static void SceneEditStartPostfix()
     {
-        EditMaidIndex = -1;
-
         if (!SceneEdit.Instance.maid)
             return;
 
         var originalEditingMaid = SceneEdit.Instance.maid;
 
-        EditMaidIndex = GameMain.Instance.CharacterMgr.GetStockMaidList()
+        OriginalEditingMaidIndex = GameMain.Instance.CharacterMgr.GetStockMaidList()
             .FindIndex(maid => maid.status.guid == originalEditingMaid.status.guid);
 
         try
@@ -327,37 +301,35 @@ public class MeidoManager : IManager
         }
     }
 
-    private void UnloadMeidos()
+    private void UnloadMeidos(IList<Meido> meidoToCall)
     {
-        SelectedMeido = 0;
-
-        var commonMeidoIDs = new HashSet<int>(
-            ActiveMeidoList.Where(meido => SelectedMeidoSet.Contains(meido.StockNo)).Select(meido => meido.StockNo));
-
         foreach (var meido in ActiveMeidoList)
         {
             meido.UpdateMeido -= OnUpdateMeido;
             meido.GravityMove -= OnGravityMove;
 
-            if (!commonMeidoIDs.Contains(meido.StockNo))
+            if (!meidoToCall.Contains(meido))
                 meido.Unload();
         }
 
         ActiveMeidoList.Clear();
     }
 
-    private System.Collections.IEnumerator LoadMeidos()
+    private System.Collections.IEnumerator LoadMeidos(IList<Meido> meidoToLoad)
     {
-        foreach (var slot in SelectMeidoList)
-            ActiveMeidoList.Add(Meidos[slot]);
+        GameMain.Instance.MainCamera.FadeOut(0.01f, f_bSkipable: false);
 
-        for (var i = 0; i < ActiveMeidoList.Count; i++)
-            ActiveMeidoList[i].Load(i);
+        yield return new WaitForSeconds(0.01f);
 
-        while (Busy)
-            yield return null;
+        for (var meidoSlot = 0; meidoSlot < meidoToLoad.Count; meidoSlot++)
+            meidoToLoad[meidoSlot].Load(meidoSlot);
 
         yield return new WaitForEndOfFrame();
+
+        var waitForSeconds = new WaitForSeconds(0.5f);
+
+        while (Busy)
+            yield return waitForSeconds;
 
         OnEndCallMeidos(this, EventArgs.Empty);
     }
@@ -394,8 +366,8 @@ public class MeidoManager : IManager
             meido.GravityMove += OnGravityMove;
         }
 
-        if (MeidoPhotoStudio.EditMode && tempEditMaidIndex >= 0 && !SelectedMeidoSet.Contains(tempEditMaidIndex))
-            SetEditMaid(Meidos[EditMaidIndex]);
+        if (MeidoPhotoStudio.EditMode && !ActiveMeidoList.Contains(TemporaryEditingMeido))
+            EditingMeido = OriginalEditingMeido;
     }
 
     private void OnGravityMove(object sender, GravityEventArgs args)

@@ -477,11 +477,7 @@ public class MeidoPhotoStudio : BaseUnityPlugin
         uiActive = true;
         active = true;
 
-        if (EditMode)
-        {
-            meidoManager.CallMeidos();
-        }
-        else
+        if (!EditMode)
         {
             // TODO: Rework this to not use null propagation (UNT008)
             var dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
