@@ -43,7 +43,7 @@ public class Meido
     private readonly FieldInfo m_eMaskMode = Utility.GetFieldInfo<TBody>("m_eMaskMode");
 #pragma warning restore SA1308
 
-    private bool initialized;
+    private bool faceNeedsInitialization = true;
     private float[] blendSetValueBackup;
     private bool freeLook;
 
@@ -128,21 +128,25 @@ public class Meido
 
     public bool HairGravityActive
     {
-        get => HairGravityControl.Active;
+        get => HairGravityControl && HairGravityControl.Active;
         set
         {
-            if (HairGravityControl.Valid)
-                HairGravityControl.gameObject.SetActive(value);
+            if (!HairGravityControl || !HairGravityControl.Valid)
+                return;
+
+            HairGravityControl.gameObject.SetActive(value);
         }
     }
 
     public bool SkirtGravityActive
     {
-        get => SkirtGravityControl.Active;
+        get => SkirtGravityControl && SkirtGravityControl.Active;
         set
         {
-            if (SkirtGravityControl.Valid)
-                SkirtGravityControl.gameObject.SetActive(value);
+            if (!SkirtGravityControl || !SkirtGravityControl.Valid)
+                return;
+
+            SkirtGravityControl.gameObject.SetActive(value);
         }
     }
 
@@ -326,16 +330,30 @@ public class Meido
 
         if (!Body.isLoadedBody)
         {
+            AllProcPropSeqStartPatcher.SequenceEnded += LoadMaid;
+
             Maid.DutPropAll();
             Maid.AllProcPropSeqStart();
-        }
 
-        StartLoad(OnBodyLoad);
+            void LoadMaid(object sender, ProcStartEventArgs e)
+            {
+                if (e.Maid.status.guid != Maid.status.guid)
+                    return;
+
+                OnBodyLoad();
+
+                AllProcPropSeqStartPatcher.SequenceEnded -= LoadMaid;
+            }
+        }
+        else
+        {
+            OnBodyLoad();
+        }
     }
 
     public void Unload()
     {
-        if (Body.isLoadedBody && Maid.Visible)
+        if (Maid.Visible)
         {
             DetachAllMpnAttach();
 
@@ -363,7 +381,11 @@ public class Meido
             SetFaceBlendSet(DefaultFaceBlendSet);
         }
 
-        AllProcPropSeqStartPatcher.SequenceStart -= ReinitializeBody;
+        AllProcPropSeqStartPatcher.SequenceStarting -= OnMaidPropChanging;
+
+#if COM25
+        SwapNewMaidPropPatcher.NewMaidPropSwapping -= OnNewBodySwapping;
+#endif
 
         MuneYureLEnabled = true;
         MuneYureREnabled = true;
@@ -394,7 +416,6 @@ public class Meido
         Body.transform.localScale = Vector3.one;
         Maid.ResetAll();
         Maid.MabatakiUpdateStop = false;
-        Maid.ActiveSlotNo = -1;
     }
 
     public void SetPose(PoseInfo poseInfo)
@@ -580,8 +601,133 @@ public class Meido
         return faceData;
     }
 
-    public void SetFaceBlendSet(string blendSet)
+    public void SetFaceBlendSet(string blendSet) =>
+        SetFaceBlendSet(blendSet, true);
+
+    public void SetFaceBlendValue(string faceKey, float value)
     {
+        var morph = Body.Face.morph;
+        var hash = Utility.GP01FbFaceHash(morph, faceKey);
+
+        if (!morph.Contains(hash))
+            return;
+
+        var blendIndex = (int)morph.hash[hash];
+
+        if (faceKey is "nosefook")
+            Maid.boNoseFook = morph.boNoseFook = value > 0f;
+        else
+            morph.dicBlendSet[CurrentFaceBlendSet][blendIndex] = value;
+
+        morph.SetBlendValues(blendIndex, value);
+        morph.FixBlendValues_Face();
+    }
+
+    public float GetFaceBlendValue(string hash)
+    {
+        var morph = Body.Face.morph;
+
+        if (hash is "nosefook")
+            return (Maid.boNoseFook || morph.boNoseFook) ? 1f : 0f;
+
+        hash = Utility.GP01FbFaceHash(morph, hash);
+
+        return morph.dicBlendSet[CurrentFaceBlendSet][(int)morph.hash[hash]];
+    }
+
+    public void StopBlink()
+    {
+        Maid.MabatakiUpdateStop = true;
+        Body.Face.morph.EyeMabataki = 0f;
+        Utility.SetFieldValue(Maid, "MabatakiVal", 0f);
+    }
+
+    public void SetMaskMode(Mask maskMode) =>
+        SetMaskMode(maskMode is Mask.Nude ? MaskMode.Nude : (MaskMode)maskMode);
+
+    public void SetMaskMode(MaskMode maskMode)
+    {
+        var invisibleBody = !Body.GetMask(SlotID.body);
+
+        Body.SetMaskMode(maskMode);
+
+        if (invisibleBody)
+            SetBodyMask(false);
+    }
+
+    public void SetBodyMask(bool enabled)
+    {
+        var table = Utility.GetFieldValue<TBody, Hashtable>(Body, "m_hFoceHide");
+
+        foreach (var bodySlot in MaidDressingPane.BodySlots)
+            table[bodySlot] = enabled;
+
+        Body.FixMaskFlag();
+        Body.FixVisibleFlag(false);
+    }
+
+    public void SetCurling(Curl curling, bool enabled)
+    {
+        var name = curling is Curl.Shift
+            ? new[] { "panz", "mizugi" }
+            : new[] { "skirt", "onepiece" };
+
+        if (enabled)
+        {
+            var action = curling switch
+            {
+                Curl.Shift => "パンツずらし",
+                Curl.Front => "めくれスカート",
+                _ => "めくれスカート後ろ",
+            };
+
+            Maid.ItemChangeTemp(name[0], action);
+            Maid.ItemChangeTemp(name[1], action);
+        }
+        else
+        {
+            Maid.ResetProp(name[0]);
+            Maid.ResetProp(name[1]);
+        }
+
+        Maid.AllProcProp();
+        HairGravityControl.Control.OnChangeMekure();
+        SkirtGravityControl.Control.OnChangeMekure();
+    }
+
+    public void SetMpnProp(MpnAttachProp prop, bool detach)
+    {
+        if (detach)
+            Maid.ResetProp(prop.Tag, false);
+        else
+            Maid.SetProp(prop.Tag, prop.MenuFile, 0, true);
+
+        Maid.AllProcProp();
+    }
+
+    public void DetachAllMpnAttach()
+    {
+        if (!Body.isLoadedBody)
+            return;
+
+        Maid.ResetProp(MPN.kousoku_lower, false);
+        Maid.ResetProp(MPN.kousoku_upper, false);
+        Maid.AllProcProp();
+    }
+
+    public void ApplyGravity(Vector3 position, bool skirt = false)
+    {
+        var dragPoint = skirt ? SkirtGravityControl : HairGravityControl;
+
+        if (dragPoint && dragPoint.Valid)
+            dragPoint.Control.transform.localPosition = position;
+    }
+
+    private void SetFaceBlendSet(string blendSet, bool withNotify)
+    {
+        if (!Body.isLoadedBody)
+            return;
+
         if (blendSet.StartsWith(Constants.CustomFacePath))
         {
             var blendSetFileName = Path.GetFileNameWithoutExtension(blendSet);
@@ -690,175 +836,27 @@ public class Meido
         }
 
         StopBlink();
-        OnUpdateMeido();
-    }
 
-    public void SetFaceBlendValue(string faceKey, float value)
-    {
-        var morph = Body.Face.morph;
-        var hash = Utility.GP01FbFaceHash(morph, faceKey);
-
-        if (!morph.Contains(hash))
-            return;
-
-        var blendIndex = (int)morph.hash[hash];
-
-        if (faceKey is "nosefook")
-            Maid.boNoseFook = morph.boNoseFook = value > 0f;
-        else
-            morph.dicBlendSet[CurrentFaceBlendSet][blendIndex] = value;
-
-        morph.SetBlendValues(blendIndex, value);
-        morph.FixBlendValues();
-    }
-
-    public float GetFaceBlendValue(string hash)
-    {
-        var morph = Body.Face.morph;
-
-        if (hash is "nosefook")
-            return (Maid.boNoseFook || morph.boNoseFook) ? 1f : 0f;
-
-        hash = Utility.GP01FbFaceHash(morph, hash);
-
-        return morph.dicBlendSet[CurrentFaceBlendSet][(int)morph.hash[hash]];
-    }
-
-    public void StopBlink()
-    {
-        Maid.MabatakiUpdateStop = true;
-        Body.Face.morph.EyeMabataki = 0f;
-        Utility.SetFieldValue(Maid, "MabatakiVal", 0f);
-    }
-
-    public void SetMaskMode(Mask maskMode) =>
-        SetMaskMode(maskMode is Mask.Nude ? MaskMode.Nude : (MaskMode)maskMode);
-
-    public void SetMaskMode(MaskMode maskMode)
-    {
-        var invisibleBody = !Body.GetMask(SlotID.body);
-
-        Body.SetMaskMode(maskMode);
-
-        if (invisibleBody)
-            SetBodyMask(false);
-    }
-
-    public void SetBodyMask(bool enabled)
-    {
-        var table = Utility.GetFieldValue<TBody, Hashtable>(Body, "m_hFoceHide");
-
-        foreach (var bodySlot in MaidDressingPane.BodySlots)
-            table[bodySlot] = enabled;
-
-        Body.FixMaskFlag();
-        Body.FixVisibleFlag(false);
-    }
-
-    public void SetCurling(Curl curling, bool enabled)
-    {
-        var name = curling is Curl.Shift
-            ? new[] { "panz", "mizugi" }
-            : new[] { "skirt", "onepiece" };
-
-        if (enabled)
-        {
-            var action = curling switch
-            {
-                Curl.Shift => "パンツずらし",
-                Curl.Front => "めくれスカート",
-                _ => "めくれスカート後ろ",
-            };
-
-            Maid.ItemChangeTemp(name[0], action);
-            Maid.ItemChangeTemp(name[1], action);
-        }
-        else
-        {
-            Maid.ResetProp(name[0]);
-            Maid.ResetProp(name[1]);
-        }
-
-        Maid.AllProcProp();
-        HairGravityControl.Control.OnChangeMekure();
-        SkirtGravityControl.Control.OnChangeMekure();
-    }
-
-    public void SetMpnProp(MpnAttachProp prop, bool detach)
-    {
-        if (detach)
-            Maid.ResetProp(prop.Tag, false);
-        else
-            Maid.SetProp(prop.Tag, prop.MenuFile, 0, true);
-
-        Maid.AllProcProp();
-    }
-
-    public void DetachAllMpnAttach()
-    {
-        Maid.ResetProp(MPN.kousoku_lower, false);
-        Maid.ResetProp(MPN.kousoku_upper, false);
-        Maid.AllProcProp();
-    }
-
-    public void ApplyGravity(Vector3 position, bool skirt = false)
-    {
-        var dragPoint = skirt ? SkirtGravityControl : HairGravityControl;
-
-        if (dragPoint.Valid)
-            dragPoint.Control.transform.localPosition = position;
-    }
-
-    private void StartLoad(Action callback)
-    {
-        if (Loading)
-            return;
-
-        GameMain.Instance.StartCoroutine(Load(callback));
-    }
-
-    private IEnumerator Load(Action callback)
-    {
-        Loading = true;
-
-        while (Maid.IsBusy)
-            yield return null;
-
-        yield return new WaitForEndOfFrame();
-
-        callback();
-        Loading = false;
+        if (withNotify)
+            OnUpdateMeido();
     }
 
     private void OnBodyLoad()
     {
-        if (!initialized)
-        {
-            DefaultEyeRotL = Body.quaDefEyeL;
-            DefaultEyeRotR = Body.quaDefEyeR;
+        InitializeFace();
 
-            initialized = true;
-        }
+        InitializeGravityControls();
 
-        if (blendSetValueBackup is null)
-            BackupBlendSetValues();
-
-        if (!HairGravityControl)
-            InitializeGravityControls();
-
-        HairGravityControl.Move += OnGravityEvent;
-        SkirtGravityControl.Move += OnGravityEvent;
+        InitializeBody();
 
         if (MeidoPhotoStudio.EditMode)
-            AllProcPropSeqStartPatcher.SequenceStart += ReinitializeBody;
+        {
+            AllProcPropSeqStartPatcher.SequenceStarting += OnMaidPropChanging;
 
 #if COM25
-        // NOTE: This is required for IK to work in COM3D2.5
-        Body.motionBlendTime = 0f;
+            SwapNewMaidPropPatcher.NewMaidPropSwapping += OnNewBodySwapping;
 #endif
-        IKManager.Initialize();
-
-        SetFaceBlendSet(DefaultFaceBlendSet);
+        }
 
         IK = true;
         Stop = false;
@@ -867,7 +865,58 @@ public class Meido
         Active = true;
     }
 
-    private void ReinitializeBody(object sender, ProcStartEventArgs args)
+#if COM25
+    private void OnNewBodySwapping(object sender, ProcStartEventArgs args)
+    {
+        if (Loading || !Body.isLoadedBody)
+            return;
+
+        if (args.Maid.status.guid != Maid.status.guid)
+            return;
+
+        IKManager.Destroy();
+
+        SetFaceBlendSet(DefaultFaceBlendSet);
+
+        DestroyGravityControl(HairGravityControl);
+        DestroyGravityControl(SkirtGravityControl);
+
+        // Prevent reinitializing again
+        AllProcPropSeqStartPatcher.SequenceStarting -= OnMaidPropChanging;
+
+        AllProcPropSeqStartPatcher.SequenceEnded += OnSequenceEnded;
+
+        void OnSequenceEnded(object sender, ProcStartEventArgs e)
+        {
+            if (e.Maid.status.guid != Maid.status.guid)
+                return;
+
+            InitializeFace(true);
+
+            InitializeGravityControls();
+
+            InitializeBody();
+
+            if (!Maid.IsCrcBody)
+            {
+                // Maid animation needs to be set again for custom parts edit
+                var uiRoot = GameObject.Find("UI Root");
+                var customPartsWindow = UTY.GetChildObject(uiRoot, "Window/CustomPartsWindow")
+                    .GetComponent<SceneEditWindow.CustomPartsWindow>();
+
+                Utility.SetFieldValue(customPartsWindow, "animation", Maid.GetAnimation());
+            }
+
+            OnUpdateMeido();
+
+            AllProcPropSeqStartPatcher.SequenceEnded -= OnSequenceEnded;
+
+            AllProcPropSeqStartPatcher.SequenceStarting += OnMaidPropChanging;
+        }
+    }
+#endif
+
+    private void OnMaidPropChanging(object sender, ProcStartEventArgs args)
     {
         if (Loading || !Body.isLoadedBody)
             return;
@@ -878,76 +927,72 @@ public class Meido
         var gravityControlProps =
             new[]
             {
-                MPN.skirt, MPN.onepiece, MPN.mizugi, MPN.panz, MPN.set_maidwear, MPN.set_mywear, MPN.set_underwear,
-                MPN.hairf, MPN.hairr, MPN.hairs, MPN.hairt,
+                // NOTE: body is checked because the gravity control is destroyed along with the body.
+                MPN.body, MPN.skirt, MPN.onepiece, MPN.mizugi, MPN.panz, MPN.set_maidwear, MPN.set_mywear,
+                MPN.set_underwear, MPN.hairf, MPN.hairr, MPN.hairs, MPN.hairt,
             };
 
-        Action action = null;
+        Action reinitializationCallback = null;
 
         // Change body
         if (Maid.GetProp(MPN.body).boDut)
         {
             IKManager.Destroy();
-            action += ReinitializeBody;
+
+            reinitializationCallback += () =>
+            {
+                // Maid animation needs to be set again for custom parts edit
+                var uiRoot = GameObject.Find("UI Root");
+                var customPartsWindow = UTY.GetChildObject(uiRoot, "Window/CustomPartsWindow")
+                    .GetComponent<SceneEditWindow.CustomPartsWindow>();
+
+                Utility.SetFieldValue(customPartsWindow, "animation", Maid.GetAnimation());
+
+                InitializeBody();
+            };
         }
 
         // Change face
         if (Maid.GetProp(MPN.head).boDut)
         {
             SetFaceBlendSet(DefaultFaceBlendSet);
-            action += ReinitializeFace;
+
+            reinitializationCallback += () =>
+                InitializeFace(true);
         }
 
         // Gravity control clothing/hair change
         if (gravityControlProps.Any(prop => Maid.GetProp(prop).boDut))
         {
-            if (HairGravityControl)
-                Object.Destroy(HairGravityControl.gameObject);
+            DestroyGravityControl(HairGravityControl);
+            DestroyGravityControl(SkirtGravityControl);
 
-            if (SkirtGravityControl)
-                Object.Destroy(SkirtGravityControl.gameObject);
-
-            action += ReinitializeGravity;
+            reinitializationCallback += InitializeGravityControls;
         }
 
         // Clothing/accessory changes
         // Includes null_mpn too but any button click results in null_mpn bodut I think
-        action ??= Default;
-
-        StartLoad(action);
-
-        void ReinitializeBody()
-        {
-            IKManager.Initialize();
-            Stop = false;
-
-            // Maid animation needs to be set again for custom parts edit
-            var uiRoot = GameObject.Find("UI Root");
-            var customPartsWindow = UTY.GetChildObject(uiRoot, "Window/CustomPartsWindow")
-                .GetComponent<SceneEditWindow.CustomPartsWindow>();
-
-            Utility.SetFieldValue(customPartsWindow, "animation", Maid.GetAnimation());
-        }
-
-        void ReinitializeFace()
-        {
-            DefaultEyeRotL = Body.quaDefEyeL;
-            DefaultEyeRotR = Body.quaDefEyeR;
-            BackupBlendSetValues();
-        }
-
-        void ReinitializeGravity()
-        {
-            InitializeGravityControls();
+        reinitializationCallback += () =>
             OnUpdateMeido();
-        }
 
-        void Default() =>
-            OnUpdateMeido();
+        AllProcPropSeqStartPatcher.SequenceEnded += OnSequenceEnded;
+
+        void OnSequenceEnded(object sender, ProcStartEventArgs e)
+        {
+            if (e.Maid.status.guid != Maid.status.guid)
+                return;
+
+            AllProcPropSeqStartPatcher.SequenceEnded -= OnSequenceEnded;
+
+            reinitializationCallback?.Invoke();
+        }
     }
 
     private void BackupBlendSetValues()
     {
+        if (!Body.isLoadedBody)
+            return;
+
         var values = Body.Face.morph.dicBlendSet[CurrentFaceBlendSet];
 
         blendSetValueBackup = new float[values.Length];
@@ -982,10 +1027,44 @@ public class Meido
         return cache;
     }
 
+    private void InitializeBody()
+    {
+        if (!Body.isLoadedBody)
+            return;
+
+#if COM25
+        // NOTE: This is required for IK to work in COM3D2.5
+        Body.motionBlendTime = 0f;
+#endif
+
+        IKManager.Initialize();
+    }
+
+    private void InitializeFace(bool force = false)
+    {
+        if (force || faceNeedsInitialization)
+        {
+            DefaultEyeRotL = Body.quaDefEyeL;
+            DefaultEyeRotR = Body.quaDefEyeR;
+
+            faceNeedsInitialization = false;
+        }
+
+        BackupBlendSetValues();
+
+        SetFaceBlendSet(DefaultFaceBlendSet, false);
+    }
+
     private void InitializeGravityControls()
     {
-        HairGravityControl = MakeGravityControl(skirt: false);
-        SkirtGravityControl = MakeGravityControl(skirt: true);
+        if (!HairGravityControl)
+            HairGravityControl = MakeGravityControl(skirt: false);
+
+        if (!SkirtGravityControl)
+            SkirtGravityControl = MakeGravityControl(skirt: true);
+
+        HairGravityControl.Move += OnGravityEvent;
+        SkirtGravityControl.Move += OnGravityEvent;
     }
 
     private DragPointGravity MakeGravityControl(bool skirt = false)
@@ -999,6 +1078,15 @@ public class Meido
         gravityDragpoint.gameObject.SetActive(false);
 
         return gravityDragpoint;
+    }
+
+    private void DestroyGravityControl(DragPointGravity control)
+    {
+        if (!control)
+            return;
+
+        control.Move -= OnGravityEvent;
+        Object.Destroy(control.gameObject);
     }
 
     private void OnUpdateMeido(MeidoUpdateEventArgs args = null) =>
