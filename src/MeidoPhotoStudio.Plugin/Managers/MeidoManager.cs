@@ -106,7 +106,7 @@ public class MeidoManager : IManager
     public void Activate()
     {
         Meidos = CharacterMgr.GetStockMaidList()
-            .Select((_, stockNo) => new Meido(stockNo))
+            .Select(maid => new Meido(maid))
             .ToArray();
 
         CharacterMgr.ResetCharaPosAll();

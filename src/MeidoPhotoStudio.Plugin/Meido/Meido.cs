@@ -47,10 +47,9 @@ public class Meido
     private float[] blendSetValueBackup;
     private bool freeLook;
 
-    public Meido(int stockMaidIndex)
+    public Meido(Maid maid)
     {
-        StockNo = stockMaidIndex;
-        Maid = GameMain.Instance.CharacterMgr.GetStockMaid(stockMaidIndex);
+        Maid = maid;
 
         IKManager = new(this);
         IKManager.SelectMaid += (_, args) =>
@@ -95,8 +94,6 @@ public class Meido
     public int Slot { get; private set; }
 
     public bool Loading { get; private set; }
-
-    public int StockNo { get; }
 
     public Maid Maid { get; }
 
