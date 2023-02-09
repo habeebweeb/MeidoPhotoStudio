@@ -455,7 +455,7 @@ public class MeidoDragPointManager
         for (var i = dragPoints.Length - 1; i >= 0; i--)
         {
             var joint = lower;
-            var positionJoint = realLower;
+            var positionJoint = realLower ? realLower : lower;
 
             dragPoints[i] = DragPoint.Make<DragPointLimb>(PrimitiveType.Sphere, limbDragPointSize);
             dragPoints[i].Initialize(meido, () => positionJoint.position, () => Vector3.zero);
@@ -464,7 +464,9 @@ public class MeidoDragPointManager
             dragPoints[i].Gizmo.SetAlternateTarget(positionJoint);
 
             lower = lower.parent;
-            realLower = realLower.parent;
+
+            if (realLower)
+                realLower = realLower.parent;
         }
 
         return dragPoints;
@@ -481,14 +483,16 @@ public class MeidoDragPointManager
         for (var i = dragPoints.Length - 1; i >= 0; i--)
         {
             var joint = lower;
-            var positionJoint = realLower;
+            var positionJoint = realLower ? realLower : lower;
 
             dragPoints[i] = DragPoint.Make<DragPointFinger>(PrimitiveType.Sphere, fingerDragPointSize);
             dragPoints[i].Initialize(meido, () => positionJoint.position, () => Vector3.zero);
             dragPoints[i].Set(joint);
 
             lower = lower.parent;
-            realLower = realLower.parent;
+
+            if (realLower)
+                realLower = realLower.parent;
         }
 
         return dragPoints;

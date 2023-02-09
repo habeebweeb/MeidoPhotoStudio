@@ -123,6 +123,9 @@ public class CustomGizmo : GizmoRender
 
     public void SetAlternateTarget(Transform trans)
     {
+        if (trans == target || trans == positionTransform)
+            return;
+
         positionTransform = trans;
         hasAlternateTarget = trans != null;
     }
