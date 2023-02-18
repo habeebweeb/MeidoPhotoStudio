@@ -281,8 +281,17 @@ public abstract class DragPoint : MonoBehaviour
             - newOffset;
     }
 
-    private static GameObject DragPointParent() =>
-        dragPointParent ? dragPointParent : (dragPointParent = new("[MPS DragPoint Parent]"));
+    private static GameObject DragPointParent()
+    {
+        if (dragPointParent)
+            return dragPointParent;
+
+        const string dragPointParentName = "[MPS DragPoint Parent]";
+
+        var findParent = GameObject.Find(dragPointParentName);
+
+        return findParent ? (dragPointParent = findParent) : (dragPointParent = new(dragPointParentName));
+    }
 
     private void Awake()
     {

@@ -119,6 +119,7 @@ public static class Constants
 
     public enum Scene
     {
+        None = -1,
         Daily = 3,
         Edit = 5,
     }

@@ -23,8 +23,14 @@ public class MeidoManager : IManager
     static MeidoManager() =>
         InputManager.Register(MpsKey.MeidoUndressing, KeyCode.H, "All maid undressing");
 
-    public MeidoManager() =>
+
+    public MeidoManager()
+    {
+        if (SceneEdit.Instance)
+            SceneEditStartPostfix();
+
         Activate();
+    }
 
     public event EventHandler<MeidoUpdateEventArgs> UpdateMeido;
 

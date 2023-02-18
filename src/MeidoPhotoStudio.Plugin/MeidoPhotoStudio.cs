@@ -203,7 +203,7 @@ public class MeidoPhotoStudio : BaseUnityPlugin
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode) =>
-        currentScene = (Constants.Scene)scene.buildIndex;
+        UpdateCurrentScene(scene);
 
     private void OnSceneChanged(Scene current, Scene next)
     {
@@ -215,6 +215,14 @@ public class MeidoPhotoStudio : BaseUnityPlugin
 
     private void OnScreenshotEvent(object sender, ScreenshotEventArgs args) =>
         StartCoroutine(Screenshot(args));
+
+    private void UpdateCurrentScene(Scene scene) =>
+        currentScene = scene.buildIndex switch
+        {
+            3 => Constants.Scene.Daily,
+            5 => Constants.Scene.Edit,
+            _ => Constants.Scene.None,
+        };
 
     private void Awake()
     {
@@ -228,6 +236,23 @@ public class MeidoPhotoStudio : BaseUnityPlugin
 
         UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
         UnityEngine.SceneManagement.SceneManager.activeSceneChanged += OnSceneChanged;
+
+        UpdateCurrentScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+    }
+
+    private void OnDestroy()
+    {
+        if (active)
+            Deactivate(true);
+
+        CameraUtility.MainCamera.ResetCalcNearClip();
+
+        harmony.UnpatchSelf();
+
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+        UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= OnSceneChanged;
+
+        Destroy(GameObject.Find("[MPS DragPoint Parent]"));
     }
 
     private void Start()
