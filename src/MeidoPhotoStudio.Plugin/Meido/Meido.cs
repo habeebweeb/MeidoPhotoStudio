@@ -19,12 +19,11 @@ public class Meido
     public static readonly string DefaultFaceBlendSet = "通常";
 
     public static readonly string[] FaceKeys =
-        new string[24]
+        new string[]
         {
-            "eyeclose", "eyeclose2", "eyeclose3", "eyebig", "eyeclose6", "eyeclose5", "hitomih",
-            "hitomis", "mayuha", "mayuw", "mayuup", "mayuv", "mayuvhalf", "moutha", "mouths",
-            "mouthc", "mouthi", "mouthup", "mouthdw", "mouthhe", "mouthuphalf", "tangout",
-            "tangup", "tangopen",
+            "eyeclose", "eyeclose2", "eyeclose3", "eyebig", "eyeclose6", "eyeclose5", "eyeclose7", "eyeclose8",
+            "hitomih", "hitomis", "mayuha", "mayuw", "mayuup", "mayuv", "mayuvhalf", "moutha", "mouths", "mouthc",
+            "mouthi", "mouthup", "mouthdw", "mouthhe", "mouthuphalf", "tangout", "tangup", "tangopen",
         };
 
     public static readonly string[] FaceToggleKeys =
@@ -650,6 +649,7 @@ public class Meido
 
         morph.SetBlendValues(blendIndex, value);
         morph.FixBlendValues();
+        morph.FixBlendValues_Face();
     }
 
     public float GetFaceBlendValue(string hash)

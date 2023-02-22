@@ -19,6 +19,10 @@
     "eyeclose6": 1,
     // Wink 2
     "eyeclose5": 1,
+    // Wink R 1
+    "eyeclose8": 1,
+    // Wink R 2
+    "eyeclose7": 1,
     // Highlight
     "hitomih": 2,
     // Pupil Size
@@ -74,6 +78,10 @@ Since these limits would be way too much for non GP-01 FB faces, they aren't the
     "eyeclose6": 1,
     // Wink 2
     "eyeclose5": 1,
+    // Wink R 1
+    "eyeclose8": 1,
+    // Wink R 2
+    "eyeclose7": 1,
     // Highlight
     "hitomih": 2,
     // Pupil Size

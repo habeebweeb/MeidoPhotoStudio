@@ -20,6 +20,8 @@ public class MaidFaceSliderPane : BasePane
         ["eyebig"] = 1f, // Wide Eyes
         ["eyeclose6"] = 1f, // Wink 1
         ["eyeclose5"] = 1f, // Wink 2
+        ["eyeclose7"] = 1f, // Wink R 1
+        ["eyeclose8"] = 1f, // Wink R 2
         ["hitomih"] = 2f, // Highlight
         ["hitomis"] = 3f, // Pupil Size
         ["mayuha"] = 1f, // Brow 1
@@ -44,6 +46,7 @@ public class MaidFaceSliderPane : BasePane
     private readonly Dictionary<string, BaseControl> faceControls;
 
     private bool hasTangOpen;
+    private bool hasEyeClose7and8;
 
     public MaidFaceSliderPane(MeidoManager meidoManager)
     {
@@ -108,7 +111,15 @@ public class MaidFaceSliderPane : BasePane
                 toggle.Value = !toggle.Value;
         }
 
-        hasTangOpen = meido.Body.Face.morph.Contains("tangopen");
+        var faceMorph = meido.Body.Face.morph;
+
+        hasTangOpen = faceMorph.Contains("tangopen");
+
+        var eyeclose7Hash = Utility.GP01FbFaceHash(faceMorph, "eyeclose7");
+        var eyeclose8Hash = Utility.GP01FbFaceHash(faceMorph, "eyeclose8");
+
+        hasEyeClose7and8 = faceMorph.Contains(eyeclose7Hash) && faceMorph.Contains(eyeclose8Hash);
+
         updating = false;
     }
 
@@ -117,7 +128,12 @@ public class MaidFaceSliderPane : BasePane
         GUI.enabled = meidoManager.HasActiveMeido;
         DrawSliders("eyeclose", "eyeclose2");
         DrawSliders("eyeclose3", "eyebig");
+
         DrawSliders("eyeclose6", "eyeclose5");
+
+        if (hasEyeClose7and8)
+            DrawSliders("eyeclose8", "eyeclose7");
+
         DrawSliders("hitomih", "hitomis");
         DrawSliders("mayuha", "mayuw");
         DrawSliders("mayuup", "mayuv");
