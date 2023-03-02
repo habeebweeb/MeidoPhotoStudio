@@ -116,7 +116,7 @@ public class MaidSwitcherPane : BasePane
             return;
 
         updating = true;
-        editToggle.Value = meidoManager.ActiveMeido.IsEditMaid;
+        editToggle.Value = meidoManager.ActiveMeido == meidoManager.EditingMeido;
         updating = false;
     }
 
@@ -143,6 +143,6 @@ public class MaidSwitcherPane : BasePane
         }
 
         if (meidoManager.HasActiveMeido)
-            meidoManager.SetEditMaid(meidoManager.ActiveMeido);
+            meidoManager.EditingMeido = meidoManager.ActiveMeido;
     }
 }

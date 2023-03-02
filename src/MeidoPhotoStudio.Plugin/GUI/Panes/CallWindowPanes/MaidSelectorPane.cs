@@ -10,6 +10,8 @@ public class MaidSelectorPane : BasePane
     private readonly Button clearMaidsButton;
     private readonly Button callMaidsButton;
     private readonly Toggle activeMeidoListToggle;
+    private readonly List<Meido> selectedMeidoList = new();
+    private readonly HashSet<Meido> selectedMeidoSet = new();
 
     private Vector2 maidListScrollPos;
     private Vector2 activeMaidListScrollPos;
@@ -20,16 +22,16 @@ public class MaidSelectorPane : BasePane
 
         clearMaidsButton = new(Translation.Get("maidCallWindow", "clearButton"));
         clearMaidsButton.ControlEvent += (_, _) =>
-            this.meidoManager.ClearSelectList();
+            ClearSelectedMaids();
 
         callMaidsButton = new(Translation.Get("maidCallWindow", "callButton"));
         callMaidsButton.ControlEvent += (_, _) =>
-            this.meidoManager.CallMeidos();
+            this.meidoManager.CallMeidos(selectedMeidoList);
 
         activeMeidoListToggle = new(Translation.Get("maidCallWindow", "activeOnlyToggle"));
         this.meidoManager.BeginCallMeidos += (_, _) =>
         {
-            if (meidoManager.SelectedMeidoSet.Count is 0)
+            if (selectedMeidoSet.Count is 0)
                 activeMeidoListToggle.Value = false;
         };
     }
@@ -37,6 +39,8 @@ public class MaidSelectorPane : BasePane
     public override void Activate()
     {
         base.Activate();
+
+        ClearSelectedMaids();
 
         // NOTE: Leaving this mode enabled pretty much softlocks meido selection so disable it on activation
         activeMeidoListToggle.Value = false;
@@ -98,14 +102,14 @@ public class MaidSelectorPane : BasePane
         {
             var meido = meidoList[i];
             var y = i * buttonHeight;
-            var selectedMaid = meidoManager.SelectedMeidoSet.Contains(meido.StockNo);
+            var selected = selectedMeidoSet.Contains(meido);
 
             if (GUI.Button(new(0f, y, buttonWidth, buttonHeight), string.Empty))
-                meidoManager.SelectMeido(meido.StockNo);
+                SelectMaid(meido);
 
-            if (selectedMaid)
+            if (selected)
             {
-                var selectedIndex = meidoManager.SelectMeidoList.IndexOf(meido.StockNo) + 1;
+                var selectedIndex = selectedMeidoList.IndexOf(meido) + 1;
 
                 GUI.DrawTexture(new(5f, y + 5f, buttonWidth - 10f, buttonHeight - 10f), Texture2D.whiteTexture);
 
@@ -118,7 +122,7 @@ public class MaidSelectorPane : BasePane
             GUI.Label(
                 new(95f, y + 30f, buttonWidth - 80f, buttonHeight),
                 $"{meido.LastName}\n{meido.FirstName}",
-                selectedMaid ? labelSelectedStyle : labelStyle);
+                selected ? labelSelectedStyle : labelStyle);
         }
 
         GUI.EndScrollView();
@@ -129,5 +133,33 @@ public class MaidSelectorPane : BasePane
         clearMaidsButton.Label = Translation.Get("maidCallWindow", "clearButton");
         callMaidsButton.Label = Translation.Get("maidCallWindow", "callButton");
         activeMeidoListToggle.Label = Translation.Get("maidCallWindow", "activeOnlyToggle");
+    }
+
+    private void SelectMaid(Meido meido)
+    {
+        if (selectedMeidoSet.Contains(meido))
+        {
+            if (!MeidoPhotoStudio.EditMode || meido != meidoManager.OriginalEditingMeido)
+            {
+                selectedMeidoSet.Remove(meido);
+                selectedMeidoList.Remove(meido);
+            }
+        }
+        else
+        {
+            selectedMeidoSet.Add(meido);
+            selectedMeidoList.Add(meido);
+        }
+    }
+
+    private void ClearSelectedMaids()
+    {
+        selectedMeidoSet.Clear();
+        selectedMeidoList.Clear();
+
+        if (!MeidoPhotoStudio.EditMode)
+            return;
+
+        SelectMaid(meidoManager.OriginalEditingMeido);
     }
 }
