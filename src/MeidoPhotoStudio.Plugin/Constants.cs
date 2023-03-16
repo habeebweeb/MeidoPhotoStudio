@@ -71,6 +71,8 @@ public static class Constants
             [DoguCategory.BGSmall] = "bgSmall",
         };
 
+    private static readonly HashSet<string> ModPropIconsInitialized = new();
+
     private static bool beginHandItemInit;
     private static bool beginMpnAttachInit;
 
@@ -152,6 +154,21 @@ public static class Constants
         InitializeDogu();
         InitializeMyRoomProps();
         InitializeMpnAttachProps();
+    }
+
+    public static void Destroy()
+    {
+        if (!MenuFilesInitialized)
+            return;
+
+        foreach (var kvp in ModPropDict)
+        {
+            if (!ModPropIconsInitialized.Contains(kvp.Key))
+                continue;
+
+            foreach (var modItem in kvp.Value)
+                UnityEngine.Object.DestroyImmediate(modItem.Icon);
+        }
     }
 
     public static void AddFacePreset(Dictionary<string, float> faceData, string filename, string directory)
@@ -658,61 +675,46 @@ public static class Constants
         if (!ModPropDict.ContainsKey(category))
             return null;
 
+        if (ModPropIconsInitialized.Contains(category))
+            return ModPropDict[category];
+
         var selectedList = ModPropDict[category];
 
-        if (!selectedList[0].Icon)
+        foreach (var modItem in selectedList.Where(item => !item.IsOfficialMod))
         {
-            selectedList.Sort((a, b) =>
+            var iconFile = modItem.IconFile;
+
+            if (string.IsNullOrEmpty(iconFile))
             {
-                var res = a.Priority.CompareTo(b.Priority);
+                Utility.LogInfo($"Could not find icon for menu '{modItem.MenuFile}'");
 
-                if (res is 0)
-                    res = string.Compare(a.Name, b.Name);
+                continue;
+            }
 
-                return res;
-            });
+            Texture2D icon;
 
-            var previousMenuFile = string.Empty;
-
-            selectedList.RemoveAll(item =>
+            try
             {
-                if (item.Icon)
-                    return false;
-
-                Texture2D icon;
-                var iconFile = item.IconFile;
-
-                if (string.IsNullOrEmpty(iconFile))
-                {
-                    // TODO: Remove '{iconFile}' since it will not add anymore information.
-                    Utility.LogWarning($"Could not find icon '{iconFile}' for menu '{item.MenuFile}");
-
-                    return true;
-                }
-
+                icon = ImportCM.CreateTexture(iconFile);
+            }
+            catch
+            {
                 try
                 {
-                    icon = ImportCM.CreateTexture(iconFile);
+                    icon = ImportCM.CreateTexture(@"tex\" + iconFile);
                 }
                 catch
                 {
-                    try
-                    {
-                        icon = ImportCM.CreateTexture($"tex\\{iconFile}");
-                    }
-                    catch
-                    {
-                        Utility.LogWarning($"Could not load '{iconFile}' for menu '{item.MenuFile}");
+                    Utility.LogInfo($"Could not load icon for '{modItem.MenuFile}'");
 
-                        return true;
-                    }
+                    icon = null;
                 }
+            }
 
-                item.Icon = icon;
-
-                return false;
-            });
+            modItem.Icon = icon;
         }
+
+        ModPropIconsInitialized.Add(category);
 
         return selectedList;
     }

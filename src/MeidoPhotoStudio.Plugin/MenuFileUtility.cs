@@ -88,9 +88,6 @@ public static class MenuFileUtility
 
         modItem.MenuFile = menuDataBase.GetMenuFileName().ToLower();
 
-        if (!ValidBG2MenuFile(modItem.MenuFile))
-            return false;
-
         modItem.Name = menuDataBase.GetMenuName();
         modItem.IconFile = menuDataBase.GetIconS();
         modItem.Priority = menuDataBase.GetPriority();
@@ -100,9 +97,6 @@ public static class MenuFileUtility
 
     public static void ParseMenuFile(string menuFile, ModItem modItem)
     {
-        if (!ValidBG2MenuFile(menuFile))
-            return;
-
         byte[] buffer;
 
         try
@@ -160,8 +154,6 @@ public static class MenuFileUtility
                 else if (header is "icons" or "icon")
                 {
                     modItem.IconFile = menuProps[1];
-
-                    break;
                 }
                 else if (header is "priority")
                 {
@@ -177,9 +169,6 @@ public static class MenuFileUtility
 
     public static bool ParseModMenuFile(string modMenuFile, ModItem modItem)
     {
-        if (!ValidBG2MenuFile(modMenuFile))
-            return false;
-
         byte[] modBuffer;
 
         try
@@ -261,15 +250,7 @@ public static class MenuFileUtility
     }
 
     public static bool ValidBG2MenuFile(ModItem modItem) =>
-        AccMpn.Contains(modItem.Category) && ValidBG2MenuFile(modItem.MenuFile);
-
-    public static bool ValidBG2MenuFile(string menu)
-    {
-        menu = Path.GetFileNameWithoutExtension(menu).ToLower();
-
-        return !(menu.EndsWith("_del") || menu.Contains("zurashi") || menu.Contains("mekure") || menu.Contains("porori")
-            || menu.Contains("moza") || menu.Contains("folder"));
-    }
+        AccMpn.Contains(modItem.Category);
 
     private static IEnumerator CheckMenuDataBaseJob()
     {

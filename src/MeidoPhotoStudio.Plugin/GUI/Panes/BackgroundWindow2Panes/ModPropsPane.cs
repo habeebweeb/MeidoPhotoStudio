@@ -139,7 +139,11 @@ public class ModPropsPane : BasePane
                 if (GUI.Button(iconRect, string.Empty))
                     propManager.AddModProp(modItem);
 
-                GUI.DrawTexture(iconRect, modItem.Icon);
+                if (modItem.Icon == null)
+                    GUI.Label(iconRect, modItem.Name);
+                else
+                    GUI.DrawTexture(iconRect, modItem.Icon);
+
                 modIndex++;
             }
 

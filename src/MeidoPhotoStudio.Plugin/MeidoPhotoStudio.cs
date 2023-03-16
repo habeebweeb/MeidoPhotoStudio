@@ -253,6 +253,8 @@ public class MeidoPhotoStudio : BaseUnityPlugin
         UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= OnSceneChanged;
 
         Destroy(GameObject.Find("[MPS DragPoint Parent]"));
+
+        Constants.Destroy();
     }
 
     private void Start()
