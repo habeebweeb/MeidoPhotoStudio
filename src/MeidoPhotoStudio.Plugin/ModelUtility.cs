@@ -113,26 +113,14 @@ public static class ModelUtility
     }
 
     public static GameObject LoadMenuModel(string menuFile) =>
-        LoadMenuModel(new ModItem(menuFile));
+        LoadMenuModel(ModItem.Mod(menuFile));
 
     public static GameObject LoadMenuModel(ModItem modItem)
     {
-        var menu = modItem.IsOfficialMod ? modItem.BaseMenuFile : modItem.MenuFile;
-
-        byte[] modelBuffer;
-
-        try
-        {
-            modelBuffer = ReadAFileBase(menu);
-        }
-        catch (Exception e)
-        {
-            Utility.LogError($"Could not read menu file '{menu}' because {e.Message}\n{e.StackTrace}");
-
+        if (!LoadModelInfo(modItem.IsOfficialMod ? modItem.BaseMenuFile : modItem.MenuFile, out var modelInfo))
             return null;
-        }
 
-        if (!ProcScriptBin(modelBuffer, out var modelInfo) || !InstantiateModel(modelInfo.ModelFile, out var finalModel))
+        if (!InstantiateModel(modelInfo.ModelFile, out var finalModel))
         {
             Utility.LogMessage($"Could not load menu model '{modItem.MenuFile}'");
 
@@ -147,8 +135,13 @@ public static class ModelUtility
                     renderer.materials[matChange.MaterialIndex] = ImportCM.LoadMaterial(
                         matChange.MaterialFile, null, renderer.materials[matChange.MaterialIndex]);
 
+        modelInfo.AnimeInfo.ApplyModelAnime(finalModel);
+        modelInfo.AnimeInfo.ApplyModelAnimeMaterial(finalModel);
+
         if (!modItem.IsOfficialMod)
             return finalModel;
+
+        byte[] modelBuffer;
 
         try
         {
@@ -399,26 +392,37 @@ public static class ModelUtility
         }
     }
 
-    private static bool ProcScriptBin(byte[] menuBuf, out ModelInfo modelInfo)
+    private static bool LoadModelInfo(string menuFile, out ModelInfo modelInfo)
     {
-        modelInfo = null;
-
-        using var binaryReader = new BinaryReader(new MemoryStream(menuBuf), Encoding.UTF8);
-
-        if (binaryReader.ReadString() is not "CM3D2_MENU")
-            return false;
-
         modelInfo = new();
 
-        binaryReader.ReadInt32(); // file version
-        binaryReader.ReadString(); // txt path
-        binaryReader.ReadString(); // name
-        binaryReader.ReadString(); // category
-        binaryReader.ReadString(); // description
-        binaryReader.ReadInt32(); // idk (as long)
+        byte[] buffer;
 
         try
         {
+            buffer = ReadAFileBase(menuFile);
+        }
+        catch (Exception e)
+        {
+            Utility.LogError($"Could not read menu file '{menuFile}' because {e.Message}");
+
+            return false;
+        }
+
+        try
+        {
+            using var binaryReader = new BinaryReader(new MemoryStream(buffer), Encoding.UTF8);
+
+            if (binaryReader.ReadString() is not "CM3D2_MENU")
+                return false;
+
+            binaryReader.ReadInt32(); // file version
+            binaryReader.ReadString(); // txt path
+            binaryReader.ReadString(); // name
+            binaryReader.ReadString(); // category
+            binaryReader.ReadString(); // description
+            binaryReader.ReadInt32(); // idk (as long)
+
             while (true)
             {
                 var numberOfProps = binaryReader.ReadByte();
@@ -430,7 +434,7 @@ public static class ModelUtility
                 for (var i = 0; i < numberOfProps; i++)
                     menuPropString = $"{menuPropString}\"{binaryReader.ReadString()}\"";
 
-                if (menuPropString == string.Empty)
+                if (string.IsNullOrEmpty(menuPropString))
                     continue;
 
                 var header = UTY.GetStringCom(menuPropString);
@@ -440,21 +444,47 @@ public static class ModelUtility
                 {
                     break;
                 }
-                else if (header is "マテリアル変更")
+                else if (header is "マテリアル変更" or "tex")
                 {
-                    var matNo = int.Parse(menuProps[2]);
+                    var materialNumber = int.Parse(menuProps[2]);
                     var materialFile = menuProps[3];
+                    var materialChange = new MaterialChange(materialNumber, materialFile);
 
-                    modelInfo.MaterialChanges.Add(new MaterialChange(matNo, materialFile));
+                    modelInfo.MaterialChanges.Add(materialChange);
                 }
                 else if (header is "additem")
                 {
-                    modelInfo.ModelFile = menuProps[1];
+                    var modelFile = menuProps[1];
+
+                    modelInfo.ModelFile = modelFile;
+                }
+                else if (header is "anime")
+                {
+                    if (menuProps.Length < 3)
+                        break;
+
+                    var slot = (TBody.SlotID)Enum.Parse(typeof(TBody.SlotID), menuProps[1], true);
+                    var animationName = menuProps[2];
+                    var loop = false;
+
+                    if (menuProps.Length > 3)
+                        loop = menuProps[3] is "loop";
+
+                    modelInfo.AnimeInfo.Anime.Add(new(slot, animationName, loop));
+                }
+                else if (header is "animematerial")
+                {
+                    var slot = (TBody.SlotID)Enum.Parse(typeof(TBody.SlotID), menuProps[1], true);
+                    var materialNumber = int.Parse(menuProps[2]);
+
+                    modelInfo.AnimeInfo.MaterialAnime.Add(new(slot, materialNumber));
                 }
             }
         }
-        catch
+        catch (Exception e)
         {
+            Utility.LogWarning($"Could not parse menu file '{menuFile}' because {e.Message}");
+
             return false;
         }
 
@@ -466,6 +496,7 @@ public static class ModelUtility
         var matDict = new Dictionary<string, byte[]>();
         string modData;
 
+        // TODO: Pass the mod filestream directly rather than copying bytes to a memorystream
         using (var binaryReader = new BinaryReader(new MemoryStream(cd), Encoding.UTF8))
         {
             if (binaryReader.ReadString() is not "CM3D2_MOD")
@@ -598,25 +629,5 @@ public static class ModelUtility
                 r.materials[matno].SetTexture(prop, texture2D);
             }
         }
-    }
-
-    private readonly struct MaterialChange
-    {
-        public MaterialChange(int materialIndex, string materialFile)
-        {
-            MaterialIndex = materialIndex;
-            MaterialFile = materialFile;
-        }
-
-        public int MaterialIndex { get; }
-
-        public string MaterialFile { get; }
-    }
-
-    private class ModelInfo
-    {
-        public List<MaterialChange> MaterialChanges { get; } = new();
-
-        public string ModelFile { get; set; }
     }
 }

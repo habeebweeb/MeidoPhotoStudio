@@ -142,9 +142,15 @@ public static class MenuFileUtility
                 var menuProps = UTY.GetStringList(menuPropString);
 
                 if (header is "end")
-                    break;
-
-                if (header is "category")
+                {
+                    return;
+                }
+                else if (header is "name")
+                {
+                    if (menuProps.Length > 1)
+                        modItem.Name = menuProps[1];
+                }
+                else if (header is "category")
                 {
                     modItem.Category = menuProps[1];
 
