@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 
 using UnityEngine;
 
@@ -10,14 +9,6 @@ public class CustomGizmo : GizmoRender
     public GizmoMode Mode;
 
     private static readonly Camera Camera = GameMain.Instance.MainCamera.camera;
-
-#pragma warning disable SA1310, SA1311
-
-    // TODO: Refactor reflection to using private members directly.
-    private static new readonly FieldInfo is_drag_ = Utility.GetFieldInfo<GizmoRender>("is_drag_");
-#pragma warning restore SA1310, SA1311
-
-    private new readonly FieldInfo beSelectedType = Utility.GetFieldInfo<GizmoRender>("beSelectedType");
 
     private GizmoType gizmoType;
     private Transform target;
@@ -49,12 +40,6 @@ public class CustomGizmo : GizmoRender
         Global,
     }
 
-    public static bool IsDrag
-    {
-        get => (bool)is_drag_.GetValue(null);
-        private set => is_drag_.SetValue(null, value);
-    }
-
     public GizmoType CurrentGizmoType
     {
         get => gizmoType;
@@ -72,23 +57,20 @@ public class CustomGizmo : GizmoRender
         }
     }
 
-    public bool IsGizmoDrag =>
-        GizmoVisible && IsDrag && SelectedType is not 0;
+    public bool Holding =>
+        GizmoVisible && is_drag_ && beSelectedType is not MOVETYPE.NONE;
 
     public bool GizmoVisible
     {
         get => Visible;
         set
         {
-            if (value && IsDrag)
-                IsDrag = false;
+            if (value && is_drag_)
+                is_drag_ = false;
 
             Visible = value;
         }
     }
-
-    private int SelectedType =>
-        (int)beSelectedType.GetValue(this);
 
     public static CustomGizmo Make(Transform target, float scale = 0.25f, GizmoMode mode = GizmoMode.Local)
     {
@@ -113,8 +95,11 @@ public class CustomGizmo : GizmoRender
 
         base.Update();
 
-        if (IsGizmoDrag)
+        if (Holding)
+        {
             SetTargetTransform();
+            CheckDragged();
+        }
 
         SetTransform();
 
@@ -152,49 +137,57 @@ public class CustomGizmo : GizmoRender
 
     private void SetTargetTransform()
     {
-        bool dragged;
-
-        switch (Mode)
+        if (Mode is GizmoMode.Local)
         {
-            case GizmoMode.Local:
-                target.position += target.transform.TransformVector(deltaLocalPosition).normalized
-                    * deltaLocalPosition.magnitude;
-                target.rotation *= deltaLocalRotation;
-                target.localScale += deltaScale;
-                dragged = deltaLocalRotation != Quaternion.identity || deltaLocalPosition != Vector3.zero
-                    || deltaScale != Vector3.zero;
-
-                break;
-            case GizmoMode.World:
-            case GizmoMode.Global:
-                target.position += deltaPosition;
-                target.rotation = deltaRotation * target.rotation;
-                dragged = deltaRotation != Quaternion.identity || deltaPosition != Vector3.zero;
-
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
+            target.position += target.transform.TransformVector(deltaLocalPosition).normalized
+                * deltaLocalPosition.magnitude;
+            target.rotation *= deltaLocalRotation;
+        }
+        else if (Mode is GizmoMode.World or GizmoMode.Global)
+        {
+            target.position += deltaPosition;
+            target.rotation = deltaRotation * target.rotation;
         }
 
-        if (dragged)
-            OnGizmoDrag();
+        var newScale = target.localScale + deltaScale;
+
+        if (newScale.x < 0f || newScale.y < 0f || newScale.z < 0f)
+            return;
+
+        target.localScale = newScale;
+    }
+
+    private void CheckDragged()
+    {
+        var dragged = Mode switch
+        {
+            GizmoMode.Local => deltaLocalRotation != Quaternion.identity || deltaLocalPosition != Vector3.zero
+                || deltaScale != Vector3.zero,
+            GizmoMode.World or GizmoMode.Global => deltaRotation != Quaternion.identity
+                || deltaPosition != Vector3.zero || deltaScale != Vector3.zero,
+            _ => throw new ArgumentOutOfRangeException(nameof(Mode)),
+        };
+
+        if (!dragged)
+            return;
+
+        GizmoDrag?.Invoke(this, EventArgs.Empty);
     }
 
     private void SetTransform()
     {
         var transform = this.transform;
 
-        transform.position = (hasAlternateTarget ? positionTransform : target).position;
-        transform.localScale = Vector3.one;
-        transform.rotation = Mode switch
+        var position = (hasAlternateTarget ? positionTransform : target).position;
+        var rotation = this switch
         {
-            GizmoMode.Local => target.rotation,
-            GizmoMode.World => Quaternion.identity,
-            GizmoMode.Global => Quaternion.LookRotation(transform.position - Camera.transform.position),
+            { CurrentGizmoType: GizmoType.Scale } or { Mode: GizmoMode.Local } => target.rotation,
+            { Mode: GizmoMode.World } => Quaternion.identity,
+            { Mode: GizmoMode.Global } => Quaternion.LookRotation(transform.position - Camera.transform.position),
             _ => target.rotation,
         };
-    }
 
-    private void OnGizmoDrag() =>
-        GizmoDrag?.Invoke(this, EventArgs.Empty);
+        transform.SetPositionAndRotation(position, rotation);
+        transform.localScale = target.localScale;
+    }
 }
