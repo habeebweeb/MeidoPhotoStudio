@@ -18,7 +18,7 @@ public abstract class DragPointGeneral : DragPoint
     public static readonly Color SelectColour = new(0.9f, 0.5f, 1f, DefaultAlpha);
     public static readonly Color DeleteColour = new(1f, 0.1f, 0.1f, DefaultAlpha);
 
-    private float currentScale;
+    private Vector3 currentScale;
     private bool scaling;
     private Quaternion currentRotation;
 
@@ -118,7 +118,7 @@ public abstract class DragPointGeneral : DragPoint
 
         base.OnMouseDown();
 
-        currentScale = MyObject.localScale.x;
+        currentScale = MyObject.localScale;
         currentRotation = MyObject.rotation;
     }
 
@@ -213,12 +213,14 @@ public abstract class DragPointGeneral : DragPoint
         {
             scaling = true;
 
-            var scale = currentScale + mouseDelta.y / 200f * ScaleFactor;
+            var delta = mouseDelta.y / 200f * ScaleFactor;
+            var deltaScale = currentScale.normalized * delta;
+            var newScale = currentScale + deltaScale;
 
-            if (scale < 0f)
-                scale = 0f;
+            if (newScale.x < 0f || newScale.y < 0f || newScale.z < 0f)
+                return;
 
-            MyObject.localScale = new(scale, scale, scale);
+            MyObject.localScale = newScale;
 
             OnScale();
         }
