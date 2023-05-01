@@ -52,6 +52,10 @@ public abstract class DragPointGeneral : DragPoint
         {
             if (Gizmo.CurrentGizmoType is GizmoType.Rotate)
                 OnRotate();
+            else if (Gizmo.CurrentGizmoType is GizmoType.Move)
+                OnMove();
+            else if (Gizmo.CurrentGizmoType is GizmoType.Scale)
+                OnScale();
         };
     }
 
