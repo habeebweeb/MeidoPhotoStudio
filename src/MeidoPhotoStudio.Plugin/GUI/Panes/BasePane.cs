@@ -5,6 +5,9 @@ namespace MeidoPhotoStudio.Plugin;
 public abstract class BasePane
 {
     protected BaseWindow parent;
+
+    // TODO: Refactor all controls to provide an SetValueWithoutNotify and throw this into the pits of hell.
+    // 132 references!!! Unbelievable.
     protected bool updating;
 
     protected BasePane() =>

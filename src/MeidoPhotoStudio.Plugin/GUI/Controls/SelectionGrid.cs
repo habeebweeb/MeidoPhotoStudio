@@ -18,15 +18,7 @@ public class SelectionGrid : BaseControl
     public int SelectedItemIndex
     {
         get => selectedItemIndex;
-        set
-        {
-            selectedItemIndex = Mathf.Clamp(value, 0, toggles.Length - 1);
-
-            foreach (var toggle in toggles)
-                toggle.Value = toggle.ToggleIndex == selectedItemIndex;
-
-            OnControlEvent(EventArgs.Empty);
-        }
+        set => SetValue(value);
     }
 
     public override void Draw(params GUILayoutOption[] layoutOptions)
@@ -56,6 +48,20 @@ public class SelectionGrid : BaseControl
             }
 
         SelectedItemIndex = Mathf.Clamp(selectedItemIndex, 0, items.Length - 1);
+    }
+
+    public void SetValueWithoutNotify(int value) =>
+        SetValue(value, false);
+
+    private void SetValue(int value, bool notify = true)
+    {
+        selectedItemIndex = Mathf.Clamp(value, 0, toggles.Length - 1);
+
+        foreach (var toggle in toggles)
+            toggle.Value = toggle.ToggleIndex == selectedItemIndex;
+
+        if (notify)
+            OnControlEvent(EventArgs.Empty);
     }
 
     private SimpleToggle[] MakeToggles(string[] items)
