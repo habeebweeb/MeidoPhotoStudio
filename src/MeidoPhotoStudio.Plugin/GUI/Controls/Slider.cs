@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 
 using UnityEngine;
 
@@ -13,8 +12,8 @@ public class Slider : BaseControl
     private float left;
     private float right;
     private float defaultValue;
-    private string textFieldValue;
     private bool hasTextField;
+    private NumericalTextField textField;
 
     public Slider(string label, float left, float right, float value = 0, float defaultValue = 0)
     {
@@ -22,7 +21,6 @@ public class Slider : BaseControl
         this.left = left;
         this.right = right;
         this.value = Utility.Bound(value, left, right);
-        textFieldValue = FormatValue(this.value);
         DefaultValue = defaultValue;
     }
 
@@ -54,9 +52,7 @@ public class Slider : BaseControl
         set
         {
             this.value = Utility.Bound(value, Left, Right);
-
-            if (hasTextField)
-                textFieldValue = FormatValue(value);
+            textField?.SetValueWithoutNotify(this.value);
 
             OnControlEvent(EventArgs.Empty);
         }
@@ -96,14 +92,23 @@ public class Slider : BaseControl
             hasTextField = value;
 
             if (hasTextField)
-                textFieldValue = FormatValue(Value);
+            {
+                textField = new(Value);
+                textField.ControlEvent += TextFieldInputChangedHandler;
+            }
+            else
+            {
+                if (textField is not null)
+                    textField.ControlEvent -= TextFieldInputChangedHandler;
+
+                textField = null;
+            }
         }
     }
 
     public override void Draw(params GUILayoutOption[] layoutOptions)
     {
         var hasUpper = hasLabel || HasTextField || HasReset;
-        var tempText = string.Empty;
 
         if (hasUpper)
         {
@@ -117,13 +122,10 @@ public class Slider : BaseControl
             }
 
             if (HasTextField)
-                tempText = GUILayout.TextField(textFieldValue, MpsGui.SliderTextBoxStyle, GUILayout.Width(60f));
+                textField.Draw(MpsGui.SliderTextBoxStyle, GUILayout.Width(60f));
 
             if (HasReset && GUILayout.Button("|", MpsGui.SliderResetButtonStyle, GUILayout.Width(15f)))
-            {
                 Value = DefaultValue;
-                tempText = textFieldValue = FormatValue(Value);
-            }
 
             GUILayout.EndHorizontal();
         }
@@ -135,21 +137,7 @@ public class Slider : BaseControl
         if (hasUpper)
             GUILayout.EndVertical();
 
-        if (HasTextField)
-        {
-            if (tempValue != Value)
-                tempText = textFieldValue = FormatValue(tempValue);
-
-            if (tempText != textFieldValue)
-            {
-                textFieldValue = tempText;
-
-                if (float.TryParse(tempText, out var newValue))
-                    tempValue = newValue;
-            }
-        }
-
-        if (tempValue != Value)
+        if (!Mathf.Approximately(Value, tempValue))
             Value = tempValue;
     }
 
@@ -160,6 +148,12 @@ public class Slider : BaseControl
         value = Utility.Bound(value, left, right);
     }
 
-    private static string FormatValue(float value) =>
-        value.ToString("0.####", CultureInfo.InvariantCulture);
+    private void TextFieldInputChangedHandler(object sender, EventArgs e)
+    {
+        var newValue = textField.Value;
+
+        value = Utility.Bound(newValue, Left, Right);
+
+        OnControlEvent(EventArgs.Empty);
+    }
 }
