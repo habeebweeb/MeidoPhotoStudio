@@ -22,7 +22,6 @@ public class CustomGizmo : GizmoRender
     private Quaternion deltaLocalRotation = Quaternion.identity;
     private Vector3 deltaScale = Vector3.zero;
     private Vector3 scaleOld = Vector3.one;
-    private GizmoType gizmoTypeOld;
 
     public event EventHandler GizmoDrag;
 
@@ -45,12 +44,11 @@ public class CustomGizmo : GizmoRender
         get => gizmoType;
         set
         {
-            gizmoType = value;
-
-            if (gizmoTypeOld == gizmoType)
+            if (value == gizmoType)
                 return;
 
-            gizmoTypeOld = gizmoType;
+            gizmoType = value;
+
             eAxis = gizmoType is GizmoType.Move;
             eScal = gizmoType is GizmoType.Scale;
             eRotate = gizmoType is GizmoType.Rotate;

@@ -237,7 +237,14 @@
         "gizmoToggle": "Gizmo",
         "shadowCastingToggle": "Shadow",
         "copyButton": "Copy",
-        "deleteButton": "Delete"
+        "deleteButton": "Delete",
+        "gizmoSpaceToggle": "Space:",
+        "gizmoSpaceLocal": "Local",
+        "gizmoSpaceWorld": "World",
+        "focusPropButton": "Focus",
+        "positionControl": "Position",
+        "rotationControl": "Rotation",
+        "scaleControl": "Scale"
     },
     "movementCube": {
         "header": "Movement Cube",

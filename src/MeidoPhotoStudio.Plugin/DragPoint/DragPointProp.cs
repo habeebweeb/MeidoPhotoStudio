@@ -79,10 +79,23 @@ public class DragPointProp : DragPointGeneral
 
     protected override void ApplyDragType()
     {
-        var active = DragPointEnabled && Transforming || Special;
+        var widgetActiveContext = Transforming || Scaling || Rotating;
+        var dragPointActive = DragPointEnabled && (widgetActiveContext || Special);
+        var gizmoActive = GizmoEnabled && widgetActiveContext;
 
-        ApplyProperties(active, active, GizmoEnabled && Rotating);
+        ApplyProperties(dragPointActive, dragPointActive, gizmoActive);
         ApplyColours();
+
+        if (!gizmoActive)
+            return;
+
+        Gizmo.CurrentGizmoType = this switch
+        {
+            { Moving: true } => CustomGizmo.GizmoType.Move,
+            { Rotating: true } => CustomGizmo.GizmoType.Rotate,
+            { Scaling: true } => CustomGizmo.GizmoType.Scale,
+            _ => CustomGizmo.GizmoType.Rotate,
+        };
     }
 
     protected override void OnDestroy()

@@ -4,6 +4,8 @@ namespace MeidoPhotoStudio.Plugin;
 
 public class PropManagerPane : BasePane
 {
+    private static readonly string[] GizmoSpaceTranslationKeys = new[] { "gizmoSpaceLocal", "gizmoSpaceWorld" };
+
     private readonly PropManager propManager;
     private readonly Dropdown propDropdown;
     private readonly Button previousPropButton;
@@ -13,8 +15,10 @@ public class PropManagerPane : BasePane
     private readonly Toggle shadowCastingToggle;
     private readonly Button deletePropButton;
     private readonly Button copyPropButton;
+    private readonly SelectionGrid gizmoMode;
 
     private string propManagerHeader;
+    private string gizmoSpaceLabel;
 
     public PropManagerPane(PropManager propManager)
     {
@@ -23,6 +27,7 @@ public class PropManagerPane : BasePane
         {
             UpdatePropList();
             UpdateToggles();
+            UpdatePropGizmoMode();
         };
 
         this.propManager.FromPropSelect += (_, _) =>
@@ -31,6 +36,7 @@ public class PropManagerPane : BasePane
             propDropdown.SelectedItemIndex = CurrentDoguIndex;
             updating = false;
             UpdateToggles();
+            UpdatePropGizmoMode();
         };
 
         propDropdown = new(this.propManager.PropNameList);
@@ -42,6 +48,7 @@ public class PropManagerPane : BasePane
             this.propManager.CurrentPropIndex = propDropdown.SelectedItemIndex;
 
             UpdateToggles();
+            UpdatePropGizmoMode();
         };
 
         previousPropButton = new("<");
@@ -87,6 +94,16 @@ public class PropManagerPane : BasePane
         deletePropButton.ControlEvent += (_, _) =>
             this.propManager.RemoveProp(CurrentDoguIndex);
 
+        gizmoMode = new(Translation.GetArray("propManagerPane", GizmoSpaceTranslationKeys));
+        gizmoMode.ControlEvent += (_, _) =>
+        {
+            var newMode = (CustomGizmo.GizmoMode)gizmoMode.SelectedItemIndex;
+
+            SetGizmoMode(newMode);
+        };
+
+        gizmoSpaceLabel = Translation.Get("propManagerPane", "gizmoSpaceToggle");
+
         propManagerHeader = Translation.Get("propManagerPane", "header");
     }
 
@@ -131,6 +148,17 @@ public class PropManagerPane : BasePane
         deletePropButton.Draw(noExpandWidth);
         GUILayout.EndHorizontal();
 
+        var guiEnabled = GUI.enabled;
+
+        GUI.enabled = guiEnabled && gizmoToggle.Value;
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label(gizmoSpaceLabel);
+        gizmoMode.Draw();
+        GUILayout.EndHorizontal();
+
+        GUI.enabled = guiEnabled;
+
         GUILayout.BeginHorizontal();
         shadowCastingToggle.Draw(noExpandWidth);
         GUILayout.EndHorizontal();
@@ -146,6 +174,7 @@ public class PropManagerPane : BasePane
         copyPropButton.Label = Translation.Get("propManagerPane", "copyButton");
         deletePropButton.Label = Translation.Get("propManagerPane", "deleteButton");
         propManagerHeader = Translation.Get("propManagerPane", "header");
+        gizmoSpaceLabel = Translation.Get("propManagerPane", "gizmoSpaceToggle");
     }
 
     private void UpdatePropList()
@@ -167,5 +196,27 @@ public class PropManagerPane : BasePane
         gizmoToggle.Value = prop.GizmoEnabled;
         shadowCastingToggle.Value = prop.ShadowCasting;
         updating = false;
+    }
+
+    private void UpdatePropGizmoMode()
+    {
+        var prop = propManager.CurrentProp;
+
+        if (!prop)
+            return;
+
+        var value = (int)prop.Gizmo.Mode;
+
+        gizmoMode.SetValueWithoutNotify(value);
+    }
+
+    private void SetGizmoMode(CustomGizmo.GizmoMode mode)
+    {
+        var prop = propManager.CurrentProp;
+
+        if (!prop)
+            return;
+
+        prop.Gizmo.Mode = mode;
     }
 }
