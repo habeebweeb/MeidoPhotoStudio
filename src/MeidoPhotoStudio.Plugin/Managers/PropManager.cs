@@ -47,6 +47,10 @@ public class PropManager : IManager
 
     public event EventHandler PropListChange;
 
+    public event EventHandler<PropChangeEventArgs> DestroyingProp;
+
+    public event EventHandler<PropChangeEventArgs> PropAdded;
+
     private static event EventHandler CubeActiveChange;
 
     private static event EventHandler CubeSmallChange;
@@ -319,6 +323,9 @@ public class PropManager : IManager
     private void AddProp(DragPointProp dragPoint)
     {
         propList.Add(dragPoint);
+
+        PropAdded?.Invoke(this, new(dragPoint));
+
         EmitPropListChange();
     }
 
@@ -326,6 +333,8 @@ public class PropManager : IManager
     {
         if (!prop)
             return;
+
+        DestroyingProp?.Invoke(this, new(prop));
 
         prop.Delete -= OnDeleteProp;
         prop.Select -= OnSelectProp;

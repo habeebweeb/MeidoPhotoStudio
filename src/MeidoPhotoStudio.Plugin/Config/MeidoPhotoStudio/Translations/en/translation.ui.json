@@ -451,5 +451,10 @@
         "controlsCamera": "Camera",
         "controlsDragPoint": "Drag Handles",
         "controlsScene": "Scene Management"
+    },
+    "transformControl": {
+      "copyButton": "Copy",
+      "pasteButton": "Paste",
+      "resetButton": "Reset"
     }
 }

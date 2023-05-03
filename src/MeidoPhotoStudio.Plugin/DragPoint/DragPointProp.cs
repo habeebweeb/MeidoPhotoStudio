@@ -45,8 +45,6 @@ public class DragPointProp : DragPointGeneral
 
         AttachPointInfo = meido is null ? AttachPointInfo.Empty : new(point, meido);
 
-        // TODO: Use transform.SetPositionAndRotation MyObject.position = position;
-        var position = MyObject.position;
         var rotation = MyObject.rotation;
         var scale = MyObject.localScale;
 
@@ -63,19 +61,13 @@ public class DragPointProp : DragPointGeneral
         }
 
         MyObject.localScale = scale;
-
-        if (!attachPoint)
-            Utility.FixGameObjectScale(MyGameObject);
     }
 
     public void DetachFrom(bool keepWorldPosition = true) =>
         AttachTo(null, AttachPoint.None, keepWorldPosition);
 
-    public void DetachTemporary()
-    {
+    public void DetachTemporary() =>
         MyObject.transform.SetParent(null, true);
-        Utility.FixGameObjectScale(MyGameObject);
-    }
 
     protected override void ApplyDragType()
     {

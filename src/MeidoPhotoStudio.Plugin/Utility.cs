@@ -155,14 +155,6 @@ public static class Utility
         return menu;
     }
 
-    public static void FixGameObjectScale(GameObject go)
-    {
-        var scale = go.transform.localScale;
-        var largest = Mathf.Max(scale.x, Mathf.Max(scale.y, scale.z));
-
-        go.transform.localScale = Vector3.one * (float)Math.Round(largest, 3);
-    }
-
     public static string SanitizePathPortion(string path)
     {
         var invalid = Path.GetInvalidFileNameChars();

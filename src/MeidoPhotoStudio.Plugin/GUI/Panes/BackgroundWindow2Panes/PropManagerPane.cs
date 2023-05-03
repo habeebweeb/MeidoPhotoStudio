@@ -16,9 +16,13 @@ public class PropManagerPane : BasePane
     private readonly Button deletePropButton;
     private readonly Button copyPropButton;
     private readonly SelectionGrid gizmoMode;
+    private readonly TransformControl positionTransformControl;
+    private readonly TransformControl rotationTransformControl;
+    private readonly TransformControl scaleTransformControl;
 
     private string propManagerHeader;
     private string gizmoSpaceLabel;
+    private TransformClipboard clipboard;
 
     public PropManagerPane(PropManager propManager)
     {
@@ -28,6 +32,7 @@ public class PropManagerPane : BasePane
             UpdatePropList();
             UpdateToggles();
             UpdatePropGizmoMode();
+            UpdateTransformControls();
         };
 
         this.propManager.FromPropSelect += (_, _) =>
@@ -37,6 +42,25 @@ public class PropManagerPane : BasePane
             updating = false;
             UpdateToggles();
             UpdatePropGizmoMode();
+            UpdateTransformControls();
+        };
+
+        this.propManager.PropAdded += (_, e) =>
+        {
+            var prop = e.Prop;
+
+            prop.Move += MoveEventHandler;
+            prop.Rotate += RotateEventHandler;
+            prop.Scale += ScaleEventHandler;
+        };
+
+        this.propManager.DestroyingProp += (_, e) =>
+        {
+            var prop = e.Prop;
+
+            prop.Move -= MoveEventHandler;
+            prop.Rotate -= RotateEventHandler;
+            prop.Scale -= ScaleEventHandler;
         };
 
         propDropdown = new(this.propManager.PropNameList);
@@ -49,6 +73,7 @@ public class PropManagerPane : BasePane
 
             UpdateToggles();
             UpdatePropGizmoMode();
+            UpdateTransformControls();
         };
 
         previousPropButton = new("<");
@@ -104,7 +129,52 @@ public class PropManagerPane : BasePane
 
         gizmoSpaceLabel = Translation.Get("propManagerPane", "gizmoSpaceToggle");
 
+        positionTransformControl = new(Translation.Get("propManagerPane", "positionControl"), Vector3.zero)
+        {
+            TransformType = TransformClipboard.TransformType.Position,
+        };
+
+        positionTransformControl.ControlEvent += PositionControlChangedEventHandler;
+
+        rotationTransformControl = new(Translation.Get("propManagerPane", "rotationControl"), Vector3.zero)
+        {
+            TransformType = TransformClipboard.TransformType.Rotation,
+        };
+
+        rotationTransformControl.ControlEvent += RotationControlChangedEventHandler;
+
+        scaleTransformControl = new(Translation.Get("propManagerPane", "scaleControl"), Vector3.one)
+        {
+            TransformType = TransformClipboard.TransformType.Scale,
+        };
+
+        scaleTransformControl.ControlEvent += ScaleControlChangedEventHandler;
+
+        var copyButtonLabel = Translation.Get("transformControl", "copyButton");
+        var pasteButtonLabel = Translation.Get("transformControl", "pasteButton");
+        var resetButtonLabel = Translation.Get("transformControl", "resetButton");
+
+        positionTransformControl.SetButtonLabels(copyButtonLabel, pasteButtonLabel, resetButtonLabel);
+        rotationTransformControl.SetButtonLabels(copyButtonLabel, pasteButtonLabel, resetButtonLabel);
+        scaleTransformControl.SetButtonLabels(copyButtonLabel, pasteButtonLabel, resetButtonLabel);
+
+        // TODO: Move creation of the clipboard outside so Meido can use it too.
+        Clipboard = new TransformClipboard();
+
         propManagerHeader = Translation.Get("propManagerPane", "header");
+    }
+
+    public TransformClipboard Clipboard
+    {
+        get => clipboard;
+        set
+        {
+            clipboard = value;
+
+            positionTransformControl.Clipboard = clipboard;
+            rotationTransformControl.Clipboard = clipboard;
+            scaleTransformControl.Clipboard = clipboard;
+        }
     }
 
     private int CurrentDoguIndex =>
@@ -144,6 +214,7 @@ public class PropManagerPane : BasePane
         GUILayout.BeginHorizontal();
         dragPointToggle.Draw(noExpandWidth);
         gizmoToggle.Draw(noExpandWidth);
+        GUILayout.FlexibleSpace();
         copyPropButton.Draw(noExpandWidth);
         deletePropButton.Draw(noExpandWidth);
         GUILayout.EndHorizontal();
@@ -163,6 +234,12 @@ public class PropManagerPane : BasePane
         shadowCastingToggle.Draw(noExpandWidth);
         GUILayout.EndHorizontal();
 
+        MpsGui.BlackLine();
+
+        positionTransformControl.Draw();
+        rotationTransformControl.Draw();
+        scaleTransformControl.Draw();
+
         GUI.enabled = true;
     }
 
@@ -175,6 +252,68 @@ public class PropManagerPane : BasePane
         deletePropButton.Label = Translation.Get("propManagerPane", "deleteButton");
         propManagerHeader = Translation.Get("propManagerPane", "header");
         gizmoSpaceLabel = Translation.Get("propManagerPane", "gizmoSpaceToggle");
+
+        var copyButtonLabel = Translation.Get("transformControl", "copyButton");
+        var pasteButtonLabel = Translation.Get("transformControl", "pasteButton");
+        var resetButtonLabel = Translation.Get("transformControl", "resetButton");
+
+        positionTransformControl.Header = Translation.Get("propManagerPane", "positionControl");
+        positionTransformControl.SetButtonLabels(copyButtonLabel, pasteButtonLabel, resetButtonLabel);
+
+        rotationTransformControl.Header = Translation.Get("propManagerPane", "rotationControl");
+        rotationTransformControl.SetButtonLabels(copyButtonLabel, pasteButtonLabel, resetButtonLabel);
+
+        scaleTransformControl.Header = Translation.Get("propManagerPane", "scaleControl");
+        scaleTransformControl.SetButtonLabels(copyButtonLabel, pasteButtonLabel, resetButtonLabel);
+    }
+
+    private void PositionControlChangedEventHandler(object sender, TransformComponentChangeEventArgs e)
+    {
+        var prop = propManager.CurrentProp;
+
+        if (!prop)
+            return;
+
+        var (component, value) = e;
+        var position = prop.MyObject.localPosition;
+
+        position[(int)component] = value;
+
+        prop.MyObject.localPosition = position;
+    }
+
+    private void RotationControlChangedEventHandler(object sender, TransformComponentChangeEventArgs e)
+    {
+        var prop = propManager.CurrentProp;
+
+        if (!prop)
+            return;
+
+        var (component, value) = e;
+        var rotation = prop.MyObject.eulerAngles;
+
+        rotation[(int)component] = value;
+
+        prop.MyObject.eulerAngles = rotation;
+    }
+
+    private void ScaleControlChangedEventHandler(object sender, TransformComponentChangeEventArgs e)
+    {
+        var prop = propManager.CurrentProp;
+
+        if (!prop)
+            return;
+
+        var (component, value) = e;
+
+        if (value < 0f)
+            return;
+
+        var scale = prop.MyObject.localScale;
+
+        scale[(int)component] = value;
+
+        prop.MyObject.localScale = scale;
     }
 
     private void UpdatePropList()
@@ -218,5 +357,74 @@ public class PropManagerPane : BasePane
             return;
 
         prop.Gizmo.Mode = mode;
+    }
+
+    private void UpdateTransformControls()
+    {
+        var position = Vector3.zero;
+        var rotation = Vector3.zero;
+        var localScale = Vector3.one;
+        var initialPosition = Vector3.zero;
+        var initialRotation = Vector3.zero;
+        var initialLocalScale = Vector3.one;
+
+        if (propManager.CurrentProp)
+        {
+            var prop = propManager.CurrentProp;
+            var propTransform = propManager.CurrentProp.MyObject;
+
+            position = propTransform.localPosition;
+            rotation = propTransform.eulerAngles;
+            localScale = propTransform.localScale;
+
+            initialPosition = prop.DefaultPosition;
+            initialRotation = prop.DefaultRotation.eulerAngles;
+            initialLocalScale = prop.DefaultScale;
+        }
+
+        positionTransformControl.SetValueWithoutNotify(position);
+        positionTransformControl.DefaultValue = initialPosition;
+
+        rotationTransformControl.SetValueWithoutNotify(rotation);
+        rotationTransformControl.DefaultValue = initialRotation;
+
+        scaleTransformControl.SetValueWithoutNotify(localScale);
+        scaleTransformControl.DefaultValue = initialLocalScale;
+    }
+
+    private void MoveEventHandler(object sender, System.EventArgs e)
+    {
+        var prop = (DragPointProp)sender;
+
+        if (prop != propManager.CurrentProp)
+            return;
+
+        var position = prop.MyObject.localPosition;
+
+        positionTransformControl.SetValueWithoutNotify(position);
+    }
+
+    private void RotateEventHandler(object sender, System.EventArgs e)
+    {
+        var prop = (DragPointProp)sender;
+
+        if (prop != propManager.CurrentProp)
+            return;
+
+        var rotation = prop.MyObject.eulerAngles;
+
+        rotationTransformControl.SetValueWithoutNotify(rotation);
+    }
+
+    private void ScaleEventHandler(object sender, System.EventArgs e)
+    {
+        var prop = (DragPointProp)sender;
+
+        if (prop != propManager.CurrentProp)
+            return;
+
+        var localScale = prop.MyObject.localScale;
+
+        scaleTransformControl.SetValueWithoutNotify(localScale);
     }
 }
