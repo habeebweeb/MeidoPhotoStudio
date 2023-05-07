@@ -27,12 +27,16 @@ public class PropManagerPane : BasePane
     public PropManagerPane(PropManager propManager)
     {
         this.propManager = propManager;
-        this.propManager.PropListChange += (_, _) =>
+        this.propManager.PropSelectionChange += (_, _) =>
         {
-            UpdatePropList();
             UpdateToggles();
             UpdatePropGizmoMode();
             UpdateTransformControls();
+        };
+
+        this.propManager.PropListChange += (_, _) =>
+        {
+            UpdatePropList();
         };
 
         this.propManager.FromPropSelect += (_, _) =>
@@ -40,9 +44,6 @@ public class PropManagerPane : BasePane
             updating = true;
             propDropdown.SelectedItemIndex = CurrentDoguIndex;
             updating = false;
-            UpdateToggles();
-            UpdatePropGizmoMode();
-            UpdateTransformControls();
         };
 
         this.propManager.PropAdded += (_, e) =>
@@ -52,6 +53,9 @@ public class PropManagerPane : BasePane
             prop.Move += MoveEventHandler;
             prop.Rotate += RotateEventHandler;
             prop.Scale += ScaleEventHandler;
+
+            if (this.propManager.PropCount >= 1)
+                this.propManager.CurrentPropIndex = this.propManager.PropCount - 1;
         };
 
         this.propManager.DestroyingProp += (_, e) =>
@@ -241,6 +245,13 @@ public class PropManagerPane : BasePane
         scaleTransformControl.Draw();
 
         GUI.enabled = true;
+    }
+
+    public override void UpdatePane()
+    {
+        UpdateToggles();
+        UpdatePropGizmoMode();
+        UpdateTransformControls();
     }
 
     protected override void ReloadTranslation()

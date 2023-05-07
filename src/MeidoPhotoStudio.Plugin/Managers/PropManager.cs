@@ -110,9 +110,6 @@ public class PropManager : IManager
             if ((uint)value >= (uint)PropCount)
                 throw new ArgumentOutOfRangeException(nameof(value));
 
-            if (currentPropIndex == value)
-                return;
-
             currentPropIndex = value;
             PropSelectionChange?.Invoke(this, EventArgs.Empty);
         }
