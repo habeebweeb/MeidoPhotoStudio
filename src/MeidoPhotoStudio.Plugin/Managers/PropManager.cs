@@ -140,107 +140,60 @@ public class PropManager : IManager
 
     public bool AddFromPropInfo(PropInfo propInfo)
     {
-        switch (propInfo.Type)
-        {
-            case PropInfo.PropType.Mod:
-                ModItem modItem;
+        var prop = InstantiateFromPropInfo(propInfo);
 
-                if (!string.IsNullOrEmpty(propInfo.SubFilename))
-                {
-                    modItem = ModItem.OfficialMod(ModFileToFullPath[propInfo.Filename]);
-                    modItem.BaseMenuFile = propInfo.SubFilename;
-                }
-                else
-                {
-                    modItem = ModItem.Mod(propInfo.Filename);
-                }
+        if (!prop)
+            return false;
 
-                return AddModProp(modItem);
-            case PropInfo.PropType.MyRoom:
-                return AddMyRoomProp(new() { ID = propInfo.MyRoomID, PrefabName = propInfo.Filename });
-            case PropInfo.PropType.Bg:
-                return AddBgProp(propInfo.Filename);
-            case PropInfo.PropType.Odogu:
-                return AddGameProp(propInfo.Filename);
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        AddProp(prop);
+
+        return true;
     }
 
     public bool AddModProp(ModItem modItem)
     {
-        var model = LoadMenuModel(modItem);
+        var prop = InstantiateModProp(modItem);
 
-        if (!model)
+        if (!prop)
             return false;
 
-        var name = modItem.MenuFile;
-
-        if (modItem.IsOfficialMod)
-            name = Path.GetFileName(name) + ".menu"; // add '.menu' for partsedit support
-
-        model.name = name;
-
-        var dragPoint = AttachDragPoint(model);
-
-        dragPoint.Info = PropInfo.FromModItem(modItem);
-
-        AddProp(dragPoint);
+        AddProp(prop);
 
         return true;
     }
 
     public bool AddMyRoomProp(MyRoomItem myRoomItem)
     {
-        var model = LoadMyRoomModel(myRoomItem);
+        var prop = InstantiateMyRoomProp(myRoomItem);
 
-        if (!model)
+        if (!prop)
             return false;
 
-        model.name = Translation.Get("myRoomPropNames", myRoomItem.PrefabName);
-
-        var dragPoint = AttachDragPoint(model);
-
-        dragPoint.Info = PropInfo.FromMyRoom(myRoomItem);
-
-        AddProp(dragPoint);
+        AddProp(prop);
 
         return true;
     }
 
     public bool AddBgProp(string assetName)
     {
-        var model = LoadBgModel(assetName);
+        var prop = InstantiateBgProp(assetName);
 
-        if (!model)
+        if (!prop)
             return false;
 
-        model.name = Translation.Get("bgNames", assetName);
-
-        var dragPoint = AttachDragPoint(model);
-
-        dragPoint.Info = PropInfo.FromBg(assetName);
-
-        AddProp(dragPoint);
+        AddProp(prop);
 
         return true;
     }
 
     public bool AddGameProp(string assetName)
     {
-        var isMenu = assetName.EndsWith(".menu");
-        var model = isMenu ? LoadMenuModel(assetName) : LoadGameModel(assetName);
+        var prop = InstantiateGameProp(assetName);
 
-        if (!model)
+        if (!prop)
             return false;
 
-        model.name = Translation.Get("propNames", isMenu ? Utility.HandItemToOdogu(assetName) : assetName, !isMenu);
-
-        var dragPoint = AttachDragPoint(model);
-
-        dragPoint.Info = PropInfo.FromGameProp(assetName);
-
-        AddProp(dragPoint);
+        AddProp(prop);
 
         return true;
     }
@@ -250,7 +203,40 @@ public class PropManager : IManager
         if ((uint)propIndex >= (uint)PropCount)
             throw new ArgumentOutOfRangeException(nameof(propIndex));
 
-        AddFromPropInfo(propList[propIndex].Info);
+        var originalProp = propList[propIndex];
+
+        var copiedProp = InstantiateFromPropInfo(originalProp.Info);
+
+        if (!copiedProp)
+            return;
+
+        CopyProperties(originalProp, copiedProp);
+
+        MoveProp(originalProp, copiedProp);
+
+        AddProp(copiedProp);
+
+        static void CopyProperties(DragPointProp original, DragPointProp copy)
+        {
+            copy.ShadowCasting = original.ShadowCasting;
+
+            var copiedPropTransform = copy.MyObject.transform;
+            var originalTransform = original.MyObject.transform;
+
+            copiedPropTransform.SetPositionAndRotation(originalTransform.position, originalTransform.rotation);
+            copiedPropTransform.localScale = originalTransform.localScale;
+        }
+
+        static void MoveProp(DragPointProp original, DragPointProp copy)
+        {
+            var propRenderer = original.MyObject.GetComponentInChildren<Renderer>();
+            var copyTransform = copy.MyObject.transform;
+            var cameraTransform = GameMain.Instance.MainCamera.camera.transform;
+
+            var distance = propRenderer.bounds.extents.x * 0.75f;
+
+            copyTransform.Translate(cameraTransform.right * distance, Space.World);
+        }
     }
 
     public void DeleteAllProps()
@@ -336,6 +322,124 @@ public class PropManager : IManager
         prop.Delete -= OnDeleteProp;
         prop.Select -= OnSelectProp;
         Object.Destroy(prop.gameObject);
+    }
+
+    private string GetUniqueName(string name)
+    {
+        if (propList.Count is 0)
+            return name;
+
+        var nameSet = new HashSet<string>(propList.Select(prop => prop.Name));
+        var newName = name;
+        var index = 1;
+
+        while (nameSet.Contains(newName))
+        {
+            index += 1;
+            newName = $"{name} ({index})";
+        }
+
+        return newName;
+    }
+
+    private DragPointProp InstantiateFromPropInfo(PropInfo propInfo)
+    {
+        switch (propInfo.Type)
+        {
+            case PropInfo.PropType.Mod:
+                ModItem modItem;
+
+                if (!string.IsNullOrEmpty(propInfo.SubFilename))
+                {
+                    modItem = ModItem.OfficialMod(ModFileToFullPath[propInfo.Filename]);
+                    modItem.BaseMenuFile = propInfo.SubFilename;
+                }
+                else
+                {
+                    modItem = ModItem.Mod(propInfo.Filename);
+                }
+
+                return InstantiateModProp(modItem);
+            case PropInfo.PropType.MyRoom:
+                return InstantiateMyRoomProp(new() { ID = propInfo.MyRoomID, PrefabName = propInfo.Filename });
+            case PropInfo.PropType.Bg:
+                return InstantiateBgProp(propInfo.Filename);
+            case PropInfo.PropType.Odogu:
+                return InstantiateGameProp(propInfo.Filename);
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    private DragPointProp InstantiateModProp(ModItem modItem)
+    {
+        var model = LoadMenuModel(modItem);
+
+        if (!model)
+            return null;
+
+        var name = modItem.MenuFile;
+
+        if (modItem.IsOfficialMod)
+            name = Path.GetFileName(name) + ".menu"; // add '.menu' for partsedit support
+
+        model.name = GetUniqueName(name);
+
+        var dragPoint = AttachDragPoint(model);
+
+        dragPoint.Info = PropInfo.FromModItem(modItem);
+
+        return dragPoint;
+    }
+
+    private DragPointProp InstantiateMyRoomProp(MyRoomItem myRoomItem)
+    {
+        var model = LoadMyRoomModel(myRoomItem);
+
+        if (!model)
+            return null;
+
+        model.name = GetUniqueName(Translation.Get("myRoomPropNames", myRoomItem.PrefabName));
+
+        var dragPoint = AttachDragPoint(model);
+
+        dragPoint.Info = PropInfo.FromMyRoom(myRoomItem);
+
+        return dragPoint;
+    }
+
+    private DragPointProp InstantiateBgProp(string assetName)
+    {
+        var model = LoadBgModel(assetName);
+
+        if (!model)
+            return null;
+
+        model.name = GetUniqueName(Translation.Get("bgNames", assetName));
+
+        var dragPoint = AttachDragPoint(model);
+
+        dragPoint.Info = PropInfo.FromBg(assetName);
+
+        return dragPoint;
+    }
+
+    private DragPointProp InstantiateGameProp(string assetName)
+    {
+        var isMenu = assetName.EndsWith(".menu");
+        var model = isMenu ? LoadMenuModel(assetName) : LoadGameModel(assetName);
+
+        if (!model)
+            return null;
+
+        model.name = GetUniqueName(
+            Translation.Get("propNames", isMenu ? Utility.HandItemToOdogu(assetName) : assetName, !isMenu));
+
+        var dragPoint = AttachDragPoint(model);
+
+        dragPoint.Info = PropInfo.FromGameProp(assetName);
+
+        return dragPoint;
     }
 
     private void EmitPropListChange() =>
