@@ -69,6 +69,15 @@ public class DragPointProp : DragPointGeneral
     public void DetachTemporary() =>
         MyObject.transform.SetParent(null, true);
 
+    public void Focus()
+    {
+        var propPosition = MyObject.position;
+        var cameraAngle = camera.transform.eulerAngles;
+        var cameraDistance = GameMain.Instance.MainCamera.GetDistance();
+
+        WfCameraMoveSupportUtility.StartMove(propPosition, cameraDistance, new(cameraAngle.y, cameraAngle.x), 0.45f);
+    }
+
     protected override void ApplyDragType()
     {
         var widgetActiveContext = Transforming || Scaling || Rotating;
@@ -88,6 +97,14 @@ public class DragPointProp : DragPointGeneral
             { Scaling: true } => CustomGizmo.GizmoType.Scale,
             _ => CustomGizmo.GizmoType.Rotate,
         };
+    }
+
+    protected override void OnDoubleClick()
+    {
+        base.OnDoubleClick();
+
+        if (Selecting)
+            Focus();
     }
 
     protected override void OnDestroy()

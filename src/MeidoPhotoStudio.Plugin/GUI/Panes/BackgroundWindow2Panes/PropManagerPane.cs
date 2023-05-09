@@ -19,6 +19,7 @@ public class PropManagerPane : BasePane
     private readonly TransformControl positionTransformControl;
     private readonly TransformControl rotationTransformControl;
     private readonly TransformControl scaleTransformControl;
+    private readonly Button focusButton;
 
     private string propManagerHeader;
     private string gizmoSpaceLabel;
@@ -131,6 +132,9 @@ public class PropManagerPane : BasePane
             SetGizmoMode(newMode);
         };
 
+        focusButton = new(Translation.Get("propManagerPane", "focusPropButton"));
+        focusButton.ControlEvent += FocusButtonClickedEventHandler;
+
         gizmoSpaceLabel = Translation.Get("propManagerPane", "gizmoSpaceToggle");
 
         positionTransformControl = new(Translation.Get("propManagerPane", "positionControl"), Vector3.zero)
@@ -217,22 +221,26 @@ public class PropManagerPane : BasePane
 
         GUILayout.BeginHorizontal();
         dragPointToggle.Draw(noExpandWidth);
-        gizmoToggle.Draw(noExpandWidth);
         GUILayout.FlexibleSpace();
+        focusButton.Draw(noExpandWidth);
         copyPropButton.Draw(noExpandWidth);
         deletePropButton.Draw(noExpandWidth);
         GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        gizmoToggle.Draw(noExpandWidth);
+        GUILayout.FlexibleSpace();
 
         var guiEnabled = GUI.enabled;
 
         GUI.enabled = guiEnabled && gizmoToggle.Value;
 
-        GUILayout.BeginHorizontal();
         GUILayout.Label(gizmoSpaceLabel);
         gizmoMode.Draw();
-        GUILayout.EndHorizontal();
 
         GUI.enabled = guiEnabled;
+
+        GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
         shadowCastingToggle.Draw(noExpandWidth);
@@ -262,6 +270,7 @@ public class PropManagerPane : BasePane
         copyPropButton.Label = Translation.Get("propManagerPane", "copyButton");
         deletePropButton.Label = Translation.Get("propManagerPane", "deleteButton");
         propManagerHeader = Translation.Get("propManagerPane", "header");
+        focusButton.Label = Translation.Get("propManagerPane", "focusPropButton");
         gizmoSpaceLabel = Translation.Get("propManagerPane", "gizmoSpaceToggle");
 
         var copyButtonLabel = Translation.Get("transformControl", "copyButton");
@@ -276,6 +285,16 @@ public class PropManagerPane : BasePane
 
         scaleTransformControl.Header = Translation.Get("propManagerPane", "scaleControl");
         scaleTransformControl.SetButtonLabels(copyButtonLabel, pasteButtonLabel, resetButtonLabel);
+    }
+
+    private void FocusButtonClickedEventHandler(object sender, System.EventArgs e)
+    {
+        var prop = propManager.CurrentProp;
+
+        if (!prop)
+            return;
+
+        prop.Focus();
     }
 
     private void PositionControlChangedEventHandler(object sender, TransformComponentChangeEventArgs e)
