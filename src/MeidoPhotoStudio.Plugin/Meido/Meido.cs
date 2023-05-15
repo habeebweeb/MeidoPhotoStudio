@@ -744,6 +744,29 @@ public class Meido
             dragPoint.Control.transform.localPosition = position;
     }
 
+    public void FocusOnBody()
+    {
+        var bodyTransform = Body.GetBone("Bip01");
+
+        var bodyPosition = bodyTransform.position;
+        var bodyDistance = Mathf.Max(GameMain.Instance.MainCamera.GetDistance(), 3f);
+        var cameraRotation = GameMain.Instance.MainCamera.transform.eulerAngles;
+        var bodyAngle = new Vector2(cameraRotation.y, cameraRotation.x);
+
+        WfCameraMoveSupportUtility.StartMove(bodyPosition, bodyDistance, bodyAngle);
+    }
+
+    public void FocusOnFace()
+    {
+        var head = Body.GetBone("Bip01 Head");
+
+        var facePosition = head.position;
+        var faceRotation = (head.rotation * Quaternion.Euler(Vector3.right * 90f)).eulerAngles;
+        var faceAngle = new Vector2(faceRotation.y, faceRotation.x);
+
+        WfCameraMoveSupportUtility.StartMove(facePosition, 1f, faceAngle);
+    }
+
     private void StartLoad(Action callback)
     {
         if (Loading)

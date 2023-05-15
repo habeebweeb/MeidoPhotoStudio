@@ -556,7 +556,7 @@ public class MeidoDragPointManager
     private void InitializeDragPoints()
     {
         dragCube = DragPoint.Make<DragPointBody>(PrimitiveType.Cube, Vector3.one * 0.12f);
-        dragCube.Initialize(() => meido.Maid.transform.position, () => Vector3.zero);
+        dragCube.Initialize(meido, () => meido.Maid.transform.position, () => Vector3.zero);
         dragCube.Set(meido.Maid.transform);
 
         dragCube.IsCube = true;
@@ -568,6 +568,7 @@ public class MeidoDragPointManager
         dragBody = DragPoint.Make<DragPointBody>(PrimitiveType.Capsule, new Vector3(0.2f, 0.3f, 0.24f));
 
         dragBody.Initialize(
+            meido,
             () => new(
                 (boneTransform[Bone.Hip].position.x + boneTransform[Bone.Spine0a].position.x) / 2f,
                 (boneTransform[Bone.Spine1].position.y + boneTransform[Bone.Spine0a].position.y) / 2f,

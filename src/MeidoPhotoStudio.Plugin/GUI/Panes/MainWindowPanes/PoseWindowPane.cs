@@ -31,6 +31,8 @@ public class PoseWindowPane : BaseMainWindowPane
         this.meidoManager = meidoManager;
         this.maidSwitcherPane = maidSwitcherPane;
 
+        this.maidSwitcherPane.MaidPortraitClicked += MaidPortraitClickedEventHandler;
+
         maidPosePane = AddPane(new MaidPoseSelectorPane(meidoManager));
         savePosePane = AddPane(new SavePosePane(meidoManager));
 
@@ -153,5 +155,18 @@ public class PoseWindowPane : BaseMainWindowPane
             return;
 
         meidoManager.ActiveMeido.FreeLook = freeLookToggle.Value;
+    }
+
+    private void MaidPortraitClickedEventHandler(object sender, System.EventArgs args)
+    {
+        if (!ActiveWindow)
+            return;
+
+        if (!meidoManager.HasActiveMeido)
+            return;
+
+        var meido = meidoManager.ActiveMeido;
+
+        meido.FocusOnBody();
     }
 }

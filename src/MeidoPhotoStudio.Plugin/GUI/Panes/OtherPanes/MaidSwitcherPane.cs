@@ -32,6 +32,8 @@ public class MaidSwitcherPane : BasePane
             SetEditMaid();
     }
 
+    public event System.EventHandler MaidPortraitClicked;
+
     public override void Draw()
     {
         const float boxSize = 70;
@@ -76,9 +78,14 @@ public class MaidSwitcherPane : BasePane
         GUILayout.Space(20);
 
         if (meidoManager.HasActiveMeido && meido.Portrait)
-            MpsGui.DrawTexture(meido.Portrait, boxLayoutOptions);
+        {
+            if (GUILayout.Button(meido.Portrait, boxLayoutOptions))
+                MaidPortraitClicked?.Invoke(this, System.EventArgs.Empty);
+        }
         else
+        {
             GUILayout.Box(GUIContent.none, boxStyle, boxLayoutOptions);
+        }
 
         var label = meidoManager.HasActiveMeido ? $"{meido.LastName}\n{meido.FirstName}" : string.Empty;
 

@@ -18,6 +18,8 @@ public class FaceWindowPane : BaseMainWindowPane
         this.meidoManager = meidoManager;
         this.maidSwitcherPane = maidSwitcherPane;
 
+        this.maidSwitcherPane.MaidPortraitClicked += MaidPortraitClickedEventHandler;
+
         maidFaceSliderPane = AddPane(new MaidFaceSliderPane(this.meidoManager));
         maidFaceBlendPane = AddPane(new MaidFaceBlendPane(this.meidoManager));
         saveFacePane = AddPane(new SaveFacePane(this.meidoManager));
@@ -63,4 +65,17 @@ public class FaceWindowPane : BaseMainWindowPane
 
     protected override void ReloadTranslation() =>
         saveFaceToggle.Label = Translation.Get("maidFaceWindow", "savePaneToggle");
+
+    private void MaidPortraitClickedEventHandler(object sender, System.EventArgs args)
+    {
+        if (!ActiveWindow)
+            return;
+
+        if (!meidoManager.HasActiveMeido)
+            return;
+
+        var meido = meidoManager.ActiveMeido;
+
+        meido.FocusOnFace();
+    }
 }

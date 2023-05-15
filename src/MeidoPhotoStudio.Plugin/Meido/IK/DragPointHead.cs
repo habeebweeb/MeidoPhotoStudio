@@ -16,6 +16,9 @@ public class DragPointHead : DragPointMeido
 
     public bool IsIK { get; set; }
 
+    public void Focus() =>
+        meido.FocusOnFace();
+
     protected override void ApplyDragType()
     {
         if (IsBone)
@@ -81,6 +84,10 @@ public class DragPointHead : DragPointMeido
         else if (CurrentDragType is DragType.RotLocalY or DragType.RotLocalXZ)
         {
             meido.FreeLook = !meido.FreeLook;
+        }
+        else if (Selecting)
+        {
+            Focus();
         }
     }
 
