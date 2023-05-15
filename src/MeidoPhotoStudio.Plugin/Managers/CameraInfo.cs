@@ -44,6 +44,10 @@ public class CameraInfo
     {
         camera.SetTargetPos(TargetPos);
         camera.SetDistance(Distance);
+
+        var cameraEuler = Angle.eulerAngles;
+
+        camera.SetAroundAngle(new(cameraEuler.y, cameraEuler.x));
         camera.transform.rotation = Angle;
         camera.camera.fieldOfView = FOV;
     }
