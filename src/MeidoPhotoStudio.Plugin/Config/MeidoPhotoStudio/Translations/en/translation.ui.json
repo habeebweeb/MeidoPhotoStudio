@@ -394,7 +394,10 @@
         "fileLoadCommit": "Load Scene",
         "infoKankyo": "Kankyo",
         "infoMaidSingular": "{0} Maid",
-        "infoMaidPlural": "{0} Maids"
+        "infoMaidPlural": "{0} Maids",
+        "deleteButton": "Delete",
+        "cancelButton": "Cancel",
+        "overwriteButton": "Overwrite"
     },
     "sceneManager": {
         "createDirectoryButton": "New Folder",

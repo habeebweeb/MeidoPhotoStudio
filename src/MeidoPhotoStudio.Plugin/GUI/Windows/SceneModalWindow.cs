@@ -26,8 +26,6 @@ public class SceneModalWindow : BaseWindow
 
     public SceneModalWindow(SceneManager sceneManager)
     {
-        ReloadTranslation();
-
         this.sceneManager = sceneManager;
 
         windowRect.x = MiddlePosition.x;
@@ -37,23 +35,25 @@ public class SceneModalWindow : BaseWindow
         okButton.ControlEvent += (_, _) =>
             Commit();
 
-        cancelButton = new("Cancel");
+        cancelButton = new(Translation.Get("sceneManagerModal", "cancelButton"));
         cancelButton.ControlEvent += (_, _) =>
             Cancel();
 
-        deleteButton = new("Delete");
+        deleteButton = new(Translation.Get("sceneManagerModal", "deleteButton"));
         deleteButton.ControlEvent += (_, _) =>
         {
             okButton.Label = sceneDeleteCommit;
             deleteScene = true;
         };
 
-        overwriteButton = new("Overwrite");
+        overwriteButton = new(Translation.Get("sceneManagerModal", "overwriteButton"));
         overwriteButton.ControlEvent += (_, _) =>
         {
             sceneManager.OverwriteScene();
             Visible = false;
         };
+
+        ReloadTranslation();
     }
 
     public override Rect WindowRect
@@ -176,7 +176,7 @@ public class SceneModalWindow : BaseWindow
         {
             GUILayout.FlexibleSpace();
             okButton.Draw(buttonStyle, buttonHeight, GUILayout.ExpandWidth(false));
-            cancelButton.Draw(buttonStyle, buttonHeight, GUILayout.Width(100));
+            cancelButton.Draw(buttonStyle, buttonHeight, GUILayout.MinWidth(100));
         }
         else
         {
@@ -186,7 +186,7 @@ public class SceneModalWindow : BaseWindow
             GUILayout.FlexibleSpace();
 
             okButton.Draw(buttonStyle, buttonHeight, GUILayout.ExpandWidth(false));
-            cancelButton.Draw(buttonStyle, buttonHeight, GUILayout.Width(100));
+            cancelButton.Draw(buttonStyle, buttonHeight, GUILayout.MinWidth(100));
         }
 
         GUILayout.EndHorizontal();
@@ -218,6 +218,9 @@ public class SceneModalWindow : BaseWindow
         infoKankyo = Translation.Get("sceneManagerModal", "infoKankyo");
         infoMaidSingular = Translation.Get("sceneManagerModal", "infoMaidSingular");
         infoMaidPlural = Translation.Get("sceneManagerModal", "infoMaidPlural");
+        cancelButton.Label = Translation.Get("sceneManagerModal", "cancelButton");
+        deleteButton.Label = Translation.Get("sceneManagerModal", "deleteButton");
+        overwriteButton.Label = Translation.Get("sceneManagerModal", "overwriteButton");
     }
 
     private void Commit()
