@@ -4,7 +4,7 @@ namespace MeidoPhotoStudio.Plugin;
 
 public class DragPointPropDTOSerializer : SimpleSerializer<DragPointPropDTO>
 {
-    private const short Version = 1;
+    private const short Version = 2;
 
     private static SimpleSerializer<PropInfo> PropInfoSerializer =>
         Serialization.GetSimple<PropInfo>();
@@ -26,18 +26,36 @@ public class DragPointPropDTOSerializer : SimpleSerializer<DragPointPropDTO>
         AttachPointSerializer.Serialize(dragPointDto.AttachPointInfo, writer);
 
         writer.Write(dragPointDto.ShadowCasting);
+
+        // NOTE: V2 data
+        {
+            writer.Write(dragPointDto.DragHandleEnabled);
+            writer.Write(dragPointDto.GizmoEnabled);
+            writer.Write((int)dragPointDto.GizmoMode);
+            writer.Write(dragPointDto.Visible);
+        }
     }
 
     public override DragPointPropDTO Deserialize(BinaryReader reader, SceneMetadata metadata)
     {
-        _ = reader.ReadVersion();
+        var version = reader.ReadVersion();
 
-        return new DragPointPropDTO
+        var dto = new DragPointPropDTO()
         {
             PropInfo = PropInfoSerializer.Deserialize(reader, metadata),
             TransformDTO = TransformSerializer.Deserialize(reader, metadata),
             AttachPointInfo = AttachPointSerializer.Deserialize(reader, metadata),
             ShadowCasting = reader.ReadBoolean(),
         };
+
+        if (version >= 2)
+        {
+            dto.DragHandleEnabled = reader.ReadBoolean();
+            dto.GizmoEnabled = reader.ReadBoolean();
+            dto.GizmoMode = (CustomGizmo.GizmoMode)reader.ReadInt32();
+            dto.Visible = reader.ReadBoolean();
+        }
+
+        return dto;
     }
 }

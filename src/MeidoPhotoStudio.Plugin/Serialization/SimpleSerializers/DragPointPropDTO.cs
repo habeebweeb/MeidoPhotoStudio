@@ -13,6 +13,10 @@ public class DragPointPropDTO
         ShadowCasting = dragPoint.ShadowCasting;
         AttachPointInfo = dragPoint.AttachPointInfo;
         PropInfo = dragPoint.Info;
+        DragHandleEnabled = dragPoint.DragPointEnabled;
+        GizmoEnabled = dragPoint.GizmoEnabled;
+        GizmoMode = dragPoint.Gizmo.Mode;
+        Visible = dragPoint.Visible;
     }
 
     public TransformDTO TransformDTO { get; set; }
@@ -22,6 +26,14 @@ public class DragPointPropDTO
     public PropInfo PropInfo { get; set; }
 
     public bool ShadowCasting { get; set; }
+
+    public bool DragHandleEnabled { get; set; } = true;
+
+    public bool GizmoEnabled { get; set; } = true;
+
+    public CustomGizmo.GizmoMode GizmoMode { get; set; } = CustomGizmo.GizmoMode.World;
+
+    public bool Visible { get; set; } = true;
 
     public void Deconstruct(out TransformDTO transform, out AttachPointInfo attachPointInfo, out bool shadowCasting)
     {

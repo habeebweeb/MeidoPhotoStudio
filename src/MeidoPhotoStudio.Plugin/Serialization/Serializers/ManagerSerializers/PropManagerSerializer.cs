@@ -51,22 +51,25 @@ public class PropManagerSerializer : Serializer<PropManager>
 
     private static void Apply(PropManager manager, DragPointProp prop, DragPointPropDTO dto)
     {
-        var (transformDto, attachPointInfo, shadowCasting) = dto;
-
-        prop.ShadowCasting = shadowCasting;
+        prop.ShadowCasting = dto.ShadowCasting;
+        prop.DragPointEnabled = dto.DragHandleEnabled;
+        prop.GizmoEnabled = dto.GizmoEnabled;
+        prop.Gizmo.Mode = dto.GizmoMode;
+        prop.Visible = dto.Visible;
 
         var transform = prop.MyObject;
 
-        if (attachPointInfo.AttachPoint is not AttachPoint.None)
+        var attachPointInfo = dto.AttachPointInfo;
+        var transformDto = dto.TransformDTO;
+
+        if (dto.AttachPointInfo.AttachPoint is not AttachPoint.None)
         {
             manager.AttachProp(prop, attachPointInfo.AttachPoint, attachPointInfo.MaidIndex);
             transform.localPosition = transformDto.LocalPosition;
             transform.localRotation = transformDto.LocalRotation;
         }
 
-        // TODO: Use transform.SetRotationAndPosition or whatever it's called.
-        transform.position = transformDto.Position;
-        transform.rotation = transformDto.Rotation;
+        transform.SetPositionAndRotation(transformDto.Position, transformDto.Rotation);
         transform.localScale = transformDto.LocalScale;
     }
 }
