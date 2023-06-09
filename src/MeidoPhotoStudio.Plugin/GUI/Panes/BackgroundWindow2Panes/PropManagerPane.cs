@@ -13,6 +13,7 @@ public class PropManagerPane : BasePane
     private readonly Toggle dragPointToggle;
     private readonly Toggle gizmoToggle;
     private readonly Toggle shadowCastingToggle;
+    private readonly Toggle visibleToggle;
     private readonly Button deletePropButton;
     private readonly Button copyPropButton;
     private readonly SelectionGrid gizmoMode;
@@ -114,6 +115,15 @@ public class PropManagerPane : BasePane
                 return;
 
             this.propManager.CurrentProp.ShadowCasting = shadowCastingToggle.Value;
+        };
+
+        visibleToggle = new(Translation.Get("propManagerPane", "visibleToggle"), true);
+        visibleToggle.ControlEvent += (_, _) =>
+        {
+            if (updating || this.propManager.PropCount is 0)
+                return;
+
+            this.propManager.CurrentProp.Visible = visibleToggle.Value;
         };
 
         copyPropButton = new(Translation.Get("propManagerPane", "copyButton"));
@@ -243,7 +253,15 @@ public class PropManagerPane : BasePane
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
+
+        visibleToggle.Draw(noExpandWidth);
+
+        guiEnabled = GUI.enabled;
+
+        GUI.enabled = guiEnabled && visibleToggle.Value;
         shadowCastingToggle.Draw(noExpandWidth);
+        GUI.enabled = guiEnabled;
+
         GUILayout.EndHorizontal();
 
         MpsGui.BlackLine();
@@ -267,6 +285,7 @@ public class PropManagerPane : BasePane
         dragPointToggle.Label = Translation.Get("propManagerPane", "dragPointToggle");
         gizmoToggle.Label = Translation.Get("propManagerPane", "gizmoToggle");
         shadowCastingToggle.Label = Translation.Get("propManagerPane", "shadowCastingToggle");
+        visibleToggle.Label = Translation.Get("propManagerPane", "visibleToggle");
         copyPropButton.Label = Translation.Get("propManagerPane", "copyButton");
         deletePropButton.Label = Translation.Get("propManagerPane", "deleteButton");
         propManagerHeader = Translation.Get("propManagerPane", "header");
@@ -364,6 +383,7 @@ public class PropManagerPane : BasePane
         dragPointToggle.Value = prop.DragPointEnabled;
         gizmoToggle.Value = prop.GizmoEnabled;
         shadowCastingToggle.Value = prop.ShadowCasting;
+        visibleToggle.Value = prop.Visible;
         updating = false;
     }
 

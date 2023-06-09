@@ -236,6 +236,7 @@
         "dragPointToggle": "Cube",
         "gizmoToggle": "Gizmo",
         "shadowCastingToggle": "Shadow",
+        "visibleToggle": "Visible",
         "copyButton": "Copy",
         "deleteButton": "Delete",
         "gizmoSpaceToggle": "Space:",

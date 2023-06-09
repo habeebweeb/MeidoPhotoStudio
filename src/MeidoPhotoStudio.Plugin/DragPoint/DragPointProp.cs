@@ -29,6 +29,16 @@ public class DragPointProp : DragPointGeneral
         }
     }
 
+    public bool Visible
+    {
+        get => renderers.Count is not 0 && renderers.Any(renderer => renderer.enabled);
+        set
+        {
+            foreach (var renderer in renderers)
+                renderer.enabled = value;
+        }
+    }
+
     public override void Set(Transform myObject)
     {
         base.Set(myObject);
