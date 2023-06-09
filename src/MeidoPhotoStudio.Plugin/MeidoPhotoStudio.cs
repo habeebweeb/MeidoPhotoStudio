@@ -226,7 +226,7 @@ public class MeidoPhotoStudio : BaseUnityPlugin
 
     private void Awake()
     {
-        harmony = HarmonyLib.Harmony.CreateAndPatchAll(typeof(AllProcPropSeqStartPatcher));
+        harmony = HarmonyLib.Harmony.CreateAndPatchAll(typeof(AllProcPropSeqPatcher));
         harmony.PatchAll(typeof(BgMgrPatcher));
         harmony.PatchAll(typeof(MeidoManager));
 

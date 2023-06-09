@@ -92,8 +92,6 @@ public class Meido
 
     public int Slot { get; private set; }
 
-    public bool Loading { get; private set; }
-
     public Maid Maid { get; }
 
     public MeidoDragPointManager IKManager { get; }
@@ -111,7 +109,7 @@ public class Meido
         Maid.status.lastName;
 
     public bool Busy =>
-        Maid.IsBusy || Loading;
+        Maid.IsBusy;
 
     public bool CurlingFront =>
         Maid.IsItemChange("skirt", "めくれスカート") || Maid.IsItemChange("onepiece", "めくれスカート");
@@ -258,11 +256,25 @@ public class Meido
 
         if (!Body.isLoadedBody)
         {
+            AllProcPropSeqPatcher.SequenceEnded += LoadMaid;
+
             Maid.DutPropAll();
             Maid.AllProcPropSeqStart();
-        }
 
-        StartLoad(OnBodyLoad);
+            void LoadMaid(object sender, ProcStartEventArgs e)
+            {
+                if (e.Maid.status.guid != Maid.status.guid)
+                    return;
+
+                OnBodyLoad();
+
+                AllProcPropSeqPatcher.SequenceEnded -= LoadMaid;
+            }
+        }
+        else
+        {
+            OnBodyLoad();
+        }
     }
 
     public void Unload()
@@ -295,7 +307,7 @@ public class Meido
             SetFaceBlendSet(DefaultFaceBlendSet);
         }
 
-        AllProcPropSeqStartPatcher.SequenceStart -= ReinitializeBody;
+        AllProcPropSeqPatcher.SequenceStarting -= ReinitializeBody;
 
         Body.MuneYureL(1f);
         Body.MuneYureR(1f);
@@ -767,27 +779,6 @@ public class Meido
         WfCameraMoveSupportUtility.StartMove(facePosition, 1f, faceAngle);
     }
 
-    private void StartLoad(Action callback)
-    {
-        if (Loading)
-            return;
-
-        GameMain.Instance.StartCoroutine(Load(callback));
-    }
-
-    private IEnumerator Load(Action callback)
-    {
-        Loading = true;
-
-        while (Maid.IsBusy)
-            yield return null;
-
-        yield return new WaitForEndOfFrame();
-
-        callback();
-        Loading = false;
-    }
-
     private void OnBodyLoad()
     {
         if (!initialized)
@@ -808,7 +799,7 @@ public class Meido
         SkirtGravityControl.Move += OnGravityEvent;
 
         if (MeidoPhotoStudio.EditMode)
-            AllProcPropSeqStartPatcher.SequenceStart += ReinitializeBody;
+            AllProcPropSeqPatcher.SequenceStarting += ReinitializeBody;
 
         IKManager.Initialize();
 
@@ -823,7 +814,7 @@ public class Meido
 
     private void ReinitializeBody(object sender, ProcStartEventArgs args)
     {
-        if (Loading || !Body.isLoadedBody)
+        if (!Body.isLoadedBody)
             return;
 
         if (args.Maid.status.guid != Maid.status.guid)
@@ -832,8 +823,8 @@ public class Meido
         var gravityControlProps =
             new[]
             {
-                MPN.skirt, MPN.onepiece, MPN.mizugi, MPN.panz, MPN.set_maidwear, MPN.set_mywear, MPN.set_underwear,
-                MPN.hairf, MPN.hairr, MPN.hairs, MPN.hairt,
+                MPN.body, MPN.skirt, MPN.onepiece, MPN.mizugi, MPN.panz, MPN.set_maidwear, MPN.set_mywear,
+                MPN.set_underwear, MPN.hairf, MPN.hairr, MPN.hairs, MPN.hairt,
             };
 
         Action action = null;
@@ -868,7 +859,17 @@ public class Meido
         // Includes null_mpn too but any button click results in null_mpn bodut I think
         action ??= Default;
 
-        StartLoad(action);
+        AllProcPropSeqPatcher.SequenceEnded += OnSequenceEnded;
+
+        void OnSequenceEnded(object sender, ProcStartEventArgs e)
+        {
+            if (e.Maid.status.guid != Maid.status.guid)
+                return;
+
+            AllProcPropSeqPatcher.SequenceEnded -= OnSequenceEnded;
+
+            action?.Invoke();
+        }
 
         void ReinitializeBody()
         {
