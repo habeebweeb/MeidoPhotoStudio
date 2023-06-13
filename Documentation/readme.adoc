@@ -126,6 +126,9 @@ WARNING: Database files, except for `face_slider_limits.json`, should not be edi
 | `A + Left Click`
 | Select object
 
+| `A + Double click`
+| Center view on object (Only for props and maids right now)
+
 | `D + Left Click`
 | Delete object
 
@@ -254,5 +257,11 @@ WARNING: Database files, except for `face_slider_limits.json`, should not be edi
 
 * Make selected maid the active maid and switch to pose tab (When clicking on torso)
 * Make selected maid the active maid and switch to face tab (When clicking on face)
+
+| `A + Double Click`
+|
+
+* Center view on maid's face when clicking on their face
+* Center view on maid when clicking their body
 
 |===

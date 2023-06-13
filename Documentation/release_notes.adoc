@@ -3,6 +3,43 @@ Twitter/Discord - @habeebweeb
 :toc: left
 :toclevels: 1
 
+== 1.0.0-beta.5
+
+=== New Features
+* Text fields for prop position, rotation and scale
+* Scale and position gizmos for props
+* Toggle between world and local space for prop gizmos
+* Center the view on a prop or a maid's face or body. This can be done with.
+** Double clicking a prop while in select mode (`A` key by default) or clicking the `Focus` button in the `Props` tab
+** Double clicking the face while in select mode or clicking the maid portrait while in the `face` tab
+** Double clicking the maid's body or drag handle while in select mode or clicking the maid portrait while in the `pose`
+  tab
+* Toggle for prop visibility
+
+=== Enhancements
+* Copy prop button also copies the prop position, rotation and scale (finally)
+* Improve numeric text field user experience
+** Previously deleting the `3` from `5.003` would result in `5`. This sucks, don't do that
+* Duplicate spawned prop names will be listed with a number appended like "Kuudere Chair (2)"
+* Load mod prop animations
+* Add right eye wink
+* Prop drag handle and gizmo enabled state is now saved with a scene
+
+=== Fixes
+* Fix IK breaking when body is changed by preset load via
+  https://github.com/Perdition-117/COM3D2.EditBodyLoadFix[COM3D2.EditBodyLoadFix]
+* Fix non-existent pose breaking scene load
+* Fix IK init error when body has fixed arms
+** Ex. Bodies where arms are stuck in a bound position
+
+=== Changes
+* Spawning a prop will automatically select it
+* Menu files are no longer sorted
+** Ordering is the same as SceneCapture
+* Remove prop filtering completely
+** mekure, zurashi etc. are no longer filtered
+** If the prop does not have an icon, the name will be shown instead
+
 == 1.0.0-beta.4.1
 
 === Enhancements
