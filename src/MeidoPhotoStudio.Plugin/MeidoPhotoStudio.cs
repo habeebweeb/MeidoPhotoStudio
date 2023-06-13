@@ -17,7 +17,7 @@ public class MeidoPhotoStudio : BaseUnityPlugin
 {
     public const string PluginName = "MeidoPhotoStudio";
     public const string PluginVersion = "1.0.0";
-    public const string PluginSubVersion = "beta.4.1";
+    public const string PluginSubVersion = "beta.5";
     public const short SceneVersion = 3;
     public const int KankyoMagic = -765;
 
