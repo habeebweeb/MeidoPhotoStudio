@@ -300,6 +300,8 @@ public class PropManager : IManager
         dragPoint.Delete += OnDeleteProp;
         dragPoint.Select += OnSelectProp;
 
+        dragPoint.Name = GetUniqueName(model.name);
+
         return dragPoint;
     }
 
@@ -383,7 +385,7 @@ public class PropManager : IManager
         if (modItem.IsOfficialMod)
             name = Path.GetFileName(name) + ".menu"; // add '.menu' for partsedit support
 
-        model.name = GetUniqueName(name);
+        model.name = name;
 
         var dragPoint = AttachDragPoint(model);
 
@@ -399,7 +401,7 @@ public class PropManager : IManager
         if (!model)
             return null;
 
-        model.name = GetUniqueName(Translation.Get("myRoomPropNames", myRoomItem.PrefabName));
+        model.name = Translation.Get("myRoomPropNames", myRoomItem.PrefabName);
 
         var dragPoint = AttachDragPoint(model);
 
@@ -415,7 +417,7 @@ public class PropManager : IManager
         if (!model)
             return null;
 
-        model.name = GetUniqueName(Translation.Get("bgNames", assetName));
+        model.name = Translation.Get("bgNames", assetName);
 
         var dragPoint = AttachDragPoint(model);
 
@@ -432,8 +434,7 @@ public class PropManager : IManager
         if (!model)
             return null;
 
-        model.name = GetUniqueName(
-            Translation.Get("propNames", isMenu ? Utility.HandItemToOdogu(assetName) : assetName, !isMenu));
+        model.name = Translation.Get("propNames", isMenu ? Utility.HandItemToOdogu(assetName) : assetName, !isMenu);
 
         var dragPoint = AttachDragPoint(model);
 

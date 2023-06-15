@@ -16,8 +16,7 @@ public class DragPointProp : DragPointGeneral
 
     public PropInfo Info { get; set; }
 
-    public string Name =>
-        MyGameObject.name;
+    public string Name { get; set; } = string.Empty;
 
     public bool ShadowCasting
     {
