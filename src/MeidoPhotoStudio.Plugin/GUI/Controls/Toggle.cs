@@ -19,12 +19,7 @@ public class Toggle : BaseControl
     public bool Value
     {
         get => value;
-        set
-        {
-            this.value = value;
-
-            OnControlEvent(EventArgs.Empty);
-        }
+        set => SetEnabled(value);
     }
 
     public override void Draw(params GUILayoutOption[] layoutOptions) =>
@@ -44,5 +39,16 @@ public class Toggle : BaseControl
 
         if (value != Value)
             Value = value;
+    }
+
+    public void SetEnabledWithoutNotify(bool enabled) =>
+        SetEnabled(enabled, false);
+
+    private void SetEnabled(bool enabled, bool notify = true)
+    {
+        value = enabled;
+
+        if (notify)
+            OnControlEvent(EventArgs.Empty);
     }
 }
