@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.IO;
 using System.Text;
 
@@ -38,9 +37,9 @@ public class MeidoPhotoStudio : BaseUnityPlugin
     private PropManager propManager;
     private EffectManager effectManager;
     private CameraManager cameraManager;
+    private ScreenshotService screenshotService;
     private bool initialized;
     private bool active;
-    private bool uiActive;
 
     static MeidoPhotoStudio()
     {
@@ -51,18 +50,12 @@ public class MeidoPhotoStudio : BaseUnityPlugin
             PluginString += $"-{PluginSubVersion}";
     }
 
-    public static event EventHandler<ScreenshotEventArgs> NotifyRawScreenshot;
-
-    private static event EventHandler<ScreenshotEventArgs> ScreenshotEvent;
-
     public static bool EditMode =>
         currentScene is Constants.Scene.Edit;
 
-    public static void TakeScreenshot(ScreenshotEventArgs args) =>
-        ScreenshotEvent?.Invoke(null, args);
+    public static MeidoPhotoStudio Instance { get; private set; }
 
-    public static void TakeScreenshot(string path = "", int superSize = -1, bool hideMaids = false) =>
-        TakeScreenshot(new ScreenshotEventArgs() { Path = path, SuperSize = superSize, HideMaids = hideMaids });
+    public bool UIActive { get; set; }
 
     public byte[] SaveScene(bool environment = false)
     {
@@ -213,9 +206,6 @@ public class MeidoPhotoStudio : BaseUnityPlugin
         CameraUtility.MainCamera.ResetCalcNearClip();
     }
 
-    private void OnScreenshotEvent(object sender, ScreenshotEventArgs args) =>
-        StartCoroutine(Screenshot(args));
-
     private void UpdateCurrentScene(Scene scene) =>
         currentScene = scene.buildIndex switch
         {
@@ -226,11 +216,11 @@ public class MeidoPhotoStudio : BaseUnityPlugin
 
     private void Awake()
     {
+        Instance = this;
+
         harmony = HarmonyLib.Harmony.CreateAndPatchAll(typeof(AllProcPropSeqPatcher));
         harmony.PatchAll(typeof(BgMgrPatcher));
         harmony.PatchAll(typeof(MeidoManager));
-
-        ScreenshotEvent += OnScreenshotEvent;
 
         DontDestroyOnLoad(this);
 
@@ -281,7 +271,7 @@ public class MeidoPhotoStudio : BaseUnityPlugin
             return;
 
         if (!Input.Control && !Input.GetKey(MpsKey.CameraLayer) && Input.GetKeyDown(MpsKey.Screenshot))
-            TakeScreenshot();
+            screenshotService.TakeScreenshotToFile();
 
         meidoManager.Update();
         cameraManager.Update();
@@ -290,136 +280,9 @@ public class MeidoPhotoStudio : BaseUnityPlugin
         sceneManager.Update();
     }
 
-    private IEnumerator Screenshot(ScreenshotEventArgs args)
-    {
-        // Hide UI and dragpoints
-        var gameMain = GameMain.Instance.gameObject;
-        var editUI = UTY.GetChildObject(GameObject.Find("UI Root"), "Camera");
-        var fpsViewer = UTY.GetChildObject(gameMain, "SystemUI Root/FpsCounter");
-        var sysDialog = UTY.GetChildObject(gameMain, "SystemUI Root/SystemDialog");
-        var sysShortcut = UTY.GetChildObject(gameMain, "SystemUI Root/SystemShortcut");
-
-        // CameraUtility can hide the edit UI so keep its state for later
-        var editUIWasActive = editUI.activeSelf;
-
-        uiActive = false;
-        editUI.SetActive(false);
-        fpsViewer.SetActive(false);
-        sysDialog.SetActive(false);
-        sysShortcut.SetActive(false);
-
-        // Hide maid dragpoints and maids
-        var activeMeidoList = meidoManager.ActiveMeidoList;
-        var isIK = new bool[activeMeidoList.Count];
-        var isVisible = new bool[activeMeidoList.Count];
-
-        for (var i = 0; i < activeMeidoList.Count; i++)
-        {
-            var meido = activeMeidoList[i];
-
-            isIK[i] = meido.IK;
-
-            if (meido.IK)
-                meido.IK = false;
-
-            // Hide the maid if needed
-            if (args.HideMaids)
-            {
-                isVisible[i] = meido.Maid.Visible;
-                meido.Maid.Visible = false;
-            }
-        }
-
-        // Hide other drag points
-        var isCubeActive = new[]
-        {
-            MeidoDragPointManager.CubeActive,
-            PropManager.CubeActive,
-            LightManager.CubeActive,
-            EnvironmentManager.CubeActive,
-        };
-
-        MeidoDragPointManager.CubeActive = false;
-        PropManager.CubeActive = false;
-        LightManager.CubeActive = false;
-        EnvironmentManager.CubeActive = false;
-
-        // hide gizmos
-        GizmoRender.UIVisible = false;
-
-        yield return new WaitForEndOfFrame();
-
-        Texture2D rawScreenshot = null;
-
-        if (args.InMemory)
-        {
-            // Take a screenshot directly to a Texture2D for immediate processing
-            var renderTexture = new RenderTexture(Screen.width, Screen.height, 24);
-
-            RenderTexture.active = renderTexture;
-            CameraUtility.MainCamera.camera.targetTexture = renderTexture;
-            CameraUtility.MainCamera.camera.Render();
-
-            rawScreenshot = new(Screen.width, Screen.height, TextureFormat.RGB24, false);
-            rawScreenshot.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0, false);
-            rawScreenshot.Apply();
-
-            CameraUtility.MainCamera.camera.targetTexture = null;
-            RenderTexture.active = null;
-
-            DestroyImmediate(renderTexture);
-        }
-        else
-        {
-            // Take Screenshot
-            var defaultSuperSize = new[] { 1, 2, 4 };
-            var selectedSuperSize = args.SuperSize < 1
-                ? defaultSuperSize[(int)GameMain.Instance.CMSystem.ScreenShotSuperSize]
-                : args.SuperSize;
-
-            var path = string.IsNullOrEmpty(args.Path)
-                ? Utility.ScreenshotFilename()
-                : args.Path;
-
-            Application.CaptureScreenshot(path, selectedSuperSize);
-        }
-
-        GameMain.Instance.SoundMgr.PlaySe("se022.ogg", false);
-
-        yield return new WaitForEndOfFrame();
-
-        // Show UI and dragpoints
-        uiActive = true;
-        editUI.SetActive(editUIWasActive);
-        fpsViewer.SetActive(GameMain.Instance.CMSystem.ViewFps);
-        sysDialog.SetActive(true);
-        sysShortcut.SetActive(true);
-
-        for (var i = 0; i < activeMeidoList.Count; i++)
-        {
-            var meido = activeMeidoList[i];
-
-            if (isIK[i])
-                meido.IK = true;
-
-            if (args.HideMaids && isVisible[i])
-                meido.Maid.Visible = true;
-        }
-
-        MeidoDragPointManager.CubeActive = isCubeActive[0];
-        PropManager.CubeActive = isCubeActive[1];
-        LightManager.CubeActive = isCubeActive[2];
-        EnvironmentManager.CubeActive = isCubeActive[3];
-
-        GizmoRender.UIVisible = true;
-
-        if (args.InMemory && rawScreenshot)
-            NotifyRawScreenshot?.Invoke(null, new() { Screenshot = rawScreenshot });
-    }
-
     private void OnGUI()
     {
-        if (!uiActive)
+        if (!UIActive)
             return;
 
         windowManager.DrawWindows();
@@ -438,13 +301,14 @@ public class MeidoPhotoStudio : BaseUnityPlugin
 
         initialized = true;
 
+        screenshotService = new(this);
         meidoManager = new();
         environmentManager = new();
         messageWindowManager = new();
         messageWindowManager.Activate();
         lightManager = new();
         propManager = new(meidoManager);
-        sceneManager = new(this);
+        sceneManager = new(this, screenshotService);
         cameraManager = new();
 
         effectManager = new();
@@ -456,10 +320,10 @@ public class MeidoPhotoStudio : BaseUnityPlugin
         effectManager.AddManager<BlurEffectManager>();
 
         meidoManager.BeginCallMeidos += (_, _) =>
-            uiActive = false;
+            UIActive = false;
 
         meidoManager.EndCallMeidos += (_, _) =>
-            uiActive = true;
+            UIActive = true;
 
         var maidSwitcherPane = new MaidSwitcherPane(meidoManager);
         var sceneWindow = new SceneWindow(sceneManager);
@@ -502,7 +366,7 @@ public class MeidoPhotoStudio : BaseUnityPlugin
             windowManager.Activate();
         }
 
-        uiActive = true;
+        UIActive = true;
         active = true;
 
         if (!EditMode)
@@ -525,7 +389,7 @@ public class MeidoPhotoStudio : BaseUnityPlugin
         if (!sysDialog.IsDecided && !force)
             return;
 
-        uiActive = false;
+        UIActive = false;
         active = false;
 
         if (force)
@@ -544,7 +408,7 @@ public class MeidoPhotoStudio : BaseUnityPlugin
         void Resume()
         {
             sysDialog.Close();
-            uiActive = true;
+            UIActive = true;
             active = true;
         }
 

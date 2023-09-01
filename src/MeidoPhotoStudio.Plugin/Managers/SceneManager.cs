@@ -24,6 +24,7 @@ public class SceneManager : IManager
     private static byte[] tempSceneData;
 
     private readonly MeidoPhotoStudio meidoPhotoStudio;
+    private readonly ScreenshotService screenshotService;
 
     static SceneManager()
     {
@@ -32,9 +33,10 @@ public class SceneManager : IManager
         Input.Register(MpsKey.LoadScene, KeyCode.A, "Load quick saved scene");
     }
 
-    public SceneManager(MeidoPhotoStudio meidoPhotoStudio)
+    public SceneManager(MeidoPhotoStudio meidoPhotoStudio, ScreenshotService screenshotService)
     {
         this.meidoPhotoStudio = meidoPhotoStudio;
+        this.screenshotService = screenshotService;
 
         Activate();
     }
@@ -150,16 +152,10 @@ public class SceneManager : IManager
         if (!Directory.Exists(CurrentScenesDirectory))
             Directory.CreateDirectory(CurrentScenesDirectory);
 
-        MeidoPhotoStudio.NotifyRawScreenshot += SaveScene;
+        screenshotService.TakeScreenshotToTexture(SaveScene);
 
-        MeidoPhotoStudio.TakeScreenshot(new() { InMemory = true });
-
-        void SaveScene(object sender, ScreenshotEventArgs args)
-        {
-            MeidoPhotoStudio.NotifyRawScreenshot -= SaveScene;
-
-            SaveSceneToFile(args.Screenshot, overwrite);
-        }
+        void SaveScene(Texture2D screenshot) =>
+            SaveSceneToFile(screenshot, overwrite);
     }
 
     public void SelectDirectory(int directoryIndex)
