@@ -23,8 +23,8 @@ public class SceneManager : IManager
 
     private static byte[] tempSceneData;
 
-    private readonly MeidoPhotoStudio meidoPhotoStudio;
     private readonly ScreenshotService screenshotService;
+    private readonly SceneSerializer sceneSerializer;
 
     static SceneManager()
     {
@@ -33,10 +33,10 @@ public class SceneManager : IManager
         Input.Register(MpsKey.LoadScene, KeyCode.A, "Load quick saved scene");
     }
 
-    public SceneManager(MeidoPhotoStudio meidoPhotoStudio, ScreenshotService screenshotService)
+    public SceneManager(ScreenshotService screenshotService, SceneSerializer sceneSerializer)
     {
-        this.meidoPhotoStudio = meidoPhotoStudio;
         this.screenshotService = screenshotService;
+        this.sceneSerializer = sceneSerializer;
 
         Activate();
     }
@@ -242,7 +242,7 @@ public class SceneManager : IManager
     }
 
     public void LoadScene(MPSScene scene) =>
-        meidoPhotoStudio.LoadScene(scene.Data);
+        sceneSerializer.DeserializeScene(scene.Data);
 
     private int SortByName(MPSScene a, MPSScene b) =>
         SortDirection * WindowsLogicalComparer.StrCmpLogicalW(a.FileInfo.Name, b.FileInfo.Name);
@@ -292,7 +292,7 @@ public class SceneManager : IManager
         if (Busy)
             return;
 
-        var data = meidoPhotoStudio.SaveScene();
+        var data = sceneSerializer.SerializeScene();
 
         if (data is null)
             return;
@@ -315,14 +315,14 @@ public class SceneManager : IManager
                 return;
         }
 
-        meidoPhotoStudio.LoadScene(tempSceneData);
+        sceneSerializer.DeserializeScene(tempSceneData);
     }
 
     private void SaveSceneToFile(Texture2D screenshot, bool overwrite = false)
     {
         Busy = true;
 
-        var sceneData = meidoPhotoStudio.SaveScene(KankyoMode);
+        var sceneData = sceneSerializer.SerializeScene(KankyoMode);
 
         if (sceneData is not null)
         {

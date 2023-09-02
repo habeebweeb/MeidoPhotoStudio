@@ -58,7 +58,7 @@ public class MPSScene
 
         using var binaryReader = new BinaryReader(memoryStream, Encoding.UTF8);
 
-        var sceneHeader = MeidoPhotoStudio.SceneHeader;
+        var sceneHeader = SceneSerializer.SceneHeader;
 
         if (!Utility.BytesEqual(binaryReader.ReadBytes(sceneHeader.Length), sceneHeader))
         {

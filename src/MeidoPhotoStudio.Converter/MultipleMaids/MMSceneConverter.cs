@@ -12,6 +12,7 @@ namespace MeidoPhotoStudio.Converter.MultipleMaids;
 public static class MMSceneConverter
 {
     private const int ClavicleLIndex = 68;
+    private const int KankyoMagic = -765;
 
     private static readonly int[] BodyRotationIndices =
     {
@@ -76,7 +77,7 @@ public static class MMSceneConverter
     {
         var dataSegments = data.Split('_');
         var strArray2 = dataSegments[1].Split(';');
-        var meidoCount = environment ? MeidoPhotoStudio.Plugin.MeidoPhotoStudio.KankyoMagic : strArray2.Length;
+        var meidoCount = environment ? KankyoMagic : strArray2.Length;
 
         return new()
         {

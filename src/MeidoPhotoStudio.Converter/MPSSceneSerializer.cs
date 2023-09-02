@@ -17,6 +17,8 @@ public static class MPSSceneSerializer
         + "t7BUT2z31azePwOpWQYT064oWGYTUw1JWU4Tk2+JWCEmJpxrswJNTLLYYIWbWHO0xupkYvXdW1ZXE6tMl1kDTOxuvcAaZmJFQM4abGJX"
         + "w4k1xcQyxs6aaGJHycaabmIJ82M9xMTo2VjP+izrF8NPHwq3SYqeAAAAAElFTkSuQmCC";
 
+    private static readonly byte[] SceneHeader = Encoding.UTF8.GetBytes("MPSSCENE");
+
     private static byte[]? noThumb;
 
     public static byte[] NoThumb =>
@@ -40,7 +42,7 @@ public static class MPSSceneSerializer
 
         using var headerWriter = new BinaryWriter(fileStream, Encoding.UTF8);
 
-        headerWriter.Write(MeidoPhotoStudio.Plugin.MeidoPhotoStudio.SceneHeader);
+        headerWriter.Write(SceneHeader);
 
         metadata.WriteMetadata(headerWriter);
 
