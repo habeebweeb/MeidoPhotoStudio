@@ -1,5 +1,7 @@
 using System;
 
+using MeidoPhotoStudio.Plugin.Core;
+
 using UnityEngine;
 
 using Object = UnityEngine.Object;
@@ -84,7 +86,7 @@ public class EnvironmentManager : IManager
 
         bgObject.SetActive(true);
 
-        if (MeidoPhotoStudio.EditMode)
+        if (PluginCore.EditMode)
             UpdateBG();
         else
             ChangeBackground(DefaultBg);
@@ -101,7 +103,7 @@ public class EnvironmentManager : IManager
         DestroyDragPoint();
         BGVisible = true;
 
-        if (MeidoPhotoStudio.EditMode)
+        if (PluginCore.EditMode)
         {
             BgMgr.ChangeBg(DefaultBg);
         }

@@ -1,26 +1,14 @@
-using BepInEx;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 using Input = MeidoPhotoStudio.Plugin.InputManager;
 
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Core;
 
-[BepInPlugin(PluginGuid, PluginName, PluginVersion)]
-[BepInDependency("org.bepinex.plugins.unityinjectorloader", BepInDependency.DependencyFlags.SoftDependency)]
-public class MeidoPhotoStudio : BaseUnityPlugin
+public class PluginCore : MonoBehaviour
 {
-    public const string PluginName = "MeidoPhotoStudio";
-    public const string PluginVersion = "1.0.0";
-    public const string PluginSubVersion = "beta.5.1";
-
-    public static readonly string PluginString = $"{PluginName} {PluginVersion}";
-
-    private const string PluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
-
     private static Constants.Scene currentScene;
 
-    private HarmonyLib.Harmony harmony;
     private WindowManager windowManager;
     private SceneManager sceneManager;
     private MeidoManager meidoManager;
@@ -33,50 +21,34 @@ public class MeidoPhotoStudio : BaseUnityPlugin
     private ScreenshotService screenshotService;
     private bool initialized;
     private bool active;
+    private bool uiActive;
 
-    static MeidoPhotoStudio()
+    static PluginCore()
     {
         Input.Register(MpsKey.Screenshot, KeyCode.S, "Take screenshot");
         Input.Register(MpsKey.Activate, KeyCode.F6, "Activate/deactivate MeidoPhotoStudio");
-
-        if (!string.IsNullOrEmpty(PluginSubVersion))
-            PluginString += $"-{PluginSubVersion}";
     }
 
+    // TODO: Move this out.
     public static bool EditMode =>
         currentScene is Constants.Scene.Edit;
 
-    public static MeidoPhotoStudio Instance { get; private set; }
-
-    public bool UIActive { get; set; }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode) =>
-        UpdateCurrentScene(scene);
-
-    private void OnSceneChanged(Scene current, Scene next)
+    public bool UIActive
     {
-        if (active)
-            Deactivate(true);
-
-        CameraUtility.MainCamera.ResetCalcNearClip();
-    }
-
-    private void UpdateCurrentScene(Scene scene) =>
-        currentScene = scene.buildIndex switch
+        get => uiActive;
+        set
         {
-            3 => Constants.Scene.Daily,
-            5 => Constants.Scene.Edit,
-            _ => Constants.Scene.None,
-        };
+            var newValue = value;
+
+            if (!active)
+                newValue = false;
+
+            uiActive = newValue;
+        }
+    }
 
     private void Awake()
     {
-        Instance = this;
-
-        harmony = HarmonyLib.Harmony.CreateAndPatchAll(typeof(AllProcPropSeqPatcher));
-        harmony.PatchAll(typeof(BgMgrPatcher));
-        harmony.PatchAll(typeof(MeidoManager));
-
         DontDestroyOnLoad(this);
 
         UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
@@ -91,8 +63,6 @@ public class MeidoPhotoStudio : BaseUnityPlugin
             Deactivate(true);
 
         CameraUtility.MainCamera.ResetCalcNearClip();
-
-        harmony.UnpatchSelf();
 
         UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
         UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= OnSceneChanged;
@@ -137,7 +107,7 @@ public class MeidoPhotoStudio : BaseUnityPlugin
 
     private void OnGUI()
     {
-        if (!UIActive)
+        if (!uiActive)
             return;
 
         windowManager.DrawWindows();
@@ -156,7 +126,9 @@ public class MeidoPhotoStudio : BaseUnityPlugin
 
         initialized = true;
 
-        screenshotService = new(this);
+        screenshotService = gameObject.AddComponent<ScreenshotService>();
+        screenshotService.PluginCore = this;
+
         meidoManager = new();
         environmentManager = new();
         messageWindowManager = new();
@@ -185,10 +157,10 @@ public class MeidoPhotoStudio : BaseUnityPlugin
                 propManager));
 
         meidoManager.BeginCallMeidos += (_, _) =>
-            UIActive = false;
+            uiActive = false;
 
         meidoManager.EndCallMeidos += (_, _) =>
-            UIActive = true;
+            uiActive = true;
 
         var maidSwitcherPane = new MaidSwitcherPane(meidoManager);
         var sceneWindow = new SceneWindow(sceneManager);
@@ -229,9 +201,11 @@ public class MeidoPhotoStudio : BaseUnityPlugin
             effectManager.Activate();
             messageWindowManager.Activate();
             windowManager.Activate();
+
+            screenshotService.enabled = true;
         }
 
-        UIActive = true;
+        uiActive = true;
         active = true;
 
         if (!EditMode)
@@ -254,7 +228,7 @@ public class MeidoPhotoStudio : BaseUnityPlugin
         if (!sysDialog.IsDecided && !force)
             return;
 
-        UIActive = false;
+        uiActive = false;
         active = false;
 
         if (force)
@@ -265,7 +239,7 @@ public class MeidoPhotoStudio : BaseUnityPlugin
         }
 
         sysDialog.Show(
-            string.Format(Translation.Get("systemMessage", "exitConfirm"), PluginName),
+            string.Format(Translation.Get("systemMessage", "exitConfirm"), Plugin.PluginName),
             SystemDialog.TYPE.OK_CANCEL,
             Exit,
             Resume);
@@ -273,7 +247,7 @@ public class MeidoPhotoStudio : BaseUnityPlugin
         void Resume()
         {
             sysDialog.Close();
-            UIActive = true;
+            uiActive = true;
             active = true;
         }
 
@@ -289,6 +263,7 @@ public class MeidoPhotoStudio : BaseUnityPlugin
             effectManager.Deactivate();
             messageWindowManager.Deactivate();
             windowManager.Deactivate();
+            screenshotService.enabled = false;
             Input.Deactivate();
 
             Modal.Close();
@@ -306,4 +281,23 @@ public class MeidoPhotoStudio : BaseUnityPlugin
                 dailyPanel.SetActive(true);
         }
     }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode) =>
+        UpdateCurrentScene(scene);
+
+    private void OnSceneChanged(Scene current, Scene next)
+    {
+        if (active)
+            Deactivate(true);
+
+        CameraUtility.MainCamera.ResetCalcNearClip();
+    }
+
+    private void UpdateCurrentScene(Scene scene) =>
+        currentScene = scene.buildIndex switch
+        {
+            3 => Constants.Scene.Daily,
+            5 => Constants.Scene.Edit,
+            _ => Constants.Scene.None,
+        };
 }

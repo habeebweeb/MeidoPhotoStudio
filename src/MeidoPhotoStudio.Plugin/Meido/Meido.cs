@@ -798,7 +798,7 @@ public class Meido
         HairGravityControl.Move += OnGravityEvent;
         SkirtGravityControl.Move += OnGravityEvent;
 
-        if (MeidoPhotoStudio.EditMode)
+        if (Core.PluginCore.EditMode)
             AllProcPropSeqPatcher.SequenceStarting += ReinitializeBody;
 
         IKManager.Initialize();

@@ -13,6 +13,7 @@ using static MeidoPhotoStudio.Plugin.MenuFileUtility;
 
 namespace MeidoPhotoStudio.Plugin;
 
+// TODO: 😮 Holy moly! Destroy all static utility classes.
 public static class Constants
 {
     public const string CustomPoseDirectory = "Custom Poses";

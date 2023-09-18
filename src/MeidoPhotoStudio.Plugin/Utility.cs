@@ -9,6 +9,7 @@ using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
+// TODO: 🤮 This and the Constants class are a huge disgrace.
 public static class Utility
 {
     internal static readonly byte[] PngHeader = { 137, 80, 78, 71, 13, 10, 26, 10 };
@@ -23,7 +24,7 @@ public static class Utility
         BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
     private static readonly BepInEx.Logging.ManualLogSource Logger =
-        BepInEx.Logging.Logger.CreateLogSource(MeidoPhotoStudio.PluginName);
+        BepInEx.Logging.Logger.CreateLogSource(Plugin.PluginName);
 
     static Utility()
     {

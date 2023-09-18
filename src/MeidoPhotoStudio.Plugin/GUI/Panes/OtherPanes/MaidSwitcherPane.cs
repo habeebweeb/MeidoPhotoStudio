@@ -99,7 +99,7 @@ public class MaidSwitcherPane : BasePane
 
         var previousRect = GUILayoutUtility.GetLastRect();
 
-        if (MeidoPhotoStudio.EditMode)
+        if (Core.PluginCore.EditMode)
             editToggle.Draw(new Rect(previousRect.x + 4f, previousRect.y, 40f, 20f));
 
         var labelRect = new Rect(previousRect.width - 45f, previousRect.y, 40f, 20f);

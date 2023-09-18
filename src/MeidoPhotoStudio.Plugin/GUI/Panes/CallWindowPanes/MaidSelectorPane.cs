@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 
+using MeidoPhotoStudio.Plugin.Core;
+
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -139,7 +141,7 @@ public class MaidSelectorPane : BasePane
     {
         if (selectedMeidoSet.Contains(meido))
         {
-            if (!MeidoPhotoStudio.EditMode || meido != meidoManager.OriginalEditingMeido)
+            if (!PluginCore.EditMode || meido != meidoManager.OriginalEditingMeido)
             {
                 selectedMeidoSet.Remove(meido);
                 selectedMeidoList.Remove(meido);
@@ -157,7 +159,7 @@ public class MaidSelectorPane : BasePane
         selectedMeidoSet.Clear();
         selectedMeidoList.Clear();
 
-        if (!MeidoPhotoStudio.EditMode)
+        if (!PluginCore.EditMode)
             return;
 
         SelectMaid(meidoManager.OriginalEditingMeido);

@@ -64,7 +64,7 @@ public class MainWindow : BaseWindow
             value.width = 240f;
             value.height = Screen.height * 0.9f;
 
-            if (MeidoPhotoStudio.EditMode)
+            if (Core.PluginCore.EditMode)
                 value.height *= 0.85f;
 
             value.x = Mathf.Clamp(value.x, 0, Screen.width - value.width);
@@ -125,7 +125,7 @@ public class MainWindow : BaseWindow
         };
 
         GUILayout.BeginHorizontal();
-        GUILayout.Label(MeidoPhotoStudio.PluginString, labelStyle);
+        GUILayout.Label(Plugin.PluginString, labelStyle);
         GUILayout.FlexibleSpace();
 
         GUI.enabled = !InputManager.Listening;

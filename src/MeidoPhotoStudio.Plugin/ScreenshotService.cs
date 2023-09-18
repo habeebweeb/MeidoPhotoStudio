@@ -3,24 +3,23 @@ using System.Collections;
 using System.IO;
 using System.Linq;
 
+using MeidoPhotoStudio.Plugin.Core;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class ScreenshotService
+public class ScreenshotService : MonoBehaviour
 {
-    private readonly MeidoPhotoStudio meidoPhotoStudio;
-
     private bool takingScreenshot;
+    private GameObject dragHandleParent;
 
-    public ScreenshotService(MeidoPhotoStudio meidoPhotoStudio) =>
-        this.meidoPhotoStudio = meidoPhotoStudio;
+    public PluginCore PluginCore { get; set; }
+
+    private GameObject DragHandleParent =>
+        dragHandleParent ? dragHandleParent : (dragHandleParent = GameObject.Find("[MPS DragPoint Parent]"));
 
     public void TakeScreenshotToFile(CMSystem.SSSuperSizeType? superSizeType = null)
     {
-        if (!MeidoPhotoStudio.Instance)
-            return;
-
         if (takingScreenshot)
         {
             Utility.LogInfo("Screenshot in progress");
@@ -28,7 +27,7 @@ public class ScreenshotService
             return;
         }
 
-        MeidoPhotoStudio.Instance.StartCoroutine(DoScreenshot(ScreenshotAction));
+        StartCoroutine(DoScreenshot(ScreenshotAction));
 
         void ScreenshotAction()
         {
@@ -59,9 +58,6 @@ public class ScreenshotService
 
     public void TakeScreenshotToTexture(Action<Texture2D> screenshotCallback)
     {
-        if (!MeidoPhotoStudio.Instance)
-            return;
-
         if (takingScreenshot)
         {
             Utility.LogInfo("Screenshot in progress");
@@ -72,7 +68,7 @@ public class ScreenshotService
         if (screenshotCallback is null)
             throw new ArgumentNullException(nameof(screenshotCallback), "Screenshot callback is null");
 
-        MeidoPhotoStudio.Instance.StartCoroutine(DoScreenshot(ScreenshotAction));
+        StartCoroutine(DoScreenshot(ScreenshotAction));
 
         void ScreenshotAction() =>
             screenshotCallback?.Invoke(TakeInMemoryScreenshot());
@@ -93,7 +89,7 @@ public class ScreenshotService
 
             mainCamera.camera.targetTexture = null;
             RenderTexture.active = null;
-            UnityEngine.Object.DestroyImmediate(renderTexture);
+            DestroyImmediate(renderTexture);
 
             return screenshot;
         }
@@ -103,8 +99,8 @@ public class ScreenshotService
     {
         takingScreenshot = true;
 
-        var uiCameras = UICamera.list.ToArray().Select(uiCamera => uiCamera.gameObject).ToArray();
-        var dragHandleParent = GameObject.Find("[MPS DragPoint Parent]");
+        var uiCameras = GetNguiUICameras();
+        var enabledCanvases = GetEnabledUguiCanvases();
 
         SetElementsVisible(false);
 
@@ -125,13 +121,23 @@ public class ScreenshotService
             foreach (var uiCamera in uiCameras)
                 uiCamera.SetActive(visible);
 
+            foreach (var canvas in enabledCanvases)
+                canvas.enabled = visible;
+
             GizmoRender.UIVisible = visible;
 
-            if (dragHandleParent)
-                dragHandleParent.SetActive(visible);
+            if (PluginCore)
+                PluginCore.UIActive = visible;
 
-            meidoPhotoStudio.UIActive = visible;
+            if (DragHandleParent)
+                DragHandleParent.SetActive(visible);
         }
+
+        Canvas[] GetEnabledUguiCanvases() =>
+            Resources.FindObjectsOfTypeAll<Canvas>().Where(canvas => canvas.enabled).ToArray();
+
+        GameObject[] GetNguiUICameras() =>
+            UICamera.list.ToArray().Select(uiCamera => uiCamera.gameObject).ToArray();
 
         void PlayScreenshotSound() =>
             GameMain.Instance.SoundMgr.PlaySe("se022.ogg", false);

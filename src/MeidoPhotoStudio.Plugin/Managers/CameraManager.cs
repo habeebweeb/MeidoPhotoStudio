@@ -1,5 +1,7 @@
 using System;
 
+using MeidoPhotoStudio.Plugin.Core;
+
 using UnityEngine;
 
 using Input = MeidoPhotoStudio.Plugin.InputManager;
@@ -69,7 +71,7 @@ public class CameraManager : IManager
         defaultCameraMoveSpeed = UltimateOrbitCamera.moveSpeed;
         defaultCameraZoomSpeed = UltimateOrbitCamera.zoomSpeed;
 
-        if (!MeidoPhotoStudio.EditMode)
+        if (!PluginCore.EditMode)
             ResetCamera();
 
         currentCameraIndex = 0;
@@ -99,7 +101,7 @@ public class CameraManager : IManager
         UltimateOrbitCamera.moveSpeed = defaultCameraMoveSpeed;
         UltimateOrbitCamera.zoomSpeed = defaultCameraZoomSpeed;
 
-        if (MeidoPhotoStudio.EditMode)
+        if (PluginCore.EditMode)
             return;
 
         MainCamera.Reset(CameraMain.CameraType.Target, true);

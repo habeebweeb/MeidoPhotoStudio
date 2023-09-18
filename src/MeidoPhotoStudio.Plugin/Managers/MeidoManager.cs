@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using HarmonyLib;
+using MeidoPhotoStudio.Plugin.Core;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -54,10 +55,10 @@ public class MeidoManager : IManager
 
     public Meido EditingMeido
     {
-        get => MeidoPhotoStudio.EditMode ? editingMeido : null;
+        get => PluginCore.EditMode ? editingMeido : null;
         set
         {
-            if (!MeidoPhotoStudio.EditMode || value is null)
+            if (!PluginCore.EditMode || value is null)
                 return;
 
             editingMeido = value;
@@ -68,10 +69,10 @@ public class MeidoManager : IManager
     }
 
     public Meido TemporaryEditingMeido =>
-        MeidoPhotoStudio.EditMode ? temporaryEditingMeido : null;
+        PluginCore.EditMode ? temporaryEditingMeido : null;
 
     public Meido OriginalEditingMeido =>
-        MeidoPhotoStudio.EditMode && OriginalEditingMaidIndex >= 0 ? Meidos[OriginalEditingMaidIndex] : null;
+        PluginCore.EditMode && OriginalEditingMaidIndex >= 0 ? Meidos[OriginalEditingMaidIndex] : null;
 
     public bool HasActiveMeido =>
         ActiveMeido is not null;
@@ -116,7 +117,7 @@ public class MeidoManager : IManager
 
         CharacterMgr.ResetCharaPosAll();
 
-        if (MeidoPhotoStudio.EditMode)
+        if (PluginCore.EditMode)
         {
             temporaryEditingMeido = null;
             editingMeido = OriginalEditingMeido;
@@ -143,7 +144,7 @@ public class MeidoManager : IManager
 
         ActiveMeidoList.Clear();
 
-        if (MeidoPhotoStudio.EditMode && !GameMain.Instance.MainCamera.IsFadeOut())
+        if (PluginCore.EditMode && !GameMain.Instance.MainCamera.IsFadeOut())
         {
             var meido = OriginalEditingMeido;
 
@@ -169,7 +170,7 @@ public class MeidoManager : IManager
 
         SelectedMeido = 0;
 
-        if (MeidoPhotoStudio.EditMode && meidoToCall.Count is 0)
+        if (PluginCore.EditMode && meidoToCall.Count is 0)
             meidoToCall.Add(OriginalEditingMeido);
 
         UnloadMeidos(meidoToCall);
@@ -371,7 +372,7 @@ public class MeidoManager : IManager
             meido.GravityMove += OnGravityMove;
         }
 
-        if (MeidoPhotoStudio.EditMode && !ActiveMeidoList.Contains(TemporaryEditingMeido))
+        if (PluginCore.EditMode && !ActiveMeidoList.Contains(TemporaryEditingMeido))
             EditingMeido = OriginalEditingMeido;
     }
 

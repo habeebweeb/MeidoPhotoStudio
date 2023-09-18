@@ -14,7 +14,7 @@ public static class Serialization
     static Serialization()
     {
         var types =
-            (from t in typeof(MeidoPhotoStudio).Assembly.GetTypes()
+            (from t in typeof(Plugin).Assembly.GetTypes()
              let baseType = t.BaseType
              where !t.IsAbstract && !t.IsInterface && baseType?.IsGenericType == true
              select new { type = t, baseType }).ToArray();
