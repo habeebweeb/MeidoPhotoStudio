@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using HarmonyLib;
-using MeidoPhotoStudio.Plugin.Core;
+using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -14,6 +14,8 @@ public class MeidoManager : IManager
 
     private static bool active;
 
+    private readonly CustomMaidSceneService customMaidSceneService;
+
     private int selectedMeido;
     private bool globalGravity;
     private int undress;
@@ -23,8 +25,10 @@ public class MeidoManager : IManager
     static MeidoManager() =>
         InputManager.Register(MpsKey.MeidoUndressing, KeyCode.H, "All maid undressing");
 
-    public MeidoManager()
+    public MeidoManager(CustomMaidSceneService customMaidSceneService)
     {
+        this.customMaidSceneService = customMaidSceneService;
+
         if (SceneEdit.Instance)
             SceneEditStartPostfix();
 
@@ -55,10 +59,10 @@ public class MeidoManager : IManager
 
     public Meido EditingMeido
     {
-        get => PluginCore.EditMode ? editingMeido : null;
+        get => EditMode ? editingMeido : null;
         set
         {
-            if (!PluginCore.EditMode || value is null)
+            if (!EditMode || value is null)
                 return;
 
             editingMeido = value;
@@ -69,10 +73,10 @@ public class MeidoManager : IManager
     }
 
     public Meido TemporaryEditingMeido =>
-        PluginCore.EditMode ? temporaryEditingMeido : null;
+        EditMode ? temporaryEditingMeido : null;
 
     public Meido OriginalEditingMeido =>
-        PluginCore.EditMode && OriginalEditingMaidIndex >= 0 ? Meidos[OriginalEditingMaidIndex] : null;
+        EditMode && OriginalEditingMaidIndex >= 0 ? Meidos[OriginalEditingMaidIndex] : null;
 
     public bool HasActiveMeido =>
         ActiveMeido is not null;
@@ -106,18 +110,21 @@ public class MeidoManager : IManager
 
     private static int OriginalEditingMaidIndex { get; set; }
 
+    private bool EditMode =>
+        customMaidSceneService.EditScene;
+
     public void ChangeMaid(int index) =>
         OnUpdateMeido(null, new(index));
 
     public void Activate()
     {
         Meidos = CharacterMgr.GetStockMaidList()
-            .Select(maid => new Meido(maid))
+            .Select(maid => new Meido(maid, customMaidSceneService))
             .ToArray();
 
         CharacterMgr.ResetCharaPosAll();
 
-        if (PluginCore.EditMode)
+        if (EditMode)
         {
             temporaryEditingMeido = null;
             editingMeido = OriginalEditingMeido;
@@ -144,7 +151,7 @@ public class MeidoManager : IManager
 
         ActiveMeidoList.Clear();
 
-        if (PluginCore.EditMode && !GameMain.Instance.MainCamera.IsFadeOut())
+        if (EditMode && !GameMain.Instance.MainCamera.IsFadeOut())
         {
             var meido = OriginalEditingMeido;
 
@@ -170,7 +177,7 @@ public class MeidoManager : IManager
 
         SelectedMeido = 0;
 
-        if (PluginCore.EditMode && meidoToCall.Count is 0)
+        if (EditMode && meidoToCall.Count is 0)
             meidoToCall.Add(OriginalEditingMeido);
 
         UnloadMeidos(meidoToCall);
@@ -372,7 +379,7 @@ public class MeidoManager : IManager
             meido.GravityMove += OnGravityMove;
         }
 
-        if (PluginCore.EditMode && !ActiveMeidoList.Contains(TemporaryEditingMeido))
+        if (EditMode && !ActiveMeidoList.Contains(TemporaryEditingMeido))
             EditingMeido = OriginalEditingMeido;
     }
 

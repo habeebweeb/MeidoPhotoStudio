@@ -1,7 +1,6 @@
 using System;
 
-using MeidoPhotoStudio.Plugin.Core;
-
+using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 
 using Object = UnityEngine.Object;
@@ -16,17 +15,19 @@ public class EnvironmentManager : IManager
     private const string MyRoomPrefix = "マイルーム:";
 
     private static readonly BgMgr BgMgr = GameMain.Instance.BgMgr;
-
     private static bool cubeActive;
     private static bool cubeSmall;
+
+    private readonly CustomMaidSceneService customMaidSceneService;
 
     private Transform bg;
     private GameObject bgObject;
     private DragPointBG bgDragPoint;
     private bool bgVisible = true;
 
-    public EnvironmentManager()
+    public EnvironmentManager(CustomMaidSceneService customMaidSceneService)
     {
+        this.customMaidSceneService = customMaidSceneService;
         DragPointLight.EnvironmentManager = this;
         Activate();
     }
@@ -86,7 +87,7 @@ public class EnvironmentManager : IManager
 
         bgObject.SetActive(true);
 
-        if (PluginCore.EditMode)
+        if (customMaidSceneService.EditScene)
             UpdateBG();
         else
             ChangeBackground(DefaultBg);
@@ -103,7 +104,7 @@ public class EnvironmentManager : IManager
         DestroyDragPoint();
         BGVisible = true;
 
-        if (PluginCore.EditMode)
+        if (customMaidSceneService.EditScene)
         {
             BgMgr.ChangeBg(DefaultBg);
         }

@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -9,7 +10,7 @@ public class CallWindowPane : BaseMainWindowPane
     private readonly Dropdown placementDropdown;
     private readonly Button placementOKButton;
 
-    public CallWindowPane(MeidoManager meidoManager)
+    public CallWindowPane(MeidoManager meidoManager, CustomMaidSceneService customMaidSceneService)
     {
         this.meidoManager = meidoManager;
 
@@ -19,7 +20,7 @@ public class CallWindowPane : BaseMainWindowPane
         placementOKButton.ControlEvent += (_, _) =>
             this.meidoManager.PlaceMeidos(MaidPlacementUtility.PlacementTypes[placementDropdown.SelectedItemIndex]);
 
-        maidSelectorPane = AddPane(new MaidSelectorPane(this.meidoManager));
+        maidSelectorPane = AddPane(new MaidSelectorPane(this.meidoManager, customMaidSceneService));
     }
 
     public override void Draw()

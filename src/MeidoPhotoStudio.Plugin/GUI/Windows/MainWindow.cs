@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 
+using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -10,6 +11,7 @@ public class MainWindow : BaseWindow
     private readonly Dictionary<Constants.Window, BaseMainWindowPane> windowPanes;
     private readonly PropManager propManager;
     private readonly LightManager lightManager;
+    private readonly CustomMaidSceneService customMaidSceneService;
     private readonly TabsPane tabsPane;
     private readonly Button settingsButton;
 
@@ -19,7 +21,11 @@ public class MainWindow : BaseWindow
     private Constants.Window selectedWindow;
 
     // TODO: Find a better way of doing this
-    public MainWindow(MeidoManager meidoManager, PropManager propManager, LightManager lightManager)
+    public MainWindow(
+        MeidoManager meidoManager,
+        PropManager propManager,
+        LightManager lightManager,
+        CustomMaidSceneService customMaidSceneService)
     {
         this.meidoManager = meidoManager;
         this.meidoManager.UpdateMeido += UpdateMeido;
@@ -31,6 +37,8 @@ public class MainWindow : BaseWindow
         this.lightManager = lightManager;
         this.lightManager.Select += (_, _) =>
             ChangeWindow(Constants.Window.BG);
+
+        this.customMaidSceneService = customMaidSceneService;
 
         windowPanes = new();
         WindowRect = new(Screen.width, Screen.height * 0.08f, 240f, Screen.height * 0.9f);
@@ -64,7 +72,7 @@ public class MainWindow : BaseWindow
             value.width = 240f;
             value.height = Screen.height * 0.9f;
 
-            if (Core.PluginCore.EditMode)
+            if (customMaidSceneService.EditScene)
                 value.height *= 0.85f;
 
             value.x = Mathf.Clamp(value.x, 0, Screen.width - value.width);

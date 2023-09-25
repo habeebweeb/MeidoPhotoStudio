@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 
-using MeidoPhotoStudio.Plugin.Core;
-
+using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -9,6 +8,7 @@ namespace MeidoPhotoStudio.Plugin;
 public class MaidSelectorPane : BasePane
 {
     private readonly MeidoManager meidoManager;
+    private readonly CustomMaidSceneService customMaidSceneService;
     private readonly Button clearMaidsButton;
     private readonly Button callMaidsButton;
     private readonly Toggle activeMeidoListToggle;
@@ -18,9 +18,10 @@ public class MaidSelectorPane : BasePane
     private Vector2 maidListScrollPos;
     private Vector2 activeMaidListScrollPos;
 
-    public MaidSelectorPane(MeidoManager meidoManager)
+    public MaidSelectorPane(MeidoManager meidoManager, CustomMaidSceneService customMaidSceneService)
     {
         this.meidoManager = meidoManager;
+        this.customMaidSceneService = customMaidSceneService;
 
         clearMaidsButton = new(Translation.Get("maidCallWindow", "clearButton"));
         clearMaidsButton.ControlEvent += (_, _) =>
@@ -141,7 +142,7 @@ public class MaidSelectorPane : BasePane
     {
         if (selectedMeidoSet.Contains(meido))
         {
-            if (!PluginCore.EditMode || meido != meidoManager.OriginalEditingMeido)
+            if (!customMaidSceneService.EditScene || meido != meidoManager.OriginalEditingMeido)
             {
                 selectedMeidoSet.Remove(meido);
                 selectedMeidoList.Remove(meido);
@@ -159,7 +160,7 @@ public class MaidSelectorPane : BasePane
         selectedMeidoSet.Clear();
         selectedMeidoList.Clear();
 
-        if (!PluginCore.EditMode)
+        if (!customMaidSceneService.EditScene)
             return;
 
         SelectMaid(meidoManager.OriginalEditingMeido);

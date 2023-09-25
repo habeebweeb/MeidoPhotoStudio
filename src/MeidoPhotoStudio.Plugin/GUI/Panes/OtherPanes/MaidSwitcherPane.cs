@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -5,14 +6,15 @@ namespace MeidoPhotoStudio.Plugin;
 public class MaidSwitcherPane : BasePane
 {
     private readonly MeidoManager meidoManager;
+    private readonly CustomMaidSceneService customMaidSceneService;
     private readonly Button previousButton;
     private readonly Button nextButton;
     private readonly Toggle editToggle;
 
-    public MaidSwitcherPane(MeidoManager meidoManager)
+    public MaidSwitcherPane(MeidoManager meidoManager, CustomMaidSceneService customMaidSceneService)
     {
         this.meidoManager = meidoManager;
-
+        this.customMaidSceneService = customMaidSceneService;
         this.meidoManager.UpdateMeido += (_, _) =>
             UpdatePane();
 
@@ -99,7 +101,7 @@ public class MaidSwitcherPane : BasePane
 
         var previousRect = GUILayoutUtility.GetLastRect();
 
-        if (Core.PluginCore.EditMode)
+        if (customMaidSceneService.EditScene)
             editToggle.Draw(new Rect(previousRect.x + 4f, previousRect.y, 40f, 20f));
 
         var labelRect = new Rect(previousRect.width - 45f, previousRect.y, 40f, 20f);

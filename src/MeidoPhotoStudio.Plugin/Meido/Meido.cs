@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
 
+using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 
 using static TBody;
@@ -40,16 +41,17 @@ public class Meido
 
     // TODO: Refactor reflection to using private members directly
     private readonly FieldInfo m_eMaskMode = Utility.GetFieldInfo<TBody>("m_eMaskMode");
+    private readonly CustomMaidSceneService customMaidSceneService;
 #pragma warning restore SA1308
 
     private bool initialized;
     private float[] blendSetValueBackup;
     private bool freeLook;
 
-    public Meido(Maid maid)
+    public Meido(Maid maid, CustomMaidSceneService customMaidSceneService)
     {
         Maid = maid;
-
+        this.customMaidSceneService = customMaidSceneService;
         IKManager = new(this);
         IKManager.SelectMaid += (_, args) =>
             OnUpdateMeido(args);
@@ -798,7 +800,7 @@ public class Meido
         HairGravityControl.Move += OnGravityEvent;
         SkirtGravityControl.Move += OnGravityEvent;
 
-        if (Core.PluginCore.EditMode)
+        if (customMaidSceneService.EditScene)
             AllProcPropSeqPatcher.SequenceStarting += ReinitializeBody;
 
         IKManager.Initialize();

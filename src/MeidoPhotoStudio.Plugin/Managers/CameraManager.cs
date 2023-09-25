@@ -1,7 +1,6 @@
 using System;
 
-using MeidoPhotoStudio.Plugin.Core;
-
+using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 
 using Input = MeidoPhotoStudio.Plugin.InputManager;
@@ -24,7 +23,7 @@ public class CameraManager : IManager
 
     private readonly CameraInfo tempCameraInfo = new();
     private readonly CameraInfo[] cameraInfos;
-
+    private readonly CustomMaidSceneService customMaidSceneService;
     private float defaultCameraMoveSpeed;
     private float defaultCameraZoomSpeed;
     private Camera subCamera;
@@ -38,8 +37,9 @@ public class CameraManager : IManager
         Input.Register(MpsKey.CameraReset, KeyCode.R, "Reset camera transform");
     }
 
-    public CameraManager()
+    public CameraManager(CustomMaidSceneService customMaidSceneService)
     {
+        this.customMaidSceneService = customMaidSceneService;
         cameraInfos = new CameraInfo[5];
 
         for (var i = 0; i < cameraInfos.Length; i++)
@@ -71,7 +71,7 @@ public class CameraManager : IManager
         defaultCameraMoveSpeed = UltimateOrbitCamera.moveSpeed;
         defaultCameraZoomSpeed = UltimateOrbitCamera.zoomSpeed;
 
-        if (!PluginCore.EditMode)
+        if (!customMaidSceneService.EditScene)
             ResetCamera();
 
         currentCameraIndex = 0;
@@ -101,7 +101,7 @@ public class CameraManager : IManager
         UltimateOrbitCamera.moveSpeed = defaultCameraMoveSpeed;
         UltimateOrbitCamera.zoomSpeed = defaultCameraZoomSpeed;
 
-        if (PluginCore.EditMode)
+        if (customMaidSceneService.EditScene)
             return;
 
         MainCamera.Reset(CameraMain.CameraType.Target, true);

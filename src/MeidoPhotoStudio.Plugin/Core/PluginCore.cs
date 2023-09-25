@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -7,8 +8,6 @@ namespace MeidoPhotoStudio.Plugin.Core;
 
 public class PluginCore : MonoBehaviour
 {
-    private static Constants.Scene currentScene;
-
     private WindowManager windowManager;
     private SceneManager sceneManager;
     private MeidoManager meidoManager;
@@ -19,6 +18,7 @@ public class PluginCore : MonoBehaviour
     private EffectManager effectManager;
     private CameraManager cameraManager;
     private ScreenshotService screenshotService;
+    private CustomMaidSceneService customMaidSceneService;
     private bool initialized;
     private bool active;
     private bool uiActive;
@@ -28,10 +28,6 @@ public class PluginCore : MonoBehaviour
         Input.Register(MpsKey.Screenshot, KeyCode.S, "Take screenshot");
         Input.Register(MpsKey.Activate, KeyCode.F6, "Activate/deactivate MeidoPhotoStudio");
     }
-
-    // TODO: Move this out.
-    public static bool EditMode =>
-        currentScene is Constants.Scene.Edit;
 
     public bool UIActive
     {
@@ -51,10 +47,9 @@ public class PluginCore : MonoBehaviour
     {
         DontDestroyOnLoad(this);
 
-        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
-        UnityEngine.SceneManagement.SceneManager.activeSceneChanged += OnSceneChanged;
+        customMaidSceneService = new();
 
-        UpdateCurrentScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        UnityEngine.SceneManagement.SceneManager.activeSceneChanged += OnSceneChanged;
     }
 
     private void OnDestroy()
@@ -64,7 +59,6 @@ public class PluginCore : MonoBehaviour
 
         CameraUtility.MainCamera.ResetCalcNearClip();
 
-        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
         UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= OnSceneChanged;
 
         Destroy(GameObject.Find("[MPS DragPoint Parent]"));
@@ -81,7 +75,7 @@ public class PluginCore : MonoBehaviour
 
     private void Update()
     {
-        if (currentScene is not Constants.Scene.Daily and not Constants.Scene.Edit)
+        if (!customMaidSceneService.ValidScene)
             return;
 
         if (Input.GetKeyDown(MpsKey.Activate))
@@ -129,13 +123,13 @@ public class PluginCore : MonoBehaviour
         screenshotService = gameObject.AddComponent<ScreenshotService>();
         screenshotService.PluginCore = this;
 
-        meidoManager = new();
-        environmentManager = new();
+        meidoManager = new(customMaidSceneService);
+        environmentManager = new(customMaidSceneService);
         messageWindowManager = new();
         messageWindowManager.Activate();
         lightManager = new();
         propManager = new(meidoManager);
-        cameraManager = new();
+        cameraManager = new(customMaidSceneService);
 
         effectManager = new();
         effectManager.AddManager<BloomEffectManager>();
@@ -162,14 +156,14 @@ public class PluginCore : MonoBehaviour
         meidoManager.EndCallMeidos += (_, _) =>
             uiActive = true;
 
-        var maidSwitcherPane = new MaidSwitcherPane(meidoManager);
+        var maidSwitcherPane = new MaidSwitcherPane(meidoManager, customMaidSceneService);
         var sceneWindow = new SceneWindow(sceneManager);
 
         windowManager = new()
         {
-            [Constants.Window.Main] = new MainWindow(meidoManager, propManager, lightManager)
+            [Constants.Window.Main] = new MainWindow(meidoManager, propManager, lightManager, customMaidSceneService)
             {
-                [Constants.Window.Call] = new CallWindowPane(meidoManager),
+                [Constants.Window.Call] = new CallWindowPane(meidoManager, customMaidSceneService),
                 [Constants.Window.Pose] = new PoseWindowPane(meidoManager, maidSwitcherPane),
                 [Constants.Window.Face] = new FaceWindowPane(meidoManager, maidSwitcherPane),
                 [Constants.Window.BG] =
@@ -208,7 +202,7 @@ public class PluginCore : MonoBehaviour
         uiActive = true;
         active = true;
 
-        if (!EditMode)
+        if (!customMaidSceneService.EditScene)
         {
             // TODO: Rework this to not use null propagation (UNT008)
             var dailyPanel = GameObject.Find("UI Root")?.transform.Find("DailyPanel")?.gameObject;
@@ -270,7 +264,7 @@ public class PluginCore : MonoBehaviour
 
             Configuration.Config.Save();
 
-            if (EditMode)
+            if (customMaidSceneService.EditScene)
                 return;
 
             // TODO: Rework this to not use null propagation (UNT008)
@@ -282,9 +276,6 @@ public class PluginCore : MonoBehaviour
         }
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode) =>
-        UpdateCurrentScene(scene);
-
     private void OnSceneChanged(Scene current, Scene next)
     {
         if (active)
@@ -292,12 +283,4 @@ public class PluginCore : MonoBehaviour
 
         CameraUtility.MainCamera.ResetCalcNearClip();
     }
-
-    private void UpdateCurrentScene(Scene scene) =>
-        currentScene = scene.buildIndex switch
-        {
-            3 => Constants.Scene.Daily,
-            5 => Constants.Scene.Edit,
-            _ => Constants.Scene.None,
-        };
 }
