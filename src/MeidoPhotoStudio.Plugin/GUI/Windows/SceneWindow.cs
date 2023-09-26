@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class SceneWindow : BaseWindow
+/// <summary>Scene management UI.</summary>
+public partial class SceneWindow : BaseWindow
 {
     private const float ResizeHandleSize = 15f;
 
@@ -55,14 +56,6 @@ public class SceneWindow : BaseWindow
 
         if (!resizing)
             GUI.DragWindow();
-    }
-
-    public override void Update()
-    {
-        base.Update();
-
-        if (InputManager.GetKeyDown(MpsKey.OpenSceneManager))
-            Visible = !Visible;
     }
 
     public override void Deactivate() =>

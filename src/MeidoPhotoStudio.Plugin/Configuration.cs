@@ -2,6 +2,7 @@ using BepInEx.Configuration;
 
 namespace MeidoPhotoStudio.Plugin;
 
+// TODO: Refactor configuration to not be a singleton.
 public static class Configuration
 {
     static Configuration()

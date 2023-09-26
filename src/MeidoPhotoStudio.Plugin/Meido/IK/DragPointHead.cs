@@ -2,8 +2,6 @@ using System;
 
 using UnityEngine;
 
-using Input = MeidoPhotoStudio.Plugin.InputManager;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class DragPointHead : DragPointMeido
@@ -31,33 +29,6 @@ public class DragPointHead : DragPointMeido
         else
         {
             ApplyProperties(CurrentDragType is not DragType.None, false, false);
-        }
-    }
-
-    protected override void UpdateDragType()
-    {
-        var shift = Input.Shift;
-        var alt = Input.Alt;
-
-        if (alt && Input.Control)
-        {
-            // eyes
-            CurrentDragType = shift
-                ? DragType.MoveY
-                : DragType.MoveXZ;
-        }
-        else if (alt)
-        {
-            // head
-            CurrentDragType = shift
-                ? DragType.RotLocalY
-                : DragType.RotLocalXZ;
-        }
-        else
-        {
-            CurrentDragType = Input.GetKey(MpsKey.DragSelect)
-                ? DragType.Select
-                : DragType.None;
         }
     }
 

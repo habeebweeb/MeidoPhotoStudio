@@ -10,9 +10,6 @@ public class WindowManager : IManager
 {
     private readonly Dictionary<Window, BaseWindow> windows = new();
 
-    public WindowManager() =>
-        InputManager.Register(MpsKey.ToggleUI, KeyCode.Tab, "Show/hide all UI");
-
     public BaseWindow this[Window id]
     {
         get => windows[id];

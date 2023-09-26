@@ -3,12 +3,10 @@ using System;
 using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 
-using Input = MeidoPhotoStudio.Plugin.InputManager;
-using UInput = UnityEngine.Input;
-
 namespace MeidoPhotoStudio.Plugin;
 
-public class CameraManager : IManager
+/// <summary>Camera management..</summary>
+public partial class CameraManager : IManager
 {
     public const string Header = "CAMERA";
 
@@ -28,14 +26,6 @@ public class CameraManager : IManager
     private float defaultCameraZoomSpeed;
     private Camera subCamera;
     private int currentCameraIndex;
-
-    static CameraManager()
-    {
-        Input.Register(MpsKey.CameraLayer, KeyCode.Q, "Camera control layer");
-        Input.Register(MpsKey.CameraSave, KeyCode.S, "Save camera transform");
-        Input.Register(MpsKey.CameraLoad, KeyCode.A, "Load camera transform");
-        Input.Register(MpsKey.CameraReset, KeyCode.R, "Reset camera transform");
-    }
 
     public CameraManager(CustomMaidSceneService customMaidSceneService)
     {
@@ -112,40 +102,8 @@ public class CameraManager : IManager
         MainCamera.ResetCalcNearClip();
     }
 
-    public void Update()
-    {
-        if (Input.GetKey(MpsKey.CameraLayer))
-        {
-            if (Input.GetKeyDown(MpsKey.CameraSave))
-                SaveTempCamera();
-            else if (Input.GetKeyDown(MpsKey.CameraLoad))
-                LoadCameraInfo(tempCameraInfo);
-            else if (Input.GetKeyDown(MpsKey.CameraReset))
-                ResetCamera();
-
-            for (var i = 0; i < CameraCount; i++)
-                if (i != CurrentCameraIndex && UInput.GetKeyDown(AlphaOne + i))
-                    CurrentCameraIndex = i;
-        }
-
+    public void Update() =>
         subCamera.fieldOfView = MainCamera.camera.fieldOfView;
-
-        if (Input.Shift)
-        {
-            UltimateOrbitCamera.moveSpeed = CameraFastMoveSpeed;
-            UltimateOrbitCamera.zoomSpeed = CameraFastZoomSpeed;
-        }
-        else if (Input.Control)
-        {
-            UltimateOrbitCamera.moveSpeed = CameraSlowMoveSpeed;
-            UltimateOrbitCamera.zoomSpeed = CameraSlowZoomSpeed;
-        }
-        else
-        {
-            UltimateOrbitCamera.moveSpeed = defaultCameraMoveSpeed;
-            UltimateOrbitCamera.zoomSpeed = defaultCameraZoomSpeed;
-        }
-    }
 
     public void LoadCameraInfo(CameraInfo info)
     {

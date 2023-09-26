@@ -16,9 +16,6 @@ public class MessageWindowManager : IManager
     private readonly UILabel messageLabel;
     private readonly UILabel speakerLabel;
 
-    static MessageWindowManager() =>
-        InputManager.Register(MpsKey.ToggleMessage, KeyCode.M, "Show/hide message box");
-
     public MessageWindowManager()
     {
         messageWindowMgr = GameMain.Instance.MsgWnd;

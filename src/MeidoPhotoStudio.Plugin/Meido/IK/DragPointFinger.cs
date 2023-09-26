@@ -1,7 +1,5 @@
 using UnityEngine;
 
-using Input = MeidoPhotoStudio.Plugin.InputManager;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class DragPointFinger : DragPointMeido
@@ -47,13 +45,6 @@ public class DragPointFinger : DragPointMeido
 
         ApplyColour(DragpointColour);
     }
-
-    protected override void UpdateDragType() =>
-        CurrentDragType = !Input.GetKey(MpsKey.DragFinger)
-            ? DragType.None
-            : Input.Shift
-                ? DragType.RotLocalY
-                : DragType.MoveXZ;
 
     protected override void OnMouseDown()
     {

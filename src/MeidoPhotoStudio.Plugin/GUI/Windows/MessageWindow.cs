@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class MessageWindow : BaseWindow
+/// <summary>Message window UI.</summary>
+public partial class MessageWindow : BaseWindow
 {
     private readonly MessageWindowManager messageWindowManager;
     private readonly TextField nameTextField;
@@ -41,14 +42,6 @@ public class MessageWindow : BaseWindow
             value.height = Mathf.Clamp(Screen.height * 0.15f, 150, Mathf.Infinity);
             base.WindowRect = value;
         }
-    }
-
-    public override void Update()
-    {
-        base.Update();
-
-        if (InputManager.GetKeyDown(MpsKey.ToggleMessage))
-            ToggleVisibility();
     }
 
     public override void Draw()

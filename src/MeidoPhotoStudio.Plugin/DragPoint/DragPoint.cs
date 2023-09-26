@@ -39,16 +39,6 @@ public abstract class DragPoint : MonoBehaviour
     private float dragPointScale = 1f;
     private bool gizmoEnabled = true;
 
-    static DragPoint()
-    {
-        InputManager.Register(MpsKey.DragSelect, KeyCode.A, "Select handle mode");
-        InputManager.Register(MpsKey.DragDelete, KeyCode.D, "Delete handle mode");
-        InputManager.Register(MpsKey.DragMove, KeyCode.Z, "Move handle mode");
-        InputManager.Register(MpsKey.DragRotate, KeyCode.X, "Rotate handle mode");
-        InputManager.Register(MpsKey.DragScale, KeyCode.C, "Scale handle mode");
-        InputManager.Register(MpsKey.DragFinger, KeyCode.Space, "Show finger handles");
-    }
-
     public enum DragType
     {
         None,
@@ -120,7 +110,7 @@ public abstract class DragPoint : MonoBehaviour
         }
     }
 
-    protected DragType CurrentDragType
+    public DragType CurrentDragType
     {
         get => currentDragType;
         set
@@ -202,8 +192,6 @@ public abstract class DragPoint : MonoBehaviour
             Gizmo.GizmoVisible = gizmo;
     }
 
-    protected abstract void UpdateDragType();
-
     protected abstract void Drag();
 
     protected virtual void ApplyDragType()
@@ -214,8 +202,6 @@ public abstract class DragPoint : MonoBehaviour
     {
         transform.position = position();
         transform.eulerAngles = rotation();
-
-        UpdateDragType();
     }
 
     protected virtual void OnMouseDown()

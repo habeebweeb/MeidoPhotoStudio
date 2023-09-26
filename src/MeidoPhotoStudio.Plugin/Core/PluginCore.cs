@@ -1,12 +1,12 @@
 using MeidoPhotoStudio.Plugin.Service;
+using MeidoPhotoStudio.Plugin.Service.Input;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-using Input = MeidoPhotoStudio.Plugin.InputManager;
-
 namespace MeidoPhotoStudio.Plugin.Core;
 
-public class PluginCore : MonoBehaviour
+/// <summary>Core plugin.</summary>
+public partial class PluginCore : MonoBehaviour
 {
     private WindowManager windowManager;
     private SceneManager sceneManager;
@@ -19,15 +19,10 @@ public class PluginCore : MonoBehaviour
     private CameraManager cameraManager;
     private ScreenshotService screenshotService;
     private CustomMaidSceneService customMaidSceneService;
+    private InputPollingService inputPollingService;
     private bool initialized;
     private bool active;
     private bool uiActive;
-
-    static PluginCore()
-    {
-        Input.Register(MpsKey.Screenshot, KeyCode.S, "Take screenshot");
-        Input.Register(MpsKey.Activate, KeyCode.F6, "Activate/deactivate MeidoPhotoStudio");
-    }
 
     public bool UIActive
     {
@@ -71,6 +66,9 @@ public class PluginCore : MonoBehaviour
     {
         Constants.Initialize();
         Translation.Initialize(Translation.CurrentLanguage);
+
+        inputPollingService = gameObject.AddComponent<InputPollingService>();
+        inputPollingService.AddInputHandler(new InputHandler(this));
     }
 
     private void Update()
@@ -78,25 +76,11 @@ public class PluginCore : MonoBehaviour
         if (!customMaidSceneService.ValidScene)
             return;
 
-        if (Input.GetKeyDown(MpsKey.Activate))
-        {
-            if (active)
-                Deactivate();
-            else
-                Activate();
-        }
-
         if (!active)
             return;
 
-        if (!Input.Control && !Input.GetKey(MpsKey.CameraLayer) && Input.GetKeyDown(MpsKey.Screenshot))
-            screenshotService.TakeScreenshotToFile();
-
-        meidoManager.Update();
         cameraManager.Update();
         windowManager.Update();
-        effectManager.Update();
-        sceneManager.Update();
     }
 
     private void OnGUI()
@@ -123,13 +107,38 @@ public class PluginCore : MonoBehaviour
         screenshotService = gameObject.AddComponent<ScreenshotService>();
         screenshotService.PluginCore = this;
 
-        meidoManager = new(customMaidSceneService);
-        environmentManager = new(customMaidSceneService);
+        AddPluginActiveInputHandler(new ScreenshotService.InputHandler(screenshotService));
+
+        var generalDragPointInputService = new GeneralDragPointInputService();
+
+        AddPluginActiveInputHandler(generalDragPointInputService);
+
+        var dragPointMeidoInputService = new DragPointMeidoInputService(
+            new DragPointFingerInputService(),
+            new DragPointHeadInputService(),
+            new DragPointLimbInputService(),
+            new DragPointMuneInputService(),
+            new DragPointPelvisInputService(),
+            new DragPointSpineInputService(),
+            new DragPointTorsoInputService());
+
+        AddPluginActiveInputHandler(dragPointMeidoInputService);
+
+        meidoManager = new(customMaidSceneService, generalDragPointInputService, dragPointMeidoInputService);
+
+        AddPluginActiveInputHandler(new MeidoManager.InputHandler(meidoManager));
+
+        environmentManager = new(customMaidSceneService, generalDragPointInputService);
+
         messageWindowManager = new();
         messageWindowManager.Activate();
-        lightManager = new();
-        propManager = new(meidoManager);
+
+        lightManager = new(generalDragPointInputService);
+        propManager = new(meidoManager, generalDragPointInputService);
+
         cameraManager = new(customMaidSceneService);
+
+        AddPluginActiveInputHandler(new CameraManager.InputHandler(cameraManager));
 
         effectManager = new();
         effectManager.AddManager<BloomEffectManager>();
@@ -150,30 +159,46 @@ public class PluginCore : MonoBehaviour
                 environmentManager,
                 propManager));
 
+        AddPluginActiveInputHandler(new SceneManager.InputHandler(sceneManager));
+
+        var sceneWindow = new SceneWindow(sceneManager);
+
+        AddPluginActiveInputHandler(new SceneWindow.InputHandler(sceneWindow));
+
+        var messageWindow = new MessageWindow(messageWindowManager);
+
+        AddPluginActiveInputHandler(new MessageWindow.InputHandler(messageWindow));
+
+        var maidSwitcherPane = new MaidSwitcherPane(meidoManager, customMaidSceneService);
+        var mainWindow = new MainWindow(meidoManager, propManager, lightManager, customMaidSceneService)
+        {
+            [Constants.Window.Call] = new CallWindowPane(meidoManager, customMaidSceneService),
+            [Constants.Window.Pose] = new PoseWindowPane(meidoManager, maidSwitcherPane),
+            [Constants.Window.Face] = new FaceWindowPane(meidoManager, maidSwitcherPane),
+            [Constants.Window.BG] =
+                new BGWindowPane(environmentManager, lightManager, effectManager, sceneWindow, cameraManager),
+            [Constants.Window.BG2] = new BG2WindowPane(meidoManager, propManager),
+            [Constants.Window.Settings] = new SettingsWindowPane(),
+        };
+
+        AddPluginActiveInputHandler(new MainWindow.InputHandler(mainWindow));
+
+        windowManager = new()
+        {
+            [Constants.Window.Main] = mainWindow,
+            [Constants.Window.Message] = messageWindow,
+            [Constants.Window.Save] = sceneWindow,
+        };
+
         meidoManager.BeginCallMeidos += (_, _) =>
             uiActive = false;
 
         meidoManager.EndCallMeidos += (_, _) =>
             uiActive = true;
 
-        var maidSwitcherPane = new MaidSwitcherPane(meidoManager, customMaidSceneService);
-        var sceneWindow = new SceneWindow(sceneManager);
-
-        windowManager = new()
-        {
-            [Constants.Window.Main] = new MainWindow(meidoManager, propManager, lightManager, customMaidSceneService)
-            {
-                [Constants.Window.Call] = new CallWindowPane(meidoManager, customMaidSceneService),
-                [Constants.Window.Pose] = new PoseWindowPane(meidoManager, maidSwitcherPane),
-                [Constants.Window.Face] = new FaceWindowPane(meidoManager, maidSwitcherPane),
-                [Constants.Window.BG] =
-                    new BGWindowPane(environmentManager, lightManager, effectManager, sceneWindow, cameraManager),
-                [Constants.Window.BG2] = new BG2WindowPane(meidoManager, propManager),
-                [Constants.Window.Settings] = new SettingsWindowPane(),
-            },
-            [Constants.Window.Message] = new MessageWindow(messageWindowManager),
-            [Constants.Window.Save] = sceneWindow,
-        };
+        void AddPluginActiveInputHandler<T>(T inputHandler)
+            where T : IInputHandler =>
+            inputPollingService.AddInputHandler(new PluginActiveInputHandler<T>(this, inputHandler));
     }
 
     private void Activate()
@@ -258,7 +283,7 @@ public class PluginCore : MonoBehaviour
             messageWindowManager.Deactivate();
             windowManager.Deactivate();
             screenshotService.enabled = false;
-            Input.Deactivate();
+            InputManager.Deactivate();
 
             Modal.Close();
 
@@ -282,5 +307,13 @@ public class PluginCore : MonoBehaviour
             Deactivate(true);
 
         CameraUtility.MainCamera.ResetCalcNearClip();
+    }
+
+    private void ToggleActive()
+    {
+        if (active)
+            Deactivate();
+        else
+            Activate();
     }
 }

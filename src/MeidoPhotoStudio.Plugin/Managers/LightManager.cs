@@ -13,11 +13,17 @@ public class LightManager : IManager
     private static bool cubeActive = true;
 
     private readonly List<DragPointLight> lightList = new();
+    private readonly GeneralDragPointInputService generalDragPointInputService;
 
     private int selectedLightIndex;
 
-    public LightManager() =>
+    public LightManager(GeneralDragPointInputService generalDragPointInputService)
+    {
+        this.generalDragPointInputService = generalDragPointInputService
+            ?? throw new ArgumentNullException(nameof(generalDragPointInputService));
+
         Activate();
+    }
 
     public event EventHandler Rotate;
 
@@ -105,6 +111,7 @@ public class LightManager : IManager
         light.Select += OnSelect;
 
         lightList.Add(light);
+        generalDragPointInputService.AddDragHandle(light);
 
         CurrentLight.IsActiveLight = false;
         SelectedLightIndex = lightList.Count;
@@ -151,6 +158,8 @@ public class LightManager : IManager
     {
         if (!light)
             return;
+
+        generalDragPointInputService.RemoveDragHandle(light);
 
         light.Rotate -= OnRotate;
         light.Scale -= OnScale;

@@ -8,13 +8,16 @@ using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class MeidoManager : IManager
+/// <summary>Meido management.</summary>
+public partial class MeidoManager : IManager
 {
     public const string Header = "MEIDO";
 
     private static bool active;
 
     private readonly CustomMaidSceneService customMaidSceneService;
+    private readonly GeneralDragPointInputService generalDragPointInputService;
+    private readonly DragPointMeidoInputService dragPointMeidoInputService;
 
     private int selectedMeido;
     private bool globalGravity;
@@ -22,12 +25,19 @@ public class MeidoManager : IManager
     private Meido editingMeido;
     private Meido temporaryEditingMeido;
 
-    static MeidoManager() =>
-        InputManager.Register(MpsKey.MeidoUndressing, KeyCode.H, "All maid undressing");
-
-    public MeidoManager(CustomMaidSceneService customMaidSceneService)
+    public MeidoManager(
+        CustomMaidSceneService customMaidSceneService,
+        GeneralDragPointInputService generalDragPointInputService,
+        DragPointMeidoInputService dragPointMeidoInputService)
     {
-        this.customMaidSceneService = customMaidSceneService;
+        this.customMaidSceneService = customMaidSceneService
+            ?? throw new ArgumentNullException(nameof(customMaidSceneService));
+
+        this.generalDragPointInputService = generalDragPointInputService
+            ?? throw new ArgumentNullException(nameof(generalDragPointInputService));
+
+        this.dragPointMeidoInputService = dragPointMeidoInputService
+            ?? throw new ArgumentNullException(nameof(dragPointMeidoInputService));
 
         if (SceneEdit.Instance)
             SceneEditStartPostfix();
@@ -119,7 +129,8 @@ public class MeidoManager : IManager
     public void Activate()
     {
         Meidos = CharacterMgr.GetStockMaidList()
-            .Select(maid => new Meido(maid, customMaidSceneService))
+            .Select(maid => new Meido(
+                maid, customMaidSceneService, generalDragPointInputService, dragPointMeidoInputService))
             .ToArray();
 
         CharacterMgr.ResetCharaPosAll();
@@ -167,8 +178,6 @@ public class MeidoManager : IManager
 
     public void Update()
     {
-        if (InputManager.GetKeyDown(MpsKey.MeidoUndressing))
-            UndressAll();
     }
 
     public void CallMeidos(IList<Meido> meidoToCall)

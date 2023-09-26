@@ -4,8 +4,6 @@ using UnityEngine;
 
 using static MeidoPhotoStudio.Plugin.CustomGizmo;
 
-using Input = MeidoPhotoStudio.Plugin.InputManager;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public abstract class DragPointGeneral : DragPoint
@@ -69,39 +67,6 @@ public abstract class DragPointGeneral : DragPoint
         var distance = Vector3.Distance(camera.transform.position, transform.position);
 
         transform.localScale = Vector3.one * (0.4f * BaseScale.x * DragPointScale * distance);
-    }
-
-    protected override void UpdateDragType()
-    {
-        var shift = Input.Shift;
-
-        if (Input.GetKey(MpsKey.DragSelect))
-        {
-            CurrentDragType = DragType.Select;
-        }
-        else if (Input.GetKey(MpsKey.DragDelete))
-        {
-            CurrentDragType = DragType.Delete;
-        }
-        else if (Input.GetKey(MpsKey.DragMove))
-        {
-            if (Input.Control)
-                CurrentDragType = DragType.MoveY;
-            else
-                CurrentDragType = shift ? DragType.RotY : DragType.MoveXZ;
-        }
-        else if (Input.GetKey(MpsKey.DragRotate))
-        {
-            CurrentDragType = shift ? DragType.RotLocalY : DragType.RotLocalXZ;
-        }
-        else if (Input.GetKey(MpsKey.DragScale))
-        {
-            CurrentDragType = DragType.Scale;
-        }
-        else
-        {
-            CurrentDragType = DragType.None;
-        }
     }
 
     protected override void OnMouseDown()

@@ -47,6 +47,8 @@ public class MeidoDragPointManager
     private static EventHandler cubeSmallChange;
 
     private readonly Meido meido;
+    private readonly GeneralDragPointInputService generalDragPointInputService;
+    private readonly DragPointMeidoInputService dragPointMeidoInputService;
     private readonly Dictionary<Bone, DragPointMeido> dragPoints = new();
 
     private Dictionary<Bone, Transform> boneTransform = new();
@@ -56,8 +58,20 @@ public class MeidoDragPointManager
     private bool isBone;
     private bool active = true;
 
-    public MeidoDragPointManager(Meido meido) =>
-        this.meido = meido;
+    public MeidoDragPointManager(
+        Meido meido,
+        GeneralDragPointInputService generalDragPointInputService,
+        DragPointMeidoInputService dragPointMeidoInputService)
+    {
+        this.meido = meido
+            ?? throw new ArgumentNullException(nameof(meido));
+
+        this.generalDragPointInputService = generalDragPointInputService
+            ?? throw new ArgumentNullException(nameof(generalDragPointInputService));
+
+        this.dragPointMeidoInputService = dragPointMeidoInputService
+            ?? throw new ArgumentNullException(nameof(dragPointMeidoInputService));
+    }
 
     public event EventHandler<MeidoUpdateEventArgs> SelectMaid;
 
@@ -405,6 +419,16 @@ public class MeidoDragPointManager
 
     public void Destroy()
     {
+        if (dragCube)
+            generalDragPointInputService.RemoveDragHandle(dragCube);
+
+        if (dragBody)
+            generalDragPointInputService.RemoveDragHandle(dragBody);
+
+        foreach (var dragHandle in dragPoints.Values)
+            if (dragHandle)
+                dragPointMeidoInputService.RemoveDragHandle(dragHandle);
+
         foreach (var dragPoint in dragPoints.Values)
             if (dragPoint)
                 UnityEngine.Object.Destroy(dragPoint.gameObject);
@@ -681,6 +705,12 @@ public class MeidoDragPointManager
         }
 
         MakeToeChain(Bone.Toe0L, Bone.Toe2R);
+
+        generalDragPointInputService.AddDragHandle(dragCube);
+        generalDragPointInputService.AddDragHandle(dragBody);
+
+        foreach (var dragHandle in dragPoints.Values)
+            dragPointMeidoInputService.AddDragHandle(dragHandle);
     }
 
     private void InitializeMuneDragPoint(bool left)

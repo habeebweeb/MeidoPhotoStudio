@@ -15,20 +15,29 @@ public class EnvironmentManager : IManager
     private const string MyRoomPrefix = "マイルーム:";
 
     private static readonly BgMgr BgMgr = GameMain.Instance.BgMgr;
+
     private static bool cubeActive;
     private static bool cubeSmall;
 
     private readonly CustomMaidSceneService customMaidSceneService;
+    private readonly GeneralDragPointInputService generalDragPointInputService;
 
     private Transform bg;
     private GameObject bgObject;
     private DragPointBG bgDragPoint;
     private bool bgVisible = true;
 
-    public EnvironmentManager(CustomMaidSceneService customMaidSceneService)
+    public EnvironmentManager(
+        CustomMaidSceneService customMaidSceneService, GeneralDragPointInputService generalDragPointInputService)
     {
-        this.customMaidSceneService = customMaidSceneService;
+        this.customMaidSceneService = customMaidSceneService
+            ?? throw new ArgumentNullException(nameof(customMaidSceneService));
+
+        this.generalDragPointInputService = generalDragPointInputService
+            ?? throw new ArgumentNullException(nameof(generalDragPointInputService));
+
         DragPointLight.EnvironmentManager = this;
+
         Activate();
     }
 
@@ -138,6 +147,8 @@ public class EnvironmentManager : IManager
         bgDragPoint.AddGizmo();
         bgDragPoint.ConstantScale = true;
         bgDragPoint.gameObject.SetActive(CubeActive);
+
+        generalDragPointInputService.AddDragHandle(bgDragPoint);
     }
 
     private void OnChangeBegin(object sender, EventArgs args) =>
@@ -163,8 +174,11 @@ public class EnvironmentManager : IManager
 
     private void DestroyDragPoint()
     {
-        if (bgDragPoint)
-            Object.Destroy(bgDragPoint.gameObject);
+        if (!bgDragPoint)
+            return;
+
+        generalDragPointInputService.RemoveDragHandle(bgDragPoint);
+        Object.Destroy(bgDragPoint.gameObject);
     }
 
     private void OnCubeSmall(object sender, EventArgs args) =>

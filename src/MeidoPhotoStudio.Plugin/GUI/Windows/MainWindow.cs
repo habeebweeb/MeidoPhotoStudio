@@ -5,7 +5,8 @@ using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class MainWindow : BaseWindow
+/// <summary>Main window.</summary>
+public partial class MainWindow : BaseWindow
 {
     private readonly MeidoManager meidoManager;
     private readonly Dictionary<Constants.Window, BaseMainWindowPane> windowPanes;
@@ -108,14 +109,6 @@ public class MainWindow : BaseWindow
         tabsPane.SelectedTab = Constants.Window.Call;
         updating = false;
         Visible = true;
-    }
-
-    public override void Update()
-    {
-        base.Update();
-
-        if (InputManager.GetKeyDown(MpsKey.ToggleUI))
-            Visible = !Visible;
     }
 
     public override void Draw()

@@ -1,7 +1,5 @@
 using UnityEngine;
 
-using Input = MeidoPhotoStudio.Plugin.InputManager;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class DragPointMune : DragPointChain
@@ -34,15 +32,6 @@ public class DragPointMune : DragPointChain
         if (CurrentDragType is not DragType.None)
             meido.SetMune(true, isMuneL);
     }
-
-    protected override void UpdateDragType() =>
-
-        // TODO: Rethink this formatting
-        CurrentDragType = Input.Control && Input.Alt
-            ? Input.Shift
-            ? DragType.RotLocalY
-            : DragType.RotLocalXZ
-            : DragType.None;
 
     protected override void Drag()
     {

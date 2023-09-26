@@ -24,16 +24,18 @@ public class PropManager : IManager
 
     private readonly List<DragPointProp> propList = new();
     private readonly MeidoManager meidoManager;
-
+    private readonly GeneralDragPointInputService generalDragPointInputService;
     private int currentPropIndex;
 
     static PropManager() =>
         ModItemsOnlyValue = Configuration.Config.Bind(
             "Prop", "ModItemsOnly", false, "Disable waiting for and loading base game clothing");
 
-    public PropManager(MeidoManager meidoManager)
+    public PropManager(MeidoManager meidoManager, GeneralDragPointInputService generalDragPointInputService)
     {
-        this.meidoManager = meidoManager;
+        this.meidoManager = meidoManager ?? throw new ArgumentNullException(nameof(meidoManager));
+        this.generalDragPointInputService = generalDragPointInputService
+            ?? throw new ArgumentNullException(nameof(generalDragPointInputService));
 
         meidoManager.BeginCallMeidos += OnBeginCallMeidos;
         meidoManager.EndCallMeidos += OnEndCallMeidos;
@@ -308,6 +310,7 @@ public class PropManager : IManager
     private void AddProp(DragPointProp dragPoint)
     {
         propList.Add(dragPoint);
+        generalDragPointInputService.AddDragHandle(dragPoint);
 
         PropAdded?.Invoke(this, new(dragPoint));
 
@@ -319,6 +322,7 @@ public class PropManager : IManager
         if (!prop)
             return;
 
+        generalDragPointInputService.RemoveDragHandle(prop);
         DestroyingProp?.Invoke(this, new(prop));
 
         prop.Delete -= OnDeleteProp;

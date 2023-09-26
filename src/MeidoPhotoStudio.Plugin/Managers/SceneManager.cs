@@ -6,12 +6,12 @@ using System.Linq;
 using BepInEx.Configuration;
 using UnityEngine;
 
-using Input = MeidoPhotoStudio.Plugin.InputManager;
 using Object = UnityEngine.Object;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class SceneManager : IManager
+/// <summary>Scene management.</summary>
+public partial class SceneManager : IManager
 {
     public static readonly Vector2 SceneDimensions = new(480, 270);
 
@@ -25,13 +25,6 @@ public class SceneManager : IManager
 
     private readonly ScreenshotService screenshotService;
     private readonly SceneSerializer sceneSerializer;
-
-    static SceneManager()
-    {
-        Input.Register(MpsKey.OpenSceneManager, KeyCode.F8, "Hide/show scene manager");
-        Input.Register(MpsKey.SaveScene, KeyCode.S, "Quick save scene");
-        Input.Register(MpsKey.LoadScene, KeyCode.A, "Load quick saved scene");
-    }
 
     public SceneManager(ScreenshotService screenshotService, SceneSerializer sceneSerializer)
     {
@@ -111,13 +104,6 @@ public class SceneManager : IManager
 
     public void Update()
     {
-        if (!Input.Control)
-            return;
-
-        if (Input.GetKeyDown(MpsKey.SaveScene))
-            QuickSaveScene();
-        else if (Input.GetKeyDown(MpsKey.LoadScene))
-            QuickLoadScene();
     }
 
     public void DeleteDirectory()

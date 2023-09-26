@@ -1,7 +1,5 @@
 using UnityEngine;
 
-using Input = MeidoPhotoStudio.Plugin.InputManager;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class DragPointSpine : DragPointMeido
@@ -33,53 +31,50 @@ public class DragPointSpine : DragPointMeido
     {
         var current = CurrentDragType;
 
-        if (IsBone && current is not DragType.Ignore)
-        {
-            if (!isHead && current is DragType.RotLocalXZ)
-                ApplyProperties(false, false, isThigh);
-            else if (!isThigh && current is DragType.MoveY)
-                ApplyProperties(isHip, isHip, !isHip);
-            else if (!isThigh && !isHead && current is DragType.RotLocalY)
-                ApplyProperties(!isHip, !isHip, isHip);
-            else
-                ApplyProperties(!isThigh, !isThigh, false);
-        }
-        else
+        if (!IsBone || current is DragType.Ignore)
         {
             ApplyProperties(false, false, false);
-        }
-    }
 
-    protected override void UpdateDragType()
-    {
-        var shift = Input.Shift;
-        var alt = Input.Alt;
+            return;
+        }
 
-        if (OtherDragType())
-        {
-            CurrentDragType = DragType.Ignore;
-        }
-        else if (isThigh && !Input.Control && alt && shift)
-        {
-            // gizmo thigh rotation
-            CurrentDragType = DragType.RotLocalXZ;
-        }
-        else if (alt)
-        {
-            CurrentDragType = DragType.Ignore;
-        }
-        else if (shift)
-        {
-            CurrentDragType = DragType.RotLocalY;
-        }
-        else if (Input.Control)
-        {
-            // hip y transform and spine gizmo rotation
-            CurrentDragType = DragType.MoveY;
-        }
+        if (isThigh)
+            ApplyThighProperties(current);
+        else if (isHip)
+            ApplyHipProperties(current);
         else
+            ApplySpineProperties(current);
+
+        void ApplyThighProperties(DragType current)
         {
-            CurrentDragType = DragType.None;
+            if (current is DragType.RotLocalXZ)
+                ApplyProperties(false, false, true);
+            else
+                ApplyProperties(false, false, false);
+        }
+
+        void ApplyHipProperties(DragType current)
+        {
+            if (current is DragType.None)
+                ApplyProperties(true, true, false);
+            else if (current is DragType.RotLocalY)
+                ApplyProperties(false, false, true);
+            else if (current is DragType.MoveY)
+                ApplyProperties(true, true, false);
+            else
+                ApplyProperties(false, false, false);
+        }
+
+        void ApplySpineProperties(DragType current)
+        {
+            if (current is DragType.None)
+                ApplyProperties(true, true, false);
+            else if (current is DragType.RotLocalY)
+                ApplyProperties(true, true, false);
+            else if (current is DragType.MoveY)
+                ApplyProperties(false, false, true);
+            else
+                ApplyProperties(false, false, false);
         }
     }
 

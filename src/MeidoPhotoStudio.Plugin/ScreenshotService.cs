@@ -8,7 +8,8 @@ using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class ScreenshotService : MonoBehaviour
+/// <summary>Screenshot service.</summary>
+public partial class ScreenshotService : MonoBehaviour
 {
     private bool takingScreenshot;
     private GameObject dragHandleParent;

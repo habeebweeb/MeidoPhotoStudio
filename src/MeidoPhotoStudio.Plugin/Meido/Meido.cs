@@ -48,11 +48,18 @@ public class Meido
     private float[] blendSetValueBackup;
     private bool freeLook;
 
-    public Meido(Maid maid, CustomMaidSceneService customMaidSceneService)
+    public Meido(
+        Maid maid,
+        CustomMaidSceneService customMaidSceneService,
+        GeneralDragPointInputService generalDragPointInputService,
+        DragPointMeidoInputService dragPointMeidoInputService)
     {
         Maid = maid;
-        this.customMaidSceneService = customMaidSceneService;
-        IKManager = new(this);
+
+        this.customMaidSceneService = customMaidSceneService
+            ?? throw new ArgumentNullException(nameof(customMaidSceneService));
+
+        IKManager = new(this, generalDragPointInputService, dragPointMeidoInputService);
         IKManager.SelectMaid += (_, args) =>
             OnUpdateMeido(args);
     }

@@ -1,7 +1,5 @@
 using UnityEngine;
 
-using Input = MeidoPhotoStudio.Plugin.InputManager;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class DragPointLimb : DragPointChain
@@ -78,38 +76,6 @@ public class DragPointLimb : DragPointChain
         else
         {
             ApplyProperties(true, isBone, false);
-        }
-    }
-
-    protected override void UpdateDragType()
-    {
-        var control = Input.Control;
-        var alt = Input.Alt;
-
-        // Check for DragMove so that hand dragpoint is not in the way
-        if (OtherDragType())
-        {
-            CurrentDragType = DragType.Ignore;
-        }
-        else if (control && !Input.GetKey(MpsKey.DragMove))
-        {
-            if (alt)
-                CurrentDragType = DragType.RotY;
-            else
-                CurrentDragType = DragType.MoveXZ;
-        }
-        else if (alt)
-        {
-            // TODO: Rethink this formatting
-            CurrentDragType = Input.Shift
-                ? DragType.RotLocalY
-                : DragType.RotLocalXZ;
-        }
-        else
-        {
-            CurrentDragType = Input.Shift
-                ? DragType.Ignore
-                : DragType.None;
         }
     }
 

@@ -1,7 +1,5 @@
 using UnityEngine;
 
-using Input = MeidoPhotoStudio.Plugin.InputManager;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class DragPointTorso : DragPointMeido
@@ -29,24 +27,11 @@ public class DragPointTorso : DragPointMeido
 
     protected override void ApplyDragType()
     {
-        if (CurrentDragType is DragType.Ignore)
-            ApplyProperties();
-        else if (IsBone)
+        if (IsBone)
             ApplyProperties(false, false, false);
         else
             ApplyProperties(CurrentDragType is not DragType.None, false, false);
     }
-
-    protected override void UpdateDragType() =>
-
-        // TODO: Rethink this formatting
-        CurrentDragType = Input.Alt && !Input.Control
-            ? Input.Shift
-                ? DragType.RotLocalY
-                : DragType.RotLocalXZ
-            : OtherDragType()
-                ? DragType.Ignore
-                : DragType.None;
 
     protected override void OnMouseDown()
     {
