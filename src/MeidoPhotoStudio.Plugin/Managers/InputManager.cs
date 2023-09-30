@@ -5,6 +5,8 @@ using System.Linq;
 using BepInEx.Configuration;
 using UnityEngine;
 
+using UInput = UnityEngine.Input;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public enum MpsKey
@@ -60,13 +62,13 @@ public static class InputManager
     public static bool Listening { get; private set; }
 
     public static bool Control =>
-        Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        UInput.GetKey(KeyCode.LeftControl) || UInput.GetKey(KeyCode.RightControl);
 
     public static bool Alt =>
-        Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
+        UInput.GetKey(KeyCode.LeftAlt) || UInput.GetKey(KeyCode.RightAlt);
 
     public static bool Shift =>
-        Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        UInput.GetKey(KeyCode.LeftShift) || UInput.GetKey(KeyCode.RightShift);
 
     public static void Register(MpsKey action, KeyCode key, string description)
     {
@@ -126,14 +128,14 @@ public static class InputManager
         inputListener.KeyChange -= OnKeyChange;
         CurrentKeyCode = KeyCode.None;
         Listening = false;
-        Input.ResetInputAxes();
+        UInput.ResetInputAxes();
     }
 
     public static bool GetKey(MpsKey action) =>
-        !Listening && ActionKeys.ContainsKey(action) && Input.GetKey(ActionKeys[action]);
+        !Listening && ActionKeys.ContainsKey(action) && UInput.GetKey(ActionKeys[action]);
 
     public static bool GetKeyDown(MpsKey action) =>
-        !Listening && ActionKeys.ContainsKey(action) && Input.GetKeyDown(ActionKeys[action]);
+        !Listening && ActionKeys.ContainsKey(action) && UInput.GetKeyDown(ActionKeys[action]);
 
     public static void Deactivate()
     {
@@ -169,12 +171,12 @@ public static class InputManager
 
         private void Update()
         {
-            if (!Input.anyKeyDown)
+            if (!UInput.anyKeyDown)
                 return;
 
             foreach (var key in KeyCodes)
             {
-                if (!Input.GetKeyDown(key))
+                if (!UInput.GetKeyDown(key))
                     continue;
 
                 KeyChange?.Invoke(this, new(key));

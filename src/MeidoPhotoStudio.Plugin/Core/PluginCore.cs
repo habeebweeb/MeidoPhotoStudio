@@ -287,7 +287,7 @@ public partial class PluginCore : MonoBehaviour
 
             Modal.Close();
 
-            Configuration.Config.Save();
+            MeidoPhotoStudio.Plugin.Configuration.Config.Save();
 
             if (customMaidSceneService.EditScene)
                 return;

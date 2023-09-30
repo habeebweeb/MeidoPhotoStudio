@@ -122,7 +122,7 @@ public static class Utility
         GetPropertyInfo<TType>(name).SetValue(instance, value, null);
 
     public static bool AnyMouseDown() =>
-        Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(2);
+        UnityEngine.Input.GetMouseButtonDown(0) || UnityEngine.Input.GetMouseButtonDown(1) || UnityEngine.Input.GetMouseButtonDown(2);
 
     public static string ScreenshotFilename()
     {

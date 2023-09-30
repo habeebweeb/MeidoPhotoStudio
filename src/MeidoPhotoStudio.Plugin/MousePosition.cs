@@ -1,5 +1,7 @@
 using UnityEngine;
 
+using UInput = UnityEngine.Input;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class MousePosition : MonoBehaviour
@@ -13,19 +15,19 @@ public class MousePosition : MonoBehaviour
     {
         DontDestroyOnLoad(this);
 
-        mousePosition = Input.mousePosition;
+        mousePosition = UInput.mousePosition;
     }
 
     private void Update()
     {
-        if (Input.GetMouseButton(0))
+        if (UInput.GetMouseButton(0))
         {
-            mousePosition.x += Input.GetAxis("Mouse X") * 20;
-            mousePosition.y += Input.GetAxis("Mouse Y") * 20;
+            mousePosition.x += UInput.GetAxis("Mouse X") * 20;
+            mousePosition.y += UInput.GetAxis("Mouse Y") * 20;
         }
         else
         {
-            mousePosition = Input.mousePosition;
+            mousePosition = UInput.mousePosition;
         }
     }
 }

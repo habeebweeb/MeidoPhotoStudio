@@ -86,12 +86,12 @@ public abstract class BaseWindow : BasePane
 
     private void HandleZoom()
     {
-        if (Input.mouseScrollDelta.y is 0f || !Visible)
+        if (UnityEngine.Input.mouseScrollDelta.y is 0f || !Visible)
             return;
 
-        var mousePos = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
+        var mousePos = new Vector2(UnityEngine.Input.mousePosition.x, Screen.height - UnityEngine.Input.mousePosition.y);
 
         if (WindowRect.Contains(mousePos))
-            Input.ResetInputAxes();
+            UnityEngine.Input.ResetInputAxes();
     }
 }

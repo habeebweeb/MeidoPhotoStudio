@@ -119,8 +119,8 @@ public static class DropdownHelper
     {
         DropdownWindow = GUI.Window(Constants.DropdownWindowID, DropdownWindow, GUIFunc, string.Empty, windowStyle);
 
-        if (Input.mouseScrollDelta.y is not 0f && Visible && DropdownWindow.Contains(Event.current.mousePosition))
-            Input.ResetInputAxes();
+        if (UnityEngine.Input.mouseScrollDelta.y is not 0f && Visible && DropdownWindow.Contains(Event.current.mousePosition))
+            UnityEngine.Input.ResetInputAxes();
     }
 
     private static void GUIFunc(int id)

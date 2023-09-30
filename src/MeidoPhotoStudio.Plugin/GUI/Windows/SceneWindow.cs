@@ -84,7 +84,7 @@ public partial class SceneWindow : BaseWindow
         resizeHandleRect.x = windowRect.width - ResizeHandleSize;
         resizeHandleRect.y = windowRect.height - ResizeHandleSize;
 
-        if (!resizing && Input.GetMouseButton(0) && resizeHandleRect.Contains(Event.current.mousePosition))
+        if (!resizing && UnityEngine.Input.GetMouseButton(0) && resizeHandleRect.Contains(Event.current.mousePosition))
             resizing = true;
 
         if (resizing)
@@ -99,7 +99,7 @@ public partial class SceneWindow : BaseWindow
             windowRect.width = Mathf.Max(minWidth, rectWidth);
             windowRect.height = Mathf.Max(300, rectHeight);
 
-            if (!Input.GetMouseButton(0))
+            if (!UnityEngine.Input.GetMouseButton(0))
                 resizing = false;
         }
     }
