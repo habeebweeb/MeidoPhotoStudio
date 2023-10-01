@@ -100,6 +100,7 @@ public partial class ScreenshotService : MonoBehaviour
     {
         takingScreenshot = true;
 
+        // TODO: This also hides the message box and that's not wanted.
         var uiCameras = GetNguiUICameras();
         var enabledCanvases = GetEnabledUguiCanvases();
 

@@ -18,7 +18,7 @@ public class DragPointMune : DragPointChain
     }
 
     protected override void ApplyDragType() =>
-        ApplyProperties(CurrentDragType is not DragType.None, false, false);
+        ApplyProperties(CurrentDragType is not DragHandleMode.None, false, false);
 
     protected override void OnMouseDown()
     {
@@ -29,7 +29,7 @@ public class DragPointMune : DragPointChain
 
     protected override void OnDoubleClick()
     {
-        if (CurrentDragType is not DragType.None)
+        if (CurrentDragType is not DragHandleMode.None)
             meido.SetMune(true, isMuneL);
     }
 
@@ -38,13 +38,13 @@ public class DragPointMune : DragPointChain
         if (isPlaying)
             meido.Stop = true;
 
-        if (CurrentDragType is DragType.RotLocalXZ)
+        if (CurrentDragType is DragHandleMode.RotateEyesChest)
         {
             Porc(IK, ikCtrlData, ikChain[JointUpper], ikChain[JointMiddle], ikChain[JointLower]);
             InitializeRotation();
         }
 
-        if (CurrentDragType is DragType.RotLocalY)
+        if (CurrentDragType is DragHandleMode.RotateEyesChestAlternate)
         {
             var mouseDelta = MouseDelta();
 

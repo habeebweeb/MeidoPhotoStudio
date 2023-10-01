@@ -1,5 +1,6 @@
 using System;
 
+using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Service.Input;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -10,18 +11,19 @@ public partial class MessageWindow
     public class InputHandler : IInputHandler
     {
         private readonly MessageWindow messageWindow;
+        private readonly InputConfiguration inputConfiguration;
 
-        static InputHandler() =>
-            InputManager.Register(MpsKey.ToggleMessage, UnityEngine.KeyCode.M, "Show/hide message box");
-
-        public InputHandler(MessageWindow messageWindow) =>
+        public InputHandler(MessageWindow messageWindow, InputConfiguration inputConfiguration)
+        {
             this.messageWindow = messageWindow ?? throw new ArgumentNullException(nameof(messageWindow));
+            this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
+        }
 
         public bool Active { get; } = true;
 
         public void CheckInput()
         {
-            if (InputManager.GetKeyDown(MpsKey.ToggleMessage))
+            if (inputConfiguration[Shortcut.ToggleMessageWindow].IsDown())
                 messageWindow.ToggleVisibility();
         }
     }

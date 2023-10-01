@@ -1,5 +1,6 @@
 using System;
 
+using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Service.Input;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -10,20 +11,22 @@ public partial class ScreenshotService
     public class InputHandler : IInputHandler
     {
         private readonly ScreenshotService screenshotService;
+        private readonly InputConfiguration inputConfiguration;
 
-        static InputHandler() =>
-            InputManager.Register(MpsKey.Screenshot, UnityEngine.KeyCode.S, "Take screenshot");
-
-        public InputHandler(ScreenshotService screenshotService) =>
+        public InputHandler(ScreenshotService screenshotService, InputConfiguration inputConfiguration)
+        {
             this.screenshotService = screenshotService
                 ? screenshotService
                 : throw new ArgumentNullException(nameof(screenshotService));
+
+            this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
+        }
 
         public bool Active { get; } = true;
 
         public void CheckInput()
         {
-            if (!InputManager.Control && !InputManager.GetKey(MpsKey.CameraLayer) && InputManager.GetKeyDown(MpsKey.Screenshot))
+            if (inputConfiguration[Shortcut.Screenshot].IsDown())
                 screenshotService.TakeScreenshotToFile();
         }
     }

@@ -776,7 +776,12 @@ public class MeidoDragPointManager
         {
             var spine = boneTransform[bone];
             var primitive = bone is Bone.Hip ? PrimitiveType.Cube : PrimitiveType.Sphere;
-            var dragPoint = DragPoint.Make<DragPointSpine>(primitive, spineDragPointSize);
+            var dragPoint = bone switch
+            {
+                Bone.Hip => DragPoint.Make<DragPointHip>(primitive, spineDragPointSize),
+                Bone.ThighL or Bone.ThighR => DragPoint.Make<DragPointThigh>(primitive, spineDragPointSize),
+                _ => DragPoint.Make<DragPointSpine>(primitive, spineDragPointSize),
+            };
 
             dragPoint.Initialize(meido, () => spine.position, () => Vector3.zero);
 

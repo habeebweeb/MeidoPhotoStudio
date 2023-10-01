@@ -33,25 +33,11 @@ public abstract class DragPoint : MonoBehaviour
     private Vector3 startOffset;
     private Vector3 newOffset;
     private Vector3 baseScale;
-    private DragType oldDragType;
-    private DragType currentDragType;
+    private DragHandleMode oldDragHandleMode;
+    private DragHandleMode currentDragHandleMode;
     private bool dragPointEnabled = true;
     private float dragPointScale = 1f;
     private bool gizmoEnabled = true;
-
-    public enum DragType
-    {
-        None,
-        Ignore,
-        Select,
-        Delete,
-        MoveXZ,
-        MoveY,
-        RotLocalXZ,
-        RotY,
-        RotLocalY,
-        Scale,
-    }
 
     public Vector3 OriginalScale { get; private set; }
 
@@ -110,41 +96,41 @@ public abstract class DragPoint : MonoBehaviour
         }
     }
 
-    public DragType CurrentDragType
+    public DragHandleMode CurrentDragType
     {
-        get => currentDragType;
+        get => currentDragHandleMode;
         set
         {
-            if (value == oldDragType)
+            if (value == oldDragHandleMode)
                 return;
 
-            currentDragType = value;
+            currentDragHandleMode = value;
             reinitializeDrag = true;
-            oldDragType = currentDragType;
+            oldDragHandleMode = currentDragHandleMode;
             ApplyDragType();
         }
     }
 
     protected bool Transforming =>
-        CurrentDragType >= DragType.MoveXZ;
+        CurrentDragType is >= DragHandleMode.MoveWorldXZ and <= DragHandleMode.Scale;
 
     protected bool Special =>
-        CurrentDragType is DragType.Select or DragType.Delete;
+        CurrentDragType is DragHandleMode.Select or DragHandleMode.Delete;
 
     protected bool Moving =>
-        CurrentDragType is DragType.MoveXZ or DragType.MoveY;
+        CurrentDragType is DragHandleMode.MoveWorldXZ or DragHandleMode.MoveWorldY;
 
     protected bool Rotating =>
-        CurrentDragType is >= DragType.RotLocalXZ and <= DragType.RotLocalY;
+        CurrentDragType is >= DragHandleMode.RotateWorldY and <= DragHandleMode.RotateLocalXZ;
 
     protected bool Scaling =>
-        CurrentDragType is DragType.Scale;
+        CurrentDragType is DragHandleMode.Scale;
 
     protected bool Selecting =>
-        CurrentDragType is DragType.Select;
+        CurrentDragType is DragHandleMode.Select;
 
     protected bool Deleting =>
-        CurrentDragType is DragType.Delete;
+        CurrentDragType is DragHandleMode.Delete;
 
     public static T Make<T>(PrimitiveType primitiveType, Vector3 scale)
         where T : DragPoint
@@ -253,11 +239,6 @@ public abstract class DragPoint : MonoBehaviour
 
     protected Vector3 MouseDelta() =>
         Utility.MousePosition - startMousePosition;
-
-    protected bool OtherDragType() =>
-        InputManager.GetKey(MpsKey.DragSelect) || InputManager.GetKey(MpsKey.DragDelete)
-        || InputManager.GetKey(MpsKey.DragMove) || InputManager.GetKey(MpsKey.DragRotate)
-        || InputManager.GetKey(MpsKey.DragScale) || InputManager.GetKey(MpsKey.DragFinger);
 
     protected Vector3 CursorPosition()
     {

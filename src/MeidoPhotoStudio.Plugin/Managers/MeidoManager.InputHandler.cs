@@ -1,7 +1,7 @@
 using System;
 
+using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Service.Input;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -11,18 +11,19 @@ public partial class MeidoManager
     public class InputHandler : IInputHandler
     {
         private readonly MeidoManager meidoManager;
+        private readonly InputConfiguration inputConfiguration;
 
-        static InputHandler() =>
-            InputManager.Register(MpsKey.MeidoUndressing, KeyCode.H, "All maid undressing");
-
-        public InputHandler(MeidoManager meidoManager) =>
+        public InputHandler(MeidoManager meidoManager, InputConfiguration inputConfiguration)
+        {
             this.meidoManager = meidoManager ?? throw new ArgumentNullException(nameof(meidoManager));
+            this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
+        }
 
         public bool Active { get; } = true;
 
         public void CheckInput()
         {
-            if (InputManager.GetKeyDown(MpsKey.MeidoUndressing))
+            if (inputConfiguration[Shortcut.CycleMaidDressing].IsDown())
                 meidoManager.UndressAll();
         }
     }

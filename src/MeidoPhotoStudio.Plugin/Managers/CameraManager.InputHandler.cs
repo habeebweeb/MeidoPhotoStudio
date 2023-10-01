@@ -1,7 +1,7 @@
 using System;
 
+using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Service.Input;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -11,42 +11,41 @@ public partial class CameraManager
     public class InputHandler : IInputHandler
     {
         private readonly CameraManager cameraManager;
+        private readonly InputConfiguration inputConfiguration;
 
-        static InputHandler()
+        public InputHandler(CameraManager cameraManager, InputConfiguration inputConfiguration)
         {
-            InputManager.Register(MpsKey.CameraLayer, KeyCode.Q, "Camera control layer");
-            InputManager.Register(MpsKey.CameraSave, KeyCode.S, "Save camera transform");
-            InputManager.Register(MpsKey.CameraLoad, KeyCode.A, "Load camera transform");
-            InputManager.Register(MpsKey.CameraReset, KeyCode.R, "Reset camera transform");
-        }
-
-        public InputHandler(CameraManager cameraManager) =>
             this.cameraManager = cameraManager ?? throw new ArgumentNullException(nameof(cameraManager));
+            this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
+        }
 
         public bool Active { get; } = true;
 
         public void CheckInput()
         {
-            if (InputManager.GetKey(MpsKey.CameraLayer))
-            {
-                if (InputManager.GetKeyDown(MpsKey.CameraSave))
-                    cameraManager.SaveTempCamera();
-                else if (InputManager.GetKeyDown(MpsKey.CameraLoad))
-                    cameraManager.LoadCameraInfo(cameraManager.tempCameraInfo);
-                else if (InputManager.GetKeyDown(MpsKey.CameraReset))
-                    cameraManager.ResetCamera();
+            if (inputConfiguration[Shortcut.SaveCamera].IsDown())
+                cameraManager.SaveTempCamera();
+            else if (inputConfiguration[Shortcut.LoadCamera].IsDown())
+                cameraManager.LoadCameraInfo(cameraManager.tempCameraInfo);
+            else if (inputConfiguration[Shortcut.ResetCamera].IsDown())
+                cameraManager.ResetCamera();
+            else if (inputConfiguration[Shortcut.ToggleCamera1].IsDown())
+                cameraManager.CurrentCameraIndex = 0;
+            else if (inputConfiguration[Shortcut.ToggleCamera2].IsDown())
+                cameraManager.CurrentCameraIndex = 1;
+            else if (inputConfiguration[Shortcut.ToggleCamera3].IsDown())
+                cameraManager.CurrentCameraIndex = 2;
+            else if (inputConfiguration[Shortcut.ToggleCamera4].IsDown())
+                cameraManager.CurrentCameraIndex = 3;
+            else if (inputConfiguration[Shortcut.ToggleCamera5].IsDown())
+                cameraManager.CurrentCameraIndex = 4;
 
-                for (var i = 0; i < cameraManager.CameraCount; i++)
-                    if (i != cameraManager.CurrentCameraIndex && UnityEngine.Input.GetKeyDown(AlphaOne + i))
-                        cameraManager.CurrentCameraIndex = i;
-            }
-
-            if (InputManager.Shift)
+            if (inputConfiguration[Hotkey.FastCamera].IsPressed())
             {
                 UltimateOrbitCamera.moveSpeed = CameraFastMoveSpeed;
                 UltimateOrbitCamera.zoomSpeed = CameraFastZoomSpeed;
             }
-            else if (InputManager.Control)
+            else if (inputConfiguration[Hotkey.SlowCamera].IsPressed())
             {
                 UltimateOrbitCamera.moveSpeed = CameraSlowMoveSpeed;
                 UltimateOrbitCamera.zoomSpeed = CameraSlowZoomSpeed;

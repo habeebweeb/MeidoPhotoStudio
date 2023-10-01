@@ -1,7 +1,7 @@
 using System;
 
+using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Service.Input;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -11,31 +11,24 @@ public partial class SceneManager
     public class InputHandler : IInputHandler
     {
         private readonly SceneManager sceneManager;
+        private readonly InputConfiguration inputConfiguration;
 
-        static InputHandler()
-        {
-            InputManager.Register(MpsKey.SaveScene, KeyCode.S, "Quick save scene");
-            InputManager.Register(MpsKey.LoadScene, KeyCode.A, "Load quick saved scene");
-        }
-
-        public InputHandler(SceneManager sceneManager)
+        public InputHandler(SceneManager sceneManager, InputConfiguration inputConfiguration)
         {
             if (sceneManager is null)
                 throw new ArgumentNullException(nameof(sceneManager));
 
             this.sceneManager = sceneManager;
+            this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
         }
 
         public bool Active { get; } = true;
 
         public void CheckInput()
         {
-            if (!InputManager.Control)
-                return;
-
-            if (InputManager.GetKeyDown(MpsKey.SaveScene))
+            if (inputConfiguration[Shortcut.QuickSaveScene].IsDown())
                 sceneManager.QuickSaveScene();
-            else if (InputManager.GetKeyDown(MpsKey.LoadScene))
+            else if (inputConfiguration[Shortcut.QuickLoadScene].IsDown())
                 sceneManager.QuickLoadScene();
         }
     }

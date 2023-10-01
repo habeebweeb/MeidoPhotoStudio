@@ -39,18 +39,18 @@ public class DragPointLimb : DragPointChain
         var current = CurrentDragType;
         var isBone = IsBone;
 
-        if (CurrentDragType is DragType.Ignore)
+        if (CurrentDragType is DragHandleMode.Ignore)
         {
             ApplyProperties();
         }
-        else if (current is DragType.RotLocalXZ)
+        else if (current is DragHandleMode.RotateBody)
         {
             if (isLower)
                 ApplyProperties(!isBone, false, isBone);
             else
                 ApplyProperties();
         }
-        else if (current is DragType.RotLocalY)
+        else if (current is DragHandleMode.RotateBodyAlternate)
         {
             if (isLower || isMiddle)
                 ApplyProperties(!isBone, false, false);
@@ -59,14 +59,14 @@ public class DragPointLimb : DragPointChain
             else
                 ApplyProperties();
         }
-        else if (current is DragType.RotY)
+        else if (current is DragHandleMode.DragMiddleBone)
         {
             if (isMiddle)
                 ApplyProperties(false, false, isBone);
             else
                 ApplyProperties();
         }
-        else if (current is DragType.MoveXZ)
+        else if (current is DragHandleMode.DragLowerLimb)
         {
             if (isLower)
                 ApplyProperties(true, isBone, false);
@@ -84,9 +84,9 @@ public class DragPointLimb : DragPointChain
         if (isPlaying)
             meido.Stop = true;
 
-        var altRotation = CurrentDragType is DragType.MoveXZ or DragType.RotY;
+        var altRotation = CurrentDragType is DragHandleMode.DragLowerLimb or DragHandleMode.DragMiddleBone;
 
-        if (CurrentDragType is DragType.None || altRotation)
+        if (CurrentDragType is DragHandleMode.None || altRotation)
         {
             var upperJoint = altRotation ? JointMiddle : JointUpper;
 
@@ -97,7 +97,7 @@ public class DragPointLimb : DragPointChain
 
         var mouseDelta = MouseDelta();
 
-        if (CurrentDragType is DragType.RotLocalY)
+        if (CurrentDragType is DragHandleMode.RotateBodyAlternate)
         {
             var joint = isMiddle ? JointUpper : JointLower;
 
@@ -105,7 +105,7 @@ public class DragPointLimb : DragPointChain
             ikChain[joint].Rotate(Vector3.right * (-mouseDelta.x / 1.5f));
         }
 
-        if (CurrentDragType is DragType.RotLocalXZ)
+        if (CurrentDragType is DragHandleMode.RotateBody)
         {
             ikChain[JointLower].localRotation = jointRotation[JointLower];
             ikChain[JointLower].Rotate(Vector3.up * (foot * mouseDelta.x / 1.5f));

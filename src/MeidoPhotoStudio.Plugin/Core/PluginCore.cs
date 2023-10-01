@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Service;
 using MeidoPhotoStudio.Plugin.Service.Input;
 using UnityEngine;
@@ -21,6 +22,7 @@ public partial class PluginCore : MonoBehaviour
     private CustomMaidSceneService customMaidSceneService;
     private InputPollingService inputPollingService;
     private bool initialized;
+    private InputConfiguration inputConfiguration;
     private bool active;
     private bool uiActive;
 
@@ -67,8 +69,10 @@ public partial class PluginCore : MonoBehaviour
         Constants.Initialize();
         Translation.Initialize(Translation.CurrentLanguage);
 
+        inputConfiguration = new InputConfiguration(MeidoPhotoStudio.Plugin.Configuration.Config);
+
         inputPollingService = gameObject.AddComponent<InputPollingService>();
-        inputPollingService.AddInputHandler(new InputHandler(this));
+        inputPollingService.AddInputHandler(new InputHandler(this, inputConfiguration));
     }
 
     private void Update()
@@ -107,26 +111,28 @@ public partial class PluginCore : MonoBehaviour
         screenshotService = gameObject.AddComponent<ScreenshotService>();
         screenshotService.PluginCore = this;
 
-        AddPluginActiveInputHandler(new ScreenshotService.InputHandler(screenshotService));
+        AddPluginActiveInputHandler(new ScreenshotService.InputHandler(screenshotService, inputConfiguration));
 
-        var generalDragPointInputService = new GeneralDragPointInputService();
+        var generalDragPointInputService = new GeneralDragPointInputService(inputConfiguration);
 
         AddPluginActiveInputHandler(generalDragPointInputService);
 
         var dragPointMeidoInputService = new DragPointMeidoInputService(
-            new DragPointFingerInputService(),
-            new DragPointHeadInputService(),
-            new DragPointLimbInputService(),
-            new DragPointMuneInputService(),
-            new DragPointPelvisInputService(),
-            new DragPointSpineInputService(),
-            new DragPointTorsoInputService());
+            new DragPointFingerInputService(inputConfiguration),
+            new DragPointHeadInputService(inputConfiguration),
+            new DragPointLimbInputService(inputConfiguration),
+            new DragPointMuneInputService(inputConfiguration),
+            new DragPointPelvisInputService(inputConfiguration),
+            new DragPointSpineInputService(inputConfiguration),
+            new DragPointHipInputService(inputConfiguration),
+            new DragPointThighInputService(inputConfiguration),
+            new DragPointTorsoInputService(inputConfiguration));
 
         AddPluginActiveInputHandler(dragPointMeidoInputService);
 
         meidoManager = new(customMaidSceneService, generalDragPointInputService, dragPointMeidoInputService);
 
-        AddPluginActiveInputHandler(new MeidoManager.InputHandler(meidoManager));
+        AddPluginActiveInputHandler(new MeidoManager.InputHandler(meidoManager, inputConfiguration));
 
         environmentManager = new(customMaidSceneService, generalDragPointInputService);
 
@@ -138,7 +144,7 @@ public partial class PluginCore : MonoBehaviour
 
         cameraManager = new(customMaidSceneService);
 
-        AddPluginActiveInputHandler(new CameraManager.InputHandler(cameraManager));
+        AddPluginActiveInputHandler(new CameraManager.InputHandler(cameraManager, inputConfiguration));
 
         effectManager = new();
         effectManager.AddManager<BloomEffectManager>();
@@ -159,15 +165,15 @@ public partial class PluginCore : MonoBehaviour
                 environmentManager,
                 propManager));
 
-        AddPluginActiveInputHandler(new SceneManager.InputHandler(sceneManager));
+        AddPluginActiveInputHandler(new SceneManager.InputHandler(sceneManager, inputConfiguration));
 
         var sceneWindow = new SceneWindow(sceneManager);
 
-        AddPluginActiveInputHandler(new SceneWindow.InputHandler(sceneWindow));
+        AddPluginActiveInputHandler(new SceneWindow.InputHandler(sceneWindow, inputConfiguration));
 
         var messageWindow = new MessageWindow(messageWindowManager);
 
-        AddPluginActiveInputHandler(new MessageWindow.InputHandler(messageWindow));
+        AddPluginActiveInputHandler(new MessageWindow.InputHandler(messageWindow, inputConfiguration));
 
         var maidSwitcherPane = new MaidSwitcherPane(meidoManager, customMaidSceneService);
         var mainWindow = new MainWindow(meidoManager, propManager, lightManager, customMaidSceneService)
@@ -181,7 +187,7 @@ public partial class PluginCore : MonoBehaviour
             [Constants.Window.Settings] = new SettingsWindowPane(),
         };
 
-        AddPluginActiveInputHandler(new MainWindow.InputHandler(mainWindow));
+        AddPluginActiveInputHandler(new MainWindow.InputHandler(mainWindow, inputConfiguration));
 
         windowManager = new()
         {

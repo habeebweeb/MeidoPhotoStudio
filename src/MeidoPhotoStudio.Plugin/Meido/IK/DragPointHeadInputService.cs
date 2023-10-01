@@ -1,40 +1,34 @@
-using DragType = MeidoPhotoStudio.Plugin.DragPoint.DragType;
+using MeidoPhotoStudio.Plugin.Core.Configuration;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class DragPointHeadInputService
     : DragPointInputRepository<DragPointHead>, IDragPointInputRepository<DragPointMeido>
 {
+    public DragPointHeadInputService(InputConfiguration inputConfiguration)
+        : base(inputConfiguration)
+    {
+    }
+
     void IDragPointInputRepository<DragPointMeido>.AddDragHandle(DragPointMeido dragHandle) =>
         AddDragHandle((DragPointHead)dragHandle);
 
     void IDragPointInputRepository<DragPointMeido>.RemoveDragHandle(DragPointMeido dragHandle) =>
         RemoveDragHandle((DragPointHead)dragHandle);
 
-    protected override DragType CheckDragType()
+    protected override DragHandleMode CheckDragType()
     {
-        var shift = InputManager.Shift;
-        var alt = InputManager.Alt;
-
-        if (alt && InputManager.Control)
-        {
-            // eyes
-            return shift
-                ? DragType.MoveY
-                : DragType.MoveXZ;
-        }
-        else if (alt)
-        {
-            // head
-            return shift
-                ? DragType.RotLocalY
-                : DragType.RotLocalXZ;
-        }
+        if (inputConfiguration[Hotkey.RotateEyesChest].IsPressed())
+            return DragHandleMode.RotateEyesChest;
+        else if (inputConfiguration[Hotkey.RotateEyesChestAlternate].IsPressed())
+            return DragHandleMode.RotateEyesChestAlternate;
+        else if (inputConfiguration[Hotkey.RotateBody].IsPressed())
+            return DragHandleMode.RotateBody;
+        else if (inputConfiguration[Hotkey.RotateBodyAlternate].IsPressed())
+            return DragHandleMode.RotateBodyAlternate;
+        else if (inputConfiguration[Hotkey.Select].IsPressed())
+            return DragHandleMode.Select;
         else
-        {
-            return InputManager.GetKey(MpsKey.DragSelect)
-                ? DragType.Select
-                : DragType.None;
-        }
+            return DragHandleMode.None;
     }
 }

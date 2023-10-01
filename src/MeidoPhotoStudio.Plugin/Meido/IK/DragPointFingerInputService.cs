@@ -1,12 +1,14 @@
-using DragType = MeidoPhotoStudio.Plugin.DragPoint.DragType;
+using MeidoPhotoStudio.Plugin.Core.Configuration;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class DragPointFingerInputService
     : DragPointInputRepository<DragPointFinger>, IDragPointInputRepository<DragPointMeido>
 {
-    static DragPointFingerInputService() =>
-        InputManager.Register(MpsKey.DragFinger, UnityEngine.KeyCode.Space, "Show finger handles");
+    public DragPointFingerInputService(InputConfiguration inputConfiguration)
+        : base(inputConfiguration)
+    {
+    }
 
     void IDragPointInputRepository<DragPointMeido>.AddDragHandle(DragPointMeido dragHandle) =>
         AddDragHandle((DragPointFinger)dragHandle);
@@ -14,10 +16,13 @@ public class DragPointFingerInputService
     void IDragPointInputRepository<DragPointMeido>.RemoveDragHandle(DragPointMeido dragHandle) =>
         RemoveDragHandle((DragPointFinger)dragHandle);
 
-    protected override DragType CheckDragType() =>
-        !InputManager.GetKey(MpsKey.DragFinger)
-            ? DragType.None
-            : InputManager.Shift
-                ? DragType.RotLocalY
-                : DragType.MoveXZ;
+    protected override DragHandleMode CheckDragType()
+    {
+        if (inputConfiguration[Hotkey.RotateFinger].IsPressed())
+            return DragHandleMode.RotateFinger;
+        else if (inputConfiguration[Hotkey.DragFinger].IsPressed())
+            return DragHandleMode.DragFinger;
+        else
+            return DragHandleMode.None;
+    }
 }

@@ -127,35 +127,35 @@ public abstract class DragPointGeneral : DragPoint
 
     protected override void Drag()
     {
-        if (CurrentDragType is DragType.Select or DragType.Delete)
+        if (Special)
             return;
 
         var cursorPosition = CursorPosition();
         var mouseDelta = MouseDelta();
 
         // CurrentDragType can only be one thing at a time afaik so maybe refactor to else if chain
-        if (CurrentDragType is DragType.MoveXZ)
+        if (CurrentDragType is DragHandleMode.MoveWorldXZ)
         {
             MyObject.position = new(cursorPosition.x, MyObject.position.y, cursorPosition.z);
 
             OnMove();
         }
 
-        if (CurrentDragType is DragType.MoveY)
+        if (CurrentDragType is DragHandleMode.MoveWorldY)
         {
             MyObject.position = new(MyObject.position.x, cursorPosition.y, MyObject.position.z);
 
             OnMove();
         }
 
-        if (CurrentDragType is DragType.RotY)
+        if (CurrentDragType is DragHandleMode.RotateWorldY)
         {
             MyObject.rotation = currentRotation;
             MyObject.Rotate(Vector3.up, -mouseDelta.x / 3f, Space.World);
             OnRotate();
         }
 
-        if (CurrentDragType is DragType.RotLocalXZ)
+        if (CurrentDragType is DragHandleMode.RotateLocalXZ)
         {
             MyObject.rotation = currentRotation;
 
@@ -170,7 +170,7 @@ public abstract class DragPointGeneral : DragPoint
             OnRotate();
         }
 
-        if (CurrentDragType is DragType.RotLocalY)
+        if (CurrentDragType is DragHandleMode.RotateLocalY)
         {
             MyObject.rotation = currentRotation;
             MyObject.Rotate(Vector3.up * -mouseDelta.x / 2.2f);
@@ -178,7 +178,7 @@ public abstract class DragPointGeneral : DragPoint
             OnRotate();
         }
 
-        if (CurrentDragType is DragType.Scale)
+        if (CurrentDragType is DragHandleMode.Scale)
         {
             scaling = true;
 

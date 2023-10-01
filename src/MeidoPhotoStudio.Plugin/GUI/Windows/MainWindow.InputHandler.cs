@@ -1,5 +1,6 @@
 using System;
 
+using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Service.Input;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -10,18 +11,19 @@ public partial class MainWindow
     public class InputHandler : IInputHandler
     {
         private readonly MainWindow mainWindow;
+        private readonly InputConfiguration inputConfiguration;
 
-        static InputHandler() =>
-            InputManager.Register(MpsKey.ToggleUI, UnityEngine.KeyCode.Tab, "Show/hide all UI");
-
-        public InputHandler(MainWindow mainWindow) =>
+        public InputHandler(MainWindow mainWindow, InputConfiguration inputConfiguration)
+        {
             this.mainWindow = mainWindow ?? throw new ArgumentNullException(nameof(mainWindow));
+            this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
+        }
 
         public bool Active { get; } = true;
 
         public void CheckInput()
         {
-            if (InputManager.GetKeyDown(MpsKey.ToggleUI))
+            if (inputConfiguration[Shortcut.ToggleMainWindow].IsDown())
                 mainWindow.Visible = !mainWindow.Visible;
         }
     }

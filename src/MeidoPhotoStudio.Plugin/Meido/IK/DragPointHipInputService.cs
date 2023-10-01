@@ -2,30 +2,26 @@ using MeidoPhotoStudio.Plugin.Core.Configuration;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class DragPointLimbInputService
-    : DragPointInputRepository<DragPointLimb>, IDragPointInputRepository<DragPointMeido>
+public class DragPointHipInputService
+    : DragPointInputRepository<DragPointHip>, IDragPointInputRepository<DragPointMeido>
 {
-    public DragPointLimbInputService(InputConfiguration inputConfiguration)
+    public DragPointHipInputService(InputConfiguration inputConfiguration)
         : base(inputConfiguration)
     {
     }
 
     void IDragPointInputRepository<DragPointMeido>.AddDragHandle(DragPointMeido dragHandle) =>
-        AddDragHandle((DragPointLimb)dragHandle);
+        AddDragHandle((DragPointHip)dragHandle);
 
     void IDragPointInputRepository<DragPointMeido>.RemoveDragHandle(DragPointMeido dragHandle) =>
-        RemoveDragHandle((DragPointLimb)dragHandle);
+        RemoveDragHandle((DragPointHip)dragHandle);
 
     protected override DragHandleMode CheckDragType()
     {
-        if (inputConfiguration[Hotkey.DragLowerLimb].IsPressed())
-            return DragHandleMode.DragLowerLimb;
-        else if (inputConfiguration[Hotkey.DragMiddleBone].IsPressed())
-            return DragHandleMode.DragMiddleBone;
-        else if (inputConfiguration[Hotkey.RotateBody].IsPressed())
-            return DragHandleMode.RotateBody;
-        else if (inputConfiguration[Hotkey.RotateBodyAlternate].IsPressed())
-            return DragHandleMode.RotateBodyAlternate;
+        if (inputConfiguration[Hotkey.HipBoneRotation].IsPressed())
+            return DragHandleMode.HipBoneRotation;
+        else if (inputConfiguration[Hotkey.MoveLocalY].IsPressed())
+            return DragHandleMode.MoveLocalY;
         else if (IgnoredInput())
             return DragHandleMode.Ignore;
         else
@@ -33,10 +29,10 @@ public class DragPointLimbInputService
     }
 
     private bool IgnoredInput() =>
-        inputConfiguration[Hotkey.DragFinger].IsPressed() || inputConfiguration[Hotkey.RotateFinger].IsPressed() ||
         inputConfiguration[Hotkey.Select].IsPressed() || inputConfiguration[Hotkey.Delete].IsPressed() ||
         inputConfiguration[Hotkey.MoveWorldXZ].IsPressed() || inputConfiguration[Hotkey.MoveWorldY].IsPressed() ||
         inputConfiguration[Hotkey.RotateWorldY].IsPressed() || inputConfiguration[Hotkey.RotateLocalY].IsPressed() ||
         inputConfiguration[Hotkey.RotateLocalXZ].IsPressed() || inputConfiguration[Hotkey.Scale].IsPressed() ||
-        inputConfiguration[Hotkey.HipBoneRotation].IsPressed();
+        inputConfiguration[Hotkey.DragUpperBone].IsPressed() || inputConfiguration[Hotkey.DragMiddleBone].IsPressed() ||
+        inputConfiguration[Hotkey.DragLowerBone].IsPressed();
 }

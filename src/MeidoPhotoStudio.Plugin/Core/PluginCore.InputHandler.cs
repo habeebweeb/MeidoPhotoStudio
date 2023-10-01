@@ -1,7 +1,7 @@
 using System;
 
+using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Service.Input;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core;
 
@@ -11,23 +11,22 @@ public partial class PluginCore
     private class InputHandler : IInputHandler
     {
         private readonly PluginCore pluginCore;
+        private readonly InputConfiguration inputConfiguration;
 
-        static InputHandler() =>
-            InputManager.Register(MpsKey.Activate, KeyCode.F6, "Activate/deactivate MeidoPhotoStudio");
-
-        public InputHandler(PluginCore pluginCore)
+        public InputHandler(PluginCore pluginCore, InputConfiguration inputConfiguration)
         {
             if (pluginCore == null)
                 throw new ArgumentNullException(nameof(pluginCore));
 
             this.pluginCore = pluginCore;
+            this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
         }
 
         public bool Active { get; } = true;
 
         public void CheckInput()
         {
-            if (InputManager.GetKeyDown(MpsKey.Activate))
+            if (inputConfiguration[Shortcut.ActivatePlugin].IsDown())
                 pluginCore.ToggleActive();
         }
     }

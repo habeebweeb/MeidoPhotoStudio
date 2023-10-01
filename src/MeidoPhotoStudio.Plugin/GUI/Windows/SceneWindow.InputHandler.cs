@@ -1,5 +1,6 @@
 using System;
 
+using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Service.Input;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -10,18 +11,19 @@ public partial class SceneWindow
     public class InputHandler : IInputHandler
     {
         private readonly SceneWindow sceneWindow;
+        private readonly InputConfiguration inputConfiguration;
 
-        static InputHandler() =>
-            InputManager.Register(MpsKey.OpenSceneManager, UnityEngine.KeyCode.F8, "Hide/show scene manager");
-
-        public InputHandler(SceneWindow sceneWindow) =>
+        public InputHandler(SceneWindow sceneWindow, InputConfiguration inputConfiguration)
+        {
             this.sceneWindow = sceneWindow ?? throw new ArgumentNullException(nameof(sceneWindow));
+            this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
+        }
 
         public bool Active { get; } = true;
 
         public void CheckInput()
         {
-            if (InputManager.GetKeyDown(MpsKey.OpenSceneManager))
+            if (inputConfiguration[Shortcut.ToggleSceneWindow].IsDown())
                 sceneWindow.Visible = !sceneWindow.Visible;
         }
     }
