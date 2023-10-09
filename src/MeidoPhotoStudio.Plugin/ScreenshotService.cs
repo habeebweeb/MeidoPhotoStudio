@@ -57,7 +57,7 @@ public partial class ScreenshotService : MonoBehaviour
         }
     }
 
-    public void TakeScreenshotToTexture(Action<Texture2D> screenshotCallback)
+    public void TakeScreenshotToTexture(Action<Texture2D> screenshotCallback, bool drawMessageBox = true)
     {
         if (takingScreenshot)
         {
@@ -72,11 +72,15 @@ public partial class ScreenshotService : MonoBehaviour
         StartCoroutine(DoScreenshot(ScreenshotAction));
 
         void ScreenshotAction() =>
-            screenshotCallback?.Invoke(TakeInMemoryScreenshot());
+            screenshotCallback?.Invoke(TakeInMemoryScreenshot(drawMessageBox));
 
-        Texture2D TakeInMemoryScreenshot()
+        Texture2D TakeInMemoryScreenshot(bool drawMessageBox)
         {
+            if (drawMessageBox)
+                return TakeScreenshot();
+
             var renderTexture = new RenderTexture(Screen.width, Screen.height, 24);
+
             RenderTexture.active = renderTexture;
 
             var mainCamera = GameMain.Instance.MainCamera;
@@ -84,15 +88,23 @@ public partial class ScreenshotService : MonoBehaviour
             mainCamera.camera.targetTexture = renderTexture;
             mainCamera.camera.Render();
 
-            var screenshot = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
-            screenshot.ReadPixels(new(0f, 0f, renderTexture.width, renderTexture.height), 0, 0, false);
-            screenshot.Apply();
+            var screenshot = TakeScreenshot();
 
             mainCamera.camera.targetTexture = null;
             RenderTexture.active = null;
             DestroyImmediate(renderTexture);
 
             return screenshot;
+
+            Texture2D TakeScreenshot()
+            {
+                var screenshot = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
+
+                screenshot.ReadPixels(new(0f, 0f, Screen.width, Screen.height), 0, 0, false);
+                screenshot.Apply();
+
+                return screenshot;
+            }
         }
     }
 
