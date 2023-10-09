@@ -2,53 +2,68 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using MeidoPhotoStudio.Plugin.Core;
+using MeidoPhotoStudio.Plugin.Core.Configuration;
+using MeidoPhotoStudio.Plugin.Input;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class SettingsWindowPane : BaseMainWindowPane
 {
-    private static readonly string[] HeaderTranslationKeys =
-    {
-        "controls", "controlsGeneral", "controlsMaids", "controlsCamera", "controlsDragPoint", "controlsScene",
-    };
-
-    private static readonly Dictionary<string, string> Headers = new();
-    private static readonly string[] ActionTranslationKeys;
-    private static readonly string[] ActionLabels;
-
-    private readonly Button reloadTranslationButton;
+    private readonly Dictionary<Hotkey, string> hotkeyMapping;
+    private readonly Dictionary<Hotkey, string> hotkeyName;
+    private readonly InputConfiguration inputConfiguration;
+    private readonly InputRemapper inputRemapper;
     private readonly Button reloadAllPresetsButton;
-    private readonly KeyRebindButton[] rebindButtons;
+    private readonly Button reloadTranslationButton;
+    private readonly Dictionary<SettingHeader, string> settingHeaders;
+    private readonly Dictionary<Shortcut, string> shortcutMapping;
+    private readonly Dictionary<Shortcut, string> shortcutName;
 
-    static SettingsWindowPane()
+    private Hotkey currentHotkey;
+    private Shortcut currentShortcut;
+    private string cancelRebindLabel = "Cancel";
+    private string pushAnyKeyLabel = "Push any key combo";
+
+    public SettingsWindowPane(InputConfiguration inputConfiguration, InputRemapper inputRemapper)
     {
-        ActionTranslationKeys = Enum.GetNames(typeof(MpsKey))
-            .Select(action => char.ToLowerInvariant(action[0]) + action.Substring(1))
-            .ToArray();
+        this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
+        this.inputRemapper = inputRemapper ? inputRemapper : throw new ArgumentNullException(nameof(inputRemapper));
 
-        ActionLabels = new string[ActionTranslationKeys.Length];
-    }
+        settingHeaders = ((SettingHeader[])Enum.GetValues(typeof(SettingHeader)))
+            .ToDictionary(
+                setting => setting,
+                setting => Translation.Get("settingsHeaders", EnumToLower(setting)),
+                EnumEqualityComparer<SettingHeader>.Instance);
 
-    public SettingsWindowPane()
-    {
-        rebindButtons = new KeyRebindButton[ActionTranslationKeys.Length];
+        var shortcutValues = (Shortcut[])Enum.GetValues(typeof(Shortcut));
 
-        for (var i = 0; i < rebindButtons.Length; i++)
-        {
-            var action = (MpsKey)i;
-            var button = new KeyRebindButton(KeyCode.None);
+        shortcutMapping = shortcutValues
+            .ToDictionary(
+                shortcut => shortcut,
+                shortcut => inputConfiguration[shortcut].ToString(),
+                EnumEqualityComparer<Shortcut>.Instance);
 
-            button.ControlEvent += (_, _) =>
-                InputManager.Rebind(action, button.KeyCode);
+        shortcutName = shortcutValues
+            .ToDictionary(
+                shortcut => shortcut,
+                shortcut => Translation.Get("controls", EnumToLower(shortcut)),
+                EnumEqualityComparer<Shortcut>.Instance);
 
-            rebindButtons[i] = button;
+        var hotkeyValues = (Hotkey[])Enum.GetValues(typeof(Hotkey));
 
-            ActionLabels[i] = Translation.Get("controls", ActionTranslationKeys[i]);
-        }
+        hotkeyMapping = hotkeyValues
+            .ToDictionary(
+                hotkey => hotkey,
+                hotkey => inputConfiguration[hotkey].ToString(),
+                EnumEqualityComparer<Hotkey>.Instance);
 
-        for (var i = 0; i < HeaderTranslationKeys.Length; i++)
-            Headers[HeaderTranslationKeys[i]] = Translation.Get("settingsHeaders", HeaderTranslationKeys[i]);
+        hotkeyName = hotkeyValues
+            .ToDictionary(
+                hotkey => hotkey,
+                hotkey => Translation.Get("controls", EnumToLower(hotkey)),
+                EnumEqualityComparer<Hotkey>.Instance);
 
         reloadTranslationButton = new(Translation.Get("settingsLabels", "reloadTranslation"));
         reloadTranslationButton.ControlEvent += (_, _) =>
@@ -61,89 +76,200 @@ public class SettingsWindowPane : BaseMainWindowPane
             Constants.InitializeHandPresets();
             Constants.InitializeCustomPoses();
         };
+
+        pushAnyKeyLabel = Translation.Get("settingsLabels", "pushAnyKey");
+        cancelRebindLabel = Translation.Get("settingsLabels", "cancelRebind");
+    }
+
+    private enum SettingHeader
+    {
+        Controls,
+        Reload,
+        GeneralControls,
+        CameraControls,
+        GeneralDragHandleControls,
+        MaidDragHandleControls,
     }
 
     public override void Draw()
     {
+        GUI.enabled = !inputRemapper.Listening;
+
         scrollPos = GUILayout.BeginScrollView(scrollPos);
 
-        MpsGui.Header(Headers["controls"]);
-        MpsGui.WhiteLine();
+        DrawHeader(SettingHeader.Controls);
 
-        MpsGui.Header(Headers["controlsGeneral"]);
-        MpsGui.WhiteLine();
+        DrawGeneralControls();
+        DrawCameraControls();
+        DrawGeneralDragHandleControls();
+        DrawMaidDragHandleControls();
 
-        for (var key = MpsKey.Activate; key <= MpsKey.ToggleMessage; key++)
-            DrawSetting(key);
+        DrawHeader(SettingHeader.Reload);
 
-        MpsGui.Header(Headers["controlsMaids"]);
-        MpsGui.WhiteLine();
-        DrawSetting(MpsKey.MeidoUndressing);
-
-        MpsGui.Header(Headers["controlsCamera"]);
-        MpsGui.WhiteLine();
-
-        for (var key = MpsKey.CameraLayer; key <= MpsKey.CameraLoad; key++)
-            DrawSetting(key);
-
-        MpsGui.Header(Headers["controlsDragPoint"]);
-        MpsGui.WhiteLine();
-
-        for (var key = MpsKey.DragSelect; key <= MpsKey.DragFinger; key++)
-            DrawSetting(key);
-
-        MpsGui.Header(Headers["controlsScene"]);
-        MpsGui.WhiteLine();
-
-        for (var key = MpsKey.SaveScene; key <= MpsKey.OpenSceneManager; key++)
-            DrawSetting(key);
-
-        GUI.enabled = !InputManager.Listening;
-
-        // Translation settings
-        MpsGui.WhiteLine();
         reloadTranslationButton.Draw();
-
         reloadAllPresetsButton.Draw();
 
         GUILayout.EndScrollView();
 
         GUI.enabled = true;
-    }
 
-    public override void UpdatePanes()
-    {
-        for (var i = 0; i < rebindButtons.Length; i++)
-            rebindButtons[i].KeyCode = InputManager.GetActionKey((MpsKey)i);
+        void DrawGeneralControls()
+        {
+            DrawHeader(SettingHeader.GeneralControls);
+
+            for (var shortcut = Shortcut.ActivatePlugin; shortcut <= Shortcut.QuickLoadScene; shortcut++)
+                DrawControl(shortcut);
+        }
+
+        void DrawCameraControls()
+        {
+            DrawHeader(SettingHeader.CameraControls);
+
+            for (var shortcut = Shortcut.SaveCamera; shortcut <= Shortcut.ToggleCamera5; shortcut++)
+                DrawControl(shortcut);
+
+            for (var hotkey = Hotkey.FastCamera; hotkey <= Hotkey.SlowCamera; hotkey++)
+                DrawControl(hotkey);
+        }
+
+        void DrawGeneralDragHandleControls()
+        {
+            DrawHeader(SettingHeader.GeneralDragHandleControls);
+
+            for (var hotkey = Hotkey.Select; hotkey <= Hotkey.Scale; hotkey++)
+                DrawControl(hotkey);
+        }
+
+        void DrawMaidDragHandleControls()
+        {
+            DrawHeader(SettingHeader.MaidDragHandleControls);
+
+            for (var hotkey = Hotkey.DragFinger; hotkey <= Hotkey.MoveLocalY; hotkey++)
+                DrawControl(hotkey);
+        }
+
+        void DrawHeader(SettingHeader settingHeader)
+        {
+            MpsGui.Header(settingHeaders[settingHeader]);
+            MpsGui.WhiteLine();
+        }
+
+        void DrawControl(Enum key)
+        {
+            var isShortcut = key.GetType() == typeof(Shortcut);
+
+            DrawShortcutLabel(key, isShortcut);
+
+            GUILayout.BeginHorizontal();
+
+            if (CurrentControlIsListening(key, isShortcut))
+            {
+                GUILayout.Button(pushAnyKeyLabel, GUILayout.ExpandWidth(true));
+
+                DrawCancelListeningButton();
+            }
+            else if (DrawControlButton(key, isShortcut))
+            {
+                ListenForNewKeyCombo(key, isShortcut);
+            }
+
+            if (GUILayout.Button("x", GUILayout.ExpandWidth(false)))
+                ClearButtonCombo(key, isShortcut);
+
+            GUILayout.EndHorizontal();
+
+            bool CurrentControlIsListening(Enum key, bool isShortcut) =>
+                inputRemapper.Listening && (isShortcut
+                    ? (Shortcut)key == currentShortcut
+                    : (Hotkey)key == currentHotkey);
+
+            bool DrawControlButton(Enum key, bool isShortcut)
+            {
+                var mapping = isShortcut
+                    ? shortcutMapping[(Shortcut)key]
+                    : hotkeyMapping[(Hotkey)key];
+
+                return GUILayout.Button(mapping, GUILayout.ExpandWidth(true));
+            }
+
+            void ListenForNewKeyCombo(Enum key, bool isShortcut)
+            {
+                if (isShortcut)
+                {
+                    inputRemapper.ListenForShortcut(OnControlRemapped);
+                    currentShortcut = (Shortcut)key;
+                }
+                else
+                {
+                    inputRemapper.ListenForHotkey(OnControlRemapped);
+                    currentHotkey = (Hotkey)key;
+                }
+
+                void OnControlRemapped(KeyboardInput input) =>
+                    SetCombo(key, isShortcut, input);
+            }
+
+            void ClearButtonCombo(Enum key, bool isShortcut) =>
+                SetCombo(key, isShortcut, isShortcut ? KeyboardShortcut.Empty : KeyboardHotkey.Empty);
+
+            void SetCombo(Enum key, bool isShortcut, KeyboardInput input)
+            {
+                if (isShortcut)
+                {
+                    var shortcut = (KeyboardShortcut)input;
+
+                    inputConfiguration[(Shortcut)key] = shortcut;
+                    shortcutMapping[(Shortcut)key] = shortcut.ToString();
+                }
+                else
+                {
+                    var hotkey = (KeyboardHotkey)input;
+
+                    inputConfiguration[(Hotkey)key] = hotkey;
+                    hotkeyMapping[(Hotkey)key] = hotkey.ToString();
+                }
+            }
+
+            void DrawCancelListeningButton()
+            {
+                GUI.enabled = true;
+
+                if (GUILayout.Button(cancelRebindLabel))
+                    inputRemapper.Cancel();
+
+                GUI.enabled = false;
+            }
+
+            void DrawShortcutLabel(Enum key, bool isShortcut)
+            {
+                var keyName = isShortcut ? shortcutName[(Shortcut)key] : hotkeyName[(Hotkey)key];
+
+                GUILayout.Label(keyName, GUILayout.ExpandWidth(false));
+            }
+        }
     }
 
     protected override void ReloadTranslation()
     {
-        for (var i = 0; i < rebindButtons.Length; i++)
-            ActionLabels[i] = Translation.Get("controls", ActionTranslationKeys[i]);
+        foreach (var shortcut in (Shortcut[])Enum.GetValues(typeof(Shortcut)))
+            shortcutName[shortcut] = Translation.Get("controls", EnumToLower(shortcut));
 
-        for (var i = 0; i < HeaderTranslationKeys.Length; i++)
-            Headers[HeaderTranslationKeys[i]] = Translation.Get("settingsHeaders", HeaderTranslationKeys[i]);
+        foreach (var hotkey in (Hotkey[])Enum.GetValues(typeof(Hotkey)))
+            hotkeyName[hotkey] = Translation.Get("controls", EnumToLower(hotkey));
+
+        foreach (var settingHeader in (SettingHeader[])Enum.GetValues(typeof(SettingHeader)))
+            settingHeaders[settingHeader] = Translation.Get("settingsHeaders", EnumToLower(settingHeader));
 
         reloadTranslationButton.Label = Translation.Get("settingsLabels", "reloadTranslation");
         reloadAllPresetsButton.Label = Translation.Get("settingsLabels", "reloadAllPresets");
+        pushAnyKeyLabel = Translation.Get("settingsLabels", "pushAnyKey");
+        cancelRebindLabel = Translation.Get("settingsLabels", "cancelRebind");
     }
 
-    private void DrawSetting(MpsKey key)
+    private static string EnumToLower(Enum enumValue)
     {
-        var keyIndex = (int)key;
+        var enumString = enumValue.ToString();
 
-        GUILayout.BeginHorizontal();
-        GUILayout.Label(ActionLabels[keyIndex]);
-        GUILayout.FlexibleSpace();
-        rebindButtons[keyIndex].Draw(GUILayout.Width(90f));
-
-        if (GUILayout.Button("×", GUILayout.ExpandWidth(false)))
-        {
-            rebindButtons[keyIndex].KeyCode = KeyCode.None;
-            InputManager.Rebind(key, KeyCode.None);
-        }
-
-        GUILayout.EndHorizontal();
+        return char.ToLower(enumString[0]) + enumString.Substring(1);
     }
 }

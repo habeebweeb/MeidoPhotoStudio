@@ -23,6 +23,7 @@ public partial class PluginCore : MonoBehaviour
     private InputPollingService inputPollingService;
     private bool initialized;
     private InputConfiguration inputConfiguration;
+    private InputRemapper inputRemapper;
     private bool active;
     private bool uiActive;
 
@@ -111,6 +112,9 @@ public partial class PluginCore : MonoBehaviour
         screenshotService = gameObject.AddComponent<ScreenshotService>();
         screenshotService.PluginCore = this;
 
+        inputRemapper = gameObject.AddComponent<InputRemapper>();
+        inputRemapper.InputPollingService = inputPollingService;
+
         AddPluginActiveInputHandler(new ScreenshotService.InputHandler(screenshotService, inputConfiguration));
 
         var generalDragPointInputService = new GeneralDragPointInputService(inputConfiguration);
@@ -176,7 +180,7 @@ public partial class PluginCore : MonoBehaviour
         AddPluginActiveInputHandler(new MessageWindow.InputHandler(messageWindow, inputConfiguration));
 
         var maidSwitcherPane = new MaidSwitcherPane(meidoManager, customMaidSceneService);
-        var mainWindow = new MainWindow(meidoManager, propManager, lightManager, customMaidSceneService)
+        var mainWindow = new MainWindow(meidoManager, propManager, lightManager, customMaidSceneService, inputRemapper)
         {
             [Constants.Window.Call] = new CallWindowPane(meidoManager, customMaidSceneService),
             [Constants.Window.Pose] = new PoseWindowPane(meidoManager, maidSwitcherPane),
@@ -184,7 +188,7 @@ public partial class PluginCore : MonoBehaviour
             [Constants.Window.BG] =
                 new BGWindowPane(environmentManager, lightManager, effectManager, sceneWindow, cameraManager),
             [Constants.Window.BG2] = new BG2WindowPane(meidoManager, propManager),
-            [Constants.Window.Settings] = new SettingsWindowPane(),
+            [Constants.Window.Settings] = new SettingsWindowPane(inputConfiguration, inputRemapper),
         };
 
         AddPluginActiveInputHandler(new MainWindow.InputHandler(mainWindow, inputConfiguration));
@@ -289,7 +293,6 @@ public partial class PluginCore : MonoBehaviour
             messageWindowManager.Deactivate();
             windowManager.Deactivate();
             screenshotService.enabled = false;
-            InputManager.Deactivate();
 
             Modal.Close();
 

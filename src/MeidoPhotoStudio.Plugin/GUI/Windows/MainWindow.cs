@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 
+using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ public partial class MainWindow : BaseWindow
     private readonly PropManager propManager;
     private readonly LightManager lightManager;
     private readonly CustomMaidSceneService customMaidSceneService;
+    private readonly InputRemapper inputRemapper;
     private readonly TabsPane tabsPane;
     private readonly Button settingsButton;
 
@@ -26,7 +28,8 @@ public partial class MainWindow : BaseWindow
         MeidoManager meidoManager,
         PropManager propManager,
         LightManager lightManager,
-        CustomMaidSceneService customMaidSceneService)
+        CustomMaidSceneService customMaidSceneService,
+        InputRemapper inputRemapper)
     {
         this.meidoManager = meidoManager;
         this.meidoManager.UpdateMeido += UpdateMeido;
@@ -40,6 +43,7 @@ public partial class MainWindow : BaseWindow
             ChangeWindow(Constants.Window.BG);
 
         this.customMaidSceneService = customMaidSceneService;
+        this.inputRemapper = inputRemapper ? inputRemapper : throw new System.ArgumentNullException(nameof(inputRemapper));
 
         windowPanes = new();
         WindowRect = new(Screen.width, Screen.height * 0.08f, 240f, Screen.height * 0.9f);
@@ -129,7 +133,7 @@ public partial class MainWindow : BaseWindow
         GUILayout.Label(Plugin.PluginString, labelStyle);
         GUILayout.FlexibleSpace();
 
-        GUI.enabled = !InputManager.Listening;
+        GUI.enabled = !inputRemapper.Listening;
 
         settingsButton.Draw(GUILayout.ExpandWidth(false));
 
