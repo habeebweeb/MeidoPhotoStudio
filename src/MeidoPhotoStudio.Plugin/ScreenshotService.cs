@@ -100,8 +100,7 @@ public partial class ScreenshotService : MonoBehaviour
     {
         takingScreenshot = true;
 
-        // TODO: This also hides the message box and that's not wanted.
-        var uiCameras = GetNguiUICameras();
+        var uiPanels = GetNguiUIPanels();
         var enabledCanvases = GetEnabledUguiCanvases();
 
         SetElementsVisible(false);
@@ -120,8 +119,8 @@ public partial class ScreenshotService : MonoBehaviour
 
         void SetElementsVisible(bool visible)
         {
-            foreach (var uiCamera in uiCameras)
-                uiCamera.SetActive(visible);
+            foreach (var uiPanel in uiPanels)
+                uiPanel.alpha = visible ? 1f : 0f;
 
             foreach (var canvas in enabledCanvases)
                 canvas.enabled = visible;
@@ -138,8 +137,15 @@ public partial class ScreenshotService : MonoBehaviour
         Canvas[] GetEnabledUguiCanvases() =>
             Resources.FindObjectsOfTypeAll<Canvas>().Where(canvas => canvas.enabled).ToArray();
 
-        GameObject[] GetNguiUICameras() =>
-            UICamera.list.ToArray().Select(uiCamera => uiCamera.gameObject).ToArray();
+        UIPanel[] GetNguiUIPanels() =>
+            NGUITools.FindActive<UICamera>()
+                .Where(uiCamera => uiCamera.cachedCamera.enabled)
+                .Select(uiCamera => NGUITools.FindInParents<UIRoot>(uiCamera.gameObject))
+                .Where(uiRoot => uiRoot)
+                .SelectMany(uiRoot => uiRoot.transform.Cast<Transform>())
+                .Select(transform => transform.GetComponent<UIPanel>())
+                .Where(uiPanel => uiPanel && uiPanel.name is not "MessageWindowPanel")
+                .ToArray();
 
         void PlayScreenshotSound() =>
             GameMain.Instance.SoundMgr.PlaySe("se022.ogg", false);
