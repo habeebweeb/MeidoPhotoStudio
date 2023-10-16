@@ -1,3 +1,5 @@
+using MeidoPhotoStudio.Plugin.Core.Camera;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public static class CameraUtility
@@ -38,5 +40,26 @@ public static class CameraUtility
         camera.StopAllCoroutines();
         camera.m_bCalcNearClip = true;
         camera.Start();
+    }
+
+    public static CameraInfo GetCameraInfo(this CameraMain camera) =>
+        new(
+            camera.GetTargetPos(),
+            camera.transform.rotation,
+            camera.GetDistance(),
+            camera.camera.fieldOfView);
+
+    public static void ApplyCameraInfo(this CameraMain camera, CameraInfo cameraInfo)
+    {
+        camera.SetTargetPos(cameraInfo.TargetPos);
+        camera.SetDistance(cameraInfo.Distance);
+
+        var cameraEuler = cameraInfo.Angle.eulerAngles;
+
+        camera.SetAroundAngle(new(cameraEuler.y, cameraEuler.x));
+        camera.transform.rotation = cameraInfo.Angle;
+        camera.camera.fieldOfView = cameraInfo.FOV;
+
+        StopAll();
     }
 }

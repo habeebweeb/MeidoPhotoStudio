@@ -1,54 +1,22 @@
 using UnityEngine;
 
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Core.Camera;
 
-public class CameraInfo
+public readonly struct CameraInfo
 {
-    public CameraInfo() =>
-        Reset();
-
-    public Vector3 TargetPos { get; set; }
-
-    public Quaternion Angle { get; set; }
-
-    public float Distance { get; set; }
-
-    public float FOV { get; set; }
-
-    public static CameraInfo FromCamera(CameraMain mainCamera)
+    public CameraInfo(Vector3 targetPosition, Quaternion angle, float distance, float fov)
     {
-        var info = new CameraInfo();
-
-        info.UpdateInfo(mainCamera);
-
-        return info;
+        TargetPos = targetPosition;
+        Angle = angle;
+        Distance = distance;
+        FOV = fov;
     }
 
-    public void Reset()
-    {
-        TargetPos = new(0f, 0.9f, 0f);
-        Angle = Quaternion.Euler(10f, 180f, 0f);
-        Distance = 3f;
-        FOV = 35f;
-    }
+    public Vector3 TargetPos { get; }
 
-    public void UpdateInfo(CameraMain camera)
-    {
-        TargetPos = camera.GetTargetPos();
-        Angle = camera.transform.rotation;
-        Distance = camera.GetDistance();
-        FOV = camera.camera.fieldOfView;
-    }
+    public Quaternion Angle { get; }
 
-    public void Apply(CameraMain camera)
-    {
-        camera.SetTargetPos(TargetPos);
-        camera.SetDistance(Distance);
+    public float Distance { get; }
 
-        var cameraEuler = Angle.eulerAngles;
-
-        camera.SetAroundAngle(new(cameraEuler.y, cameraEuler.x));
-        camera.transform.rotation = Angle;
-        camera.camera.fieldOfView = FOV;
-    }
+    public float FOV { get; }
 }

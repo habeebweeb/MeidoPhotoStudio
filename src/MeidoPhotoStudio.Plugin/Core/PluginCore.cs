@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.Camera;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Service;
 using MeidoPhotoStudio.Plugin.Service.Input;
@@ -16,8 +17,11 @@ public partial class PluginCore : MonoBehaviour
     private MessageWindowManager messageWindowManager;
     private LightManager lightManager;
     private PropManager propManager;
+    private SubCameraController subCameraController;
     private EffectManager effectManager;
-    private CameraManager cameraManager;
+    private CameraController cameraController;
+    private CameraSpeedController cameraSpeedController;
+    private CameraSaveSlotController cameraSaveSlotController;
     private ScreenshotService screenshotService;
     private CustomMaidSceneService customMaidSceneService;
     private InputPollingService inputPollingService;
@@ -84,7 +88,6 @@ public partial class PluginCore : MonoBehaviour
         if (!active)
             return;
 
-        cameraManager.Update();
         windowManager.Update();
     }
 
@@ -146,9 +149,18 @@ public partial class PluginCore : MonoBehaviour
         lightManager = new(generalDragPointInputService);
         propManager = new(meidoManager, generalDragPointInputService);
 
-        cameraManager = new(customMaidSceneService);
+        cameraController = new(customMaidSceneService);
+        cameraController.Activate();
 
-        AddPluginActiveInputHandler(new CameraManager.InputHandler(cameraManager, inputConfiguration));
+        cameraSpeedController = new();
+        cameraSaveSlotController = new(cameraController);
+        cameraSaveSlotController.Activate();
+
+        subCameraController = gameObject.AddComponent<SubCameraController>();
+
+        AddPluginActiveInputHandler(
+            new CameraInputHandler(
+                cameraController, cameraSpeedController, cameraSaveSlotController, inputConfiguration));
 
         effectManager = new();
         effectManager.AddManager<BloomEffectManager>();
@@ -163,7 +175,7 @@ public partial class PluginCore : MonoBehaviour
             new(
                 meidoManager,
                 messageWindowManager,
-                cameraManager,
+                cameraSaveSlotController,
                 lightManager,
                 effectManager,
                 environmentManager,
@@ -186,7 +198,13 @@ public partial class PluginCore : MonoBehaviour
             [Constants.Window.Pose] = new PoseWindowPane(meidoManager, maidSwitcherPane),
             [Constants.Window.Face] = new FaceWindowPane(meidoManager, maidSwitcherPane),
             [Constants.Window.BG] =
-                new BGWindowPane(environmentManager, lightManager, effectManager, sceneWindow, cameraManager),
+                new BGWindowPane(
+                    environmentManager,
+                    lightManager,
+                    effectManager,
+                    sceneWindow,
+                    cameraController,
+                    cameraSaveSlotController),
             [Constants.Window.BG2] = new BG2WindowPane(meidoManager, propManager),
             [Constants.Window.Settings] = new SettingsWindowPane(inputConfiguration, inputRemapper),
         };
@@ -224,12 +242,14 @@ public partial class PluginCore : MonoBehaviour
         {
             meidoManager.Activate();
             environmentManager.Activate();
-            cameraManager.Activate();
+            cameraController.Activate();
             propManager.Activate();
             lightManager.Activate();
             effectManager.Activate();
             messageWindowManager.Activate();
             windowManager.Activate();
+            subCameraController.Activate();
+            cameraSaveSlotController.Activate();
 
             screenshotService.enabled = true;
         }
@@ -286,12 +306,14 @@ public partial class PluginCore : MonoBehaviour
 
             meidoManager.Deactivate();
             environmentManager.Deactivate();
-            cameraManager.Deactivate();
+            cameraController.Deactivate();
             propManager.Deactivate();
             lightManager.Deactivate();
             effectManager.Deactivate();
             messageWindowManager.Deactivate();
             windowManager.Deactivate();
+            cameraSpeedController.Deactivate();
+            subCameraController.Deactivate();
             screenshotService.enabled = false;
 
             Modal.Close();

@@ -1,8 +1,10 @@
 using System.IO;
 
+using MeidoPhotoStudio.Plugin.Core.Camera;
+
 namespace MeidoPhotoStudio.Plugin;
 
-public class CameraInfoSerializer : Serializer<CameraInfo>
+public class CameraInfoSerializer : SimpleSerializer<CameraInfo>
 {
     private const short Version = 1;
 
@@ -16,13 +18,14 @@ public class CameraInfoSerializer : Serializer<CameraInfo>
         writer.Write(info.FOV);
     }
 
-    public override void Deserialize(CameraInfo info, BinaryReader reader, SceneMetadata metadata)
+    public override CameraInfo Deserialize(BinaryReader reader, SceneMetadata metadata)
     {
         _ = reader.ReadVersion();
 
-        info.TargetPos = reader.ReadVector3();
-        info.Angle = reader.ReadQuaternion();
-        info.Distance = reader.ReadSingle();
-        info.FOV = reader.ReadSingle();
+        return new(
+            reader.ReadVector3(),
+            reader.ReadQuaternion(),
+            reader.ReadSingle(),
+            reader.ReadSingle());
     }
 }

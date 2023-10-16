@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Text;
 
+using MeidoPhotoStudio.Plugin.Core.Camera;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class SceneSerializer
@@ -13,7 +15,7 @@ public class SceneSerializer
 
     private readonly MeidoManager meidoManager;
     private readonly MessageWindowManager messageWindowManager;
-    private readonly CameraManager cameraManager;
+    private readonly CameraSaveSlotController cameraSaveSlotController;
     private readonly LightManager lightManager;
     private readonly EffectManager effectManager;
     private readonly EnvironmentManager environmentManager;
@@ -22,7 +24,7 @@ public class SceneSerializer
     public SceneSerializer(
         MeidoManager meidoManager,
         MessageWindowManager messageWindowManager,
-        CameraManager cameraManager,
+        CameraSaveSlotController cameraSaveSlotController,
         LightManager lightManager,
         EffectManager effectManager,
         EnvironmentManager environmentManager,
@@ -30,7 +32,7 @@ public class SceneSerializer
     {
         this.meidoManager = meidoManager;
         this.messageWindowManager = messageWindowManager;
-        this.cameraManager = cameraManager;
+        this.cameraSaveSlotController = cameraSaveSlotController;
         this.lightManager = lightManager;
         this.effectManager = effectManager;
         this.environmentManager = environmentManager;
@@ -64,7 +66,7 @@ public class SceneSerializer
             {
                 Serialization.Get<MeidoManager>().Serialize(meidoManager, dataWriter);
                 Serialization.Get<MessageWindowManager>().Serialize(messageWindowManager, dataWriter);
-                Serialization.Get<CameraManager>().Serialize(cameraManager, dataWriter);
+                Serialization.Get<CameraSaveSlotController>().Serialize(cameraSaveSlotController, dataWriter);
             }
 
             Serialization.Get<LightManager>().Serialize(lightManager, dataWriter);
@@ -138,8 +140,8 @@ public class SceneSerializer
                             .Deserialize(messageWindowManager, dataReader, metadata);
 
                         break;
-                    case CameraManager.Header:
-                        Serialization.Get<CameraManager>().Deserialize(cameraManager, dataReader, metadata);
+                    case CameraManagerSerializer.Header:
+                        Serialization.Get<CameraSaveSlotController>().Deserialize(cameraSaveSlotController, dataReader, metadata);
 
                         break;
                     case LightManager.Header:

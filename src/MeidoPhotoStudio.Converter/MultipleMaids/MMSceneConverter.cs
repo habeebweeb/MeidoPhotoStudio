@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using MeidoPhotoStudio.Plugin;
+using MeidoPhotoStudio.Plugin.Core.Camera;
 using MyRoomCustom;
 using UnityEngine;
 
@@ -367,7 +368,7 @@ public static class MMSceneConverter
 
     private static void ConvertCamera(string[] data, BinaryWriter writer)
     {
-        writer.Write(CameraManager.Header);
+        writer.Write("CAMERA");
 
         // CameraManagerSerializer version
         writer.WriteVersion(1);
@@ -395,13 +396,7 @@ public static class MMSceneConverter
         }
 
         Serialization.Get<CameraInfo>().Serialize(
-            new()
-            {
-                TargetPos = cameraTargetPos,
-                Angle = cameraRotation,
-                Distance = cameraDistance,
-            },
-            writer);
+            new(cameraTargetPos, cameraRotation, cameraDistance, 35f), writer);
     }
 
     private static void ConvertLight(string[] data, BinaryWriter writer)

@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.Camera;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -17,14 +18,15 @@ public class BGWindowPane : BaseMainWindowPane
         LightManager lightManager,
         EffectManager effectManager,
         SceneWindow sceneWindow,
-        CameraManager cameraManager)
+        CameraController cameraManager,
+        CameraSaveSlotController cameraSaveSlotController)
     {
         sceneManagerButton = new(Translation.Get("backgroundWindow", "manageScenesButton"));
         sceneManagerButton.ControlEvent += (_, _) =>
             sceneWindow.Visible = !sceneWindow.Visible;
 
         backgroundSelectorPane = AddPane(new BackgroundSelectorPane(environmentManager));
-        cameraPane = AddPane(new CameraPane(cameraManager));
+        cameraPane = AddPane(new CameraPane(cameraManager, cameraSaveSlotController));
         dragPointPane = AddPane(new DragPointPane());
         lightsPane = AddPane(new LightsPane(lightManager));
         effectsPane = AddPane(new EffectsPane()

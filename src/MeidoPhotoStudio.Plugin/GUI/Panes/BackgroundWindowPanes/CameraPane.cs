@@ -1,21 +1,24 @@
 using System.Linq;
 
+using MeidoPhotoStudio.Plugin.Core.Camera;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class CameraPane : BasePane
 {
-    private readonly CameraManager cameraManager;
+    private readonly CameraController cameraManager;
+    private readonly CameraSaveSlotController cameraSaveSlotController;
     private readonly SelectionGrid cameraGrid;
     private readonly Slider zRotationSlider;
     private readonly Slider fovSlider;
 
     private string header;
 
-    public CameraPane(CameraManager cameraManager)
+    public CameraPane(CameraController cameraManager, CameraSaveSlotController cameraSaveSlotController)
     {
         this.cameraManager = cameraManager;
+        this.cameraSaveSlotController = cameraSaveSlotController;
         this.cameraManager.CameraChange += (_, _) =>
             UpdatePane();
 
@@ -55,13 +58,13 @@ public class CameraPane : BasePane
             camera.fieldOfView = fovSlider.Value;
         };
 
-        cameraGrid = new(Enumerable.Range(1, cameraManager.CameraCount).Select(x => x.ToString()).ToArray());
+        cameraGrid = new(Enumerable.Range(1, cameraSaveSlotController.SaveSlotCount).Select(x => x.ToString()).ToArray());
         cameraGrid.ControlEvent += (_, _) =>
         {
             if (updating)
                 return;
 
-            cameraManager.CurrentCameraIndex = cameraGrid.SelectedItemIndex;
+            cameraSaveSlotController.CurrentCameraSlot = cameraGrid.SelectedItemIndex;
         };
 
         header = Translation.Get("cameraPane", "header");
@@ -85,7 +88,7 @@ public class CameraPane : BasePane
         zRotationSlider.Value = camera.transform.eulerAngles.z;
         fovSlider.Value = camera.fieldOfView;
 
-        cameraGrid.SelectedItemIndex = cameraManager.CurrentCameraIndex;
+        cameraGrid.SelectedItemIndex = cameraSaveSlotController.CurrentCameraSlot;
 
         updating = false;
     }

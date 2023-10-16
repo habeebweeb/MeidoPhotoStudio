@@ -1,56 +1,48 @@
 using System.IO;
 
+using MeidoPhotoStudio.Plugin.Core.Camera;
+
 namespace MeidoPhotoStudio.Plugin;
 
-public class CameraManagerSerializer : Serializer<CameraManager>
+public class CameraManagerSerializer : Serializer<CameraSaveSlotController>
 {
+    public const string Header = "CAMERA";
+
     private const short Version = 1;
 
-    private static readonly CameraInfo DummyInfo = new();
-
-    private static Serializer<CameraInfo> InfoSerializer =>
-        Serialization.Get<CameraInfo>();
-
-    public override void Serialize(CameraManager manager, BinaryWriter writer)
+    public override void Serialize(CameraSaveSlotController manager, BinaryWriter writer)
     {
-        writer.Write(CameraManager.Header);
+        writer.Write(Header);
         writer.WriteVersion(Version);
 
-        var cameraInfos = GetCameraInfos(manager);
+        writer.Write(manager.CurrentCameraSlot);
+        writer.Write(manager.SaveSlotCount);
 
-        cameraInfos[manager.CurrentCameraIndex].UpdateInfo(CameraUtility.MainCamera);
-
-        writer.Write(manager.CurrentCameraIndex);
-        writer.Write(manager.CameraCount);
-
-        foreach (var info in cameraInfos)
-            InfoSerializer.Serialize(info, writer);
+        foreach (var cameraInfo in manager)
+            Serialization.GetSimple<CameraInfo>().Serialize(cameraInfo, writer);
 
         CameraUtility.StopAll();
     }
 
-    public override void Deserialize(CameraManager manager, BinaryReader reader, SceneMetadata metadata)
+    public override void Deserialize(CameraSaveSlotController manager, BinaryReader reader, SceneMetadata metadata)
     {
         _ = reader.ReadVersion();
 
-        var camera = CameraUtility.MainCamera;
+        var currentCameraSlot = reader.ReadInt32();
+        var saveSlotCount = reader.ReadInt32();
+        var slots = new CameraInfo[saveSlotCount];
 
-        manager.CurrentCameraIndex = reader.ReadInt32();
+        for (var i = 0; i < saveSlotCount; i++)
+            slots[i] = Serialization.GetSimple<CameraInfo>().Deserialize(reader, metadata);
 
-        var cameraCount = reader.ReadInt32();
-        var cameraInfos = GetCameraInfos(manager);
+        manager.CurrentCameraSlot = currentCameraSlot;
 
-        for (var i = 0; i < cameraCount; i++)
-            InfoSerializer.Deserialize(i >= manager.CameraCount ? DummyInfo : cameraInfos[i], reader, metadata);
+        for (var i = 0; i < manager.SaveSlotCount; i++)
+        {
+            if (i >= slots.Length)
+                break;
 
-        if (metadata.Environment)
-            return;
-
-        cameraInfos[manager.CurrentCameraIndex].Apply(camera);
-
-        CameraUtility.StopAll();
+            manager[i] = slots[i];
+        }
     }
-
-    private static CameraInfo[] GetCameraInfos(CameraManager manager) =>
-        Utility.GetFieldValue<CameraManager, CameraInfo[]>(manager, "cameraInfos");
 }
