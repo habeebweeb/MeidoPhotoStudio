@@ -49,13 +49,7 @@ public class Slider : BaseControl
     public float Value
     {
         get => value;
-        set
-        {
-            this.value = Utility.Bound(value, Left, Right);
-            textField?.SetValueWithoutNotify(this.value);
-
-            OnControlEvent(EventArgs.Empty);
-        }
+        set => SetValue(value);
     }
 
     public float Left
@@ -146,6 +140,19 @@ public class Slider : BaseControl
         this.left = left;
         this.right = right;
         value = Utility.Bound(value, left, right);
+    }
+
+    public void SetValueWithoutNotify(float value) =>
+        SetValue(value, false);
+
+    private void SetValue(float value, bool notify = true)
+    {
+        this.value = Utility.Bound(value, Left, Right);
+
+        textField?.SetValueWithoutNotify(this.value);
+
+        if (notify)
+            OnControlEvent(EventArgs.Empty);
     }
 
     private void TextFieldInputChangedHandler(object sender, EventArgs e)
