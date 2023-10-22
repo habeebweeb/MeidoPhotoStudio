@@ -31,7 +31,16 @@ public class SelectionGrid : BaseControl
         GUILayout.EndHorizontal();
     }
 
-    public void SetItems(string[] items, int selectedItemIndex = -1)
+    public void SetItems(string[] items, int selectedItemIndex = -1) =>
+        SetItems(items, selectedItemIndex, true);
+
+    public void SetItemsWithoutNotify(string[] items, int selectedItemIndex = -1) =>
+        SetItems(items, selectedItemIndex, false);
+
+    public void SetValueWithoutNotify(int value) =>
+        SetValue(value, false);
+
+    private void SetItems(string[] items, int selectedItemIndex, bool notify)
     {
         if (selectedItemIndex < 0)
             selectedItemIndex = SelectedItemIndex;
@@ -47,11 +56,8 @@ public class SelectionGrid : BaseControl
                 toggles[i].Label = item;
             }
 
-        SelectedItemIndex = Mathf.Clamp(selectedItemIndex, 0, items.Length - 1);
+        SetValue(selectedItemIndex, notify);
     }
-
-    public void SetValueWithoutNotify(int value) =>
-        SetValue(value, false);
 
     private void SetValue(int value, bool notify = true)
     {

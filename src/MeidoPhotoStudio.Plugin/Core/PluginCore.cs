@@ -1,5 +1,7 @@
 using MeidoPhotoStudio.Plugin.Core.Camera;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
+using MeidoPhotoStudio.Plugin.Core.Lighting;
+using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 using MeidoPhotoStudio.Plugin.Service;
 using MeidoPhotoStudio.Plugin.Service.Input;
 using UnityEngine;
@@ -15,7 +17,6 @@ public partial class PluginCore : MonoBehaviour
     private MeidoManager meidoManager;
     private EnvironmentManager environmentManager;
     private MessageWindowManager messageWindowManager;
-    private LightManager lightManager;
     private PropManager propManager;
     private SubCameraController subCameraController;
     private EffectManager effectManager;
@@ -30,6 +31,7 @@ public partial class PluginCore : MonoBehaviour
     private InputRemapper inputRemapper;
     private bool active;
     private bool uiActive;
+    private LightRepository lightRepository;
 
     public bool UIActive
     {
@@ -64,6 +66,9 @@ public partial class PluginCore : MonoBehaviour
         UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= OnSceneChanged;
 
         Destroy(GameObject.Find("[MPS DragPoint Parent]"));
+        Destroy(GameObject.Find("[MPS Drag Handle Parent]"));
+        Destroy(GameObject.Find("[MPS Light Parent]"));
+        Destroy(Utility.MousePositionGameObject);
         WfCameraMoveSupportUtility.Destroy();
 
         Constants.Destroy();
@@ -78,6 +83,7 @@ public partial class PluginCore : MonoBehaviour
 
         inputPollingService = gameObject.AddComponent<InputPollingService>();
         inputPollingService.AddInputHandler(new InputHandler(this, inputConfiguration));
+        gameObject.AddComponent<DragHandle.ClickHandler>();
     }
 
     private void Update()
@@ -146,7 +152,13 @@ public partial class PluginCore : MonoBehaviour
         messageWindowManager = new();
         messageWindowManager.Activate();
 
-        lightManager = new(generalDragPointInputService);
+        lightRepository = new LightRepository();
+
+        var lightSelectionController = new LightSelectionController(lightRepository);
+
+        var lightDragHandleRepository = new LightDragHandleRepository(
+            generalDragPointInputService, lightRepository, lightSelectionController);
+
         propManager = new(meidoManager, generalDragPointInputService);
 
         cameraController = new(customMaidSceneService);
@@ -176,7 +188,7 @@ public partial class PluginCore : MonoBehaviour
                 meidoManager,
                 messageWindowManager,
                 cameraSaveSlotController,
-                lightManager,
+                lightRepository,
                 effectManager,
                 environmentManager,
                 propManager));
@@ -192,19 +204,32 @@ public partial class PluginCore : MonoBehaviour
         AddPluginActiveInputHandler(new MessageWindow.InputHandler(messageWindow, inputConfiguration));
 
         var maidSwitcherPane = new MaidSwitcherPane(meidoManager, customMaidSceneService);
-        var mainWindow = new MainWindow(meidoManager, propManager, lightManager, customMaidSceneService, inputRemapper)
+        var mainWindow = new MainWindow(
+            meidoManager,
+            propManager,
+            lightSelectionController,
+            customMaidSceneService,
+            inputRemapper)
         {
             [Constants.Window.Call] = new CallWindowPane(meidoManager, customMaidSceneService),
             [Constants.Window.Pose] = new PoseWindowPane(meidoManager, maidSwitcherPane),
             [Constants.Window.Face] = new FaceWindowPane(meidoManager, maidSwitcherPane),
-            [Constants.Window.BG] =
-                new BGWindowPane(
-                    environmentManager,
-                    lightManager,
-                    effectManager,
-                    sceneWindow,
-                    cameraController,
-                    cameraSaveSlotController),
+            [Constants.Window.BG] = new BGWindowPane()
+                {
+                    new SceneManagementPane(sceneWindow),
+                    new BackgroundSelectorPane(environmentManager),
+                    new DragPointPane(),
+                    new CameraPane(cameraController, cameraSaveSlotController),
+                    new LightsPane(lightRepository, lightSelectionController),
+                    new EffectsPane()
+                    {
+                        ["bloom"] = new BloomPane(effectManager),
+                        ["dof"] = new DepthOfFieldPane(effectManager),
+                        ["vignette"] = new VignettePane(effectManager),
+                        ["fog"] = new FogPane(effectManager),
+                    },
+                    new OtherEffectsPane(effectManager),
+                },
             [Constants.Window.BG2] = new BG2WindowPane(meidoManager, propManager),
             [Constants.Window.Settings] = new SettingsWindowPane(inputConfiguration, inputRemapper),
         };
@@ -237,6 +262,8 @@ public partial class PluginCore : MonoBehaviour
         if (!initialized)
         {
             Initialize();
+
+            lightRepository.AddLight(GameMain.Instance.MainLight.GetComponent<Light>());
         }
         else
         {
@@ -244,12 +271,13 @@ public partial class PluginCore : MonoBehaviour
             environmentManager.Activate();
             cameraController.Activate();
             propManager.Activate();
-            lightManager.Activate();
             effectManager.Activate();
             messageWindowManager.Activate();
             windowManager.Activate();
             subCameraController.Activate();
             cameraSaveSlotController.Activate();
+
+            lightRepository.AddLight(GameMain.Instance.MainLight.GetComponent<Light>());
 
             screenshotService.enabled = true;
         }
@@ -308,13 +336,14 @@ public partial class PluginCore : MonoBehaviour
             environmentManager.Deactivate();
             cameraController.Deactivate();
             propManager.Deactivate();
-            lightManager.Deactivate();
             effectManager.Deactivate();
             messageWindowManager.Deactivate();
             windowManager.Deactivate();
             cameraSpeedController.Deactivate();
             subCameraController.Deactivate();
             screenshotService.enabled = false;
+
+            lightRepository.RemoveAllLights();
 
             Modal.Close();
 

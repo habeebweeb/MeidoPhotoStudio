@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 
 using MeidoPhotoStudio.Plugin.Core;
+using MeidoPhotoStudio.Plugin.Core.Lighting;
 using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ public partial class MainWindow : BaseWindow
     private readonly MeidoManager meidoManager;
     private readonly Dictionary<Constants.Window, BaseMainWindowPane> windowPanes;
     private readonly PropManager propManager;
-    private readonly LightManager lightManager;
+    private readonly LightSelectionController lightSelectionController;
     private readonly CustomMaidSceneService customMaidSceneService;
     private readonly InputRemapper inputRemapper;
     private readonly TabsPane tabsPane;
@@ -27,7 +28,7 @@ public partial class MainWindow : BaseWindow
     public MainWindow(
         MeidoManager meidoManager,
         PropManager propManager,
-        LightManager lightManager,
+        LightSelectionController lightSelectionController,
         CustomMaidSceneService customMaidSceneService,
         InputRemapper inputRemapper)
     {
@@ -38,8 +39,8 @@ public partial class MainWindow : BaseWindow
         this.propManager.FromPropSelect += (_, _) =>
             ChangeWindow(Constants.Window.BG2);
 
-        this.lightManager = lightManager;
-        this.lightManager.Select += (_, _) =>
+        this.lightSelectionController = lightSelectionController;
+        this.lightSelectionController.Selected += (_, _) =>
             ChangeWindow(Constants.Window.BG);
 
         this.customMaidSceneService = customMaidSceneService;

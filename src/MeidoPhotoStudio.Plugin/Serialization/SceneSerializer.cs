@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 
 using MeidoPhotoStudio.Plugin.Core.Camera;
+using MeidoPhotoStudio.Plugin.Core.Lighting;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -16,7 +17,7 @@ public class SceneSerializer
     private readonly MeidoManager meidoManager;
     private readonly MessageWindowManager messageWindowManager;
     private readonly CameraSaveSlotController cameraSaveSlotController;
-    private readonly LightManager lightManager;
+    private readonly LightRepository lightRepository;
     private readonly EffectManager effectManager;
     private readonly EnvironmentManager environmentManager;
     private readonly PropManager propManager;
@@ -25,7 +26,7 @@ public class SceneSerializer
         MeidoManager meidoManager,
         MessageWindowManager messageWindowManager,
         CameraSaveSlotController cameraSaveSlotController,
-        LightManager lightManager,
+        LightRepository lightRepository,
         EffectManager effectManager,
         EnvironmentManager environmentManager,
         PropManager propManager)
@@ -33,7 +34,7 @@ public class SceneSerializer
         this.meidoManager = meidoManager;
         this.messageWindowManager = messageWindowManager;
         this.cameraSaveSlotController = cameraSaveSlotController;
-        this.lightManager = lightManager;
+        this.lightRepository = lightRepository;
         this.effectManager = effectManager;
         this.environmentManager = environmentManager;
         this.propManager = propManager;
@@ -69,7 +70,7 @@ public class SceneSerializer
                 Serialization.Get<CameraSaveSlotController>().Serialize(cameraSaveSlotController, dataWriter);
             }
 
-            Serialization.Get<LightManager>().Serialize(lightManager, dataWriter);
+            Serialization.Get<LightRepository>().Serialize(lightRepository, dataWriter);
             Serialization.Get<EffectManager>().Serialize(effectManager, dataWriter);
             Serialization.Get<EnvironmentManager>().Serialize(environmentManager, dataWriter);
             Serialization.Get<PropManager>().Serialize(propManager, dataWriter);
@@ -144,8 +145,8 @@ public class SceneSerializer
                         Serialization.Get<CameraSaveSlotController>().Deserialize(cameraSaveSlotController, dataReader, metadata);
 
                         break;
-                    case LightManager.Header:
-                        Serialization.Get<LightManager>().Deserialize(lightManager, dataReader, metadata);
+                    case LightRepositorySerializer.Header:
+                        Serialization.Get<LightRepository>().Deserialize(lightRepository, dataReader, metadata);
 
                         break;
                     case EffectManager.Header:

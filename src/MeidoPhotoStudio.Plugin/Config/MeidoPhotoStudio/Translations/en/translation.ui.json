@@ -215,6 +215,10 @@
         "green": "Green",
         "blue": "Blue"
     },
+    "sceneManagementPane": {
+      "manageScenesButton": "Manage Scenes",
+      "sceneManagementHeader": "Scene Management"
+    },
     "propsPane": {
         "props1AddButton": "Add",
         "props2AddButton": "Add",
@@ -260,7 +264,10 @@
         "intensity": "Brightness",
         "range": "Range",
         "spot": "Spot Angle",
-        "shadow": "Shadow"
+        "shadow": "Shadow",
+        "red": "Red",
+        "green": "Green",
+        "blue": "Blue"
     },
     "cameraPane": {
         "header": "Camera",
@@ -276,13 +283,16 @@
         "clear": "Clear",
         "colour": "Hide BG",
         "disable": "Off",
-        "resetLabel": "Reset"
+        "resetLabel": "Reset",
+        "noLights": "No Lights",
+        "on": "On"
     },
     "lightType": {
         "main": "Main",
         "normal": "Normal",
         "spot": "Spot",
-        "point": "Point"
+        "point": "Point",
+        "light": "Light"
     },
     "effectsPane": {
         "onToggle": "On",

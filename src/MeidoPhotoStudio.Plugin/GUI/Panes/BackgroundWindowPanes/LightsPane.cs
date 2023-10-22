@@ -1,357 +1,586 @@
 using System;
 using System.Collections.Generic;
 
+using MeidoPhotoStudio.Plugin.Core.Lighting;
 using UnityEngine;
-
-using static MeidoPhotoStudio.Plugin.DragPointLight;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class LightsPane : BasePane
 {
-    private static readonly string[] LightTypes = { "normal", "spot", "point" };
-    private static readonly Dictionary<LightProp, SliderProp> LightSliderProp;
-    private static readonly string[,] SliderNames =
-    {
-        { "lights", "x" },
-        { "lights", "y" },
-        { "lights", "intensity" },
-        { "lights", "shadow" },
-        { "lights", "spot" },
-        { "lights", "range" },
-        { "backgroundWindow", "red" },
-        { "backgroundWindow", "green" },
-        { "backgroundWindow", "blue" },
-    };
+    private static Light mainLight;
 
-    private readonly LightManager lightManager;
-    private readonly Dictionary<LightProp, Slider> lightSlider;
+    private readonly LightRepository lightRepository;
     private readonly Dropdown lightDropdown;
+    private readonly SelectionGrid lightTypeGrid;
+    private readonly Toggle lightOnToggle;
     private readonly Button addLightButton;
     private readonly Button deleteLightButton;
     private readonly Button clearLightsButton;
-    private readonly Button resetPropsButton;
+    private readonly Slider xRotationSlider;
+    private readonly Slider yRotationSlider;
+    private readonly Slider intensitySlider;
+    private readonly Slider shadowStrengthSlider;
+    private readonly Slider rangeSlider;
+    private readonly Slider spotAngleSlider;
+    private readonly Slider redSlider;
+    private readonly Slider greenSlider;
+    private readonly Slider blueSlider;
     private readonly Button resetPositionButton;
-    private readonly SelectionGrid lightTypeGrid;
-    private readonly Toggle colorToggle;
-    private readonly Toggle disableToggle;
+    private readonly Button resetPropertiesButton;
 
-    private MPSLightType currentLightType;
-    private string lightHeader;
-    private string resetLabel;
+    private LightController currentLightController;
+    private string lightingHeader;
+    private string resetHeader;
+    private string noLights;
 
-    static LightsPane()
+    public LightsPane(LightRepository lightRepository, LightSelectionController lightSelectionController)
     {
-        var rotation = LightProperty.DefaultRotation.eulerAngles;
-        var range = GameMain.Instance.MainLight.GetComponent<Light>().range;
+        this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
+        _ = lightSelectionController ?? throw new ArgumentNullException(nameof(lightSelectionController));
 
-        LightSliderProp = new()
+        lightRepository.AddedLight += OnAddedLight;
+        lightRepository.RemovedLight += OnRemovedLight;
+
+        lightSelectionController.Selected += OnLightSelected;
+
+        lightingHeader = Translation.Get("lightsPane", "header");
+        resetHeader = Translation.Get("lightsPane", "resetLabel");
+        noLights = Translation.Get("lightsPane", "noLights");
+
+        lightDropdown = new(new[] { noLights });
+        lightDropdown.SelectionChange += LightDropdownSelectionChanged;
+
+        lightTypeGrid = new SelectionGrid(Translation.GetArray("lightType", new[] { "normal", "spot", "point" }));
+        lightTypeGrid.ControlEvent += OnLightTypeChanged;
+
+        addLightButton = new Button(Translation.Get("lightsPane", "add"));
+        addLightButton.ControlEvent += OnAddLightButtonPressed;
+
+        deleteLightButton = new Button(Translation.Get("lightsPane", "delete"));
+        deleteLightButton.ControlEvent += OnDeleteButtonPressed;
+
+        clearLightsButton = new Button(Translation.Get("lightsPane", "clear"));
+        clearLightsButton.ControlEvent += OnClearButtonPressed;
+
+        lightOnToggle = new Toggle(Translation.Get("lightsPane", "on"), true);
+        lightOnToggle.ControlEvent += OnLightOnToggleChanged;
+
+        var defaultRotation = LightProperties.DefaultRotation.eulerAngles;
+
+        xRotationSlider = new Slider(Translation.Get("lights", "x"), 0f, 360f, defaultRotation.x, defaultRotation.x)
         {
-            [LightProp.LightRotX] = new(0f, 360f, rotation.x, rotation.x),
-            [LightProp.LightRotY] = new(0f, 360f, rotation.y, rotation.y),
-            [LightProp.Intensity] = new(0f, 2f, 0.95f, 0.95f),
-            [LightProp.ShadowStrength] = new(0f, 1f, 0.098f, 0.098f),
-            [LightProp.Range] = new(0f, 150f, range, range),
-            [LightProp.SpotAngle] = new(0f, 150f, 50f, 50f),
-            [LightProp.Red] = new(0f, 1f, 1f, 1f),
-            [LightProp.Green] = new(0f, 1f, 1f, 1f),
-            [LightProp.Blue] = new(0f, 1f, 1f, 1f),
+            HasTextField = true,
+            HasReset = true,
         };
-    }
 
-    public LightsPane(LightManager lightManager)
-    {
-        this.lightManager = lightManager;
-        this.lightManager.Rotate += (_, _) =>
-            UpdateRotation();
+        xRotationSlider.ControlEvent += OnXRotationSliderChanged;
 
-        this.lightManager.Scale += (_, _) =>
-            UpdateScale();
-
-        this.lightManager.Select += (_, _) =>
-            UpdateCurrentLight();
-
-        this.lightManager.ListModified += (_, _) =>
-            UpdateList();
-
-        lightTypeGrid = new(Translation.GetArray("lightType", LightTypes));
-        lightTypeGrid.ControlEvent += (_, _) =>
-            SetCurrentLightType();
-
-        lightDropdown = new(new[] { "Main" });
-        lightDropdown.SelectionChange += (_, _) =>
-            SetCurrentLight();
-
-        addLightButton = new("+");
-        addLightButton.ControlEvent += (_, _) =>
-            lightManager.AddLight();
-
-        deleteLightButton = new(Translation.Get("lightsPane", "delete"));
-        deleteLightButton.ControlEvent += (_, _) =>
-            lightManager.DeleteActiveLight();
-
-        disableToggle = new(Translation.Get("lightsPane", "disable"));
-        disableToggle.ControlEvent += (_, _) =>
-            lightManager.CurrentLight.IsDisabled = disableToggle.Value;
-
-        clearLightsButton = new(Translation.Get("lightsPane", "clear"));
-        clearLightsButton.ControlEvent += (_, _) =>
-            ClearLights();
-
-        var numberOfLightProps = Enum.GetNames(typeof(LightProp)).Length;
-
-        lightSlider = new(numberOfLightProps);
-
-        for (var i = 0; i < numberOfLightProps; i++)
+        yRotationSlider = new Slider(Translation.Get("lights", "y"), 0f, 360f, defaultRotation.y, defaultRotation.y)
         {
-            var lightProp = (LightProp)i;
-            var sliderProp = LightSliderProp[lightProp];
+            HasTextField = true,
+            HasReset = true,
+        };
 
-            var slider = new Slider(Translation.Get(SliderNames[i, 0], SliderNames[i, 1]), sliderProp)
-            {
-                HasTextField = true,
-                HasReset = true,
-            };
+        yRotationSlider.ControlEvent += OnYRotationSliderChanged;
 
-            if (lightProp <= LightProp.LightRotY)
-                slider.ControlEvent += (_, _) =>
-                    SetLightRotation();
-            else
-                slider.ControlEvent += (_, _) =>
-                    SetLightProp(lightProp, slider.Value);
+        intensitySlider = new Slider(Translation.Get("lights", "intensity"), 0f, 2f, 0.95f, 0.95f)
+        {
+            HasTextField = true,
+            HasReset = true,
+        };
 
-            lightSlider[lightProp] = slider;
-        }
+        intensitySlider.ControlEvent += OnIntensitySliderChanged;
 
-        colorToggle = new(Translation.Get("lightsPane", "colour"));
-        colorToggle.ControlEvent += (_, _) =>
-            SetColourMode();
+        shadowStrengthSlider = new Slider(Translation.Get("lights", "shadow"), 0f, 1f, 0.10f, 0.10f)
+        {
+            HasTextField = true,
+            HasReset = true,
+        };
 
-        resetPropsButton = new(Translation.Get("lightsPane", "resetProperties"));
-        resetPropsButton.ControlEvent += (_, _) =>
-            ResetLightProps();
+        shadowStrengthSlider.ControlEvent += OnShadowStrenthSliderChanged;
 
-        resetPositionButton = new(Translation.Get("lightsPane", "resetPosition"));
-        resetPositionButton.ControlEvent += (_, _) =>
-            lightManager.CurrentLight.ResetLightPosition();
+        rangeSlider = new Slider(Translation.Get("lights", "range"), 0f, 150f, 10f, 10f)
+        {
+            HasTextField = true,
+            HasReset = true,
+        };
 
-        lightHeader = Translation.Get("lightsPane", "header");
-        resetLabel = Translation.Get("lightsPane", "resetLabel");
+        rangeSlider.ControlEvent += OnRangeSliderChanged;
+
+        spotAngleSlider = new Slider(Translation.Get("lights", "spot"), 0f, 150f, 50f, 50f)
+        {
+            HasTextField = true,
+            HasReset = true,
+        };
+
+        spotAngleSlider.ControlEvent += OnSpotAngleSliderChanged;
+
+        redSlider = new Slider(Translation.Get("lights", "red"), 0f, 1f, 1f, 1f)
+        {
+            HasTextField = true,
+            HasReset = true,
+        };
+
+        redSlider.ControlEvent += OnRedSliderChanged;
+
+        greenSlider = new Slider(Translation.Get("lights", "green"), 0f, 1f, 1f, 1f)
+        {
+            HasTextField = true,
+            HasReset = true,
+        };
+
+        greenSlider.ControlEvent += OnGreenSliderChanged;
+
+        blueSlider = new Slider(Translation.Get("lights", "blue"), 0f, 1f, 1f, 1f)
+        {
+            HasTextField = true,
+            HasReset = true,
+        };
+
+        blueSlider.ControlEvent += OnBlueSliderChanged;
+
+        resetPropertiesButton = new Button(Translation.Get("lightsPane", "resetProperties"));
+        resetPropertiesButton.ControlEvent += OnResetPropertiesButtonPressed;
+
+        resetPositionButton = new Button(Translation.Get("lightsPane", "resetPosition"));
+        resetPositionButton.ControlEvent += OnResetPositionButtonPressed;
     }
 
-    public override void UpdatePane()
+    public static Light MainLight =>
+        mainLight ? mainLight : mainLight = GameMain.Instance.MainLight.GetComponent<Light>();
+
+    private LightController CurrentLightController
     {
-        updating = true;
+        get => currentLightController;
+        set
+        {
+            if (currentLightController is not null)
+                currentLightController.ChangedProperty -= OnChangedLightProperties;
 
-        var currentLight = lightManager.CurrentLight;
+            currentLightController = value;
 
-        currentLightType = currentLight.SelectedLightType;
-        lightTypeGrid.SelectedItemIndex = (int)currentLightType;
-        disableToggle.Value = currentLight.IsDisabled;
-        lightSlider[LightProp.LightRotX].Value = currentLight.Rotation.eulerAngles.x;
-        lightSlider[LightProp.LightRotY].Value = currentLight.Rotation.eulerAngles.y;
-        lightSlider[LightProp.Intensity].Value = currentLight.Intensity;
-        lightSlider[LightProp.ShadowStrength].Value = currentLight.ShadowStrength;
-        lightSlider[LightProp.Range].Value = currentLight.Range;
-        lightSlider[LightProp.SpotAngle].Value = currentLight.SpotAngle;
-        lightSlider[LightProp.Red].Value = currentLight.LightColour.r;
-        lightSlider[LightProp.Green].Value = currentLight.LightColour.g;
-        lightSlider[LightProp.Blue].Value = currentLight.LightColour.b;
-
-        updating = false;
+            if (currentLightController is not null)
+                currentLightController.ChangedProperty += OnChangedLightProperties;
+        }
     }
 
     public override void Draw()
     {
-        var isMain = lightManager.SelectedLightIndex is 0;
-        var noExpandWidth = GUILayout.ExpandWidth(false);
-
-        MpsGui.Header(lightHeader);
+        MpsGui.Header(lightingHeader);
         MpsGui.WhiteLine();
 
-        GUILayout.BeginHorizontal();
-        lightDropdown.Draw(GUILayout.Width(84));
-        addLightButton.Draw(noExpandWidth);
+        DrawTopBar();
 
-        GUILayout.FlexibleSpace();
-        GUI.enabled = !isMain;
-        deleteLightButton.Draw(noExpandWidth);
-        GUI.enabled = true;
-        clearLightsButton.Draw(noExpandWidth);
-        GUILayout.EndHorizontal();
-
-        var isDisabled = !isMain && lightManager.CurrentLight.IsDisabled;
-
-        GUILayout.BeginHorizontal();
-        GUI.enabled = !isDisabled;
-        lightTypeGrid.Draw(noExpandWidth);
-
-        if (!isMain)
+        if (CurrentLightController == null)
         {
-            GUI.enabled = true;
-            disableToggle.Draw();
+            GUILayout.Label(noLights, GUILayout.ExpandWidth(true));
         }
-
-        if (lightManager.SelectedLightIndex is 0 && currentLightType is MPSLightType.Normal)
-            colorToggle.Draw();
-
-        GUILayout.EndHorizontal();
-
-        GUI.enabled = !isDisabled;
-
-        if (currentLightType is not MPSLightType.Point)
-        {
-            lightSlider[LightProp.LightRotX].Draw();
-            lightSlider[LightProp.LightRotY].Draw();
-        }
-
-        lightSlider[LightProp.Intensity].Draw();
-
-        if (currentLightType is MPSLightType.Normal)
-            lightSlider[LightProp.ShadowStrength].Draw();
         else
-            lightSlider[LightProp.Range].Draw();
+        {
+            DrawLightType();
 
-        if (currentLightType is MPSLightType.Spot)
-            lightSlider[LightProp.SpotAngle].Draw();
+            var enabled = GUI.enabled;
 
-        MpsGui.BlackLine();
+            GUI.enabled = lightOnToggle.Value;
 
-        lightSlider[LightProp.Red].Draw();
-        lightSlider[LightProp.Green].Draw();
-        lightSlider[LightProp.Blue].Draw();
+            if (CurrentLightController.Type is LightType.Directional)
+                DrawDirectionalLightControls();
+            else if (CurrentLightController.Type is LightType.Spot)
+                DrawSpotLightControls();
+            else
+                DrawPointLightControls();
 
-        GUILayout.BeginHorizontal();
-        GUILayout.Label(resetLabel, noExpandWidth);
-        resetPropsButton.Draw(noExpandWidth);
-        resetPositionButton.Draw(noExpandWidth);
-        GUILayout.EndHorizontal();
+            MpsGui.BlackLine();
 
-        GUI.enabled = true;
+            DrawColourControls();
+
+            DrawReset();
+
+            GUI.enabled = enabled;
+        }
+
+        void DrawTopBar()
+        {
+            GUI.enabled = lightRepository.Count > 0;
+
+            GUILayout.BeginHorizontal();
+
+            lightDropdown.Draw(GUILayout.Width(84f));
+
+            var noExpandWidth = GUILayout.ExpandWidth(false);
+
+            GUI.enabled = true;
+
+            addLightButton.Draw(noExpandWidth);
+
+            GUI.enabled = lightRepository.Count > 0;
+
+            GUILayout.FlexibleSpace();
+
+            deleteLightButton.Draw(noExpandWidth);
+            clearLightsButton.Draw(noExpandWidth);
+
+            GUILayout.EndHorizontal();
+
+            GUI.enabled = true;
+        }
+
+        void DrawLightType()
+        {
+            GUILayout.BeginHorizontal();
+
+            var enabled = GUI.enabled;
+
+            GUI.enabled = lightOnToggle.Value;
+
+            lightTypeGrid.Draw();
+
+            GUI.enabled = enabled;
+
+            GUILayout.FlexibleSpace();
+
+            lightOnToggle.Draw();
+
+            GUILayout.EndHorizontal();
+        }
+
+        void DrawDirectionalLightControls()
+        {
+            xRotationSlider.Draw();
+            yRotationSlider.Draw();
+            intensitySlider.Draw();
+            shadowStrengthSlider.Draw();
+        }
+
+        void DrawSpotLightControls()
+        {
+            xRotationSlider.Draw();
+            yRotationSlider.Draw();
+            intensitySlider.Draw();
+            rangeSlider.Draw();
+            spotAngleSlider.Draw();
+        }
+
+        void DrawPointLightControls()
+        {
+            intensitySlider.Draw();
+            rangeSlider.Draw();
+        }
+
+        void DrawColourControls()
+        {
+            redSlider.Draw();
+            greenSlider.Draw();
+            blueSlider.Draw();
+        }
+
+        void DrawReset()
+        {
+            MpsGui.Header(resetHeader);
+            MpsGui.WhiteLine();
+
+            GUILayout.BeginHorizontal();
+
+            resetPropertiesButton.Draw();
+            resetPositionButton.Draw();
+
+            GUILayout.EndHorizontal();
+        }
+    }
+
+    public override void UpdatePane()
+    {
+        base.UpdatePane();
+
+        UpdateControls();
     }
 
     protected override void ReloadTranslation()
     {
-        updating = true;
-
-        lightTypeGrid.SetItems(Translation.GetArray("lightType", LightTypes));
-        lightDropdown.SetDropdownItems(lightManager.LightNameList);
+        lightingHeader = Translation.Get("lightsPane", "header");
+        resetHeader = Translation.Get("lightsPane", "resetLabel");
+        noLights = Translation.Get("lightsPane", "noLights");
+        lightTypeGrid.SetItemsWithoutNotify(Translation.GetArray("lightType", new[] { "normal", "spot", "point" }));
+        addLightButton.Label = Translation.Get("lightsPane", "add");
         deleteLightButton.Label = Translation.Get("lightsPane", "delete");
-        disableToggle.Label = Translation.Get("lightsPane", "disable");
         clearLightsButton.Label = Translation.Get("lightsPane", "clear");
-
-        for (var lightProp = LightProp.LightRotX; lightProp <= LightProp.Blue; lightProp++)
-            lightSlider[lightProp].Label =
-                Translation.Get(SliderNames[(int)lightProp, 0], SliderNames[(int)lightProp, 1]);
-
-        colorToggle.Label = Translation.Get("lightsPane", "colour");
-        resetPropsButton.Label = Translation.Get("lightsPane", "resetProperties");
+        lightOnToggle.Label = Translation.Get("lightsPane", "on");
+        xRotationSlider.Label = Translation.Get("lights", "x");
+        yRotationSlider.Label = Translation.Get("lights", "y");
+        intensitySlider.Label = Translation.Get("lights", "intensity");
+        shadowStrengthSlider.Label = Translation.Get("lights", "shadow");
+        rangeSlider.Label = Translation.Get("lights", "range");
+        spotAngleSlider.Label = Translation.Get("lights", "spot");
+        redSlider.Label = Translation.Get("lights", "red");
+        greenSlider.Label = Translation.Get("lights", "green");
+        blueSlider.Label = Translation.Get("lights", "blue");
+        resetPropertiesButton.Label = Translation.Get("lightsPane", "resetProperties");
         resetPositionButton.Label = Translation.Get("lightsPane", "resetPosition");
-        lightHeader = Translation.Get("lightsPane", "header");
-        resetLabel = Translation.Get("lightsPane", "resetLabel");
-
-        updating = false;
     }
 
-    private void SetColourMode()
+    private string LightName(Light light) =>
+        light == MainLight ? Translation.Get("lightType", "main") : Translation.Get("lightType", "light");
+
+    private void OnLightSelected(object sender, LightSelectionEventArgs e) =>
+        lightDropdown.SelectedItemIndex = e.LightIndex;
+
+    private void OnRemovedLight(object sender, LightRepositoryEventArgs e)
     {
-        lightManager.SetColourModeActive(colorToggle.Value);
-        UpdatePane();
+        if (lightRepository.Count is 0)
+        {
+            lightDropdown.SetDropdownItems(new[] { noLights }, 0);
+
+            return;
+        }
+
+        var lightIndex = lightDropdown.SelectedItemIndex >= lightRepository.Count
+            ? lightRepository.Count - 1
+            : lightDropdown.SelectedItemIndex;
+
+        var lightNameList = new List<string>(lightDropdown.DropdownList);
+
+        lightNameList.RemoveAt(e.LightIndex);
+
+        lightDropdown.SetDropdownItems(lightNameList.ToArray(), lightIndex);
     }
 
-    private void ClearLights()
+    private void OnAddedLight(object sender, LightRepositoryEventArgs e)
     {
-        lightManager.ClearLights();
-        UpdatePane();
+        if (lightRepository.Count is 1)
+        {
+            lightDropdown.SetDropdownItems(new[] { LightName(e.LightController.Light) }, 0);
+
+            return;
+        }
+
+        var lightNameList = new List<string>(lightDropdown.DropdownList);
+
+        lightNameList.Insert(e.LightIndex, GetNewLightName());
+
+        lightDropdown.SetDropdownItems(lightNameList.ToArray(), lightRepository.Count - 1);
+
+        string GetNewLightName()
+        {
+            var nameSet = new HashSet<string>(lightDropdown.DropdownList);
+
+            var lightName = LightName(e.LightController.Light);
+            var newLightName = lightName;
+            var index = 1;
+
+            while (nameSet.Contains(newLightName))
+            {
+                index++;
+                newLightName = $"{lightName} ({index})";
+            }
+
+            return newLightName;
+        }
     }
 
-    private void SetCurrentLight()
+    private void OnChangedLightProperties(object sender, EventArgs e) =>
+        UpdateControls();
+
+    private Color SliderColours() =>
+        new(redSlider.Value, greenSlider.Value, blueSlider.Value);
+
+    private void UpdateControls()
     {
-        if (updating)
+        if (CurrentLightController is null)
             return;
 
-        lightManager.SelectedLightIndex = lightDropdown.SelectedItemIndex;
-        UpdatePane();
+        lightTypeGrid.SetValueWithoutNotify(CurrentLightController.Type switch
+        {
+            LightType.Directional => 0,
+            LightType.Spot => 1,
+            LightType.Point => 2,
+            _ => 0,
+        });
+
+        lightOnToggle.SetEnabledWithoutNotify(CurrentLightController.Enabled);
+
+        UpdateSliders();
     }
 
-    private void ResetLightProps()
+    private void UpdateSliders()
     {
-        lightManager.CurrentLight.ResetLightProps();
-        UpdatePane();
-    }
-
-    private void SetCurrentLightType()
-    {
-        if (updating)
+        if (CurrentLightController is null)
             return;
 
-        currentLightType = (MPSLightType)lightTypeGrid.SelectedItemIndex;
+        var rotation = CurrentLightController.Light.transform.rotation.eulerAngles;
 
-        var currentLight = lightManager.CurrentLight;
-
-        currentLight.SetLightType(currentLightType);
-
-        lightDropdown.SetDropdownItem(lightManager.ActiveLightName);
-        UpdatePane();
+        xRotationSlider.SetValueWithoutNotify(rotation.x);
+        yRotationSlider.SetValueWithoutNotify(rotation.y);
+        intensitySlider.SetValueWithoutNotify(CurrentLightController.Intensity);
+        shadowStrengthSlider.SetValueWithoutNotify(CurrentLightController.ShadowStrength);
+        rangeSlider.SetValueWithoutNotify(CurrentLightController.Range);
+        spotAngleSlider.SetValueWithoutNotify(CurrentLightController.SpotAngle);
+        redSlider.SetValueWithoutNotify(CurrentLightController.Colour.r);
+        greenSlider.SetValueWithoutNotify(CurrentLightController.Colour.g);
+        blueSlider.SetValueWithoutNotify(CurrentLightController.Colour.b);
     }
 
-    private void SetLightProp(LightProp prop, float value)
+    private void LightDropdownSelectionChanged(object sender, EventArgs e)
     {
-        if (updating)
+        if (lightRepository.Count is 0)
+        {
+            CurrentLightController = null;
+
+            return;
+        }
+
+        CurrentLightController = lightRepository[lightDropdown.SelectedItemIndex];
+
+        UpdateControls();
+    }
+
+    private void OnLightTypeChanged(object sender, EventArgs e)
+    {
+        if (CurrentLightController is null)
             return;
 
-        lightManager.CurrentLight.SetProp(prop, value);
+        CurrentLightController.Type = lightTypeGrid.SelectedItemIndex switch
+        {
+            0 => LightType.Directional,
+            1 => LightType.Spot,
+            2 => LightType.Point,
+            _ => LightType.Directional,
+        };
+
+        UpdateSliders();
     }
 
-    private void SetLightRotation()
+    private void OnAddLightButtonPressed(object sender, EventArgs e) =>
+        lightRepository.AddLight();
+
+    private void OnDeleteButtonPressed(object sender, EventArgs e)
     {
-        if (updating)
+        if (lightRepository.Count is 0)
             return;
 
-        var lightRotX = lightSlider[LightProp.LightRotX].Value;
-        var lightRotY = lightSlider[LightProp.LightRotY].Value;
+        if (CurrentLightController is null)
+            return;
 
-        lightManager.CurrentLight.SetRotation(lightRotX, lightRotY);
+        if (CurrentLightController.Light == GameMain.Instance.MainLight.GetComponent<Light>())
+            return;
+
+        lightRepository.RemoveLight(lightRepository.IndexOf(CurrentLightController));
     }
 
-    private void UpdateList()
+    private void OnClearButtonPressed(object sender, EventArgs e)
     {
-        var newList = lightManager.LightNameList;
-
-        lightDropdown.SetDropdownItems(newList, lightManager.SelectedLightIndex);
-        UpdatePane();
+        for (var i = lightRepository.Count - 1; i > 0; i--)
+            lightRepository.RemoveLight(i);
     }
 
-    private void UpdateRotation()
+    private void OnLightOnToggleChanged(object sender, EventArgs e)
     {
-        updating = true;
+        if (CurrentLightController is null)
+            return;
 
-        var prop = lightManager.CurrentLight.CurrentLightProperty;
-
-        lightSlider[LightProp.LightRotX].Value = prop.Rotation.eulerAngles.x;
-        lightSlider[LightProp.LightRotY].Value = prop.Rotation.eulerAngles.y;
-
-        updating = false;
+        // TODO: LOL
+        CurrentLightController.ChangedProperty -= OnChangedLightProperties;
+        CurrentLightController.Enabled = lightOnToggle.Value;
+        CurrentLightController.ChangedProperty += OnChangedLightProperties;
     }
 
-    private void UpdateScale()
+    private void OnXRotationSliderChanged(object sender, EventArgs e)
     {
-        updating = true;
+        if (CurrentLightController is null)
+            return;
 
-        lightSlider[LightProp.SpotAngle].Value = lightManager.CurrentLight.CurrentLightProperty.SpotAngle;
-        lightSlider[LightProp.Range].Value = lightManager.CurrentLight.CurrentLightProperty.Range;
+        var z = CurrentLightController.Rotation.eulerAngles.z;
 
-        updating = false;
+        var newRotation = Quaternion.Euler(xRotationSlider.Value, yRotationSlider.Value, z);
+
+        CurrentLightController.ChangedProperty -= OnChangedLightProperties;
+        CurrentLightController.Rotation = newRotation;
+        CurrentLightController.ChangedProperty += OnChangedLightProperties;
     }
 
-    private void UpdateCurrentLight()
+    private void OnYRotationSliderChanged(object sender, EventArgs e)
     {
-        updating = true;
+        if (CurrentLightController is null)
+            return;
 
-        lightDropdown.SelectedItemIndex = lightManager.SelectedLightIndex;
+        var z = CurrentLightController.Rotation.eulerAngles.z;
 
-        updating = false;
+        var newRotation = Quaternion.Euler(xRotationSlider.Value, yRotationSlider.Value, z);
 
-        UpdatePane();
+        CurrentLightController.ChangedProperty -= OnChangedLightProperties;
+        CurrentLightController.Rotation = newRotation;
+        CurrentLightController.ChangedProperty += OnChangedLightProperties;
+    }
+
+    private void OnIntensitySliderChanged(object sender, EventArgs e)
+    {
+        if (CurrentLightController is null)
+            return;
+
+        CurrentLightController.Intensity = intensitySlider.Value;
+    }
+
+    private void OnShadowStrenthSliderChanged(object sender, EventArgs e)
+    {
+        if (CurrentLightController is null)
+            return;
+
+        CurrentLightController.ShadowStrength = shadowStrengthSlider.Value;
+    }
+
+    private void OnRangeSliderChanged(object sender, EventArgs e)
+    {
+        if (CurrentLightController is null)
+            return;
+
+        CurrentLightController.Range = rangeSlider.Value;
+    }
+
+    private void OnSpotAngleSliderChanged(object sender, EventArgs e)
+    {
+        if (CurrentLightController is null)
+            return;
+
+        CurrentLightController.SpotAngle = spotAngleSlider.Value;
+    }
+
+    private void OnRedSliderChanged(object sender, EventArgs e)
+    {
+        if (CurrentLightController is null)
+            return;
+
+        CurrentLightController.Colour = SliderColours();
+    }
+
+    private void OnGreenSliderChanged(object sender, EventArgs e)
+    {
+        if (CurrentLightController is null)
+            return;
+
+        CurrentLightController.Colour = SliderColours();
+    }
+
+    private void OnBlueSliderChanged(object sender, EventArgs e)
+    {
+        if (CurrentLightController is null)
+            return;
+
+        CurrentLightController.Colour = SliderColours();
+    }
+
+    private void OnResetPositionButtonPressed(object sender, EventArgs e)
+    {
+        if (CurrentLightController is null)
+            return;
+
+        CurrentLightController.Position = LightController.DefaultPosition;
+    }
+
+    private void OnResetPropertiesButtonPressed(object sender, EventArgs e)
+    {
+        if (currentLightController is null)
+            return;
+
+        CurrentLightController.ResetCurrentLightProperties();
     }
 }

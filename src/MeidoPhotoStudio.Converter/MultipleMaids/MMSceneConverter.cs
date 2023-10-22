@@ -5,6 +5,7 @@ using System.Text;
 
 using MeidoPhotoStudio.Plugin;
 using MeidoPhotoStudio.Plugin.Core.Camera;
+using MeidoPhotoStudio.Plugin.Core.Lighting;
 using MyRoomCustom;
 using UnityEngine;
 
@@ -48,7 +49,7 @@ public static class MMSceneConverter
         BodyRotationIndices.Where(rotation => rotation < 64).ToArray();
 
     private static readonly CameraInfo DefaultCameraInfo = new();
-    private static readonly LightProperty DefaultLightProperty = new();
+    private static readonly LightProperties DefaultLightProperty = new();
 
     public static byte[] Convert(string data, bool environment = false)
     {
@@ -401,7 +402,7 @@ public static class MMSceneConverter
 
     private static void ConvertLight(string[] data, BinaryWriter writer)
     {
-        writer.Write(LightManager.Header);
+        writer.Write("LIGHT");
 
         // LightManagerSerializer version
         writer.WriteVersion(1);
@@ -415,7 +416,7 @@ public static class MMSceneConverter
 
         writer.Write(numberOfLights);
 
-        var lightPropertySerializer = Serialization.Get<LightProperty>();
+        var lightPropertySerializer = Serialization.Get<LightProperties>();
 
         /*
          * Light Types
@@ -430,7 +431,7 @@ public static class MMSceneConverter
             // Main Light
             var spotAngle = float.Parse(strArray3[25]);
 
-            var lightProperty = new LightProperty
+            var lightProperty = new LightProperties
             {
                 Rotation = Quaternion.Euler(
                     float.Parse(strArray3[21]), float.Parse(strArray3[22]), float.Parse(strArray3[23])),
@@ -440,7 +441,7 @@ public static class MMSceneConverter
                 SpotAngle = spotAngle,
                 Range = spotAngle / 5f,
                 ShadowStrength = strArray4 is null ? 0.098f : float.Parse(strArray4[0]),
-                LightColour =
+                Colour =
                     new(float.Parse(strArray3[18]), float.Parse(strArray3[19]), float.Parse(strArray3[20]), 1f),
             };
 
@@ -456,7 +457,7 @@ public static class MMSceneConverter
                     lightPropertySerializer.Serialize(DefaultLightProperty, writer);
 
             var lightPosition = strArray7 is null
-                ? LightProperty.DefaultPosition
+                ? LightController.DefaultPosition
                 : ConversionUtility.ParseVector3(strArray7[0]);
 
             writer.Write(lightPosition);
@@ -479,7 +480,7 @@ public static class MMSceneConverter
             for (var i = 0; i < 3; i++)
                 lightPropertySerializer.Serialize(DefaultLightProperty, writer);
 
-            writer.Write(LightProperty.DefaultPosition);
+            writer.Write(LightController.DefaultPosition);
             writer.Write(0);
             writer.Write(false);
             writer.Write(false);
@@ -493,7 +494,7 @@ public static class MMSceneConverter
             var lightProperties = strArray5[i].Split(',');
             var spotAngle = float.Parse(lightProperties[7]);
 
-            var lightProperty = new LightProperty
+            var lightProperty = new LightProperties
             {
                 Rotation = Quaternion.Euler(float.Parse(lightProperties[4]), float.Parse(lightProperties[5]), 18f),
                 Intensity = float.Parse(lightProperties[6]),
@@ -502,7 +503,7 @@ public static class MMSceneConverter
 
                 // MM does not save shadow strength for other lights
                 ShadowStrength = 0.098f,
-                LightColour = new(
+                Colour = new(
                     float.Parse(lightProperties[1]),
                     float.Parse(lightProperties[2]),
                     float.Parse(lightProperties[3]),
@@ -518,7 +519,7 @@ public static class MMSceneConverter
                 lightPropertySerializer.Serialize(j == lightType ? lightProperty : DefaultLightProperty, writer);
 
             var lightPosition = strArray7 is null
-                ? LightProperty.DefaultPosition
+                ? LightController.DefaultPosition
                 : ConversionUtility.ParseVector3(strArray7[i + 1]);
 
             writer.Write(lightPosition);
