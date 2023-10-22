@@ -30,8 +30,6 @@ public partial class SceneManager : IManager
     {
         this.screenshotService = screenshotService;
         this.sceneSerializer = sceneSerializer;
-
-        Activate();
     }
 
     public enum SortMode

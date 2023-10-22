@@ -13,11 +13,7 @@ public class WindowManager : IManager
     public BaseWindow this[Window id]
     {
         get => windows[id];
-        set
-        {
-            windows[id] = value;
-            windows[id].Activate();
-        }
+        set => windows[id] = value;
     }
 
     public void DrawWindow(BaseWindow window)

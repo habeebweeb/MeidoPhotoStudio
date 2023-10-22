@@ -41,8 +41,6 @@ public partial class MeidoManager : IManager
 
         if (SceneEdit.Instance)
             SceneEditStartPostfix();
-
-        Activate();
     }
 
     public event EventHandler<MeidoUpdateEventArgs> UpdateMeido;

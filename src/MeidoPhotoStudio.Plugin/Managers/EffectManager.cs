@@ -1,29 +1,25 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class EffectManager : IManager
+public class EffectManager : IManager, IEnumerable<IEffectManager>
 {
     public const string Header = "EFFECT";
     public const string Footer = "END_EFFECT";
 
     private readonly Dictionary<Type, IEffectManager> effectManagers = new();
 
+    public IEffectManager this[Type type]
+    {
+        get => effectManagers[type];
+        set => effectManagers[type] = value;
+    }
+
     public T Get<T>()
         where T : IEffectManager =>
         effectManagers.ContainsKey(typeof(T)) ? (T)effectManagers[typeof(T)] : default;
-
-    public T AddManager<T>()
-        where T : IEffectManager, new()
-    {
-        var manager = new T();
-
-        effectManagers[typeof(T)] = manager;
-        manager.Activate();
-
-        return manager;
-    }
 
     public void Activate()
     {
@@ -40,4 +36,19 @@ public class EffectManager : IManager
     public void Update()
     {
     }
+
+    public void Add<T>(T effectManager)
+        where T : IEffectManager
+    {
+        if (effectManager is null)
+            throw new ArgumentNullException(nameof(effectManager));
+
+        effectManagers[effectManager.GetType()] = effectManager;
+    }
+
+    public IEnumerator<IEffectManager> GetEnumerator() =>
+        effectManagers.Values.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() =>
+        GetEnumerator();
 }

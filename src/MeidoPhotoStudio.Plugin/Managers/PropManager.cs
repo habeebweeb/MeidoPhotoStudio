@@ -39,8 +39,6 @@ public class PropManager : IManager
 
         meidoManager.BeginCallMeidos += OnBeginCallMeidos;
         meidoManager.EndCallMeidos += OnEndCallMeidos;
-
-        Activate();
     }
 
     public event EventHandler PropSelectionChange;

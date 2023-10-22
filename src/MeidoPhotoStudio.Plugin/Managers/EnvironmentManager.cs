@@ -35,8 +35,6 @@ public class EnvironmentManager : IManager
 
         this.generalDragPointInputService = generalDragPointInputService
             ?? throw new ArgumentNullException(nameof(generalDragPointInputService));
-
-        Activate();
     }
 
     private static event EventHandler CubeActiveChange;

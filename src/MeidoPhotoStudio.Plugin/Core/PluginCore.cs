@@ -162,11 +162,9 @@ public partial class PluginCore : MonoBehaviour
         propManager = new(meidoManager, generalDragPointInputService);
 
         cameraController = new(customMaidSceneService);
-        cameraController.Activate();
 
         cameraSpeedController = new();
         cameraSaveSlotController = new(cameraController);
-        cameraSaveSlotController.Activate();
 
         subCameraController = gameObject.AddComponent<SubCameraController>();
 
@@ -174,13 +172,15 @@ public partial class PluginCore : MonoBehaviour
             new CameraInputHandler(
                 cameraController, cameraSpeedController, cameraSaveSlotController, inputConfiguration));
 
-        effectManager = new();
-        effectManager.AddManager<BloomEffectManager>();
-        effectManager.AddManager<DepthOfFieldEffectManager>();
-        effectManager.AddManager<FogEffectManager>();
-        effectManager.AddManager<VignetteEffectManager>();
-        effectManager.AddManager<SepiaToneEffectManager>();
-        effectManager.AddManager<BlurEffectManager>();
+        effectManager = new()
+        {
+            new BloomEffectManager(),
+            new DepthOfFieldEffectManager(),
+            new FogEffectManager(),
+            new VignetteEffectManager(),
+            new SepiaToneEffectManager(),
+            new BlurEffectManager(),
+        };
 
         sceneManager = new(
             screenshotService,
@@ -260,27 +260,21 @@ public partial class PluginCore : MonoBehaviour
             return;
 
         if (!initialized)
-        {
             Initialize();
 
-            lightRepository.AddLight(GameMain.Instance.MainLight.GetComponent<Light>());
-        }
-        else
-        {
-            meidoManager.Activate();
-            environmentManager.Activate();
-            cameraController.Activate();
-            propManager.Activate();
-            effectManager.Activate();
-            messageWindowManager.Activate();
-            windowManager.Activate();
-            subCameraController.Activate();
-            cameraSaveSlotController.Activate();
+        meidoManager.Activate();
+        environmentManager.Activate();
+        cameraController.Activate();
+        propManager.Activate();
+        effectManager.Activate();
+        messageWindowManager.Activate();
+        windowManager.Activate();
+        subCameraController.Activate();
+        cameraSaveSlotController.Activate();
 
-            lightRepository.AddLight(GameMain.Instance.MainLight.GetComponent<Light>());
+        lightRepository.AddLight(GameMain.Instance.MainLight.GetComponent<Light>());
 
-            screenshotService.enabled = true;
-        }
+        screenshotService.enabled = true;
 
         uiActive = true;
         active = true;
