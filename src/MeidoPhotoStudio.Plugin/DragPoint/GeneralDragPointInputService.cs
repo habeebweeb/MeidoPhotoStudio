@@ -1,8 +1,9 @@
 using MeidoPhotoStudio.Plugin.Core.Configuration;
+using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class GeneralDragPointInputService : DragPointInputRepository<DragPointGeneral>
+public class GeneralDragPointInputService : DragPointInputRepository<IModalDragHandle>
 {
     public GeneralDragPointInputService(InputConfiguration inputConfiguration)
         : base(inputConfiguration)

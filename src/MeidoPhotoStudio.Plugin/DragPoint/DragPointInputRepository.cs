@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 
 using MeidoPhotoStudio.Plugin.Core.Configuration;
+using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public abstract class DragPointInputRepository<T> : IDragPointInputRepository<T>
-    where T : DragPoint
+    where T : IModalDragHandle
 {
     protected readonly InputConfiguration inputConfiguration;
 

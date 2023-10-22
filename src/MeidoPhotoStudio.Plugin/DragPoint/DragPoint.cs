@@ -1,12 +1,13 @@
 using System;
 
+using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using UnityEngine;
 
 using static MeidoPhotoStudio.Plugin.CustomGizmo;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public abstract class DragPoint : MonoBehaviour
+public abstract class DragPoint : MonoBehaviour, IModalDragHandle
 {
     public const float DefaultAlpha = 0.75f;
 
