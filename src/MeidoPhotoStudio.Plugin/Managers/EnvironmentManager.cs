@@ -36,8 +36,6 @@ public class EnvironmentManager : IManager
         this.generalDragPointInputService = generalDragPointInputService
             ?? throw new ArgumentNullException(nameof(generalDragPointInputService));
 
-        DragPointLight.EnvironmentManager = this;
-
         Activate();
     }
 
