@@ -7,7 +7,6 @@ public class DragPointPane : BasePane
     private readonly Toggle propsCubeToggle;
     private readonly Toggle smallCubeToggle;
     private readonly Toggle maidCubeToggle;
-    private readonly Toggle bgCubeToggle;
 
     private string header;
 
@@ -49,7 +48,6 @@ public class DragPointPane : BasePane
         propsCubeToggle.Draw();
         smallCubeToggle.Draw();
         maidCubeToggle.Draw();
-        bgCubeToggle.Draw();
         GUILayout.EndHorizontal();
     }
 
@@ -59,7 +57,6 @@ public class DragPointPane : BasePane
         propsCubeToggle.Label = Translation.Get("movementCube", "props");
         smallCubeToggle.Label = Translation.Get("movementCube", "small");
         maidCubeToggle.Label = Translation.Get("movementCube", "maid");
-        bgCubeToggle.Label = Translation.Get("movementCube", "bg");
     }
 
     private void ChangeDragPointSetting(Setting setting, bool value)

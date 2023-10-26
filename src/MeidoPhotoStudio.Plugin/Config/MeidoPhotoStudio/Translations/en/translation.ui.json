@@ -215,6 +215,20 @@
         "green": "Green",
         "blue": "Blue"
     },
+    "backgroundsPane": {
+        "header": "Backgrounds",
+        "dragHandleVisible": "Drag Handle",
+        "backgroundVisible": "Visible",
+        "colour": "Colour",
+        "red": "Red",
+        "green": "Green",
+        "blue": "Blue"
+    },
+    "backgroundSource": {
+        "cm3d2": "CM3D2",
+        "com3d2": "COM3D2",
+        "myRoomCustom": "My Room Custom"
+    },
     "sceneManagementPane": {
       "manageScenesButton": "Manage Scenes",
       "sceneManagementHeader": "Scene Management"

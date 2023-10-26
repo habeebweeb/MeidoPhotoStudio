@@ -1,3 +1,6 @@
+using com.workman.cm3d2.scene.dailyEtc;
+using MeidoPhotoStudio.Database.Background;
+using MeidoPhotoStudio.Plugin.Core.Background;
 using MeidoPhotoStudio.Plugin.Core.Camera;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
@@ -15,7 +18,6 @@ public partial class PluginCore : MonoBehaviour
     private WindowManager windowManager;
     private SceneManager sceneManager;
     private MeidoManager meidoManager;
-    private EnvironmentManager environmentManager;
     private MessageWindowManager messageWindowManager;
     private PropManager propManager;
     private SubCameraController subCameraController;
@@ -31,6 +33,9 @@ public partial class PluginCore : MonoBehaviour
     private InputRemapper inputRemapper;
     private bool active;
     private bool uiActive;
+    private BackgroundRepository backgroundRepository;
+    private BackgroundService backgroundService;
+    private BackgroundDragHandleService backgroundDragHandleService;
     private LightRepository lightRepository;
 
     public bool UIActive
@@ -147,10 +152,14 @@ public partial class PluginCore : MonoBehaviour
 
         AddPluginActiveInputHandler(new MeidoManager.InputHandler(meidoManager, inputConfiguration));
 
-        environmentManager = new(customMaidSceneService, generalDragPointInputService);
-
         messageWindowManager = new();
         messageWindowManager.Activate();
+
+        // TODO: Game hangs when first initializing. This happened before too but was hidden because MPS was initialized
+        // while the game was starting up so you don't really notice.
+        backgroundRepository = new BackgroundRepository();
+        backgroundService = new BackgroundService(backgroundRepository);
+        backgroundDragHandleService = new(generalDragPointInputService, backgroundService);
 
         lightRepository = new LightRepository();
 
@@ -190,7 +199,7 @@ public partial class PluginCore : MonoBehaviour
                 cameraSaveSlotController,
                 lightRepository,
                 effectManager,
-                environmentManager,
+                backgroundService,
                 propManager));
 
         AddPluginActiveInputHandler(new SceneManager.InputHandler(sceneManager, inputConfiguration));
@@ -204,6 +213,7 @@ public partial class PluginCore : MonoBehaviour
         AddPluginActiveInputHandler(new MessageWindow.InputHandler(messageWindow, inputConfiguration));
 
         var maidSwitcherPane = new MaidSwitcherPane(meidoManager, customMaidSceneService);
+
         var mainWindow = new MainWindow(
             meidoManager,
             propManager,
@@ -217,7 +227,7 @@ public partial class PluginCore : MonoBehaviour
             [Constants.Window.BG] = new BGWindowPane()
                 {
                     new SceneManagementPane(sceneWindow),
-                    new BackgroundSelectorPane(environmentManager),
+                    new BackgroundsPane(backgroundService, backgroundRepository, backgroundDragHandleService),
                     new DragPointPane(),
                     new CameraPane(cameraController, cameraSaveSlotController),
                     new LightsPane(lightRepository, lightSelectionController),
@@ -262,19 +272,24 @@ public partial class PluginCore : MonoBehaviour
         if (!initialized)
             Initialize();
 
+        // TODO: Move all this activation/deactivation stuff.
+        backgroundRepository.Refresh();
+
         meidoManager.Activate();
-        environmentManager.Activate();
         cameraController.Activate();
         propManager.Activate();
         effectManager.Activate();
         messageWindowManager.Activate();
-        windowManager.Activate();
         subCameraController.Activate();
         cameraSaveSlotController.Activate();
 
+        screenshotService.enabled = true;
+
         lightRepository.AddLight(GameMain.Instance.MainLight.GetComponent<Light>());
 
-        screenshotService.enabled = true;
+        backgroundService.ChangeBackground(new(BackgroundCategory.COM3D2, "Theater"));
+
+        windowManager.Activate();
 
         uiActive = true;
         active = true;
@@ -327,7 +342,6 @@ public partial class PluginCore : MonoBehaviour
             sysDialog.Close();
 
             meidoManager.Deactivate();
-            environmentManager.Deactivate();
             cameraController.Deactivate();
             propManager.Deactivate();
             effectManager.Deactivate();
@@ -336,6 +350,11 @@ public partial class PluginCore : MonoBehaviour
             cameraSpeedController.Deactivate();
             subCameraController.Deactivate();
             screenshotService.enabled = false;
+
+            if (GameMain.Instance.CharacterMgr.status.isDaytime)
+                GameMain.Instance.BgMgr.ChangeBg(DailyAPI.dayBg);
+            else
+                GameMain.Instance.BgMgr.ChangeBg(DailyAPI.nightBg);
 
             lightRepository.RemoveAllLights();
 

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 
+using MeidoPhotoStudio.Plugin.Core.Background;
 using MeidoPhotoStudio.Plugin.Core.Camera;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
 
@@ -19,16 +20,17 @@ public class SceneSerializer
     private readonly CameraSaveSlotController cameraSaveSlotController;
     private readonly LightRepository lightRepository;
     private readonly EffectManager effectManager;
-    private readonly EnvironmentManager environmentManager;
+    private readonly BackgroundService backgroundService;
     private readonly PropManager propManager;
 
+    // TODO: Create the serializers in PluginCore and pass them here.
     public SceneSerializer(
         MeidoManager meidoManager,
         MessageWindowManager messageWindowManager,
         CameraSaveSlotController cameraSaveSlotController,
         LightRepository lightRepository,
         EffectManager effectManager,
-        EnvironmentManager environmentManager,
+        BackgroundService backgroundService,
         PropManager propManager)
     {
         this.meidoManager = meidoManager;
@@ -36,7 +38,7 @@ public class SceneSerializer
         this.cameraSaveSlotController = cameraSaveSlotController;
         this.lightRepository = lightRepository;
         this.effectManager = effectManager;
-        this.environmentManager = environmentManager;
+        this.backgroundService = backgroundService;
         this.propManager = propManager;
     }
 
@@ -72,7 +74,7 @@ public class SceneSerializer
 
             Serialization.Get<LightRepository>().Serialize(lightRepository, dataWriter);
             Serialization.Get<EffectManager>().Serialize(effectManager, dataWriter);
-            Serialization.Get<EnvironmentManager>().Serialize(environmentManager, dataWriter);
+            Serialization.Get<BackgroundService>().Serialize(backgroundService, dataWriter);
             Serialization.Get<PropManager>().Serialize(propManager, dataWriter);
 
             dataWriter.Write("END");
@@ -153,8 +155,8 @@ public class SceneSerializer
                         Serialization.Get<EffectManager>().Deserialize(effectManager, dataReader, metadata);
 
                         break;
-                    case EnvironmentManager.Header:
-                        Serialization.Get<EnvironmentManager>().Deserialize(environmentManager, dataReader, metadata);
+                    case BackgroundServiceSerializer.Header:
+                        Serialization.Get<BackgroundService>().Deserialize(backgroundService, dataReader, metadata);
 
                         break;
                     case PropManager.Header:

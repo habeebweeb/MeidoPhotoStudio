@@ -10,7 +10,7 @@ public class BackgroundServiceSerializer : Serializer<BackgroundService>
 {
     public const string Header = "ENVIRONMENT";
 
-    private const short Version = 2;
+    private const short Version = 1;
 
     private static readonly Regex GuidRegEx =
         new(@"^[a-f0-9]{8}(\-[a-f0-9]{4}){3}\-[a-f0-9]{12}$", RegexOptions.IgnoreCase);
@@ -20,35 +20,25 @@ public class BackgroundServiceSerializer : Serializer<BackgroundService>
         writer.Write(Header);
         writer.WriteVersion(Version);
 
-        Serialization.GetSimple<BackgroundModel>().Serialize(backgroundService.CurrentBackground, writer);
+        writer.Write(backgroundService.CurrentBackground.AssetName);
 
         var backgroundTransform = backgroundService.BackgroundTransform;
         var transformDto = backgroundTransform ? new TransformDTO(backgroundTransform) : new TransformDTO();
 
         Serialization.GetSimple<TransformDTO>().Serialize(transformDto, writer);
-
-        writer.Write(backgroundService.BackgroundColour);
     }
 
     public override void Deserialize(BackgroundService backgroundService, BinaryReader reader, SceneMetadata metadata)
     {
         var version = reader.ReadVersion();
 
-        BackgroundModel backgroundModel;
+        var assetName = reader.ReadString();
+        var isCreativeBg = IsGuidString(assetName);
 
-        if (version is 1)
-        {
-            var assetName = reader.ReadString();
-            var isCreativeBg = IsGuidString(assetName);
-
-            // TODO: This does not account for CM3D2 backgrounds. MPS still functions but the data would be inaccurate
-            // if for example the UI needed to be updated.
-            backgroundModel = new(isCreativeBg ? BackgroundCategory.MyRoomCustom : BackgroundCategory.COM3D2, assetName);
-        }
-        else
-        {
-            backgroundModel = Serialization.GetSimple<BackgroundModel>().Deserialize(reader, metadata);
-        }
+        var backgroundModel = new BackgroundModel(
+            isCreativeBg
+                ? BackgroundCategory.MyRoomCustom
+                : BackgroundCategory.COM3D2, assetName);
 
         var backgroundTransformDto = Serialization.GetSimple<TransformDTO>().Deserialize(reader, metadata);
 
@@ -62,9 +52,6 @@ public class BackgroundServiceSerializer : Serializer<BackgroundService>
                 backgroundTransformDto.Position, backgroundTransformDto.Rotation);
             backgroundTransform.localScale = backgroundTransformDto.LocalScale;
         }
-
-        if (version >= 2)
-            backgroundService.BackgroundColour = reader.ReadColour();
     }
 
     private static bool IsGuidString(string guid) =>
