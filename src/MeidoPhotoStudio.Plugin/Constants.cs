@@ -598,6 +598,7 @@ public static class Constants
         }
     }
 
+    // TODO: This cannot be removed yet because the "small BG" props rely on this list.
     public static void InitializeBGs()
     {
         // Load BGs

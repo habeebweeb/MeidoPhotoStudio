@@ -619,13 +619,13 @@ public static class MMSceneConverter
 
     private static void ConvertEnvironment(string[] data, BinaryWriter writer)
     {
-        writer.Write(EnvironmentManager.Header);
+        writer.Write("ENVIRONMENT");
 
         // EnvironmentManagerSerializer version
         writer.WriteVersion(1);
 
         var environmentData = data[0].Split(',');
-        var bgAsset = EnvironmentManager.DefaultBg;
+        var bgAsset = "Theater";
 
         if (!int.TryParse(environmentData[2], out _))
             bgAsset = environmentData[2].Replace(' ', '_');

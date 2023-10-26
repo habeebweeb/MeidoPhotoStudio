@@ -25,10 +25,6 @@ public class DragPointPane : BasePane
         maidCubeToggle = new(Translation.Get("movementCube", "maid"), MeidoDragPointManager.CubeActive);
         maidCubeToggle.ControlEvent += (_, _) =>
             ChangeDragPointSetting(Setting.Maid, maidCubeToggle.Value);
-
-        bgCubeToggle = new(Translation.Get("movementCube", "bg"), EnvironmentManager.CubeActive);
-        bgCubeToggle.ControlEvent += (_, _) =>
-            ChangeDragPointSetting(Setting.Background, bgCubeToggle.Value);
     }
 
     private enum Setting
@@ -67,17 +63,12 @@ public class DragPointPane : BasePane
                 PropManager.CubeActive = value;
 
                 break;
-            case Setting.Background:
-                EnvironmentManager.CubeActive = value;
-
-                break;
             case Setting.Maid:
                 MeidoDragPointManager.CubeActive = value;
 
                 break;
             case Setting.Size:
                 MeidoDragPointManager.CubeSmall = value;
-                EnvironmentManager.CubeSmall = value;
                 PropManager.CubeSmall = value;
 
                 break;
