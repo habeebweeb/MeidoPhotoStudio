@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;

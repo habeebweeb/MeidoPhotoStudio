@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using MeidoPhotoStudio.Plugin.Framework.Collections;
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Camera;
@@ -14,7 +15,6 @@ public class CameraSaveSlotController : IEnumerable<CameraInfo>
     private readonly CameraController cameraController;
     private SelectList<CameraInfo> cameraInfoSelectList;
     private CameraInfo temporaryCameraInfo;
-    private CameraMain mainCamera;
 
     public CameraSaveSlotController(CameraController cameraController)
     {
@@ -40,8 +40,8 @@ public class CameraSaveSlotController : IEnumerable<CameraInfo>
         }
     }
 
-    private CameraMain MainCamera =>
-        mainCamera ? mainCamera : mainCamera = GameMain.Instance.MainCamera;
+    private static CameraMain MainCamera =>
+        GameMain.Instance.MainCamera;
 
     public CameraInfo this[int index]
     {
@@ -75,21 +75,21 @@ public class CameraSaveSlotController : IEnumerable<CameraInfo>
 
         cameraController.ApplyCameraInfo(cameraInfoSelectList.Current);
 
-        CameraUtility.StopAll();
+        MainCamera.StopAll();
     }
 
     public void SaveTemporaryCameraInfo()
     {
         temporaryCameraInfo = MainCamera.GetCameraInfo();
 
-        CameraUtility.StopAll();
+        MainCamera.StopAll();
     }
 
     public void LoadTemporaryCameraInfo()
     {
         cameraController.ApplyCameraInfo(temporaryCameraInfo);
 
-        CameraUtility.StopAll();
+        MainCamera.StopAll();
     }
 
     public IEnumerator<CameraInfo> GetEnumerator()

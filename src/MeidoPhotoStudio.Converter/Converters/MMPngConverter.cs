@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 
 using MeidoPhotoStudio.Converter.MultipleMaids;
+using MeidoPhotoStudio.Converter.Serialization;
 using MeidoPhotoStudio.Converter.Utility;
 
 namespace MeidoPhotoStudio.Converter.Converters;
@@ -84,7 +85,8 @@ public class MMPngConverter : IConverter
             return;
 
         byte[] convertedData;
-        MeidoPhotoStudio.Plugin.SceneMetadata sceneMetadata;
+
+        SceneMetadata sceneMetadata;
 
         try
         {

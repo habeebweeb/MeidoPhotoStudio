@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+using MeidoPhotoStudio.Converter.Serialization;
 using MeidoPhotoStudio.Plugin;
 using MeidoPhotoStudio.Plugin.Core.Camera;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
@@ -48,7 +49,7 @@ public static class MMSceneConverter
     private static readonly int[] BodyRotationIndices64 =
         BodyRotationIndices.Where(rotation => rotation < 64).ToArray();
 
-    private static readonly CameraInfo DefaultCameraInfo = new();
+    private static readonly CameraInfo DefaultCameraInfo;
     private static readonly LightProperties DefaultLightProperty = new();
 
     public static byte[] Convert(string data, bool environment = false)
@@ -94,7 +95,7 @@ public static class MMSceneConverter
     {
         var strArray2 = data[1].Split(';');
 
-        writer.Write(MeidoManager.Header);
+        writer.Write("MEIDO");
 
         // MeidoManagerSerializer version
         writer.WriteVersion(1);
@@ -103,7 +104,7 @@ public static class MMSceneConverter
 
         writer.Write(meidoCount);
 
-        var transformSerializer = Serialization.GetSimple<TransformDTO>();
+        var transformSerializer = Serialization.Serialization.GetSimple<TransformDTO>();
 
         foreach (var rawData in strArray2)
         {
@@ -250,7 +251,7 @@ public static class MMSceneConverter
             // hip position
             writer.Write(sixtyFourFlag ? Vector3.zero : ConversionUtility.ParseVector3(maidData[96]));
 
-            Serialization.GetSimple<PoseInfo>().Serialize(PoseInfo.DefaultPose, writer);
+            Serialization.Serialization.GetSimple<PoseInfo>().Serialize(PoseInfo.DefaultPose, writer);
         }
 
         static void ConvertClothing(string[] maidData, BinaryWriter writer)
@@ -396,7 +397,7 @@ public static class MMSceneConverter
                 Quaternion.Euler(float.Parse(strArray3[31]), float.Parse(strArray3[32]), float.Parse(strArray3[33]));
         }
 
-        Serialization.Get<CameraInfo>().Serialize(
+        Serialization.Serialization.Get<CameraInfo>().Serialize(
             new(cameraTargetPos, cameraRotation, cameraDistance, 35f), writer);
     }
 
@@ -416,7 +417,7 @@ public static class MMSceneConverter
 
         writer.Write(numberOfLights);
 
-        var lightPropertySerializer = Serialization.Get<LightProperties>();
+        var lightPropertySerializer = Serialization.Serialization.Get<LightProperties>();
 
         /*
          * Light Types
@@ -556,7 +557,8 @@ public static class MMSceneConverter
         writer.Write((int)float.Parse(effectData[3])); // blur iterations
 
         // bloom threshold colour
-        writer.WriteColour(
+        WriteColour(
+            writer,
             new(1f - float.Parse(effectData[4]), 1f - float.Parse(effectData[5]), 1f - float.Parse(effectData[6]), 1f));
 
         writer.Write(int.Parse(effectData[7]) is 1); // hdr
@@ -610,11 +612,20 @@ public static class MMSceneConverter
             writer.Write(float.Parse(effectData[25])); // height
 
             // fog colour
-            writer.WriteColour(
+            WriteColour(
+                writer,
                 new(float.Parse(effectData[26]), float.Parse(effectData[27]), float.Parse(effectData[28]), 1f));
         }
 
         writer.Write(EffectManager.Footer);
+
+        static void WriteColour(BinaryWriter writer, Color colour)
+        {
+            writer.Write(colour.r);
+            writer.Write(colour.g);
+            writer.Write(colour.b);
+            writer.Write(colour.a);
+        }
     }
 
     private static void ConvertEnvironment(string[] data, BinaryWriter writer)
@@ -632,7 +643,7 @@ public static class MMSceneConverter
 
         writer.Write(bgAsset);
 
-        Serialization.GetSimple<TransformDTO>()
+        Serialization.Serialization.GetSimple<TransformDTO>()
             .Serialize(
                 new()
                 {
@@ -668,7 +679,7 @@ public static class MMSceneConverter
 
         writer.Write(propCount);
 
-        var propSerializer = Serialization.GetSimple<DragPointPropDTO>();
+        var propSerializer = Serialization.Serialization.GetSimple<DragPointPropDTO>();
 
         if (hasWProp)
         {

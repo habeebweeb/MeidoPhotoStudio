@@ -4,6 +4,9 @@ using MeidoPhotoStudio.Plugin.Core.Background;
 using MeidoPhotoStudio.Plugin.Core.Camera;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
+using MeidoPhotoStudio.Plugin.Core.SceneManagement;
+using MeidoPhotoStudio.Plugin.Core.Serialization;
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 using MeidoPhotoStudio.Plugin.Service;
 using MeidoPhotoStudio.Plugin.Service.Input;
@@ -66,7 +69,7 @@ public partial class PluginCore : MonoBehaviour
         if (active)
             Deactivate(true);
 
-        CameraUtility.MainCamera.ResetCalcNearClip();
+        GameMain.Instance.MainCamera.ResetCalcNearClip();
 
         UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= OnSceneChanged;
 
@@ -193,14 +196,19 @@ public partial class PluginCore : MonoBehaviour
 
         sceneManager = new(
             screenshotService,
-            new(
-                meidoManager,
+            new WrappedSerializer(new(), new()),
+            new SceneLoader(
                 messageWindowManager,
                 cameraSaveSlotController,
                 lightRepository,
                 effectManager,
-                backgroundService,
-                propManager));
+                backgroundService),
+            new SceneSchemaBuilder(
+                messageWindowManager,
+                cameraSaveSlotController,
+                lightRepository,
+                effectManager,
+                backgroundService));
 
         AddPluginActiveInputHandler(new SceneManager.InputHandler(sceneManager, inputConfiguration));
 
@@ -379,7 +387,7 @@ public partial class PluginCore : MonoBehaviour
         if (active)
             Deactivate(true);
 
-        CameraUtility.MainCamera.ResetCalcNearClip();
+        GameMain.Instance.MainCamera.ResetCalcNearClip();
     }
 
     private void ToggleActive()

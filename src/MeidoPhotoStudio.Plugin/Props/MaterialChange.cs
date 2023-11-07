@@ -1,3 +1,5 @@
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public readonly struct MaterialChange

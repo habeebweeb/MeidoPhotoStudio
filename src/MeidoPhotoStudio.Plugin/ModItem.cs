@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.IO;
 
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class ModItem : MenuItem

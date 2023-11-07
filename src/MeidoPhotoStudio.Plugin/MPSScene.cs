@@ -1,13 +1,14 @@
 using System.IO;
 using System.Text;
 
+using MeidoPhotoStudio.Plugin.Core.Schema;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class MPSScene
 {
-    private byte[] data;
+    private SceneSchemaMetadata metadata;
 
     public MPSScene(string path, Texture2D thumbnail = null)
     {
@@ -30,35 +31,18 @@ public class MPSScene
 
     public int NumberOfMaids { get; private set; }
 
-    public byte[] Data
-    {
-        get
-        {
-            if (data is null)
-                Preload();
-
-            return data;
-        }
-        private set => data = value;
-    }
-
     public void Preload()
     {
-        if (data is not null)
+        if (metadata is not null)
             return;
 
         using var fileStream = FileInfo.OpenRead();
 
         Utility.SeekPngEnd(fileStream);
 
-        using var memoryStream = new MemoryStream();
+        using var binaryReader = new BinaryReader(fileStream, Encoding.UTF8);
 
-        fileStream.CopyTo(memoryStream);
-        memoryStream.Position = 0L;
-
-        using var binaryReader = new BinaryReader(memoryStream, Encoding.UTF8);
-
-        var sceneHeader = SceneSerializer.SceneHeader;
+        var sceneHeader = Encoding.UTF8.GetBytes("MPSSCENE");
 
         if (!Utility.BytesEqual(binaryReader.ReadBytes(sceneHeader.Length), sceneHeader))
         {
@@ -67,9 +51,15 @@ public class MPSScene
             return;
         }
 
-        (_, Environment, NumberOfMaids, _) = SceneMetadata.ReadMetadata(binaryReader);
+        metadata = new(binaryReader.ReadInt16())
+        {
+            Environment = binaryReader.ReadBoolean(),
+            MaidCount = binaryReader.ReadInt32(),
+            MMConverted = binaryReader.ReadBoolean(),
+        };
 
-        Data = memoryStream.ToArray();
+        Environment = metadata.Environment;
+        NumberOfMaids = metadata.MaidCount;
     }
 
     public void Destroy()

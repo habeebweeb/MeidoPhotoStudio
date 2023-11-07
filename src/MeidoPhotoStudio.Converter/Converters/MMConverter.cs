@@ -4,6 +4,7 @@ using System.Linq;
 
 using ExIni;
 using MeidoPhotoStudio.Converter.MultipleMaids;
+using MeidoPhotoStudio.Converter.Serialization;
 
 namespace MeidoPhotoStudio.Converter.Converters;
 
@@ -62,7 +63,8 @@ public class MMConverter : IConverter
         var background = int.Parse(key.Key.Substring(1)) >= 10000;
 
         byte[] convertedData;
-        MeidoPhotoStudio.Plugin.SceneMetadata sceneMetadata;
+
+        SceneMetadata sceneMetadata;
 
         try
         {

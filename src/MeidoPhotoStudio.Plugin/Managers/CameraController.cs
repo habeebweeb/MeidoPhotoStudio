@@ -1,5 +1,6 @@
 using System;
 
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 
@@ -7,9 +8,6 @@ namespace MeidoPhotoStudio.Plugin.Core.Camera;
 
 public class CameraController : IManager
 {
-    private static readonly CameraMain MainCamera = CameraUtility.MainCamera;
-    private static readonly UltimateOrbitCamera UltimateOrbitCamera = CameraUtility.UOCamera;
-
     private readonly CustomMaidSceneService customMaidSceneService;
 
     public CameraController(CustomMaidSceneService customMaidSceneService) =>
@@ -17,9 +15,12 @@ public class CameraController : IManager
 
     public event EventHandler CameraChange;
 
+    private static CameraMain MainCamera =>
+        GameMain.Instance.MainCamera;
+
     public void Activate()
     {
-        UltimateOrbitCamera.enabled = true;
+        MainCamera.m_UOCamera.enabled = true;
 
         if (customMaidSceneService.OfficeScene)
             ResetCamera();

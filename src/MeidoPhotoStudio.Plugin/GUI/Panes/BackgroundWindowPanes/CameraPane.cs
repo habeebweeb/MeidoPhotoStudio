@@ -22,7 +22,7 @@ public class CameraPane : BasePane
         this.cameraManager.CameraChange += (_, _) =>
             UpdatePane();
 
-        var camera = CameraUtility.MainCamera.camera;
+        var camera = GameMain.Instance.MainCamera.camera;
         var eulerAngles = camera.transform.eulerAngles;
 
         zRotationSlider = new(Translation.Get("cameraPane", "zRotation"), 0f, 360f, eulerAngles.z)
@@ -83,7 +83,7 @@ public class CameraPane : BasePane
     {
         updating = true;
 
-        var camera = CameraUtility.MainCamera.camera;
+        var camera = GameMain.Instance.MainCamera.camera;
 
         zRotationSlider.Value = camera.transform.eulerAngles.z;
         fovSlider.Value = camera.fieldOfView;

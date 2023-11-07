@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 
 using Ionic.Zlib;
-using MeidoPhotoStudio.Plugin;
+using MeidoPhotoStudio.Converter.Serialization;
 
 namespace MeidoPhotoStudio.Converter;
 

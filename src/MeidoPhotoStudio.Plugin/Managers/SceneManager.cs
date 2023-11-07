@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 
 using BepInEx.Configuration;
+using MeidoPhotoStudio.Plugin.Core.SceneManagement;
+using MeidoPhotoStudio.Plugin.Core.Serialization;
 using UnityEngine;
 
 using Object = UnityEngine.Object;
@@ -21,15 +23,17 @@ public partial class SceneManager : IManager
     private static readonly ConfigEntry<SortMode> CurrentSortModeConfig =
         Configuration.Config.Bind("SceneManager", "SortMode", SortMode.Name, "Scene sorting mode");
 
-    private static byte[] tempSceneData;
-
     private readonly ScreenshotService screenshotService;
-    private readonly SceneSerializer sceneSerializer;
+    private readonly ISceneSerializer sceneSerializer;
+    private readonly SceneLoader sceneLoader;
+    private readonly SceneSchemaBuilder schemaBuilder;
 
-    public SceneManager(ScreenshotService screenshotService, SceneSerializer sceneSerializer)
+    public SceneManager(ScreenshotService screenshotService, ISceneSerializer sceneSerializer, SceneLoader sceneLoader, SceneSchemaBuilder schemaBuilder)
     {
-        this.screenshotService = screenshotService;
-        this.sceneSerializer = sceneSerializer;
+        this.screenshotService = screenshotService ? screenshotService : throw new ArgumentNullException(nameof(screenshotService));
+        this.sceneSerializer = sceneSerializer ?? throw new ArgumentNullException(nameof(sceneSerializer));
+        this.sceneLoader = sceneLoader ?? throw new ArgumentNullException(nameof(sceneLoader));
+        this.schemaBuilder = schemaBuilder ?? throw new ArgumentNullException(nameof(schemaBuilder));
     }
 
     public enum SortMode
@@ -225,8 +229,21 @@ public partial class SceneManager : IManager
         CurrentSceneIndex = Mathf.Clamp(CurrentSceneIndex, 0, SceneList.Count - 1);
     }
 
-    public void LoadScene(MPSScene scene) =>
-        sceneSerializer.DeserializeScene(scene.Data);
+    public void LoadScene(MPSScene scene)
+    {
+        using var fileStream = scene.FileInfo.OpenRead();
+
+        Utility.SeekPngEnd(fileStream);
+
+        var sceneSchema = sceneSerializer.DeserializeScene(fileStream);
+
+        if (sceneSchema is null)
+            return;
+
+        var loadOptions = scene.Environment ? LoadOptions.Environment : LoadOptions.All;
+
+        sceneLoader.LoadScene(sceneSchema, loadOptions);
+    }
 
     private int SortByName(MPSScene a, MPSScene b) =>
         SortDirection * WindowsLogicalComparer.StrCmpLogicalW(a.FileInfo.Name, b.FileInfo.Name);
@@ -276,14 +293,9 @@ public partial class SceneManager : IManager
         if (Busy)
             return;
 
-        var data = sceneSerializer.SerializeScene();
+        using var fileStream = File.OpenWrite(TempScenePath);
 
-        if (data is null)
-            return;
-
-        tempSceneData = data;
-
-        File.WriteAllBytes(TempScenePath, data);
+        sceneSerializer.SerializeScene(fileStream, schemaBuilder.Build());
     }
 
     private void QuickLoadScene()
@@ -291,70 +303,63 @@ public partial class SceneManager : IManager
         if (Busy)
             return;
 
-        if (tempSceneData is null)
-        {
-            if (File.Exists(TempScenePath))
-                tempSceneData = File.ReadAllBytes(TempScenePath);
-            else
-                return;
-        }
+        using var fileStream = File.OpenRead(TempScenePath);
 
-        sceneSerializer.DeserializeScene(tempSceneData);
+        var sceneSchema = sceneSerializer.DeserializeScene(fileStream);
+
+        if (sceneSchema is null)
+            return;
+
+        sceneLoader.LoadScene(sceneSchema, LoadOptions.All);
     }
 
     private void SaveSceneToFile(Texture2D screenshot, bool overwrite = false)
     {
         Busy = true;
 
-        var sceneData = sceneSerializer.SerializeScene(KankyoMode);
+        var scenePrefix = KankyoMode ? "mpskankyo" : "mpsscene";
+        var fileName = $"{scenePrefix}{Utility.Timestamp}.png";
+        var savePath = Path.Combine(CurrentScenesDirectory, fileName);
 
-        if (sceneData is not null)
+        try
         {
-            var scenePrefix = KankyoMode ? "mpskankyo" : "mpsscene";
-            var fileName = $"{scenePrefix}{Utility.Timestamp}.png";
-            var savePath = Path.Combine(CurrentScenesDirectory, fileName);
-
             Utility.ResizeToFit(screenshot, (int)SceneDimensions.x, (int)SceneDimensions.y);
 
-            try
+            if (overwrite && CurrentScene?.FileInfo is not null)
+                savePath = CurrentScene.FileInfo.FullName;
+            else
+                overwrite = false;
+
+            using (var fileStream = File.Create(savePath))
             {
-                if (overwrite && CurrentScene?.FileInfo is not null)
-                    savePath = CurrentScene.FileInfo.FullName;
-                else
-                    overwrite = false;
+                var encodedPng = screenshot.EncodeToPNG();
 
-                using (var fileStream = File.Create(savePath))
-                {
-                    var encodedPng = screenshot.EncodeToPNG();
+                fileStream.Write(encodedPng, 0, encodedPng.Length);
 
-                    fileStream.Write(encodedPng, 0, encodedPng.Length);
-                    fileStream.Write(sceneData, 0, sceneData.Length);
-                }
-
-                if (overwrite)
-                {
-                    File.SetCreationTime(savePath, CurrentScene.FileInfo.CreationTime);
-                    CurrentScene.Destroy();
-                    SceneList.RemoveAt(CurrentSceneIndex);
-                }
-            }
-            catch (Exception e)
-            {
-                Utility.LogError($"Failed to save scene to disk because {e.Message}\n{e.StackTrace}");
-                Object.DestroyImmediate(screenshot);
-                Busy = false;
-
-                return;
+                sceneSerializer.SerializeScene(fileStream, schemaBuilder.Build());
             }
 
-            SceneList.Add(new(savePath, screenshot));
-            SortScenes(CurrentSortMode);
+            if (overwrite)
+            {
+                File.SetCreationTime(savePath, CurrentScene.FileInfo.CreationTime);
+                CurrentScene.Destroy();
+                SceneList.RemoveAt(CurrentSceneIndex);
+            }
         }
-        else
+        catch (Exception e)
+        {
+            Utility.LogError($"Failed to save scene to disk because {e.Message}\n{e.StackTrace}");
+
+            return;
+        }
+        finally
         {
             Object.DestroyImmediate(screenshot);
+
+            Busy = false;
         }
 
-        Busy = false;
+        SceneList.Add(new(savePath, screenshot));
+        SortScenes(CurrentSortMode);
     }
 }

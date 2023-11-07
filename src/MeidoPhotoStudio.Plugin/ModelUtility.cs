@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using UnityEngine;
 using UnityEngine.Rendering;
 
