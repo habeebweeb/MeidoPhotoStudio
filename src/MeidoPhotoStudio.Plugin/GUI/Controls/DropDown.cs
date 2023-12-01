@@ -89,6 +89,20 @@ public class Dropdown : BaseControl
         SelectedItemIndex = selectedItemIndex;
     }
 
+    public void SetDropdownItemsWithoutNotify(string[] itemList, int selectedItemIndex = -1)
+    {
+        if (selectedItemIndex < 0)
+            selectedItemIndex = SelectedItemIndex;
+
+        elementSize = Vector2.zero;
+
+        if (selectedItemIndex != this.selectedItemIndex || itemList.Length != DropdownList?.Length)
+            scrollPos = Vector2.zero;
+
+        DropdownList = itemList;
+        SetIndexWithoutNotify(selectedItemIndex);
+    }
+
     public void SetDropdownItem(int index, string newItem)
     {
         if (index < 0 || index >= DropdownList.Length)
