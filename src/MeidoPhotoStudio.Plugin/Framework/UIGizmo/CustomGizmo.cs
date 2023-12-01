@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class CustomGizmo : GizmoRender
+/// <summary>Gizmo.</summary>
+public partial class CustomGizmo : GizmoRender
 {
     public GizmoMode Mode;
 
