@@ -71,11 +71,7 @@ public class Dropdown : BaseControl
     public int SelectedItemIndex
     {
         get => selectedItemIndex;
-        set
-        {
-            selectedItemIndex = Mathf.Clamp(value, 0, DropdownList.Length - 1);
-            OnDropdownEvent(SelectionChange);
-        }
+        set => SetIndex(value);
     }
 
     public void SetDropdownItems(string[] itemList, int selectedItemIndex = -1)
@@ -142,6 +138,9 @@ public class Dropdown : BaseControl
         Draw(buttonStyle, layoutOptions);
     }
 
+    public void SetIndexWithoutNotify(int index) =>
+        SetIndex(index, false);
+
     private void OnChangeSelection(object sender, DropdownSelectArgs args)
     {
         if (args.DropdownID == DropdownID)
@@ -179,6 +178,14 @@ public class Dropdown : BaseControl
         DropdownHelper.Set(this, dropdownStyle);
 
         OnDropdownEvent(DropdownOpen);
+    }
+
+    private void SetIndex(int index, bool notify = true)
+    {
+        selectedItemIndex = Mathf.Clamp(index, 0, DropdownList.Length - 1);
+
+        if (notify)
+            OnDropdownEvent(SelectionChange);
     }
 
     private void OnDropdownEvent(EventHandler handler) =>
