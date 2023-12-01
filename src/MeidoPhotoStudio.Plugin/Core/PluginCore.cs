@@ -76,6 +76,7 @@ public partial class PluginCore : MonoBehaviour
         Destroy(GameObject.Find("[MPS DragPoint Parent]"));
         Destroy(GameObject.Find("[MPS Drag Handle Parent]"));
         Destroy(GameObject.Find("[MPS Light Parent]"));
+        Destroy(GameObject.Find("[MPS Coroutine Runner Parent]"));
         Destroy(Utility.MousePositionGameObject);
         WfCameraMoveSupportUtility.Destroy();
 
