@@ -11,17 +11,19 @@ public class LightDragHandleRepository
     private readonly GeneralDragPointInputService generalDragPointInputService;
     private readonly LightRepository lightRepository;
     private readonly SelectionController<LightController> lightSelectionController;
+    private readonly TabSelectionController tabSelectionController;
     private readonly Dictionary<LightController, LightDragHandleController> lightDragHandleControllers = new();
 
     public LightDragHandleRepository(
         GeneralDragPointInputService generalDragPointInputService,
         LightRepository lightRepository,
-        SelectionController<LightController> lightSelectionController)
+        SelectionController<LightController> lightSelectionController,
+        TabSelectionController tabSelectionController)
     {
         this.generalDragPointInputService = generalDragPointInputService ?? throw new ArgumentNullException(nameof(generalDragPointInputService));
         this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
         this.lightSelectionController = lightSelectionController ?? throw new ArgumentNullException(nameof(lightSelectionController));
-
+        this.tabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
         this.lightRepository.AddedLight += OnAddedLight;
         this.lightRepository.RemovingLight += OnRemovingLight;
     }
@@ -48,7 +50,7 @@ public class LightDragHandleRepository
             }.Build();
 
             var lightDragHandleController = new LightDragHandleController(
-                    dragHandle, lightController, lightRepository, lightSelectionController);
+                    dragHandle, lightController, lightRepository, lightSelectionController, tabSelectionController);
 
             return lightDragHandleController;
         }

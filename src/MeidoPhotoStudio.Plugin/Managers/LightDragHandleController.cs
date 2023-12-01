@@ -12,18 +12,20 @@ public class LightDragHandleController : GeneralDragHandleController
     private readonly LightController lightController;
     private readonly LightRepository lightRepository;
     private readonly SelectionController<LightController> lightSelectionController;
+    private readonly TabSelectionController tabSelectionController;
 
     public LightDragHandleController(
         DragHandle dragHandle,
         LightController lightController,
         LightRepository lightRepository,
-        SelectionController<LightController> lightSelectionController)
+        SelectionController<LightController> lightSelectionController,
+        TabSelectionController tabSelectionController)
         : base(dragHandle, LightControllerTransform(lightController))
     {
         this.lightController = lightController ?? throw new ArgumentNullException(nameof(lightController));
         this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
         this.lightSelectionController = lightSelectionController ?? throw new ArgumentNullException(nameof(lightSelectionController));
-
+        this.tabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
         isMainLight = this.lightController.Light == GameMain.Instance.MainLight.GetComponent<Light>();
     }
 
@@ -50,8 +52,11 @@ public class LightDragHandleController : GeneralDragHandleController
             lightController.SpotAngle += delta * 5f;
     }
 
-    protected override void Select() =>
+    protected override void Select()
+    {
         lightSelectionController.Select(lightController);
+        tabSelectionController.SelectTab(Constants.Window.BG);
+    }
 
     protected override void Delete()
     {

@@ -31,7 +31,6 @@ public class LightsPane : BasePane
     private readonly Button resetPositionButton;
     private readonly Button resetPropertiesButton;
 
-    private LightController currentLightController;
     private string lightingHeader;
     private string resetHeader;
     private string noLights;
@@ -39,12 +38,13 @@ public class LightsPane : BasePane
     public LightsPane(LightRepository lightRepository, SelectionController<LightController> lightSelectionController)
     {
         this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
-        _ = lightSelectionController ?? throw new ArgumentNullException(nameof(lightSelectionController));
+        this.lightSelectionController = lightSelectionController ?? throw new ArgumentNullException(nameof(lightSelectionController));
 
         lightRepository.AddedLight += OnAddedLight;
         lightRepository.RemovedLight += OnRemovedLight;
 
-        lightSelectionController.Selected += OnLightSelected;
+        lightSelectionController.Selecting += OnSelectingLight;
+        lightSelectionController.Selected += OnSelectedLight;
 
         lightingHeader = Translation.Get("lightsPane", "header");
         resetHeader = Translation.Get("lightsPane", "resetLabel");
@@ -152,20 +152,8 @@ public class LightsPane : BasePane
     public static Light MainLight =>
         mainLight ? mainLight : mainLight = GameMain.Instance.MainLight.GetComponent<Light>();
 
-    private LightController CurrentLightController
-    {
-        get => currentLightController;
-        set
-        {
-            if (currentLightController is not null)
-                currentLightController.ChangedProperty -= OnChangedLightProperties;
-
-            currentLightController = value;
-
-            if (currentLightController is not null)
-                currentLightController.ChangedProperty += OnChangedLightProperties;
-        }
-    }
+    private LightController CurrentLightController =>
+        lightSelectionController.Current;
 
     public override void Draw()
     {
@@ -324,8 +312,25 @@ public class LightsPane : BasePane
     private string LightName(Light light) =>
         light == MainLight ? Translation.Get("lightType", "main") : Translation.Get("lightType", "light");
 
-    private void OnLightSelected(object sender, SelectionEventArgs<LightController> e) =>
-        lightDropdown.SelectedItemIndex = e.Index;
+    private void OnSelectingLight(object sender, SelectionEventArgs<LightController> e)
+    {
+        if (CurrentLightController is null)
+            return;
+
+        CurrentLightController.ChangedProperty -= OnChangedLightProperties;
+    }
+
+    private void OnSelectedLight(object sender, SelectionEventArgs<LightController> e)
+    {
+        if (CurrentLightController is null)
+            return;
+
+        CurrentLightController.ChangedProperty += OnChangedLightProperties;
+
+        lightDropdown.SetIndexWithoutNotify(e.Index);
+
+        UpdateControls();
+    }
 
     private void OnRemovedLight(object sender, LightRepositoryEventArgs e)
     {
@@ -425,15 +430,9 @@ public class LightsPane : BasePane
     private void LightDropdownSelectionChanged(object sender, EventArgs e)
     {
         if (lightRepository.Count is 0)
-        {
-            CurrentLightController = null;
-
             return;
-        }
 
-        CurrentLightController = lightRepository[lightDropdown.SelectedItemIndex];
-
-        UpdateControls();
+        lightSelectionController.Select(lightDropdown.SelectedItemIndex);
     }
 
     private void OnLightTypeChanged(object sender, EventArgs e)
@@ -580,7 +579,7 @@ public class LightsPane : BasePane
 
     private void OnResetPropertiesButtonPressed(object sender, EventArgs e)
     {
-        if (currentLightController is null)
+        if (CurrentLightController is null)
             return;
 
         CurrentLightController.ResetCurrentLightProperties();

@@ -164,12 +164,14 @@ public partial class PluginCore : MonoBehaviour
         backgroundService = new BackgroundService(backgroundRepository);
         backgroundDragHandleService = new(generalDragPointInputService, backgroundService);
 
+        var tabSelectionController = new TabSelectionController();
+
         lightRepository = new LightRepository();
 
         var lightSelectionController = new SelectionController<LightController>(lightRepository);
 
         var lightDragHandleRepository = new LightDragHandleRepository(
-            generalDragPointInputService, lightRepository, lightSelectionController);
+            generalDragPointInputService, lightRepository, lightSelectionController, tabSelectionController);
 
         propManager = new(meidoManager, generalDragPointInputService);
 
@@ -225,7 +227,7 @@ public partial class PluginCore : MonoBehaviour
         var mainWindow = new MainWindow(
             meidoManager,
             propManager,
-            lightSelectionController,
+            tabSelectionController,
             customMaidSceneService,
             inputRemapper)
         {

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 
 using MeidoPhotoStudio.Plugin.Core;
-using MeidoPhotoStudio.Plugin.Core.Lighting;
 using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine;
 
@@ -11,9 +10,9 @@ namespace MeidoPhotoStudio.Plugin;
 public partial class MainWindow : BaseWindow
 {
     private readonly MeidoManager meidoManager;
+    private readonly TabSelectionController tabSelectionController;
     private readonly Dictionary<Constants.Window, BaseMainWindowPane> windowPanes;
     private readonly PropManager propManager;
-    private readonly SelectionController<LightController> lightSelectionController;
     private readonly CustomMaidSceneService customMaidSceneService;
     private readonly InputRemapper inputRemapper;
     private readonly TabsPane tabsPane;
@@ -24,24 +23,24 @@ public partial class MainWindow : BaseWindow
     private string closeButtonLabel;
     private Constants.Window selectedWindow;
 
-    // TODO: Find a better way of doing this
     public MainWindow(
         MeidoManager meidoManager,
         PropManager propManager,
-        SelectionController<LightController> lightSelectionController,
+        TabSelectionController tabSelectionController,
         CustomMaidSceneService customMaidSceneService,
         InputRemapper inputRemapper)
     {
         this.meidoManager = meidoManager;
-        this.meidoManager.UpdateMeido += UpdateMeido;
+        this.tabSelectionController = tabSelectionController;
 
         this.propManager = propManager;
         this.propManager.FromPropSelect += (_, _) =>
             ChangeWindow(Constants.Window.BG2);
 
-        this.lightSelectionController = lightSelectionController;
-        this.lightSelectionController.Selected += (_, _) =>
-            ChangeWindow(Constants.Window.BG);
+        this.meidoManager.UpdateMeido += UpdateMeido;
+
+        this.tabSelectionController.TabSelected += (_, e) =>
+            ChangeWindow(e.Tab);
 
         this.customMaidSceneService = customMaidSceneService;
         this.inputRemapper = inputRemapper ? inputRemapper : throw new System.ArgumentNullException(nameof(inputRemapper));
