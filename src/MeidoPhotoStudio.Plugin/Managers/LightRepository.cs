@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 
-public class LightRepository : IEnumerable<LightController>
+public class LightRepository : IEnumerable<LightController>, IIndexableCollection<LightController>
 {
     private static GameObject lightParent;
 

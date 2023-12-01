@@ -10,13 +10,13 @@ public class LightDragHandleRepository
 {
     private readonly GeneralDragPointInputService generalDragPointInputService;
     private readonly LightRepository lightRepository;
-    private readonly LightSelectionController lightSelectionController;
+    private readonly SelectionController<LightController> lightSelectionController;
     private readonly Dictionary<LightController, LightDragHandleController> lightDragHandleControllers = new();
 
     public LightDragHandleRepository(
         GeneralDragPointInputService generalDragPointInputService,
         LightRepository lightRepository,
-        LightSelectionController lightSelectionController)
+        SelectionController<LightController> lightSelectionController)
     {
         this.generalDragPointInputService = generalDragPointInputService ?? throw new ArgumentNullException(nameof(generalDragPointInputService));
         this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));

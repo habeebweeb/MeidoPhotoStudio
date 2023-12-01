@@ -11,13 +11,13 @@ public class LightDragHandleController : GeneralDragHandleController
     private readonly bool isMainLight;
     private readonly LightController lightController;
     private readonly LightRepository lightRepository;
-    private readonly LightSelectionController lightSelectionController;
+    private readonly SelectionController<LightController> lightSelectionController;
 
     public LightDragHandleController(
         DragHandle dragHandle,
         LightController lightController,
         LightRepository lightRepository,
-        LightSelectionController lightSelectionController)
+        SelectionController<LightController> lightSelectionController)
         : base(dragHandle, LightControllerTransform(lightController))
     {
         this.lightController = lightController ?? throw new ArgumentNullException(nameof(lightController));

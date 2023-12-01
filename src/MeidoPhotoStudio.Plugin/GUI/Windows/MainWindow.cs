@@ -13,7 +13,7 @@ public partial class MainWindow : BaseWindow
     private readonly MeidoManager meidoManager;
     private readonly Dictionary<Constants.Window, BaseMainWindowPane> windowPanes;
     private readonly PropManager propManager;
-    private readonly LightSelectionController lightSelectionController;
+    private readonly SelectionController<LightController> lightSelectionController;
     private readonly CustomMaidSceneService customMaidSceneService;
     private readonly InputRemapper inputRemapper;
     private readonly TabsPane tabsPane;
@@ -28,7 +28,7 @@ public partial class MainWindow : BaseWindow
     public MainWindow(
         MeidoManager meidoManager,
         PropManager propManager,
-        LightSelectionController lightSelectionController,
+        SelectionController<LightController> lightSelectionController,
         CustomMaidSceneService customMaidSceneService,
         InputRemapper inputRemapper)
     {

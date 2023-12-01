@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
 using UnityEngine;
 
@@ -11,6 +12,7 @@ public class LightsPane : BasePane
     private static Light mainLight;
 
     private readonly LightRepository lightRepository;
+    private readonly SelectionController<LightController> lightSelectionController;
     private readonly Dropdown lightDropdown;
     private readonly SelectionGrid lightTypeGrid;
     private readonly Toggle lightOnToggle;
@@ -34,7 +36,7 @@ public class LightsPane : BasePane
     private string resetHeader;
     private string noLights;
 
-    public LightsPane(LightRepository lightRepository, LightSelectionController lightSelectionController)
+    public LightsPane(LightRepository lightRepository, SelectionController<LightController> lightSelectionController)
     {
         this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
         _ = lightSelectionController ?? throw new ArgumentNullException(nameof(lightSelectionController));
@@ -322,8 +324,8 @@ public class LightsPane : BasePane
     private string LightName(Light light) =>
         light == MainLight ? Translation.Get("lightType", "main") : Translation.Get("lightType", "light");
 
-    private void OnLightSelected(object sender, LightSelectionEventArgs e) =>
-        lightDropdown.SelectedItemIndex = e.LightIndex;
+    private void OnLightSelected(object sender, SelectionEventArgs<LightController> e) =>
+        lightDropdown.SelectedItemIndex = e.Index;
 
     private void OnRemovedLight(object sender, LightRepositoryEventArgs e)
     {

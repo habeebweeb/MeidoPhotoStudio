@@ -166,7 +166,7 @@ public partial class PluginCore : MonoBehaviour
 
         lightRepository = new LightRepository();
 
-        var lightSelectionController = new LightSelectionController(lightRepository);
+        var lightSelectionController = new SelectionController<LightController>(lightRepository);
 
         var lightDragHandleRepository = new LightDragHandleRepository(
             generalDragPointInputService, lightRepository, lightSelectionController);
