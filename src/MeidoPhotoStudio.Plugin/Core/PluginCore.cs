@@ -11,6 +11,7 @@ using MeidoPhotoStudio.Plugin.Core.Lighting;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Core.SceneManagement;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
+using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.Menu;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
@@ -144,9 +145,9 @@ public partial class PluginCore : MonoBehaviour
 
         AddPluginActiveInputHandler(new ScreenshotService.InputHandler(screenshotService, inputConfiguration));
 
-        var generalDragPointInputService = new GeneralDragPointInputService(inputConfiguration);
+        var generalDragHandleInputService = new GeneralDragHandleInputHandler(inputConfiguration);
 
-        AddPluginActiveInputHandler(generalDragPointInputService);
+        AddPluginActiveInputHandler(generalDragHandleInputService);
 
         var dragPointMeidoInputService = new DragPointMeidoInputService(
             new DragPointFingerInputService(inputConfiguration),
@@ -161,7 +162,12 @@ public partial class PluginCore : MonoBehaviour
 
         AddPluginActiveInputHandler(dragPointMeidoInputService);
 
-        meidoManager = new(customMaidSceneService, generalDragPointInputService, dragPointMeidoInputService);
+        var generalDragPointInputService = new GeneralDragPointInputService(inputConfiguration);
+
+        AddPluginActiveInputHandler(generalDragPointInputService);
+
+        meidoManager = new(
+            customMaidSceneService, generalDragPointInputService, dragPointMeidoInputService);
 
         AddPluginActiveInputHandler(new MeidoManager.InputHandler(meidoManager, inputConfiguration));
 
@@ -172,7 +178,7 @@ public partial class PluginCore : MonoBehaviour
         // while the game was starting up so you don't really notice.
         backgroundRepository = new BackgroundRepository();
         backgroundService = new BackgroundService(backgroundRepository);
-        backgroundDragHandleService = new(generalDragPointInputService, backgroundService);
+        backgroundDragHandleService = new(generalDragHandleInputService, backgroundService);
 
         var tabSelectionController = new TabSelectionController();
 
@@ -181,7 +187,7 @@ public partial class PluginCore : MonoBehaviour
         var lightSelectionController = new SelectionController<LightController>(lightRepository);
 
         var lightDragHandleRepository = new LightDragHandleRepository(
-            generalDragPointInputService, lightRepository, lightSelectionController, tabSelectionController);
+            generalDragHandleInputService, lightRepository, lightSelectionController, tabSelectionController);
 
         cameraController = new(customMaidSceneService);
 
@@ -209,7 +215,7 @@ public partial class PluginCore : MonoBehaviour
         var propAttachmentService = new PropAttachmentService(meidoManager, propService);
         var propSelectionController = new SelectionController<PropController>(propService);
         var propDragHandleService = new PropDragHandleService(
-            generalDragPointInputService, propService, propSelectionController, tabSelectionController);
+            generalDragHandleInputService, propService, propSelectionController, tabSelectionController);
 
         var gamePropRepository = new PhotoBgPropRepository();
         var deskPropRepository = new DeskPropRepository();

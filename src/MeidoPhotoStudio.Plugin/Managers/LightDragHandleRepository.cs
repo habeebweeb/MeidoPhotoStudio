@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 using UnityEngine;
 
@@ -8,19 +9,19 @@ namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 
 public class LightDragHandleRepository
 {
-    private readonly GeneralDragPointInputService generalDragPointInputService;
+    private readonly GeneralDragHandleInputHandler generalDragHandleInputService;
     private readonly LightRepository lightRepository;
     private readonly SelectionController<LightController> lightSelectionController;
     private readonly TabSelectionController tabSelectionController;
     private readonly Dictionary<LightController, LightDragHandleController> lightDragHandleControllers = new();
 
     public LightDragHandleRepository(
-        GeneralDragPointInputService generalDragPointInputService,
+        GeneralDragHandleInputHandler generalDragHandleInputService,
         LightRepository lightRepository,
         SelectionController<LightController> lightSelectionController,
         TabSelectionController tabSelectionController)
     {
-        this.generalDragPointInputService = generalDragPointInputService ?? throw new ArgumentNullException(nameof(generalDragPointInputService));
+        this.generalDragHandleInputService = generalDragHandleInputService ?? throw new ArgumentNullException(nameof(generalDragHandleInputService));
         this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
         this.lightSelectionController = lightSelectionController ?? throw new ArgumentNullException(nameof(lightSelectionController));
         this.tabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
@@ -32,7 +33,7 @@ public class LightDragHandleRepository
     {
         var lightDragHandleController = BuildDragHandle(e.LightController);
 
-        generalDragPointInputService.AddDragHandle(lightDragHandleController);
+        generalDragHandleInputService.AddController(lightDragHandleController);
 
         lightDragHandleControllers.Add(e.LightController, lightDragHandleController);
 
@@ -64,7 +65,7 @@ public class LightDragHandleRepository
         var lightDragHandleController = lightDragHandleControllers[e.LightController];
 
         lightDragHandleController.Destroy();
-        generalDragPointInputService.RemoveDragHandle(lightDragHandleController);
+        generalDragHandleInputService.RemoveController(lightDragHandleController);
 
         lightDragHandleControllers.Remove(e.LightController);
     }

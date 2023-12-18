@@ -1,4 +1,3 @@
-using MeidoPhotoStudio.Plugin;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 using UnityEngine;
@@ -10,11 +9,9 @@ public class BackgroundDragHandleController : GeneralDragHandleController
     {
     }
 
-    protected override void OnDragHandleModeChanged()
-    {
-        base.OnDragHandleModeChanged();
+    public override GeneralDragHandleMode<GeneralDragHandleController> Select =>
+        None;
 
-        if (CurrentDragType is DragHandleMode.Delete or DragHandleMode.Select)
-            DragHandle.gameObject.SetActive(false);
-    }
+    public override GeneralDragHandleMode<GeneralDragHandleController> Delete =>
+        None;
 }

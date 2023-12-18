@@ -13,6 +13,15 @@ public class PropDragHandleController : GeneralDragHandleController
     private readonly SelectionController<PropController> propSelectionController;
     private readonly TabSelectionController tabSelectionController;
 
+    private UpdateTransformMode moveWorldXZ;
+    private UpdateTransformMode moveWorldY;
+    private UpdateTransformMode rotateLocalXZ;
+    private UpdateTransformMode rotateWorldY;
+    private UpdateTransformMode rotateLocalY;
+    private UpdateTransformMode scale;
+    private PropSelectMode select;
+    private PropDeleteMode delete;
+
     public PropDragHandleController(
         DragHandle dragHandle,
         Transform target,
@@ -32,6 +41,30 @@ public class PropDragHandleController : GeneralDragHandleController
         Gizmo.GizmoDrag += OnGizmoDragged;
     }
 
+    public override GeneralDragHandleMode<GeneralDragHandleController> MoveWorldXZ =>
+        moveWorldXZ ??= new UpdateTransformMode(this, base.MoveWorldXZ);
+
+    public override GeneralDragHandleMode<GeneralDragHandleController> MoveWorldY =>
+        moveWorldY ??= new UpdateTransformMode(this, base.MoveWorldY);
+
+    public override GeneralDragHandleMode<GeneralDragHandleController> RotateLocalXZ =>
+        rotateLocalXZ ??= new UpdateTransformMode(this, base.RotateLocalXZ);
+
+    public override GeneralDragHandleMode<GeneralDragHandleController> RotateWorldY =>
+        rotateWorldY ??= new UpdateTransformMode(this, base.RotateWorldY);
+
+    public override GeneralDragHandleMode<GeneralDragHandleController> RotateLocalY =>
+        rotateLocalY ??= new UpdateTransformMode(this, base.RotateLocalY);
+
+    public override GeneralDragHandleMode<GeneralDragHandleController> Scale =>
+        scale ??= new UpdateTransformMode(this, base.Scale);
+
+    public override GeneralDragHandleMode<GeneralDragHandleController> Select =>
+        select ??= new PropSelectMode(this);
+
+    public override GeneralDragHandleMode<GeneralDragHandleController> Delete =>
+        delete ??= new PropDeleteMode(this);
+
     public float HandleSize
     {
         get => DragHandle.Size;
@@ -44,61 +77,76 @@ public class PropDragHandleController : GeneralDragHandleController
         set => Gizmo.offsetScale = value;
     }
 
-    protected override void Select()
-    {
-        base.Select();
-
-        propSelectionController.Select(propController);
-        tabSelectionController.SelectTab(Constants.Window.BG2);
-    }
-
-    protected override void Delete()
-    {
-        base.Delete();
-
-        propService.Remove(propController);
-    }
-
-    protected override void ResetScale()
-    {
-        base.ResetScale();
-
-        UpdatePropTransform();
-    }
-
-    protected override void ResetRotation()
-    {
-        base.ResetRotation();
-
-        UpdatePropTransform();
-    }
-
-    protected override void ResetPosition()
-    {
-        base.ResetPosition();
-
-        UpdatePropTransform();
-    }
-
-    protected override void OnDragging()
-    {
-        base.OnDragging();
-
-        if (CurrentDragType is not (DragHandleMode.Select or DragHandleMode.Delete or DragHandleMode.None))
-            UpdatePropTransform();
-    }
-
-    protected override void OnDoubleClicked()
-    {
-        base.OnDoubleClicked();
-
-        if (CurrentDragType is DragHandleMode.Select)
-            propController.Focus();
-    }
-
     private void UpdatePropTransform() =>
         propController.UpdateTransform();
 
     private void OnGizmoDragged(object sender, EventArgs e) =>
-        propController.UpdateTransform();
+        UpdatePropTransform();
+
+    private class PropSelectMode : SelectMode
+    {
+        public PropSelectMode(PropDragHandleController controller)
+            : base(controller) =>
+            Controller = controller;
+
+        private new PropDragHandleController Controller { get; }
+
+        public override void OnClicked()
+        {
+            Controller.propSelectionController.Select(Controller.propController);
+            Controller.tabSelectionController.SelectTab(Constants.Window.BG2);
+        }
+
+        public override void OnDoubleClicked() =>
+            Controller.propController.Focus();
+    }
+
+    private class PropDeleteMode : DeleteMode
+    {
+        public PropDeleteMode(PropDragHandleController controller)
+            : base(controller) =>
+            Controller = controller;
+
+        private new PropDragHandleController Controller { get; }
+
+        public override void OnClicked() =>
+            Controller.propService.Remove(Controller.propController);
+    }
+
+    private class UpdateTransformMode : GeneralDragHandleMode<GeneralDragHandleController>
+    {
+        private readonly GeneralDragHandleMode<GeneralDragHandleController> mode;
+
+        public UpdateTransformMode(PropDragHandleController controller, GeneralDragHandleMode<GeneralDragHandleController> mode)
+            : base(controller)
+        {
+            Controller = controller;
+            this.mode = mode ?? throw new ArgumentNullException(nameof(mode));
+        }
+
+        private new PropDragHandleController Controller { get; }
+
+        public override void OnModeEnter() =>
+            mode.OnModeEnter();
+
+        public override void OnClicked() =>
+            mode.OnClicked();
+
+        public override void OnDragging()
+        {
+            mode.OnDragging();
+
+            Controller.UpdatePropTransform();
+        }
+
+        public override void OnReleased() =>
+            mode.OnReleased();
+
+        public override void OnDoubleClicked()
+        {
+            mode.OnDoubleClicked();
+
+            Controller.UpdatePropTransform();
+        }
+    }
 }

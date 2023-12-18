@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ public class PropDragHandleService
     private readonly (float Small, float Normal) handleSize = (0.5f, 1f);
     private readonly (float Small, float Normal) gizmoSize = (0.225f, 0.45f);
 
-    private readonly GeneralDragPointInputService generalDragPointInputService;
+    private readonly GeneralDragHandleInputHandler generalDragHandleInputService;
     private readonly PropService propService;
     private readonly SelectionController<PropController> propSelectionController;
     private readonly TabSelectionController tabSelectionController;
@@ -20,12 +21,12 @@ public class PropDragHandleService
     private bool smallHandle;
 
     public PropDragHandleService(
-        GeneralDragPointInputService generalDragPointInputService,
+        GeneralDragHandleInputHandler generalDragHandleInputService,
         PropService propService,
         SelectionController<PropController> propSelectionController,
         TabSelectionController tabSelectionController)
     {
-        this.generalDragPointInputService = generalDragPointInputService ?? throw new ArgumentNullException(nameof(generalDragPointInputService));
+        this.generalDragHandleInputService = generalDragHandleInputService ?? throw new ArgumentNullException(nameof(generalDragHandleInputService));
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
         this.propSelectionController = propSelectionController ?? throw new ArgumentNullException(nameof(propSelectionController));
         this.tabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
@@ -60,7 +61,7 @@ public class PropDragHandleService
     {
         var propDragHandleController = BuildDragHandle(e.PropController);
 
-        generalDragPointInputService.AddDragHandle(propDragHandleController);
+        generalDragHandleInputService.AddController(propDragHandleController);
 
         propDragHandleControllers.Add(e.PropController, propDragHandleController);
 
@@ -104,7 +105,7 @@ public class PropDragHandleService
         var propDragHandleController = propDragHandleControllers[e.PropController];
 
         propDragHandleController.Destroy();
-        generalDragPointInputService.RemoveDragHandle(propDragHandleController);
+        generalDragHandleInputService.RemoveController(propDragHandleController);
         propDragHandleControllers.Remove(e.PropController);
     }
 }

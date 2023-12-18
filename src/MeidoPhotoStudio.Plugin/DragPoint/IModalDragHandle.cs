@@ -1,4 +1,4 @@
-namespace MeidoPhotoStudio.Plugin.Core.UIGizmo;
+namespace MeidoPhotoStudio.Plugin;
 
 public interface IModalDragHandle
 {

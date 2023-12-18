@@ -4,15 +4,24 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.UIGizmo;
 
-public abstract class DragHandleControllerBase : IModalDragHandle
+public abstract class DragHandleControllerBase
 {
     protected static readonly UnityEngine.Camera Camera = GameMain.Instance.MainCamera.camera;
 
-    private bool enabled = true;
-    private DragHandleMode currentDragHandleMode;
+    private static readonly EmptyDragHandleMode EmptyDragHandleMode = new();
 
-    public DragHandleControllerBase(DragHandle dragHandle) =>
+    private bool enabled = true;
+    private DragHandleMode currentDragHandleMode = EmptyDragHandleMode;
+
+    public DragHandleControllerBase(DragHandle dragHandle)
+    {
         DragHandle = dragHandle ? dragHandle : throw new ArgumentNullException(nameof(dragHandle));
+
+        DragHandle.Clicked.AddListener(OnClicked);
+        DragHandle.Dragging.AddListener(OnDragging);
+        DragHandle.Released.AddListener(OnReleased);
+        DragHandle.DoubleClicked.AddListener(OnDoubleClicked);
+    }
 
     public DragHandleControllerBase(DragHandle dragHandle, CustomGizmo gizmo)
         : this(dragHandle) =>
@@ -32,13 +41,9 @@ public abstract class DragHandleControllerBase : IModalDragHandle
             enabled = value;
 
             if (enabled)
-            {
-                OnDragHandleModeChanged();
-            }
+                currentDragHandleMode.OnModeEnter();
             else
-            {
                 DragHandle.gameObject.SetActive(false);
-            }
         }
     }
 
@@ -56,7 +61,7 @@ public abstract class DragHandleControllerBase : IModalDragHandle
             Gizmo.GizmoVisible = value;
 
             if (value)
-                OnDragHandleModeChanged();
+                currentDragHandleMode.OnModeEnter();
         }
     }
 
@@ -77,7 +82,7 @@ public abstract class DragHandleControllerBase : IModalDragHandle
         }
     }
 
-    public DragHandleMode CurrentDragType
+    public DragHandleMode CurrentMode
     {
         get =>
             Destroyed
@@ -88,12 +93,16 @@ public abstract class DragHandleControllerBase : IModalDragHandle
             if (Destroyed)
                 throw new InvalidOperationException("Drag handle is destroyed.");
 
-            if (value == currentDragHandleMode)
-                return;
+            var newDragHandleMode = value;
 
-            currentDragHandleMode = value;
+            if (value is null)
+                newDragHandleMode = EmptyDragHandleMode;
 
-            OnDragHandleModeChanged();
+            currentDragHandleMode.OnModeExit();
+
+            currentDragHandleMode = newDragHandleMode;
+
+            currentDragHandleMode.OnModeEnter();
         }
     }
 
@@ -123,5 +132,15 @@ public abstract class DragHandleControllerBase : IModalDragHandle
     {
     }
 
-    protected abstract void OnDragHandleModeChanged();
+    private void OnDragging() =>
+        CurrentMode.OnDragging();
+
+    private void OnClicked() =>
+        CurrentMode.OnClicked();
+
+    private void OnDoubleClicked() =>
+        CurrentMode.OnDoubleClicked();
+
+    private void OnReleased() =>
+        CurrentMode.OnReleased();
 }

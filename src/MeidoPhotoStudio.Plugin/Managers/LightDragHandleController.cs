@@ -9,10 +9,16 @@ namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 public class LightDragHandleController : GeneralDragHandleController
 {
     private readonly bool isMainLight;
-    private readonly LightController lightController;
     private readonly LightRepository lightRepository;
     private readonly SelectionController<LightController> lightSelectionController;
     private readonly TabSelectionController tabSelectionController;
+
+    private WrappedRotationMode rotateLocalXZMode;
+    private WrappedRotationMode rotateLocalYMode;
+    private WrappedRotationMode rotateWorldYMode;
+    private LightScaleMode scale;
+    private LightSelectMode select;
+    private LightDeleteMode delete;
 
     public LightDragHandleController(
         DragHandle dragHandle,
@@ -22,87 +28,32 @@ public class LightDragHandleController : GeneralDragHandleController
         TabSelectionController tabSelectionController)
         : base(dragHandle, LightControllerTransform(lightController))
     {
-        this.lightController = lightController ?? throw new ArgumentNullException(nameof(lightController));
+        LightController = lightController ?? throw new ArgumentNullException(nameof(lightController));
         this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
         this.lightSelectionController = lightSelectionController ?? throw new ArgumentNullException(nameof(lightSelectionController));
         this.tabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
-        isMainLight = this.lightController.Light == GameMain.Instance.MainLight.GetComponent<Light>();
+        isMainLight = LightController.Light == GameMain.Instance.MainLight.GetComponent<Light>();
     }
 
-    protected override void OnDragHandleModeChanged()
-    {
-        base.OnDragHandleModeChanged();
+    public override GeneralDragHandleMode<GeneralDragHandleController> RotateLocalXZ =>
+        rotateLocalXZMode ??= new WrappedRotationMode(this, base.RotateLocalXZ);
 
-        if (CurrentDragType is DragHandleMode.Delete)
-        {
-            if (isMainLight)
-                DragHandle.gameObject.SetActive(false);
-        }
-    }
+    public override GeneralDragHandleMode<GeneralDragHandleController> RotateLocalY =>
+        rotateLocalYMode ??= new WrappedRotationMode(this, base.RotateLocalY);
 
-    protected override void Scale()
-    {
-        var delta = MouseDelta.y;
+    public override GeneralDragHandleMode<GeneralDragHandleController> RotateWorldY =>
+        rotateWorldYMode ??= new WrappedRotationMode(this, base.RotateWorldY);
 
-        if (lightController.Type is LightType.Directional)
-            lightController.Intensity += delta * 0.1f;
-        else if (lightController.Type is LightType.Point)
-            lightController.Range += delta * 5f;
-        else if (lightController.Type is LightType.Spot)
-            lightController.SpotAngle += delta * 5f;
-    }
+    public override GeneralDragHandleMode<GeneralDragHandleController> Scale =>
+        scale ??= new LightScaleMode(this);
 
-    protected override void Select()
-    {
-        lightSelectionController.Select(lightController);
-        tabSelectionController.SelectTab(Constants.Window.BG);
-    }
+    public override GeneralDragHandleMode<GeneralDragHandleController> Select =>
+        select ??= new LightSelectMode(this);
 
-    protected override void Delete()
-    {
-        if (isMainLight)
-            return;
+    public override GeneralDragHandleMode<GeneralDragHandleController> Delete =>
+        delete ??= new LightDeleteMode(this);
 
-        lightRepository.RemoveLight(lightController);
-    }
-
-    protected override void ResetScale()
-    {
-        if (lightController.Type is LightType.Directional)
-            lightController.Intensity = 0.95f;
-        else if (lightController.Type is LightType.Point)
-            lightController.Range = 10f;
-        else if (lightController.Type is LightType.Spot)
-            lightController.SpotAngle = 50f;
-    }
-
-    protected override void ResetRotation()
-    {
-        base.ResetRotation();
-
-        UpdateControllerRotation();
-    }
-
-    protected override void RotateWorldY()
-    {
-        base.RotateWorldY();
-
-        UpdateControllerRotation();
-    }
-
-    protected override void RotateLocalY()
-    {
-        base.RotateLocalY();
-
-        UpdateControllerRotation();
-    }
-
-    protected override void RotateLocalXZ()
-    {
-        base.RotateLocalXZ();
-
-        UpdateControllerRotation();
-    }
+    private LightController LightController { get; }
 
     private static Transform LightControllerTransform(LightController lightController) =>
         lightController is null
@@ -110,5 +61,122 @@ public class LightDragHandleController : GeneralDragHandleController
             : lightController.Light.transform;
 
     private void UpdateControllerRotation() =>
-        lightController.Rotation = Target.rotation;
+        LightController.Rotation = Target.rotation;
+
+    private class LightSelectMode : SelectMode
+    {
+        public LightSelectMode(LightDragHandleController controller)
+            : base(controller) =>
+            Controller = controller;
+
+        private new LightDragHandleController Controller { get; }
+
+        public override void OnClicked()
+        {
+            Controller.lightSelectionController.Select(Controller.LightController);
+            Controller.tabSelectionController.SelectTab(Constants.Window.BG);
+        }
+    }
+
+    private class LightScaleMode : ScaleMode
+    {
+        public LightScaleMode(LightDragHandleController controller)
+            : base(controller) =>
+            Controller = controller;
+
+        // NOTE: No covariant returns and I don't want to cast every update tick.
+        private new LightDragHandleController Controller { get; }
+
+        private LightController LightController =>
+            Controller.LightController;
+
+        public override void OnDoubleClicked()
+        {
+            if (LightController.Type is LightType.Directional)
+                LightController.Intensity = 0.95f;
+            else if (LightController.Type is LightType.Point)
+                LightController.Range = 10f;
+            else if (LightController.Type is LightType.Spot)
+                LightController.SpotAngle = 50f;
+        }
+
+        public override void OnDragging()
+        {
+            var delta = MouseDelta.y;
+
+            if (LightController.Type is LightType.Directional)
+                LightController.Intensity += delta * 0.1f;
+            else if (LightController.Type is LightType.Point)
+                LightController.Range += delta * 5f;
+            else if (LightController.Type is LightType.Spot)
+                LightController.SpotAngle += delta * 5f;
+        }
+    }
+
+    private class LightDeleteMode : DeleteMode
+    {
+        public LightDeleteMode(LightDragHandleController controller)
+            : base(controller) =>
+            Controller = controller;
+
+        private new LightDragHandleController Controller { get; }
+
+        public override void OnModeEnter()
+        {
+            if (Controller.isMainLight)
+            {
+                DragHandle.gameObject.SetActive(false);
+                DragHandle.MovementType = DragHandle.MoveType.None;
+
+                if (Gizmo)
+                    Gizmo.gameObject.SetActive(false);
+            }
+            else
+            {
+                base.OnModeEnter();
+            }
+        }
+
+        public override void OnClicked()
+        {
+            if (Controller.isMainLight)
+                return;
+
+            Controller.lightRepository.RemoveLight(Controller.LightController);
+        }
+    }
+
+    private abstract class LightDragHandleRotateMode : GeneralDragHandleRotateMode
+    {
+        protected LightDragHandleRotateMode(LightDragHandleController controller)
+            : base(controller) =>
+            Controller = controller;
+
+        private new LightDragHandleController Controller { get; }
+
+        public override void OnDoubleClicked() =>
+            Controller.UpdateControllerRotation();
+    }
+
+    private class WrappedRotationMode : LightDragHandleRotateMode
+    {
+        private readonly GeneralDragHandleMode<GeneralDragHandleController> rotateMode;
+
+        public WrappedRotationMode(
+            LightDragHandleController controller, GeneralDragHandleMode<GeneralDragHandleController> rotateMode)
+            : base(controller)
+        {
+            Controller = controller;
+            this.rotateMode = rotateMode ?? throw new ArgumentNullException(nameof(rotateMode));
+        }
+
+        private new LightDragHandleController Controller { get; }
+
+        public override void OnDragging()
+        {
+            rotateMode.OnDragging();
+
+            Controller.UpdateControllerRotation();
+        }
+    }
 }
