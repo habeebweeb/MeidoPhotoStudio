@@ -27,6 +27,8 @@ public partial class DragHandle : MonoBehaviour
     private Vector3 scale = Vector3.one;
     private float size = 1f;
     private Vector3 targetOffset;
+    private Plane positionPlane;
+    private Vector3 localClickPoint;
 
     public enum MoveType
     {
@@ -142,7 +144,7 @@ public partial class DragHandle : MonoBehaviour
         }
     }
 
-    public Transform Target { get; set; }
+    public Transform Target { get; private set; }
 
     public bool Visible
     {
@@ -164,7 +166,7 @@ public partial class DragHandle : MonoBehaviour
 
     private void Awake()
     {
-        mainCamera = Camera.main;
+        mainCamera = GameMain.Instance.MainCamera.camera;
         instanceId = GetInstanceID();
     }
 
@@ -219,8 +221,10 @@ public partial class DragHandle : MonoBehaviour
     private void DoubleClick() =>
         DoubleClicked.Invoke();
 
-    private void Select()
+    private void Select(RaycastHit clickRaycast)
     {
+        localClickPoint = transform.InverseTransformPoint(clickRaycast.point);
+
         ResetHandleMousePosition();
         UpdateOffsets();
     }
@@ -254,19 +258,20 @@ public partial class DragHandle : MonoBehaviour
 
     private void MoveToMouse()
     {
-        var newPosition = MouseToWorldPoint() + mouseOffset;
+        var newPosition = MouseToWorldPoint() + mouseOffset - targetOffset;
 
         if (MovementType is not MoveType.All)
             newPosition = ConstrainPosition(newPosition);
 
         if (Target)
-            Target.position = newPosition - targetOffset;
-
-        transform.position = newPosition;
+            Target.position = newPosition;
 
         Vector3 ConstrainPosition(Vector3 position)
         {
-            var originalPosition = transform.position;
+            if (!Target)
+                return position;
+
+            var originalPosition = Target.position;
 
             return MovementType switch
             {
@@ -285,27 +290,17 @@ public partial class DragHandle : MonoBehaviour
     {
         var mousePoint = handleMousePosition;
 
-        return MovementType is MoveType.All
+        return MovementType is MoveType.All or MoveType.None
             ? WorldPoint(mousePoint)
-            : PointAlongPlane(mousePoint);
+            : PointAlongPositionPlane(mousePoint);
 
-        Vector3 PointAlongPlane(Vector3 mousePoint)
+        Vector3 PointAlongPositionPlane(Vector3 mousePoint)
         {
-            var plane = MovementType switch
-            {
-                MoveType.XY => new Plane(Vector3.forward, transform.position),
-                MoveType.YZ => new Plane(Vector3.right, transform.position),
-                MoveType.XZ or MoveType.X or MoveType.Z => new Plane(Vector3.up, transform.position),
-                MoveType.Y =>
-                    new Plane(Vector3.ProjectOnPlane(mainCamera.transform.forward, Vector3.up), transform.position),
-                MoveType.None or MoveType.All or _ => new Plane(Vector3.up, transform.position),
-            };
-
             var screenRay = mainCamera.ScreenPointToRay(mousePoint);
 
-            return plane.Raycast(screenRay, out var enter)
+            return positionPlane.Raycast(screenRay, out var enter)
                 ? screenRay.GetPoint(enter)
-                : transform.position;
+                : Target.position - mouseOffset + targetOffset;
         }
 
         Vector3 WorldPoint(Vector3 mousePoint)
@@ -319,15 +314,25 @@ public partial class DragHandle : MonoBehaviour
 
     private void UpdateOffsets()
     {
-        var position = transform.position;
+        var clickPoint = transform.TransformPoint(localClickPoint);
 
-        mouseOffset = position - MouseToWorldPoint();
-        targetOffset = Target ? position - Target.position : Vector3.zero;
+        positionPlane = MovementType switch
+        {
+            MoveType.XY => new Plane(Vector3.forward, clickPoint),
+            MoveType.YZ => new Plane(Vector3.right, clickPoint),
+            MoveType.XZ or MoveType.X or MoveType.Z => new Plane(Vector3.up, clickPoint),
+            MoveType.Y =>
+                new Plane(Vector3.ProjectOnPlane(mainCamera.transform.forward, Vector3.up), clickPoint),
+            MoveType.None or MoveType.All or _ => new Plane(Vector3.up, clickPoint),
+        };
+
+        mouseOffset = clickPoint - MouseToWorldPoint();
+        targetOffset = Target ? clickPoint - Target.position : Vector3.zero;
     }
 
     private void ResetHandleMousePosition()
     {
         oldMousePosition = UInput.mousePosition;
-        handleMousePosition = mainCamera.WorldToScreenPoint(transform.position);
+        handleMousePosition = mainCamera.WorldToScreenPoint(transform.TransformPoint(localClickPoint));
     }
 }

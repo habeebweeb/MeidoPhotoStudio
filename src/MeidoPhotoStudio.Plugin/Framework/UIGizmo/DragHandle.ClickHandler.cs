@@ -51,20 +51,20 @@ public partial class DragHandle
         }
 
         private void Awake() =>
-            mainCamera = Camera.main;
+            mainCamera = GameMain.Instance.MainCamera.camera;
 
         private void Update()
         {
-            if (!clicked && UInput.GetMouseButtonDown(0) && GetClickedDragHandle(out var dragHandle))
+            if (!clicked && UInput.GetMouseButtonDown(0) && GetClickInfo(out var info))
             {
                 GizmoRender.global_control_lock = true;
                 GizmoRender.is_drag_ = false;
 
                 clicked = true;
 
-                SelectedDragHandle = dragHandle;
+                SelectedDragHandle = info.DragHandle;
 
-                SelectedDragHandle.Select();
+                SelectedDragHandle.Select(info.Hit);
                 SelectedDragHandle.Click();
             }
             else if (clicked && !OnlyLeftClickPressed())
@@ -83,9 +83,9 @@ public partial class DragHandle
                 clicked = false;
             }
 
-            bool GetClickedDragHandle(out DragHandle dragHandle)
+            bool GetClickInfo(out (DragHandle DragHandle, RaycastHit Hit) info)
             {
-                dragHandle = null;
+                info = (null, default);
 
                 if (UICamera.Raycast(UInput.mousePosition))
                     return false;
@@ -102,20 +102,11 @@ public partial class DragHandle
                 if (hitCount is 0)
                     return false;
 
-                if (hitCount is 1)
-                {
-                    dragHandle = raycastHits[0].transform.GetComponent<DragHandle>();
-
-                    return true;
-                }
-
-                var dragHandles = raycastHits.Take(hitCount)
-                    .Select(hit => new { hit, dragHandle = hit.transform.GetComponent<DragHandle>() })
+                info = raycastHits.Take(hitCount)
+                    .Select(hit => (dragHandle: hit.transform.GetComponent<DragHandle>(), hit))
                     .OrderByDescending(pair => pair.dragHandle.Priority)
                     .ThenBy(pair => pair.hit.distance)
-                    .Select(pair => pair.dragHandle);
-
-                dragHandle = dragHandles.First();
+                    .First();
 
                 return true;
             }
