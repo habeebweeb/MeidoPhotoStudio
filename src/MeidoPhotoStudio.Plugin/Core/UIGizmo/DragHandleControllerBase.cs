@@ -10,33 +10,35 @@ public abstract class DragHandleControllerBase
 
     private static readonly EmptyDragHandleMode EmptyDragHandleMode = new();
 
+    private DragHandle dragHandle;
     private bool enabled = true;
     private DragHandleMode currentDragHandleMode = EmptyDragHandleMode;
 
-    public DragHandleControllerBase(DragHandle dragHandle)
-    {
+    public DragHandleControllerBase(DragHandle dragHandle) =>
         DragHandle = dragHandle ? dragHandle : throw new ArgumentNullException(nameof(dragHandle));
 
-        DragHandle.Clicked.AddListener(OnClicked);
-        DragHandle.Dragging.AddListener(OnDragging);
-        DragHandle.Released.AddListener(OnReleased);
-        DragHandle.DoubleClicked.AddListener(OnDoubleClicked);
-    }
+    public DragHandleControllerBase(CustomGizmo gizmo) =>
+        Gizmo = gizmo ? gizmo : throw new ArgumentNullException(nameof(gizmo));
 
     public DragHandleControllerBase(DragHandle dragHandle, CustomGizmo gizmo)
-        : this(dragHandle) =>
-        Gizmo = gizmo ? gizmo : throw new ArgumentNullException(nameof(dragHandle));
+    {
+        DragHandle = dragHandle ? dragHandle : throw new ArgumentNullException(nameof(dragHandle));
+        Gizmo = gizmo ? gizmo : throw new ArgumentNullException(nameof(gizmo));
+    }
 
     public bool Enabled
     {
         get =>
             Destroyed
-                ? throw new InvalidOperationException("Drag handle is destroyed.")
+                ? throw new InvalidOperationException("Drag handle controller is destroyed.")
                 : enabled;
         set
         {
             if (Destroyed)
-                throw new InvalidOperationException("Drag handle is destroyed.");
+                throw new InvalidOperationException("Drag handle controller is destroyed.");
+
+            if (!DragHandle)
+                return;
 
             enabled = value;
 
@@ -51,7 +53,7 @@ public abstract class DragHandleControllerBase
     {
         get =>
             Destroyed
-                ? throw new InvalidOperationException("Drag handle is destroyed")
+                ? throw new InvalidOperationException("Drag handle controller is destroyed")
                 : Gizmo && Gizmo.GizmoVisible;
         set
         {
@@ -69,7 +71,7 @@ public abstract class DragHandleControllerBase
     {
         get =>
             Destroyed
-                ? throw new InvalidOperationException("Drag handle is destroyed")
+                ? throw new InvalidOperationException("Drag handle controller is destroyed")
                 : Gizmo
                     ? Gizmo.Mode
                     : CustomGizmo.GizmoMode.Local;
@@ -86,12 +88,12 @@ public abstract class DragHandleControllerBase
     {
         get =>
             Destroyed
-                ? throw new InvalidOperationException("Drag handle is destroyed.")
+                ? throw new InvalidOperationException("Drag handle controller is destroyed.")
                 : currentDragHandleMode;
         set
         {
             if (Destroyed)
-                throw new InvalidOperationException("Drag handle is destroyed.");
+                throw new InvalidOperationException("Drag handle controller is destroyed.");
 
             var newDragHandleMode = value;
 
@@ -108,9 +110,20 @@ public abstract class DragHandleControllerBase
 
     public bool Destroyed { get; private set; }
 
-    protected DragHandle DragHandle { get; }
+    protected DragHandle DragHandle
+    {
+        get => dragHandle;
+        private init
+        {
+            dragHandle = value;
+            dragHandle.Clicked.AddListener(OnClicked);
+            dragHandle.Dragging.AddListener(OnDragging);
+            dragHandle.Released.AddListener(OnReleased);
+            dragHandle.DoubleClicked.AddListener(OnDoubleClicked);
+        }
+    }
 
-    protected CustomGizmo Gizmo { get; set; }
+    protected CustomGizmo Gizmo { get; private init; }
 
     public void Destroy()
     {
