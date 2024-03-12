@@ -2,7 +2,7 @@ namespace MeidoPhotoStudio.Plugin.Core.Schema;
 
 public class SceneSchema
 {
-    public const short SchemaVersion = 3;
+    public const short SchemaVersion = 4;
 
     public Message.MessageWindowSchema MessageWindow { get; init; }
 
@@ -13,4 +13,6 @@ public class SceneSchema
     public Effects.EffectsSchema Effects { get; init; }
 
     public Background.BackgroundSchema Background { get; init; }
+
+    public Props.PropsSchema Props { get; init; }
 }

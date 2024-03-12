@@ -1158,7 +1158,7 @@
         "kousoku_gp002_tejyou_i_.menu": "Handcuffs 2",
         "kousokuu_tekase_i_.menu": "Handcuffs"
     },
-    "doguCategories": {
+    "gamePropCategories": {
         "家具": "Furniture",
         "道具": "Dogu",
         "文房具": "Stationery",
@@ -1168,19 +1168,29 @@
         "カジノアイテム": "Casino",
         "プレイアイテム": "Play",
         "パーティクル": "Particles",
-        "机": "Desk",
-        "椅子": "Chair",
-        "壁": "Wall",
-        "扉": "Door",
-        "照明": "Lighting",
-        "小物": "Houseware",
-        "調理器具": "Kitchenware",
-        "敷物": "Rug",
-        "other": "Props 1",
-        "mirrors": "Mirrors",
-        "mob": "Props 2",
-        "desk": "Desk",
-        "handItem": "Hand Items",
-        "bgSmall": "BG (Small)"
+        "マイオブジェクト": "My Object"
+    },
+    "deskPropCategories": {
+        "101": "Gourmet",
+        "102": "Drinks",
+        "0": "Belongings",
+        "100": "Souvenir"
+    },
+    "otherPropCategories": {
+        "mob": "Mob",
+        "game": "Game",
+        "extend": "Extend"
+    },
+    "myRoomPropCategories": {
+        "-1": " --- ",
+        "1050": "Furniture",
+        "1030": "Wall",
+        "1010": "Desk",
+        "1020": "Chair",
+        "1070": "Houseware",
+        "1060": "Lighting",
+        "1090": "Rug",
+        "1040": "Door",
+        "1080": "Kitchenware"
     }
 }

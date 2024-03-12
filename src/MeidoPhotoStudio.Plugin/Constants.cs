@@ -4,13 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
-using MyRoomCustom;
-using Newtonsoft.Json;
-using UnityEngine;
-using wf;
-
-using static MeidoPhotoStudio.Plugin.MenuFileUtility;
-
 namespace MeidoPhotoStudio.Plugin;
 
 // TODO: 😮 Holy moly! Destroy all static utility classes.
@@ -50,14 +43,6 @@ public static class Constants
     public static readonly Dictionary<string, List<string>> FaceDict = new();
     public static readonly List<string> CustomFaceGroupList = new();
     public static readonly Dictionary<string, List<string>> CustomFaceDict = new();
-    public static readonly List<string> BGList = new();
-    public static readonly List<KeyValuePair<string, string>> MyRoomCustomBGList = new();
-    public static readonly List<string> DoguCategories = new();
-    public static readonly Dictionary<string, List<string>> DoguDict = new();
-    public static readonly List<string> MyRoomPropCategories = new();
-    public static readonly Dictionary<string, List<MyRoomItem>> MyRoomPropDict = new();
-    public static readonly Dictionary<string, List<ModItem>> ModPropDict =
-        new(StringComparer.InvariantCultureIgnoreCase);
 
     public static readonly List<string> SceneDirectoryList = new();
     public static readonly List<string> KankyoDirectoryList = new();
@@ -72,9 +57,6 @@ public static class Constants
             [DoguCategory.BGSmall] = "bgSmall",
         };
 
-    private static readonly HashSet<string> ModPropIconsInitialized = new();
-
-    private static bool beginHandItemInit;
     private static bool beginMpnAttachInit;
 
     static Constants()
@@ -136,13 +118,7 @@ public static class Constants
         BGSmall,
     }
 
-    public static int MyRoomCustomBGIndex { get; private set; } = -1;
-
-    public static bool HandItemsInitialized { get; private set; }
-
     public static bool MpnAttachInitialized { get; private set; }
-
-    public static bool MenuFilesInitialized { get; private set; }
 
     public static void Initialize()
     {
@@ -151,25 +127,7 @@ public static class Constants
         InitializePoses();
         InitializeHandPresets();
         InitializeFaceBlends();
-        InitializeBGs();
-        InitializeDogu();
-        InitializeMyRoomProps();
         InitializeMpnAttachProps();
-    }
-
-    public static void Destroy()
-    {
-        if (!MenuFilesInitialized)
-            return;
-
-        foreach (var kvp in ModPropDict)
-        {
-            if (!ModPropIconsInitialized.Contains(kvp.Key))
-                continue;
-
-            foreach (var modItem in kvp.Value)
-                UnityEngine.Object.DestroyImmediate(modItem.Icon);
-        }
     }
 
     public static void AddFacePreset(Dictionary<string, float> faceData, string filename, string directory)
@@ -388,7 +346,7 @@ public static class Constants
         {
             var poseListJson = File.ReadAllText(poseListPath);
 
-            foreach (var poseList in JsonConvert.DeserializeObject<List<SerializePoseList>>(poseListJson))
+            foreach (var poseList in Newtonsoft.Json.JsonConvert.DeserializeObject<List<SerializePoseList>>(poseListJson))
             {
                 PoseDict[poseList.UIName] = poseList.PoseList;
                 PoseGroupList.Add(poseList.UIName);
@@ -598,380 +556,19 @@ public static class Constants
         }
     }
 
-    // TODO: This cannot be removed yet because the "small BG" props rely on this list.
-    public static void InitializeBGs()
-    {
-        // Load BGs
-        PhotoBGData.Create();
-
-        // COM3D2 BGs
-        foreach (var bgData in PhotoBGData.data)
-        {
-            if (string.IsNullOrEmpty(bgData.create_prefab_name))
-                continue;
-
-            var bg = bgData.create_prefab_name;
-
-            BGList.Add(bg);
-        }
-
-        // CM3D2 BGs
-        if (GameUty.IsEnabledCompatibilityMode)
-        {
-            using var csvParser = OpenCsvParser("phot_bg_list.nei", GameUty.FileSystemOld);
-
-            for (var cell_y = 1; cell_y < csvParser.max_cell_y; cell_y++)
-            {
-                if (!csvParser.IsCellToExistData(3, cell_y))
-                    continue;
-
-                var bg = csvParser.GetCellAsString(3, cell_y);
-
-                BGList.Add(bg);
-            }
-        }
-
-        // Set index regardless of there being myRoom bgs or not
-        MyRoomCustomBGIndex = BGList.Count;
-
-        var saveDataDict = CreativeRoomManager.GetSaveDataDic();
-
-        if (saveDataDict is not null)
-            MyRoomCustomBGList.AddRange(saveDataDict);
-    }
-
-    public static void InitializeDogu()
-    {
-        foreach (var customCategory in CustomDoguCategories.Values)
-            DoguDict[customCategory] = new();
-
-        InitializeDeskItems();
-        InitializePhotoBGItems();
-        InitializeOtherDogu();
-        InitializeHandItems();
-
-        foreach (var category in PhotoBGObjectData.popup_category_list.Select(kvp => kvp.Key))
-        {
-            if (category is "マイオブジェクト")
-                continue;
-
-            DoguCategories.Add(category);
-        }
-
-        foreach (DoguCategory category in Enum.GetValues(typeof(DoguCategory)))
-            DoguCategories.Add(CustomDoguCategories[category]);
-    }
-
-    public static List<ModItem> GetModPropList(string category)
-    {
-        if (!PropManager.ModItemsOnly && !MenuFilesReady)
-        {
-            Utility.LogMessage("Menu files are not ready yet");
-
-            return null;
-        }
-
-        if (!MenuFilesInitialized)
-            InitializeModProps();
-
-        if (!ModPropDict.ContainsKey(category))
-            return null;
-
-        if (ModPropIconsInitialized.Contains(category))
-            return ModPropDict[category];
-
-        var selectedList = ModPropDict[category];
-
-        foreach (var modItem in selectedList.Where(item => !item.IsOfficialMod))
-        {
-            var iconFile = modItem.IconFile;
-
-            if (string.IsNullOrEmpty(iconFile))
-            {
-                Utility.LogInfo($"Could not find icon for menu '{modItem.MenuFile}'");
-
-                continue;
-            }
-
-            Texture2D icon;
-
-            try
-            {
-                icon = ImportCM.CreateTexture(iconFile);
-            }
-            catch
-            {
-                try
-                {
-                    icon = ImportCM.CreateTexture(@"tex\" + iconFile);
-                }
-                catch
-                {
-                    Utility.LogInfo($"Could not load icon for '{modItem.MenuFile}'");
-
-                    icon = null;
-                }
-            }
-
-            modItem.Icon = icon;
-        }
-
-        ModPropIconsInitialized.Add(category);
-
-        return selectedList;
-    }
-
-    private static void InitializeOtherDogu()
-    {
-        DoguDict[CustomDoguCategories[DoguCategory.BGSmall]] = BGList;
-        DoguDict[CustomDoguCategories[DoguCategory.Mob]].AddRange(
-            new[]
-            {
-                "Mob_Man_Stand001", "Mob_Man_Stand002", "Mob_Man_Stand003", "Mob_Man_Sit001", "Mob_Man_Sit002",
-                "Mob_Man_Sit003", "Mob_Girl_Stand001", "Mob_Girl_Stand002", "Mob_Girl_Stand003", "Mob_Girl_Sit001",
-                "Mob_Girl_Sit002", "Mob_Girl_Sit003",
-            });
-
-        var otherDoguList = DoguDict[CustomDoguCategories[DoguCategory.Other]];
-
-        // bg object extend
-        var doguHashSet = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-
-        doguHashSet.UnionWith(BGList);
-
-        try
-        {
-            var ignoreListPath = Path.Combine(DatabasePath, "bg_ignore_list.json");
-            var ignoreListJson = File.ReadAllText(ignoreListPath);
-            var ignoreList = JsonConvert.DeserializeObject<string[]>(ignoreListJson);
-
-            doguHashSet.UnionWith(ignoreList);
-        }
-        catch (IOException e)
-        {
-            Utility.LogWarning($"Could not open ignored BG database because {e.Message}");
-        }
-        catch
-        {
-            // Ignored.
-        }
-
-        foreach (var doguList in DoguDict.Values)
-            doguHashSet.UnionWith(doguList);
-
-        foreach (var path in GameUty.FileSystem.GetList("bg", AFileSystemBase.ListType.AllFile))
-        {
-            if (Path.GetExtension(path) is not ".asset_bg" || path.Contains("myroomcustomize"))
-                continue;
-
-            var file = Path.GetFileNameWithoutExtension(path);
-
-            if (doguHashSet.Contains(file) || file.EndsWith("_hit"))
-                continue;
-
-            otherDoguList.Add(file);
-            doguHashSet.Add(file);
-        }
-
-        // Get cherry picked dogu that I can't find in the game files
-        try
-        {
-            var doguExtendPath = Path.Combine(DatabasePath, "extra_dogu.json");
-            var doguExtendJson = File.ReadAllText(doguExtendPath);
-
-            otherDoguList.AddRange(JsonConvert.DeserializeObject<IEnumerable<string>>(doguExtendJson));
-        }
-        catch (IOException e)
-        {
-            Utility.LogError($"Could not open extra prop database because {e.Message}");
-        }
-        catch (Exception e)
-        {
-            Utility.LogError($"Could not parse extra prop database because {e.Message}");
-        }
-
-        foreach (var path in GameUty.FileSystemOld.GetList("bg", AFileSystemBase.ListType.AllFile))
-        {
-            if (Path.GetExtension(path) is not ".asset_bg")
-                continue;
-
-            var file = Path.GetFileNameWithoutExtension(path);
-
-            if (!doguHashSet.Contains(file) && !file.EndsWith("_not_optimisation"))
-                otherDoguList.Add(file);
-        }
-    }
-
-    private static void InitializeDeskItems()
-    {
-        var enabledIDs = new HashSet<int>();
-
-        CsvCommonIdManager.ReadEnabledIdList(
-            CsvCommonIdManager.FileSystemType.Normal, true, "desk_item_enabled_id", ref enabledIDs);
-
-        CsvCommonIdManager.ReadEnabledIdList(
-            CsvCommonIdManager.FileSystemType.Old, true, "desk_item_enabled_id", ref enabledIDs);
-
-        var com3d2DeskDogu = DoguDict[CustomDoguCategories[DoguCategory.Desk]];
-
-        GetDeskItems(GameUty.FileSystem);
-
-        void GetDeskItems(AFileSystemBase fs)
-        {
-            using var csvParser = OpenCsvParser("desk_item_detail.nei", fs);
-
-            for (var cell_y = 1; cell_y < csvParser.max_cell_y; cell_y++)
-            {
-                if (!csvParser.IsCellToExistData(0, cell_y))
-                    continue;
-
-                var cell = csvParser.GetCellAsInteger(0, cell_y);
-
-                if (!enabledIDs.Contains(cell))
-                    continue;
-
-                var dogu = string.Empty;
-
-                if (csvParser.IsCellToExistData(3, cell_y))
-                    dogu = csvParser.GetCellAsString(3, cell_y);
-                else if (csvParser.IsCellToExistData(4, cell_y))
-                    dogu = csvParser.GetCellAsString(4, cell_y);
-
-                if (!string.IsNullOrEmpty(dogu))
-                    com3d2DeskDogu.Add(dogu);
-            }
-        }
-    }
-
-    private static void InitializePhotoBGItems()
-    {
-        PhotoBGObjectData.Create();
-
-        var photoBGObjectList = PhotoBGObjectData.data;
-
-        var doguCategories = new List<string>();
-        var addedCategories = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-
-        foreach (var photoBGObject in photoBGObjectList)
-        {
-            var category = photoBGObject.category;
-
-            if (!addedCategories.Contains(category))
-            {
-                addedCategories.Add(category);
-                doguCategories.Add(category);
-            }
-
-            if (!DoguDict.ContainsKey(category))
-                DoguDict[category] = new();
-
-            var dogu = string.Empty;
-
-            if (!string.IsNullOrEmpty(photoBGObject.create_prefab_name))
-                dogu = photoBGObject.create_prefab_name;
-            else if (!string.IsNullOrEmpty(photoBGObject.create_asset_bundle_name))
-                dogu = photoBGObject.create_asset_bundle_name;
-            else if (!string.IsNullOrEmpty(photoBGObject.direct_file))
-                dogu = photoBGObject.direct_file;
-
-            if (!string.IsNullOrEmpty(dogu))
-                DoguDict[category].Add(dogu);
-        }
-
-        DoguDict["パーティクル"].AddRange(
-            new[]
-            {
-                "Particle/pLineY", "Particle/pLineP02", "Particle/pHeart01",
-                "Particle/pLine_act2", "Particle/pstarY_act3",
-            });
-    }
-
-    private static void InitializeHandItems()
-    {
-        if (HandItemsInitialized)
-            return;
-
-        if (!MenuFilesReady)
-        {
-            if (!beginHandItemInit)
-                MenuFilesReadyChange += (_, _) =>
-                    InitializeHandItems();
-
-            beginHandItemInit = true;
-
-            return;
-        }
-
-        var menuDataBase = GameMain.Instance.MenuDataBase;
-        var doguHashSet = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-
-        doguHashSet.UnionWith(BGList);
-
-        try
-        {
-            var ignoreListPath = Path.Combine(DatabasePath, "bg_ignore_list.json");
-            var ignoreListJson = File.ReadAllText(ignoreListPath);
-            var ignoreList = JsonConvert.DeserializeObject<string[]>(ignoreListJson);
-
-            doguHashSet.UnionWith(ignoreList);
-        }
-        catch (IOException e)
-        {
-            Utility.LogWarning($"Could not open ignored BG database because {e.Message}");
-        }
-        catch (Exception e)
-        {
-            Utility.LogError($"Could not parse ignored BG database because {e.Message}");
-        }
-
-        foreach (var doguList in DoguDict.Values)
-            doguHashSet.UnionWith(doguList);
-
-        var category = CustomDoguCategories[DoguCategory.HandItem];
-
-        for (var i = 0; i < menuDataBase.GetDataSize(); i++)
-        {
-            menuDataBase.SetIndex(i);
-
-            if ((MPN)menuDataBase.GetCategoryMpn() is not MPN.handitem)
-                continue;
-
-            var menuFileName = menuDataBase.GetMenuFileName();
-
-            if (menuDataBase.GetBoDelOnly() || menuFileName.EndsWith("_del.menu"))
-                continue;
-
-            var handItemAsOdogu = Utility.HandItemToOdogu(menuFileName);
-            var isolatedHandItem = menuFileName.Substring(menuFileName.IndexOf('_') + 1);
-
-            if (doguHashSet.Contains(handItemAsOdogu) || doguHashSet.Contains(isolatedHandItem))
-                continue;
-
-            doguHashSet.Add(isolatedHandItem);
-            DoguDict[category].Add(menuFileName);
-
-            // Check for a half deck of cards to add the full deck as well
-            if (menuFileName is "handitemd_cards_i_.menu")
-                DoguDict[category].Add("handiteml_cards_i_.menu");
-        }
-
-        HandItemsInitialized = true;
-        OnMenuFilesChange(MenuFilesEventArgs.EventType.HandItems);
-    }
-
     private static void InitializeMpnAttachProps()
     {
         if (MpnAttachInitialized)
             return;
 
-        if (!MenuFilesReady)
+        if (!MenuFileUtility.MenuFilesReady)
         {
             if (beginMpnAttachInit)
                 return;
 
             beginMpnAttachInit = true;
 
-            MenuFilesReadyChange += (_, _) =>
+            MenuFileUtility.MenuFilesReadyChange += (_, _) =>
                 InitializeMpnAttachProps();
 
             return;
@@ -1000,125 +597,6 @@ public static class Constants
 
         MpnAttachInitialized = true;
         OnMenuFilesChange(MenuFilesEventArgs.EventType.MpnAttach);
-    }
-
-    private static void InitializeMyRoomProps()
-    {
-        PlacementData.CreateData();
-
-        var myRoomData = PlacementData.GetAllDatas(false);
-
-        myRoomData.Sort(MyRoomDataComparator);
-
-        foreach (var data in myRoomData)
-        {
-            var category = PlacementData.GetCategoryName(data.categoryID);
-
-            if (!MyRoomPropDict.ContainsKey(category))
-            {
-                MyRoomPropCategories.Add(category);
-                MyRoomPropDict[category] = new();
-            }
-
-            var asset = !string.IsNullOrEmpty(data.resourceName) ? data.resourceName : data.assetName;
-            var item = new MyRoomItem()
-            {
-                PrefabName = asset,
-                ID = data.ID,
-            };
-
-            MyRoomPropDict[category].Add(item);
-        }
-
-        static int MyRoomDataComparator(PlacementData.Data a, PlacementData.Data b)
-        {
-            var res = a.categoryID.CompareTo(b.categoryID);
-
-            if (res is 0)
-                res = a.ID.CompareTo(b.ID);
-
-            return res;
-        }
-    }
-
-    private static void InitializeModProps()
-    {
-        for (var i = 1; i < MenuCategories.Length; i++)
-            ModPropDict[MenuCategories[i]] = new();
-
-        if (!PropManager.ModItemsOnly)
-        {
-            var menuDatabase = GameMain.Instance.MenuDataBase;
-
-            for (var i = 0; i < menuDatabase.GetDataSize(); i++)
-            {
-                menuDatabase.SetIndex(i);
-
-                var modItem = new ModItem();
-
-                if (ParseNativeMenuFile(i, modItem))
-                    ModPropDict[modItem.Category].Add(modItem);
-            }
-        }
-
-        var cache = new MenuFileCache();
-
-        foreach (var modMenuFile in GameUty.ModOnlysMenuFiles)
-        {
-            ModItem modItem;
-
-            if (cache.Has(modMenuFile))
-            {
-                modItem = cache[modMenuFile];
-            }
-            else
-            {
-                modItem = ModItem.Mod(modMenuFile);
-                ParseMenuFile(modMenuFile, modItem);
-                cache[modMenuFile] = modItem;
-            }
-
-            if (ValidBG2MenuFile(modItem))
-                ModPropDict[modItem.Category].Add(modItem);
-        }
-
-        cache.Serialize();
-
-        foreach (var modFile in Menu.GetModFiles())
-        {
-            var modItem = ModItem.OfficialMod(modFile);
-
-            if (ParseModMenuFile(modFile, modItem))
-                ModPropDict[modItem.Category].Add(modItem);
-        }
-
-        MenuFilesInitialized = true;
-    }
-
-    // TODO: This could leak on failure.
-    private static CsvParser OpenCsvParser(string nei, AFileSystemBase fs)
-    {
-        try
-        {
-            if (!fs.IsExistentFile(nei))
-                return null;
-
-            var file = fs.FileOpen(nei);
-            var csvParser = new CsvParser();
-
-            if (csvParser.Open(file))
-                return csvParser;
-
-            file?.Dispose();
-
-            return null;
-        }
-        catch
-        {
-            // Ignored.
-        }
-
-        return null;
     }
 
     private static void OnMenuFilesChange(MenuFilesEventArgs.EventType eventType) =>

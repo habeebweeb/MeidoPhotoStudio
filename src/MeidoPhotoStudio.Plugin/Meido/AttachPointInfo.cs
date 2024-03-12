@@ -1,4 +1,4 @@
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Core.Props;
 
 public readonly struct AttachPointInfo
 {
@@ -21,9 +21,9 @@ public readonly struct AttachPointInfo
     public static ref readonly AttachPointInfo Empty =>
         ref EmptyValue;
 
-    public AttachPoint AttachPoint { get; }
+    public AttachPoint AttachPoint { get; init; }
 
-    public string MaidGuid { get; }
+    public string MaidGuid { get; init; }
 
-    public int MaidIndex { get; }
+    public int MaidIndex { get; init; }
 }

@@ -1,93 +1,135 @@
 using System.Collections.Generic;
+using System.Linq;
 
+using MeidoPhotoStudio.Database.Props;
+using MeidoPhotoStudio.Plugin.Core;
+using MeidoPhotoStudio.Plugin.Core.Props;
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class MyRoomPropsPane : BasePane
 {
-    private readonly PropManager propManager;
+    private readonly PropService propService;
+    private readonly MyRoomPropRepository myRoomPropRepository;
+    private readonly IconCache iconCache;
     private readonly Dropdown propCategoryDropdown;
+    private readonly int[] categories;
 
-    private Vector2 propListScrollPos;
-    private List<MyRoomItem> myRoomPropList;
-    private string currentCategory;
+    private Vector2 scrollPosition;
+    private IEnumerable<MyRoomPropModel> currentPropList;
 
-    public MyRoomPropsPane(PropManager propManager)
+    public MyRoomPropsPane(
+        PropService propService, MyRoomPropRepository myRoomPropRepository, IconCache iconCache)
     {
-        this.propManager = propManager;
+        this.propService = propService ?? throw new System.ArgumentNullException(nameof(propService));
+        this.myRoomPropRepository = myRoomPropRepository ?? throw new System.ArgumentNullException(nameof(myRoomPropRepository));
+        this.iconCache = iconCache ?? throw new System.ArgumentNullException(nameof(iconCache));
 
-        propCategoryDropdown = new(Translation.GetArray("doguCategories", Constants.MyRoomPropCategories));
-        propCategoryDropdown.SelectionChange += (_, _) =>
-            ChangePropCategory(SelectedCategory);
+        categories = new[] { -1 }.Concat(myRoomPropRepository.CategoryIDs.OrderBy(id => id)).ToArray();
 
-        ChangePropCategory(SelectedCategory);
+        propCategoryDropdown = new(categories
+            .Select(id => Translation.Get("myRoomPropCategories", id.ToString()))
+            .ToArray());
+
+        propCategoryDropdown.SelectionChange += OnPropCategoryDropdownChanged;
+
+        UpdateCurrentPropList();
     }
-
-    private string SelectedCategory =>
-        Constants.MyRoomPropCategories[propCategoryDropdown.SelectedItemIndex];
 
     public override void Draw()
     {
-        const float dropdownButtonHeight = 30f;
-        const float dropdownButtonWidth = 120f;
+        DrawDropdown(propCategoryDropdown);
 
-        var dropdownLayoutOptions = new[]
+        MpsGui.BlackLine();
+
+        DrawPropList();
+
+        static void DrawDropdown(Dropdown dropdown)
         {
-            GUILayout.Height(dropdownButtonHeight),
-            GUILayout.Width(dropdownButtonWidth),
-        };
+            var arrowLayoutOptions = new[]
+            {
+                GUILayout.ExpandWidth(false),
+                GUILayout.ExpandHeight(false),
+            };
 
-        GUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-        propCategoryDropdown.Draw(dropdownLayoutOptions);
-        GUILayout.FlexibleSpace();
-        GUILayout.EndHorizontal();
+            const float dropdownButtonWidth = 185f;
 
-        var windowRect = parent.WindowRect;
-        var windowHeight = windowRect.height;
-        var windowWidth = windowRect.width;
+            var dropdownLayoutOptions = new[]
+            {
+                GUILayout.Width(dropdownButtonWidth),
+            };
 
-        const float offsetTop = 80f;
-        const int columns = 3;
+            GUILayout.BeginHorizontal();
 
-        var buttonSize = windowWidth / columns - 10f;
-        var listCount = myRoomPropList.Count;
-        var positionRect = new Rect(5f, offsetTop + dropdownButtonHeight, windowWidth - 10f, windowHeight - 145f);
-        var viewRect = new Rect(0f, 0f, buttonSize * columns, buttonSize * Mathf.Ceil(listCount / (float)columns) + 5f);
+            dropdown.Draw(dropdownLayoutOptions);
 
-        propListScrollPos = GUI.BeginScrollView(positionRect, propListScrollPos, viewRect);
+            if (GUILayout.Button("<", arrowLayoutOptions))
+                dropdown.Step(-1);
 
-        for (var i = 0; i < listCount; i++)
-        {
-            var x = i % columns * buttonSize;
-            var y = i / columns * buttonSize;
-            var myRoomItem = myRoomPropList[i];
-            var iconRect = new Rect(x, y, buttonSize, buttonSize);
+            if (GUILayout.Button(">", arrowLayoutOptions))
+                dropdown.Step(1);
 
-            if (GUI.Button(iconRect, string.Empty))
-                propManager.AddMyRoomProp(myRoomItem);
-
-            GUI.DrawTexture(iconRect, myRoomItem.Icon);
+            GUILayout.EndHorizontal();
         }
 
-        GUI.EndScrollView();
+        void DrawPropList()
+        {
+            scrollPosition = GUILayout.BeginScrollView(scrollPosition);
+
+            const float buttonSize = 70f;
+
+            var buttonStyle = new GUIStyle(GUI.skin.button) { padding = new(0, 0, 0, 0) };
+            var buttonLayoutOptions = new GUILayoutOption[]
+            {
+                GUILayout.Width(buttonSize), GUILayout.Height(buttonSize),
+            };
+
+            foreach (var propChunk in currentPropList.Chunk(3))
+            {
+                GUILayout.BeginHorizontal();
+
+                foreach (var prop in propChunk)
+                {
+                    var icon = iconCache.GetMyRoomIcon(prop);
+                    var clicked = GUILayout.Button(icon, buttonStyle, buttonLayoutOptions);
+
+                    if (clicked)
+                        propService.Add(prop);
+                }
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.EndScrollView();
+        }
     }
 
-    protected override void ReloadTranslation() =>
-        propCategoryDropdown.SetDropdownItems(Translation.GetArray("doguCategories", Constants.MyRoomPropCategories));
-
-    private void ChangePropCategory(string category)
+    protected override void ReloadTranslation()
     {
-        if (currentCategory == category)
-            return;
+        base.ReloadTranslation();
 
-        currentCategory = category;
-        propListScrollPos = Vector2.zero;
-        myRoomPropList = Constants.MyRoomPropDict[category];
-
-        if (!myRoomPropList[0].Icon)
-            foreach (var item in myRoomPropList)
-                item.Icon = (Texture2D)MyRoomCustom.PlacementData.GetData(item.ID).GetThumbnail();
+        propCategoryDropdown.SetDropdownItemsWithoutNotify(
+            categories.Select(id => Translation.Get("myRoomPropCategories", id.ToString())).ToArray());
     }
+
+    private void UpdateCurrentPropList()
+    {
+        var currentCategory = categories[propCategoryDropdown.SelectedItemIndex];
+
+        if (currentCategory is -1)
+        {
+            currentPropList = Enumerable.Empty<MyRoomPropModel>();
+
+            return;
+        }
+
+        scrollPosition = Vector2.zero;
+
+        currentPropList = myRoomPropRepository[currentCategory];
+    }
+
+    private void OnPropCategoryDropdownChanged(object sender, System.EventArgs e) =>
+        UpdateCurrentPropList();
 }

@@ -8,6 +8,10 @@ using Newtonsoft.Json.Linq;
 
 namespace MeidoPhotoStudio.Plugin;
 
+// TODO: Rework translation.
+// The depth of translation is 2 deep so translation group -> translation key -> "translation". This is fairly limiting.
+// Consider maybe a translation system like COM where translation keys are paths like
+// ui/backgrounds/cm3d2/categoryName -> "Custom Maid 3D 2" and ui/backgrounds/cm3d2/backgrounds/Yashiki_Day -> "Inn".
 public static class Translation
 {
     private const string SettingsHeader = "Translation";

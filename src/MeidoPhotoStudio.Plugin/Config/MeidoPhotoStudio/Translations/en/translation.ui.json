@@ -81,7 +81,8 @@
         "header": "SM Restraints"
     },
     "clothing": {
-        "noCategory": " --- ",
+        "null_mpn": " --- ",
+        "handItem": "Hand Items",
         "accHat": "Hat",
         "headset": "Headdress",
         "wear": "Top",
@@ -234,14 +235,22 @@
       "sceneManagementHeader": "Scene Management"
     },
     "propsPane": {
-        "props1AddButton": "Add",
-        "props2AddButton": "Add",
+        "addProp": "Add Prop",
         "header": "Props"
     },
     "propsPaneTabs": {
         "props": "Props",
         "myRoom": "MyRoom",
         "mod": "Mods"
+    },
+    "propTypes": {
+        "game": "Game",
+        "desk": "Desk",
+        "other": "Other",
+        "background": "Background",
+        "myRoom": "My Room Custom",
+        "menu": "Mod",
+        "handItem": "Hand items"
     },
     "myRoomPane": {
         "header": "My Room"
@@ -387,7 +396,7 @@
         "genitals": "Genitals"
     },
     "attachPropPane": {
-        "keepWorldPosition": "Keep World Position",
+        "keepWorldPosition": "Keep current position",
         "header": "Attach Point",
         "head": "Head",
         "neck": "Neck",

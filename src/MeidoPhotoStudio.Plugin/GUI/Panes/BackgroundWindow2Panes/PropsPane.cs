@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -5,176 +7,119 @@ using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class PropsPane : BasePane
+public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCategory, BasePane>>
 {
-    private static bool handItemsReady;
+    private readonly Dropdown propTypeDropdown;
+    private readonly Dictionary<PropCategory, BasePane> propPanes = new(EnumEqualityComparer<PropCategory>.Instance);
+    private readonly List<PropCategory> propTypes = new();
+    private readonly Toggle paneHeader;
 
-    private readonly PropManager propManager;
-    private readonly Dropdown doguCategoryDropdown;
-    private readonly Dropdown doguDropdown;
-    private readonly Button addDoguButton;
-    private readonly Button nextDoguButton;
-    private readonly Button prevDoguButton;
-    private readonly Button nextDoguCategoryButton;
-    private readonly Button prevDoguCategoryButton;
-
-    private string currentCategory;
-    private bool itemSelectorEnabled = true;
-
-    public PropsPane(PropManager propManager)
+    public PropsPane()
     {
-        this.propManager = propManager;
+        propTypeDropdown = new(new[] { "PROP TYPES" });
+        propTypeDropdown.ControlEvent += OnPropTypeSelectionChanged;
 
-        handItemsReady = Constants.HandItemsInitialized;
-
-        if (!handItemsReady)
-            Constants.MenuFilesChange += InitializeHandItems;
-
-        doguCategoryDropdown = new(Translation.GetArray("doguCategories", Constants.DoguCategories));
-        doguCategoryDropdown.SelectionChange += (_, _) =>
-            ChangeDoguCategory(SelectedCategory);
-
-        doguDropdown = new(new[] { string.Empty });
-
-        addDoguButton = new("+");
-        addDoguButton.ControlEvent += (_, _) =>
-            SpawnObject();
-
-        nextDoguButton = new(">");
-        nextDoguButton.ControlEvent += (_, _) =>
-            doguDropdown.Step(1);
-
-        prevDoguButton = new("<");
-        prevDoguButton.ControlEvent += (_, _) =>
-            doguDropdown.Step(-1);
-
-        nextDoguCategoryButton = new(">");
-        nextDoguCategoryButton.ControlEvent += (_, _) =>
-            doguCategoryDropdown.Step(1);
-
-        prevDoguCategoryButton = new("<");
-        prevDoguCategoryButton.ControlEvent += (_, _) =>
-            doguCategoryDropdown.Step(-1);
-
-        ChangeDoguCategory(SelectedCategory);
+        paneHeader = new(Translation.Get("propsPane", "header"), true);
     }
 
-    private string SelectedCategory =>
-        Constants.DoguCategories[doguCategoryDropdown.SelectedItemIndex];
+    public enum PropCategory
+    {
+        Game,
+        Desk,
+        Other,
+        Background,
+        MyRoom,
+        Menu,
+        HandItem,
+    }
+
+    public BasePane this[PropCategory category]
+    {
+        get => propPanes[category];
+        set => Add(category, value);
+    }
 
     public override void Draw()
     {
-        const float buttonHeight = 30;
+        paneHeader.Draw();
+        MpsGui.WhiteLine();
+
+        if (!paneHeader.Value)
+            return;
+
+        GUILayout.BeginHorizontal();
+
+        propTypeDropdown.Draw();
 
         var arrowLayoutOptions = new[]
         {
-            GUILayout.Width(buttonHeight),
-            GUILayout.Height(buttonHeight),
+            GUILayout.ExpandWidth(false),
+            GUILayout.ExpandHeight(false),
         };
 
-        const float dropdownButtonWidth = 120f;
+        if (GUILayout.Button("<", arrowLayoutOptions))
+            propTypeDropdown.Step(-1);
 
-        var dropdownLayoutOptions = new[]
-        {
-            GUILayout.Height(buttonHeight),
-            GUILayout.Width(dropdownButtonWidth),
-        };
+        if (GUILayout.Button(">", arrowLayoutOptions))
+            propTypeDropdown.Step(1);
 
-        GUILayout.BeginHorizontal();
-        prevDoguCategoryButton.Draw(arrowLayoutOptions);
-        doguCategoryDropdown.Draw(dropdownLayoutOptions);
-        nextDoguCategoryButton.Draw(arrowLayoutOptions);
         GUILayout.EndHorizontal();
 
-        GUI.enabled = itemSelectorEnabled;
-        GUILayout.BeginHorizontal();
-        doguDropdown.Draw(dropdownLayoutOptions);
-        prevDoguButton.Draw(arrowLayoutOptions);
-        nextDoguButton.Draw(arrowLayoutOptions);
-        addDoguButton.Draw(arrowLayoutOptions);
-        GUILayout.EndHorizontal();
-        GUI.enabled = true;
+        MpsGui.WhiteLine();
+
+        propPanes[propTypes[propTypeDropdown.SelectedItemIndex]].Draw();
+    }
+
+    public IEnumerator<KeyValuePair<PropCategory, BasePane>> GetEnumerator() =>
+        propPanes.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() =>
+        GetEnumerator();
+
+    public void Add(PropCategory key, BasePane pane)
+    {
+        _ = pane ?? throw new ArgumentNullException(nameof(pane));
+
+        propPanes[key] = pane;
+
+        propTypes.Add(key);
+
+        updating = true;
+
+        propTypeDropdown.SetDropdownItems(
+            propTypes
+                .Select(EnumToLower)
+                .Select(key => Translation.Get("propTypes", key))
+                .ToArray(),
+            0);
+
+        updating = false;
     }
 
     protected override void ReloadTranslation()
     {
-        doguCategoryDropdown.SetDropdownItems(Translation.GetArray("doguCategories", Constants.DoguCategories));
+        base.ReloadTranslation();
 
-        var category = SelectedCategory;
+        propTypeDropdown.SetDropdownItemsWithoutNotify(
+            propTypes
+            .Select(EnumToLower)
+            .Select(key => Translation.Get("propTypes", key))
+            .ToArray());
 
-        var translationArray =
-            category == Constants.CustomDoguCategories[Constants.DoguCategory.HandItem] && !handItemsReady
-                ? new[] { Translation.Get("systemMessage", "initializing") }
-                : GetTranslations(category);
-
-        doguDropdown.SetDropdownItems(translationArray);
+        paneHeader.Label = Translation.Get("propsPane", "header");
     }
 
-    private void InitializeHandItems(object sender, MenuFilesEventArgs args)
+    private static string EnumToLower<T>(T enumValue)
+        where T : Enum
     {
-        if (args.Type is not MenuFilesEventArgs.EventType.HandItems)
+        var enumString = enumValue.ToString();
+
+        return char.ToLower(enumString[0]) + enumString.Substring(1);
+    }
+
+    private void OnPropTypeSelectionChanged(object sender, EventArgs e)
+    {
+        if (updating)
             return;
-
-        handItemsReady = true;
-
-        var selectedCategory = SelectedCategory;
-
-        if (selectedCategory == Constants.CustomDoguCategories[Constants.DoguCategory.HandItem])
-            ChangeDoguCategory(selectedCategory, true);
-    }
-
-    private void ChangeDoguCategory(string category, bool force = false)
-    {
-        if (category == currentCategory && !force)
-            return;
-
-        currentCategory = category;
-
-        string[] translationArray;
-
-        if (category == Constants.CustomDoguCategories[Constants.DoguCategory.HandItem] && !handItemsReady)
-        {
-            translationArray = new[] { Translation.Get("systemMessage", "initializing") };
-            itemSelectorEnabled = false;
-        }
-        else
-        {
-            translationArray = GetTranslations(category);
-            itemSelectorEnabled = true;
-        }
-
-        doguDropdown.SetDropdownItems(translationArray, 0);
-    }
-
-    private string[] GetTranslations(string category)
-    {
-        IEnumerable<string> itemList = Constants.DoguDict[category];
-
-        if (category == Constants.CustomDoguCategories[Constants.DoguCategory.HandItem])
-        {
-            // TODO: itemList should not be reused
-            itemList = itemList.Select(item =>
-            {
-                var handItemAsOdogu = Utility.HandItemToOdogu(item);
-
-                return Translation.Has("propNames", handItemAsOdogu) ? handItemAsOdogu : item;
-            });
-        }
-
-        var translationCategory = category == Constants.CustomDoguCategories[Constants.DoguCategory.BGSmall]
-            ? "bgNames"
-            : "propNames";
-
-        return Translation.GetArray(translationCategory, itemList);
-    }
-
-    private void SpawnObject()
-    {
-        var assetName = Constants.DoguDict[SelectedCategory][doguDropdown.SelectedItemIndex];
-
-        if (SelectedCategory == Constants.CustomDoguCategories[Constants.DoguCategory.BGSmall])
-            propManager.AddBgProp(assetName);
-        else
-            propManager.AddGameProp(assetName);
     }
 }

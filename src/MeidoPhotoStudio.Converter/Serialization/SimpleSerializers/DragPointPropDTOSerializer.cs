@@ -1,6 +1,7 @@
 using System.IO;
 
 using MeidoPhotoStudio.Plugin;
+using MeidoPhotoStudio.Plugin.Core.Props;
 
 namespace MeidoPhotoStudio.Converter.Serialization;
 

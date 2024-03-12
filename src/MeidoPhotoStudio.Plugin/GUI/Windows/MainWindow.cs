@@ -12,7 +12,6 @@ public partial class MainWindow : BaseWindow
     private readonly MeidoManager meidoManager;
     private readonly TabSelectionController tabSelectionController;
     private readonly Dictionary<Constants.Window, BaseMainWindowPane> windowPanes;
-    private readonly PropManager propManager;
     private readonly CustomMaidSceneService customMaidSceneService;
     private readonly InputRemapper inputRemapper;
     private readonly TabsPane tabsPane;
@@ -25,17 +24,12 @@ public partial class MainWindow : BaseWindow
 
     public MainWindow(
         MeidoManager meidoManager,
-        PropManager propManager,
         TabSelectionController tabSelectionController,
         CustomMaidSceneService customMaidSceneService,
         InputRemapper inputRemapper)
     {
         this.meidoManager = meidoManager;
         this.tabSelectionController = tabSelectionController;
-
-        this.propManager = propManager;
-        this.propManager.FromPropSelect += (_, _) =>
-            ChangeWindow(Constants.Window.BG2);
 
         this.meidoManager.UpdateMeido += UpdateMeido;
 

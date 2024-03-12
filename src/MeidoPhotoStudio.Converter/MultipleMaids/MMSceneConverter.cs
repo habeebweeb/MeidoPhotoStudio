@@ -7,6 +7,7 @@ using MeidoPhotoStudio.Converter.Serialization;
 using MeidoPhotoStudio.Plugin;
 using MeidoPhotoStudio.Plugin.Core.Camera;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
+using MeidoPhotoStudio.Plugin.Core.Props;
 using MyRoomCustom;
 using UnityEngine;
 
@@ -672,7 +673,7 @@ public static class MMSceneConverter
 
         propCount += hasWProp ? 1 : 0;
 
-        writer.Write(PropManager.Header);
+        writer.Write("PROP");
 
         // PropManagerSerializer version
         writer.WriteVersion(1);

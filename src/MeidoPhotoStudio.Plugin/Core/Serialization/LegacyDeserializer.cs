@@ -12,6 +12,7 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Camera;
 using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 using MeidoPhotoStudio.Plugin.Core.Schema.Light;
 using MeidoPhotoStudio.Plugin.Core.Schema.Message;
+using MeidoPhotoStudio.Plugin.Core.Schema.Props;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using UnityEngine;
 
@@ -59,8 +60,9 @@ public class LegacyDeserializer : ISceneSerializer
 
             return true;
         }
-        catch
+        catch (Exception e)
         {
+            Utility.LogDebug($"Could not deserialize scene because {e}");
         }
 
         return false;
@@ -89,8 +91,7 @@ public class LegacyDeserializer : ISceneSerializer
             var lights = ReadLightRepositorySchema(reader, metadata);
             var effects = ReadEffectsSchema(reader, metadata);
             var background = ReadBackgroundSchema(reader, metadata);
-
-            ReadPropSchema(reader, metadata);
+            var props = ReadPropSchema(reader, metadata);
 
             return new()
             {
@@ -99,6 +100,7 @@ public class LegacyDeserializer : ISceneSerializer
                 Lights = lights,
                 Effects = effects,
                 Background = background,
+                Props = props,
             };
 
             static void ReadMeidoManagerSchema(BinaryReader reader, SceneSchemaMetadata metadata)
@@ -476,57 +478,117 @@ public class LegacyDeserializer : ISceneSerializer
                 };
             }
 
-            static void ReadPropSchema(BinaryReader reader, SceneSchemaMetadata metadata)
+            static PropsSchema ReadPropSchema(BinaryReader reader, SceneSchemaMetadata metadata)
             {
                 _ = reader.ReadString();
 
                 var version = reader.ReadInt16();
+                var propList = ReadPropsList(reader, metadata);
 
-                ReadPropsList(reader, metadata);
+                return new(version)
+                {
+                    Props = propList.Select(ConvertProp).ToList(),
+                    DragHandleSettings = propList.Select(ConvertDragHandleSettings).ToList(),
+                    PropAttachment = propList.Select(prop => prop.AttachPoint).ToList(),
+                };
 
-                static void ReadPropsList(BinaryReader reader, SceneSchemaMetadata metadata)
+                static List<LegacyPropSchema> ReadPropsList(BinaryReader reader, SceneSchemaMetadata metadata)
                 {
                     var listCount = reader.ReadInt32();
+                    var list = new List<LegacyPropSchema>();
 
                     for (var i = 0; i < listCount; i++)
-                        ReadProp(reader, metadata);
+                        list.Add(ReadProp(reader, metadata));
 
-                    static void ReadProp(BinaryReader reader, SceneSchemaMetadata metadata)
+                    return list;
+
+                    static LegacyPropSchema ReadProp(BinaryReader reader, SceneSchemaMetadata metadata)
                     {
                         var version = reader.ReadInt16();
 
-                        ReadPropInfo(reader, metadata);
-
-                        var transform = ReadTransform(reader, metadata);
-
-                        ReadAttachPoint(reader, metadata);
-
-                        var shadowCasting = reader.ReadBoolean();
-                        var dragHandleEnabled = version < 2 || reader.ReadBoolean();
-                        var gizmoEnabled = version < 2 || reader.ReadBoolean();
-                        var gizmoMode = version >= 2
-                            ? (CustomGizmo.GizmoMode)reader.ReadInt32()
-                            : CustomGizmo.GizmoMode.World;
-                        var propVisible = version < 2 || reader.ReadBoolean();
-
-                        static void ReadPropInfo(BinaryReader reader, SceneSchemaMetadata metadata)
+                        return new(version)
                         {
-                            var version = reader.ReadInt16();
-                            var type = (PropInfo.PropType)reader.ReadInt32();
-                            var filename = reader.ReadNullableString();
-                            var subFilename = reader.ReadNullableString();
-                            var myRoomID = reader.ReadInt32();
-                            var iconFile = reader.ReadNullableString();
-                        }
+                            PropInfo = ReadPropInfo(reader, metadata),
+                            Transform = ReadTransform(reader, metadata),
+                            AttachPoint = ReadAttachPoint(reader, metadata),
+                            ShadowCasting = reader.ReadBoolean(),
+                            DragHandleEnabled = version < 2 || reader.ReadBoolean(),
+                            GizmoEnabled = version < 2 || reader.ReadBoolean(),
+                            GizmoMode = version >= 2
+                                ? (CustomGizmo.GizmoMode)reader.ReadInt32()
+                                : CustomGizmo.GizmoMode.World,
+                            PropVisible = version < 2 || reader.ReadBoolean(),
+                        };
 
-                        static void ReadAttachPoint(BinaryReader reader, SceneSchemaMetadata metadata)
-                        {
-                            var version = reader.ReadInt16();
-                            var attachPoint = (AttachPoint)reader.ReadInt32();
-                            var maidIndex = reader.ReadInt32();
-                        }
+                        static PropInfoSchema ReadPropInfo(BinaryReader reader, SceneSchemaMetadata metadata) =>
+                            new(reader.ReadInt16())
+                            {
+                                Type = (PropInfo.PropType)reader.ReadInt32(),
+                                Filename = reader.ReadNullableString(),
+                                SubFilename = reader.ReadNullableString(),
+                                MyRoomID = reader.ReadInt32(),
+                                IconFile = reader.ReadNullableString(),
+                            };
+
+                        static AttachPointSchema ReadAttachPoint(BinaryReader reader, SceneSchemaMetadata metadata) =>
+                            new(reader.ReadInt16())
+                            {
+                                AttachPoint = (AttachPoint)reader.ReadInt32(),
+                                CharacterIndex = reader.ReadInt32(),
+                            };
                     }
                 }
+
+                static PropControllerSchema ConvertProp(LegacyPropSchema propSchema)
+                {
+                    return new()
+                    {
+                        Transform = propSchema.Transform,
+                        PropModel = ConvertPropInfo(propSchema.PropInfo),
+                        ShadowCasting = propSchema.ShadowCasting,
+                        Visible = propSchema.PropVisible,
+                    };
+
+                    static IPropModelSchema ConvertPropInfo(PropInfoSchema propInfoSchema) =>
+                        propInfoSchema.Type switch
+                        {
+                            PropInfo.PropType.Mod => new MenuFilePropModelSchema()
+                            {
+                                ID = string.IsNullOrEmpty(propInfoSchema.SubFilename)
+                                    ? propInfoSchema.Filename
+                                    : propInfoSchema.SubFilename,
+                                Filename = string.IsNullOrEmpty(propInfoSchema.SubFilename)
+                                    ? propInfoSchema.Filename
+                                    : propInfoSchema.SubFilename,
+                            },
+                            PropInfo.PropType.MyRoom => new MyRoomPropModelSchema()
+                            {
+                                ID = propInfoSchema.MyRoomID,
+                            },
+                            PropInfo.PropType.Bg => new BackgroundPropModelSchema()
+                            {
+                                ID = propInfoSchema.Filename,
+                            },
+                            PropInfo.PropType.Odogu when propInfoSchema.Filename.EndsWith(".menu") => new MenuFilePropModelSchema()
+                            {
+                                ID = propInfoSchema.Filename.ToLower(),
+                                Filename = propInfoSchema.Filename.ToLower(),
+                            },
+                            PropInfo.PropType.Odogu => new OtherPropModelSchema()
+                            {
+                                AssetName = propInfoSchema.Filename,
+                            },
+                            _ => null,
+                        };
+                }
+
+                static DragHandleSchema ConvertDragHandleSettings(LegacyPropSchema propSchema) =>
+                    new()
+                    {
+                        HandleEnabled = propSchema.DragHandleEnabled,
+                        GizmoEnabled = propSchema.GizmoEnabled,
+                        GizmoSpace = propSchema.GizmoMode,
+                    };
             }
 
             static TransformSchema ReadTransform(BinaryReader reader, SceneSchemaMetadata metadata) =>

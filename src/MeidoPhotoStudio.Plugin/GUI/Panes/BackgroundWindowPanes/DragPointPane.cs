@@ -1,38 +1,29 @@
+using System;
+
+using MeidoPhotoStudio.Plugin.Core.Props;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class DragPointPane : BasePane
 {
-    private readonly Toggle propsCubeToggle;
     private readonly Toggle smallCubeToggle;
     private readonly Toggle maidCubeToggle;
+    private readonly PropDragHandleService propDragHandleService;
 
     private string header;
 
-    public DragPointPane()
+    public DragPointPane(PropDragHandleService propDragHandleService)
     {
+        this.propDragHandleService = propDragHandleService;
+
         header = Translation.Get("movementCube", "header");
 
-        propsCubeToggle = new(Translation.Get("movementCube", "props"), PropManager.CubeActive);
-        propsCubeToggle.ControlEvent += (_, _) =>
-            ChangeDragPointSetting(Setting.Prop, propsCubeToggle.Value);
-
         smallCubeToggle = new(Translation.Get("movementCube", "small"));
-        smallCubeToggle.ControlEvent += (_, _) =>
-            ChangeDragPointSetting(Setting.Size, smallCubeToggle.Value);
+        smallCubeToggle.ControlEvent += OnSmallCubeToggleChanged;
 
         maidCubeToggle = new(Translation.Get("movementCube", "maid"), MeidoDragPointManager.CubeActive);
-        maidCubeToggle.ControlEvent += (_, _) =>
-            ChangeDragPointSetting(Setting.Maid, maidCubeToggle.Value);
-    }
-
-    private enum Setting
-    {
-        Prop,
-        Maid,
-        Background,
-        Size,
+        maidCubeToggle.ControlEvent += OnMaidCubeToggleChanged;
     }
 
     public override void Draw()
@@ -41,7 +32,6 @@ public class DragPointPane : BasePane
         MpsGui.WhiteLine();
 
         GUILayout.BeginHorizontal();
-        propsCubeToggle.Draw();
         smallCubeToggle.Draw();
         maidCubeToggle.Draw();
         GUILayout.EndHorizontal();
@@ -50,30 +40,18 @@ public class DragPointPane : BasePane
     protected override void ReloadTranslation()
     {
         header = Translation.Get("movementCube", "header");
-        propsCubeToggle.Label = Translation.Get("movementCube", "props");
         smallCubeToggle.Label = Translation.Get("movementCube", "small");
         maidCubeToggle.Label = Translation.Get("movementCube", "maid");
     }
 
-    private void ChangeDragPointSetting(Setting setting, bool value)
+    private void OnSmallCubeToggleChanged(object sender, EventArgs e)
     {
-        switch (setting)
-        {
-            case Setting.Prop:
-                PropManager.CubeActive = value;
+        var toggle = (Toggle)sender;
 
-                break;
-            case Setting.Maid:
-                MeidoDragPointManager.CubeActive = value;
-
-                break;
-            case Setting.Size:
-                MeidoDragPointManager.CubeSmall = value;
-                PropManager.CubeSmall = value;
-
-                break;
-            default:
-                break;
-        }
+        MeidoDragPointManager.CubeSmall = toggle.Value;
+        propDragHandleService.SmallHandle = toggle.Value;
     }
+
+    private void OnMaidCubeToggleChanged(object sender, EventArgs e) =>
+        MeidoDragPointManager.CubeActive = ((Toggle)sender).Value;
 }

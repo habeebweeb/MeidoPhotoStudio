@@ -22,6 +22,7 @@ public class SceneSerializer : ISceneSerializer
                 new ColorConverter(),
                 new Vector3Converter(),
                 new QuaternionConverter(),
+                new PropModelSchemaConverter(),
             },
             NullValueHandling = NullValueHandling.Ignore,
         });

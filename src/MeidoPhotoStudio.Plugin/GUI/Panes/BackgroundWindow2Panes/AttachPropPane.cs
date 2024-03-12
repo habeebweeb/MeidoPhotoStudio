@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using MeidoPhotoStudio.Plugin.Core;
+using MeidoPhotoStudio.Plugin.Core.Props;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -34,38 +36,39 @@ public class AttachPropPane : BasePane
             [AttachPoint.Spine0] = "spine0",
         };
 
-    private readonly PropManager propManager;
+    private readonly PropService propService;
+    private readonly PropAttachmentService propAttachmentService;
+    private readonly SelectionController<PropController> propSelectionController;
     private readonly MeidoManager meidoManager;
-    private readonly Dictionary<AttachPoint, Toggle> toggles = new();
+    private readonly Dictionary<AttachPoint, Toggle> toggles = new(EnumEqualityComparer<AttachPoint>.Instance);
     private readonly Toggle keepWorldPositionToggle;
     private readonly Dropdown meidoDropdown;
+    private readonly Toggle paneHeader;
 
-    private Toggle activeToggle;
     private bool meidoDropdownActive;
     private bool doguDropdownActive;
-    private string header;
 
-    public AttachPropPane(MeidoManager meidoManager, PropManager propManager)
+    public AttachPropPane(
+        MeidoManager meidoManager,
+        PropService propService,
+        PropAttachmentService propAttachmentService,
+        SelectionController<PropController> propSelectionController)
     {
-        header = Translation.Get("attachPropPane", "header");
-
-        this.propManager = propManager;
         this.meidoManager = meidoManager;
+        this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
+        this.propAttachmentService = propAttachmentService ?? throw new ArgumentNullException(nameof(propAttachmentService));
+        this.propSelectionController = propSelectionController ?? throw new ArgumentNullException(nameof(propSelectionController));
+
+        this.propService.AddedProp += OnPropAddedOrRemoved;
+        this.propService.RemovedProp += OnPropAddedOrRemoved;
+
         this.meidoManager.EndCallMeidos += (_, _) =>
             SetMeidoDropdown();
 
-        this.propManager.PropSelectionChange += (_, _) =>
-            UpdateToggles();
-
-        this.propManager.PropListChange += (_, _) =>
-        {
-            doguDropdownActive = this.propManager.PropCount > 0;
-            UpdateToggles();
-        };
+        this.propSelectionController.Selected += OnPropOrMaidChanged;
 
         meidoDropdown = new(new[] { Translation.Get("systemMessage", "noMaids") });
-        meidoDropdown.SelectionChange += (_, _) =>
-            UpdateToggles();
+        meidoDropdown.SelectionChange += OnPropOrMaidChanged;
 
         keepWorldPositionToggle = new(Translation.Get("attachPropPane", "keepWorldPosition"));
 
@@ -78,59 +81,90 @@ public class AttachPropPane : BasePane
             var toggle = new Toggle(Translation.Get("attachPropPane", ToggleTranslation[point]));
 
             toggle.ControlEvent += (_, _) =>
-                OnToggleChange(point);
+                OnToggleChanged(point);
 
             toggles[point] = toggle;
         }
+
+        paneHeader = new(Translation.Get("attachPropPane", "header"), true);
     }
+
+    private PropController CurrentProp =>
+        propSelectionController.Current;
 
     private bool PaneActive =>
         meidoDropdownActive && doguDropdownActive;
 
     private Meido SelectedMeido =>
-        meidoManager.ActiveMeidoList[meidoDropdown.SelectedItemIndex];
-
-    private DragPointProp SelectedProp =>
-        propManager.CurrentProp;
-
-    private bool KeepWoldPosition =>
-        keepWorldPositionToggle.Value;
+        meidoManager.HasActiveMeido
+            ? meidoManager.ActiveMeidoList[meidoDropdown.SelectedItemIndex]
+            : null;
 
     public override void Draw()
     {
-        const float dropdownButtonHeight = 30;
-        const float dropdownButtonWidth = 153f;
-
-        var dropdownLayoutOptions = new[]
-        {
-            GUILayout.Height(dropdownButtonHeight),
-            GUILayout.Width(dropdownButtonWidth),
-        };
-
-        MpsGui.Header(header);
+        paneHeader.Draw();
         MpsGui.WhiteLine();
+
+        if (!paneHeader.Value)
+            return;
 
         GUI.enabled = PaneActive;
 
-        meidoDropdown.Draw(dropdownLayoutOptions);
+        DrawMeidoDropdown();
+
+        MpsGui.BlackLine();
 
         keepWorldPositionToggle.Draw();
 
-        DrawToggleGroup(AttachPoint.Head, AttachPoint.Neck);
-        DrawToggleGroup(AttachPoint.UpperArmR, AttachPoint.Spine1a, AttachPoint.UpperArmL);
-        DrawToggleGroup(AttachPoint.ForearmR, AttachPoint.Spine1, AttachPoint.ForearmL);
-        DrawToggleGroup(AttachPoint.MuneR, AttachPoint.Spine0a, AttachPoint.MuneL);
-        DrawToggleGroup(AttachPoint.HandR, AttachPoint.Spine0, AttachPoint.HandL);
-        DrawToggleGroup(AttachPoint.ThighR, AttachPoint.Pelvis, AttachPoint.ThighL);
-        DrawToggleGroup(AttachPoint.CalfR, AttachPoint.CalfL);
-        DrawToggleGroup(AttachPoint.FootR, AttachPoint.FootL);
+        MpsGui.BlackLine();
+
+        DrawAttachPointToggles();
 
         GUI.enabled = true;
+
+        void DrawMeidoDropdown()
+        {
+            GUILayout.BeginHorizontal();
+            meidoDropdown.Draw(GUILayout.Width(185f));
+
+            var arrowLayoutOptions = new[]
+            {
+                GUILayout.ExpandWidth(false),
+                GUILayout.ExpandHeight(false),
+            };
+
+            if (GUILayout.Button("<", arrowLayoutOptions))
+                meidoDropdown.Step(-1);
+
+            if (GUILayout.Button(">", arrowLayoutOptions))
+                meidoDropdown.Step(1);
+
+            GUILayout.EndHorizontal();
+        }
+
+        void DrawAttachPointToggles()
+        {
+            DrawToggleGroup(AttachPoint.Head, AttachPoint.Neck);
+            DrawToggleGroup(AttachPoint.UpperArmR, AttachPoint.Spine1a, AttachPoint.UpperArmL);
+            DrawToggleGroup(AttachPoint.ForearmR, AttachPoint.Spine1, AttachPoint.ForearmL);
+            DrawToggleGroup(AttachPoint.MuneR, AttachPoint.Spine0a, AttachPoint.MuneL);
+            DrawToggleGroup(AttachPoint.HandR, AttachPoint.Spine0, AttachPoint.HandL);
+            DrawToggleGroup(AttachPoint.ThighR, AttachPoint.Pelvis, AttachPoint.ThighL);
+            DrawToggleGroup(AttachPoint.CalfR, AttachPoint.CalfL);
+            DrawToggleGroup(AttachPoint.FootR, AttachPoint.FootL);
+        }
+    }
+
+    public override void UpdatePane()
+    {
+        base.UpdatePane();
+
+        UpdateToggles();
     }
 
     protected override void ReloadTranslation()
     {
-        header = Translation.Get("attachPropPane", "header");
+        paneHeader.Label = Translation.Get("attachPropPane", "header");
         keepWorldPositionToggle.Label = Translation.Get("attachPropPane", "keepWorldPosition");
 
         foreach (var attachPoint in Enum.GetValues(typeof(AttachPoint)).Cast<AttachPoint>())
@@ -154,57 +188,53 @@ public class AttachPropPane : BasePane
         GUILayout.EndHorizontal();
     }
 
-    private void OnToggleChange(AttachPoint point)
+    private void OnToggleChanged(AttachPoint point)
     {
-        if (updating)
+        if (CurrentProp is null || SelectedMeido is null)
             return;
 
-        var toggle = toggles[point];
+        var changedToggle = toggles[point];
 
-        if (toggle.Value)
+        if (changedToggle.Value)
         {
-            if (activeToggle is not null)
-            {
-                updating = true;
-                activeToggle.Value = false;
-                updating = false;
-            }
+            propAttachmentService.AttachPropTo(CurrentProp, SelectedMeido, point, keepWorldPositionToggle.Value);
 
-            activeToggle = toggle;
-            SelectedProp.AttachTo(SelectedMeido, point, KeepWoldPosition);
+            var otherEnabledToggles = toggles.Values
+                .Where(toggle => toggle != changedToggle)
+                .Where(toggle => toggle.Value);
+
+            foreach (var toggle in otherEnabledToggles)
+                toggle.SetEnabledWithoutNotify(false);
         }
         else
         {
-            SelectedProp.DetachFrom(KeepWoldPosition);
-            activeToggle = null;
+            propAttachmentService.DetachProp(CurrentProp);
         }
     }
 
     private void UpdateToggles()
     {
-        updating = true;
-
-        if (activeToggle is not null)
-            activeToggle.Value = false;
-
-        activeToggle = null;
-        updating = false;
-
-        if (!meidoManager.HasActiveMeido || propManager.PropCount is 0)
+        if (CurrentProp is null || SelectedMeido is null)
             return;
 
-        var info = SelectedProp.AttachPointInfo;
+        if (propAttachmentService.TryGetAttachPointInfo(CurrentProp, out var attachPointInfo))
+        {
+            var attachedToggle = toggles[attachPointInfo.AttachPoint];
 
-        if (SelectedMeido.Maid.status.guid != info.MaidGuid)
-            return;
+            attachedToggle.SetEnabledWithoutNotify(SelectedMeido.Maid.status.guid == attachPointInfo.MaidGuid);
 
-        updating = true;
+            var otherEnabledToggles = toggles.Values
+                .Where(toggle => toggle != attachedToggle)
+                .Where(toggle => toggle.Value);
 
-        var toggle = toggles[info.AttachPoint];
-
-        toggle.Value = true;
-        activeToggle = toggle;
-        updating = false;
+            foreach (var toggle in otherEnabledToggles)
+                toggle.SetEnabledWithoutNotify(false);
+        }
+        else
+        {
+            foreach (var toggle in toggles.Values.Where(toggle => toggle.Value))
+                toggle.SetEnabledWithoutNotify(false);
+        }
     }
 
     private void SetMeidoDropdown()
@@ -217,5 +247,15 @@ public class AttachPropPane : BasePane
                 .ToArray();
 
         meidoDropdown.SetDropdownItems(dropdownList, 0);
+    }
+
+    private void OnPropOrMaidChanged(object sender, EventArgs e) =>
+        UpdateToggles();
+
+    private void OnPropAddedOrRemoved(object sender, PropServiceEventArgs e)
+    {
+        doguDropdownActive = propService.Count > 0;
+
+        UpdateToggles();
     }
 }

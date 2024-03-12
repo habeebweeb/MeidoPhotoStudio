@@ -1,12 +1,18 @@
+using System.IO;
+
 using com.workman.cm3d2.scene.dailyEtc;
 using MeidoPhotoStudio.Database.Background;
+using MeidoPhotoStudio.Database.Props;
+using MeidoPhotoStudio.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core.Background;
 using MeidoPhotoStudio.Plugin.Core.Camera;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
+using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Core.SceneManagement;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
+using MeidoPhotoStudio.Plugin.Framework.Menu;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 using MeidoPhotoStudio.Plugin.Service;
 using MeidoPhotoStudio.Plugin.Service.Input;
@@ -18,11 +24,13 @@ namespace MeidoPhotoStudio.Plugin.Core;
 /// <summary>Core plugin.</summary>
 public partial class PluginCore : MonoBehaviour
 {
+    private readonly IconCache iconCache = new();
+
     private WindowManager windowManager;
     private SceneManager sceneManager;
     private MeidoManager meidoManager;
     private MessageWindowManager messageWindowManager;
-    private PropManager propManager;
+    private PropService propService;
     private SubCameraController subCameraController;
     private EffectManager effectManager;
     private CameraController cameraController;
@@ -73,14 +81,14 @@ public partial class PluginCore : MonoBehaviour
 
         UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= OnSceneChanged;
 
+        iconCache.Destroy();
+
         Destroy(GameObject.Find("[MPS DragPoint Parent]"));
         Destroy(GameObject.Find("[MPS Drag Handle Parent]"));
         Destroy(GameObject.Find("[MPS Light Parent]"));
         Destroy(GameObject.Find("[MPS Coroutine Runner Parent]"));
         Destroy(Utility.MousePositionGameObject);
         WfCameraMoveSupportUtility.Destroy();
-
-        Constants.Destroy();
     }
 
     private void Start()
@@ -120,6 +128,7 @@ public partial class PluginCore : MonoBehaviour
             Modal.Draw();
     }
 
+    // TODO: Clean this up.
     private void Initialize()
     {
         if (initialized)
@@ -174,8 +183,6 @@ public partial class PluginCore : MonoBehaviour
         var lightDragHandleRepository = new LightDragHandleRepository(
             generalDragPointInputService, lightRepository, lightSelectionController, tabSelectionController);
 
-        propManager = new(meidoManager, generalDragPointInputService);
-
         cameraController = new(customMaidSceneService);
 
         cameraSpeedController = new();
@@ -197,6 +204,24 @@ public partial class PluginCore : MonoBehaviour
             new BlurEffectManager(),
         };
 
+        propService = new();
+
+        var propAttachmentService = new PropAttachmentService(meidoManager, propService);
+        var propSelectionController = new SelectionController<PropController>(propService);
+        var propDragHandleService = new PropDragHandleService(
+            generalDragPointInputService, propService, propSelectionController, tabSelectionController);
+
+        var gamePropRepository = new PhotoBgPropRepository();
+        var deskPropRepository = new DeskPropRepository();
+        var otherPropRepository = new OtherPropRepository(backgroundRepository);
+        var backgroundPropRepository = new BackgroundPropRepository(backgroundRepository);
+        var myRoomPropRepository = new MyRoomPropRepository();
+
+        var menuPropsConfiguration = new MenuPropsConfiguration(MeidoPhotoStudio.Plugin.Configuration.Config);
+        var menuPropRepository = new MenuPropRepository(
+            menuPropsConfiguration,
+            new MenuFileCacheSerializer(Path.Combine(BepInEx.Paths.ConfigPath, Plugin.PluginName)));
+
         var transformSchemaBuilder = new TransformSchemaBuilder();
 
         // TODO: This is kinda stupid tbf. Maybe look into writing a code generator and attributes to create these
@@ -217,14 +242,31 @@ public partial class PluginCore : MonoBehaviour
             new BackgroundSchemaBuilder(
                 backgroundService,
                 new BackgroundModelSchemaBuilder(),
-                transformSchemaBuilder));
+                transformSchemaBuilder),
+            new PropsSchemaBuilder(
+                propService,
+                propDragHandleService,
+                propAttachmentService,
+                new PropControllerSchemaBuilder(new PropModelSchemaBuilder(), transformSchemaBuilder),
+                new DragHandleSchemaBuilder(),
+                new AttachPointSchemaBuilder()));
 
         var sceneLoader = new SceneLoader(
             new MessageAspectLoader(messageWindowManager),
             new CameraAspectLoader(cameraSaveSlotController),
             new LightAspectLoader(lightRepository, backgroundService),
             new EffectsAspectLoader(effectManager),
-            new BackgroundAspectLoader(backgroundService));
+            new BackgroundAspectLoader(backgroundService),
+            new PropsAspectLoader(
+                propService,
+                propDragHandleService,
+                propAttachmentService,
+                meidoManager,
+                backgroundRepository,
+                deskPropRepository,
+                myRoomPropRepository,
+                gamePropRepository,
+                menuPropRepository));
 
         sceneManager = new(screenshotService, new WrappedSerializer(new(), new()), sceneLoader, sceneSchemaBuilder);
 
@@ -242,7 +284,6 @@ public partial class PluginCore : MonoBehaviour
 
         var mainWindow = new MainWindow(
             meidoManager,
-            propManager,
             tabSelectionController,
             customMaidSceneService,
             inputRemapper)
@@ -254,7 +295,7 @@ public partial class PluginCore : MonoBehaviour
                 {
                     new SceneManagementPane(sceneWindow),
                     new BackgroundsPane(backgroundService, backgroundRepository, backgroundDragHandleService),
-                    new DragPointPane(),
+                    new DragPointPane(propDragHandleService),
                     new CameraPane(cameraController, cameraSaveSlotController),
                     new LightsPane(lightRepository, lightSelectionController),
                     new EffectsPane()
@@ -266,7 +307,27 @@ public partial class PluginCore : MonoBehaviour
                     },
                     new OtherEffectsPane(effectManager),
                 },
-            [Constants.Window.BG2] = new BG2WindowPane(meidoManager, propManager),
+            [Constants.Window.BG2] = new PropsWindowPane()
+                {
+                    new PropsPane()
+                    {
+                        [PropsPane.PropCategory.Game] = new GamePropsPane(propService, gamePropRepository),
+                        [PropsPane.PropCategory.Desk] = new DeskPropsPane(propService, deskPropRepository),
+                        [PropsPane.PropCategory.Other] = new OtherPropsPane(propService, otherPropRepository),
+                        [PropsPane.PropCategory.HandItem] = new HandItemPropsPane(propService, menuPropRepository),
+                        [PropsPane.PropCategory.Background] = new BackgroundPropsPane(
+                            propService,
+                            backgroundPropRepository),
+                        [PropsPane.PropCategory.Menu] = new MenuPropsPane(
+                            propService,
+                            menuPropRepository,
+                            menuPropsConfiguration,
+                            iconCache),
+                        [PropsPane.PropCategory.MyRoom] = new MyRoomPropsPane(propService, myRoomPropRepository, iconCache),
+                    },
+                    new PropManagerPane(propService, propDragHandleService, propSelectionController, new()),
+                    new AttachPropPane(meidoManager, propService, propAttachmentService, propSelectionController),
+                },
             [Constants.Window.Settings] = new SettingsWindowPane(inputConfiguration, inputRemapper),
         };
 
@@ -303,7 +364,6 @@ public partial class PluginCore : MonoBehaviour
 
         meidoManager.Activate();
         cameraController.Activate();
-        propManager.Activate();
         effectManager.Activate();
         messageWindowManager.Activate();
         subCameraController.Activate();
@@ -369,7 +429,6 @@ public partial class PluginCore : MonoBehaviour
 
             meidoManager.Deactivate();
             cameraController.Deactivate();
-            propManager.Deactivate();
             effectManager.Deactivate();
             messageWindowManager.Deactivate();
             windowManager.Deactivate();
@@ -383,6 +442,7 @@ public partial class PluginCore : MonoBehaviour
                 GameMain.Instance.BgMgr.ChangeBg(DailyAPI.nightBg);
 
             lightRepository.RemoveAllLights();
+            propService.Clear();
 
             Modal.Close();
 

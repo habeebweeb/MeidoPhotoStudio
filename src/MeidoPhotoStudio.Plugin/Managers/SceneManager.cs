@@ -28,7 +28,11 @@ public partial class SceneManager : IManager
     private readonly SceneLoader sceneLoader;
     private readonly SceneSchemaBuilder schemaBuilder;
 
-    public SceneManager(ScreenshotService screenshotService, ISceneSerializer sceneSerializer, SceneLoader sceneLoader, SceneSchemaBuilder schemaBuilder)
+    public SceneManager(
+        ScreenshotService screenshotService,
+        ISceneSerializer sceneSerializer,
+        SceneLoader sceneLoader,
+        SceneSchemaBuilder schemaBuilder)
     {
         this.screenshotService = screenshotService ? screenshotService : throw new ArgumentNullException(nameof(screenshotService));
         this.sceneSerializer = sceneSerializer ?? throw new ArgumentNullException(nameof(sceneSerializer));

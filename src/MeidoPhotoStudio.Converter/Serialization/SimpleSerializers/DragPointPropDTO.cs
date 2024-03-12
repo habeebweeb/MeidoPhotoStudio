@@ -1,25 +1,10 @@
 using MeidoPhotoStudio.Plugin;
+using MeidoPhotoStudio.Plugin.Core.Props;
 
 namespace MeidoPhotoStudio.Converter.Serialization;
 
 public class DragPointPropDTO
 {
-    public DragPointPropDTO()
-    {
-    }
-
-    public DragPointPropDTO(DragPointProp dragPoint)
-    {
-        TransformDTO = new(dragPoint.MyObject.transform);
-        ShadowCasting = dragPoint.ShadowCasting;
-        AttachPointInfo = dragPoint.AttachPointInfo;
-        PropInfo = dragPoint.Info;
-        DragHandleEnabled = dragPoint.DragPointEnabled;
-        GizmoEnabled = dragPoint.GizmoEnabled;
-        GizmoMode = dragPoint.Gizmo.Mode;
-        Visible = dragPoint.Visible;
-    }
-
     public TransformDTO TransformDTO { get; set; }
 
     public AttachPointInfo AttachPointInfo { get; set; }
