@@ -1,64 +1,43 @@
 using System;
 
-using MeidoPhotoStudio.Plugin.Core.Background;
-using MeidoPhotoStudio.Plugin.Core.Camera;
-using MeidoPhotoStudio.Plugin.Core.Lighting;
 using MeidoPhotoStudio.Plugin.Core.Schema;
+using MeidoPhotoStudio.Plugin.Core.Schema.Background;
+using MeidoPhotoStudio.Plugin.Core.Schema.Camera;
+using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
+using MeidoPhotoStudio.Plugin.Core.Schema.Light;
+using MeidoPhotoStudio.Plugin.Core.Schema.Message;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
 public class SceneSchemaBuilder
 {
-    private readonly MessageWindowManager messageWindowManager;
-    private readonly CameraSaveSlotController cameraSaveSlotController;
-    private readonly LightRepository lightRepository;
-    private readonly EffectManager effectManager;
-    private readonly BackgroundService backgroundService;
+    private readonly ISceneSchemaAspectBuilder<MessageWindowSchema> messageWindowSchemaBuilder;
+    private readonly ISceneSchemaAspectBuilder<CameraSchema> cameraSchemaBuilder;
+    private readonly ISceneSchemaAspectBuilder<LightRepositorySchema> lightRepositorySchemaBuilder;
+    private readonly ISceneSchemaAspectBuilder<EffectsSchema> effectsSchemaBuilder;
+    private readonly ISceneSchemaAspectBuilder<BackgroundSchema> backgroundSchemaBuilder;
 
     public SceneSchemaBuilder(
-        MessageWindowManager messageWindowManager,
-        CameraSaveSlotController cameraSaveSlotController,
-        LightRepository lightRepository,
-        EffectManager effectManager,
-        BackgroundService backgroundService)
+        ISceneSchemaAspectBuilder<MessageWindowSchema> messageWindowSchemaBuilder,
+        ISceneSchemaAspectBuilder<CameraSchema> cameraSchemaBuilder,
+        ISceneSchemaAspectBuilder<LightRepositorySchema> lightRepositorySchemaBuilder,
+        ISceneSchemaAspectBuilder<EffectsSchema> effectsSchemaBuilder,
+        ISceneSchemaAspectBuilder<BackgroundSchema> backgroundSchemaBuilder)
     {
-        this.messageWindowManager = messageWindowManager ?? throw new ArgumentNullException(nameof(messageWindowManager));
-        this.cameraSaveSlotController = cameraSaveSlotController ?? throw new ArgumentNullException(nameof(cameraSaveSlotController));
-        this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
-        this.effectManager = effectManager ?? throw new ArgumentNullException(nameof(effectManager));
-        this.backgroundService = backgroundService ?? throw new ArgumentNullException(nameof(backgroundService));
+        this.messageWindowSchemaBuilder = messageWindowSchemaBuilder ?? throw new ArgumentNullException(nameof(messageWindowSchemaBuilder));
+        this.cameraSchemaBuilder = cameraSchemaBuilder ?? throw new ArgumentNullException(nameof(cameraSchemaBuilder));
+        this.lightRepositorySchemaBuilder = lightRepositorySchemaBuilder ?? throw new ArgumentNullException(nameof(lightRepositorySchemaBuilder));
+        this.effectsSchemaBuilder = effectsSchemaBuilder ?? throw new ArgumentNullException(nameof(effectsSchemaBuilder));
+        this.backgroundSchemaBuilder = backgroundSchemaBuilder ?? throw new ArgumentNullException(nameof(backgroundSchemaBuilder));
     }
 
-    public SceneSchema Build()
-    {
-        var transformSchemaBuilder = new TransformSchemaBuilder();
-
-        var sceneSchema = new SceneSchema()
+    public SceneSchema Build() =>
+        new()
         {
-            MessageWindow = new MessageWindowSchemaBuilder(messageWindowManager)
-                .Build(),
-            Camera = new CameraSchemaBuilder(cameraSaveSlotController, new CameraInfoSchemaBuilder())
-                .Build(),
-            Lights = new LightRepositorySchemaBuilder(
-                lightRepository,
-                new LightSchemaBuilder(new LightPropertiesSchemaBuilder()))
-                .Build(),
-            Effects = new EffectsSchemaBuilder(
-                effectManager,
-                new BloomSchemaBuilder(),
-                new DepthOfFieldSchemaBuilder(),
-                new FogSchemaBuilder(),
-                new VignetteSchemaBuilder(),
-                new SepiaToneSchemaBuilder(),
-                new BlurSchemaBuilder())
-                .Build(),
-            Background = new BackgroundSchemaBuilder(
-                backgroundService,
-                new BackgroundModelSchemaBuilder(),
-                transformSchemaBuilder)
-                .Build(),
+            MessageWindow = messageWindowSchemaBuilder.Build(),
+            Camera = cameraSchemaBuilder.Build(),
+            Lights = lightRepositorySchemaBuilder.Build(),
+            Effects = effectsSchemaBuilder.Build(),
+            Background = backgroundSchemaBuilder.Build(),
         };
-
-        return sceneSchema;
-    }
 }

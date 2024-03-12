@@ -197,21 +197,36 @@ public partial class PluginCore : MonoBehaviour
             new BlurEffectManager(),
         };
 
-        sceneManager = new(
-            screenshotService,
-            new WrappedSerializer(new(), new()),
-            new SceneLoader(
-                messageWindowManager,
-                cameraSaveSlotController,
-                lightRepository,
+        var transformSchemaBuilder = new TransformSchemaBuilder();
+
+        // TODO: This is kinda stupid tbf. Maybe look into writing a code generator and attributes to create these
+        // "schema" things instead of manually building it.
+        var sceneSchemaBuilder = new SceneSchemaBuilder(
+            new MessageWindowSchemaBuilder(messageWindowManager),
+            new CameraSchemaBuilder(cameraSaveSlotController, new CameraInfoSchemaBuilder()),
+            new LightRepositorySchemaBuilder(
+                lightRepository, new LightSchemaBuilder(new LightPropertiesSchemaBuilder())),
+            new EffectsSchemaBuilder(
                 effectManager,
-                backgroundService),
-            new SceneSchemaBuilder(
-                messageWindowManager,
-                cameraSaveSlotController,
-                lightRepository,
-                effectManager,
-                backgroundService));
+                new BloomSchemaBuilder(),
+                new DepthOfFieldSchemaBuilder(),
+                new FogSchemaBuilder(),
+                new VignetteSchemaBuilder(),
+                new SepiaToneSchemaBuilder(),
+                new BlurSchemaBuilder()),
+            new BackgroundSchemaBuilder(
+                backgroundService,
+                new BackgroundModelSchemaBuilder(),
+                transformSchemaBuilder));
+
+        var sceneLoader = new SceneLoader(
+            new MessageAspectLoader(messageWindowManager),
+            new CameraAspectLoader(cameraSaveSlotController),
+            new LightAspectLoader(lightRepository, backgroundService),
+            new EffectsAspectLoader(effectManager),
+            new BackgroundAspectLoader(backgroundService));
+
+        sceneManager = new(screenshotService, new WrappedSerializer(new(), new()), sceneLoader, sceneSchemaBuilder);
 
         AddPluginActiveInputHandler(new SceneManager.InputHandler(sceneManager, inputConfiguration));
 

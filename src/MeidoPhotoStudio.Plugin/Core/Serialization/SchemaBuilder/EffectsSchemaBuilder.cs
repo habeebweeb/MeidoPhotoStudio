@@ -4,7 +4,7 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class EffectsSchemaBuilder
+public class EffectsSchemaBuilder : ISceneSchemaAspectBuilder<EffectsSchema>
 {
     private readonly EffectManager effectManager;
     private readonly ISchemaBuilder<BloomSchema, BloomEffectManager> bloomSchemaBuilder;

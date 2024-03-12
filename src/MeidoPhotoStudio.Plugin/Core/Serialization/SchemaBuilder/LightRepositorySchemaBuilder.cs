@@ -5,7 +5,7 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Light;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class LightRepositorySchemaBuilder
+public class LightRepositorySchemaBuilder : ISceneSchemaAspectBuilder<LightRepositorySchema>
 {
     private readonly LightRepository lightRepository;
     private readonly ISchemaBuilder<LightSchema, LightController> lightSchemaBuilder;

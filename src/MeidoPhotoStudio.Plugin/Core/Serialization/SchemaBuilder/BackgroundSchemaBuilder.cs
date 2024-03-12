@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class BackgroundSchemaBuilder
+public class BackgroundSchemaBuilder : ISceneSchemaAspectBuilder<BackgroundSchema>
 {
     private readonly BackgroundService backgroundService;
     private readonly ISchemaBuilder<BackgroundModelSchema, BackgroundModel> backgroundModelSchemaBuilder;

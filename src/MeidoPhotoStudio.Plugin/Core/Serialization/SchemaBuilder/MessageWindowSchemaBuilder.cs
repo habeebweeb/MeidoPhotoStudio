@@ -2,7 +2,7 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Message;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class MessageWindowSchemaBuilder
+public class MessageWindowSchemaBuilder : ISceneSchemaAspectBuilder<MessageWindowSchema>
 {
     private readonly MessageWindowManager messageWindowManager;
 

@@ -5,7 +5,7 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Camera;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class CameraSchemaBuilder
+public class CameraSchemaBuilder : ISceneSchemaAspectBuilder<CameraSchema>
 {
     private readonly CameraSaveSlotController cameraSaveSlotController;
     private readonly ISchemaBuilder<CameraInfoSchema, CameraInfo> cameraInfoSchemaBuilder;
