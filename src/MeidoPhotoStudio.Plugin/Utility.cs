@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
 
 using UnityEngine;
 
@@ -12,16 +9,8 @@ namespace MeidoPhotoStudio.Plugin;
 // TODO: 🤮 This and the Constants class are a huge disgrace.
 public static class Utility
 {
-    internal static readonly byte[] PngHeader = { 137, 80, 78, 71, 13, 10, 26, 10 };
-    internal static readonly byte[] PngEnd = System.Text.Encoding.ASCII.GetBytes("IEND");
-    internal static readonly Regex GuidRegEx =
-        new(@"^[a-f0-9]{8}(\-[a-f0-9]{4}){3}\-[a-f0-9]{12}$", RegexOptions.IgnoreCase);
-
     internal static readonly GameObject MousePositionGameObject;
     internal static readonly MousePosition MousePositionValue;
-
-    private const BindingFlags ReflectionFlags =
-        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
     private static readonly BepInEx.Logging.ManualLogSource Logger =
         BepInEx.Logging.Logger.CreateLogSource(Plugin.PluginName);
@@ -30,13 +19,6 @@ public static class Utility
     {
         MousePositionGameObject = new();
         MousePositionValue = MousePositionGameObject.AddComponent<MousePosition>();
-    }
-
-    public enum ModKey
-    {
-        Control,
-        Shift,
-        Alt,
     }
 
     public static string Timestamp =>
@@ -91,71 +73,6 @@ public static class Utility
         return texture2D;
     }
 
-    public static FieldInfo GetFieldInfo<T>(string field) =>
-        typeof(T).GetField(field, ReflectionFlags);
-
-    public static TValue GetFieldValue<TType, TValue>(TType instance, string field)
-    {
-        var fieldInfo = GetFieldInfo<TType>(field);
-
-        return fieldInfo is null || !fieldInfo.IsStatic && instance == null
-            ? default
-            : (TValue)fieldInfo.GetValue(instance);
-    }
-
-    public static void SetFieldValue<TType, TValue>(TType instance, string name, TValue value) =>
-        GetFieldInfo<TType>(name).SetValue(instance, value);
-
-    public static PropertyInfo GetPropertyInfo<T>(string field) =>
-        typeof(T).GetProperty(field, ReflectionFlags);
-
-    public static TValue GetPropertyValue<TType, TValue>(TType instance, string property)
-    {
-        var propertyInfo = GetPropertyInfo<TType>(property);
-
-        return propertyInfo is null
-            ? default
-            : (TValue)propertyInfo.GetValue(instance, null);
-    }
-
-    public static void SetPropertyValue<TType, TValue>(TType instance, string name, TValue value) =>
-        GetPropertyInfo<TType>(name).SetValue(instance, value, null);
-
-    public static bool AnyMouseDown() =>
-        UnityEngine.Input.GetMouseButtonDown(0) || UnityEngine.Input.GetMouseButtonDown(1) || UnityEngine.Input.GetMouseButtonDown(2);
-
-    public static string ScreenshotFilename()
-    {
-        var screenShotDir = Path.Combine(GameMain.Instance.SerializeStorageManager.StoreDirectoryPath, "ScreenShot");
-
-        if (!Directory.Exists(screenShotDir))
-            Directory.CreateDirectory(screenShotDir);
-
-        return Path.Combine(screenShotDir, $"img{Timestamp}.png");
-    }
-
-    public static string TempScreenshotFilename() =>
-        Path.Combine(Path.GetTempPath(), $"cm3d2_{Guid.NewGuid()}.png");
-
-    public static void ShowMouseExposition(string text, float time = 2f)
-    {
-        var mouseExposition = MouseExposition.GetObject();
-
-        mouseExposition.SetText(text, time);
-    }
-
-    public static bool IsGuidString(string guid) =>
-        !string.IsNullOrEmpty(guid) && guid.Length is 36 && GuidRegEx.IsMatch(guid);
-
-    public static string HandItemToOdogu(string menu)
-    {
-        menu = menu.Substring(menu.IndexOf('_') + 1);
-        menu = menu.Substring(0, menu.IndexOf("_i_.menu", StringComparison.OrdinalIgnoreCase));
-        menu = $"odogu_{menu}";
-
-        return menu;
-    }
-
     public static string SanitizePathPortion(string path)
     {
         var invalid = Path.GetInvalidFileNameChars();
@@ -179,50 +96,18 @@ public static class Utility
         return hash;
     }
 
-    public static void ResizeToFit(Texture2D texture, int maxWidth, int maxHeight)
-    {
-        var width = texture.width;
-        var height = texture.height;
-
-        if (width == maxWidth && height == maxHeight)
-            return;
-
-        var scale = Mathf.Min(maxWidth / (float)width, maxHeight / (float)height);
-
-        width = Mathf.RoundToInt(width * scale);
-        height = Mathf.RoundToInt(height * scale);
-        TextureScale.Bilinear(texture, width, height);
-    }
-
-    public static bool BytesEqual(byte[] buffer, byte[] other)
-    {
-        if (buffer.Length != other.Length)
-            return false;
-
-        for (var i = 0; i < buffer.Length; i++)
-            if (buffer[i] != other[i])
-                return false;
-
-        return true;
-    }
-
-    public static bool IsPngFile(Stream stream)
-    {
-        var buffer = new byte[8];
-
-        stream.Read(buffer, 0, 8);
-
-        return BytesEqual(buffer, PngHeader);
-    }
-
     public static bool SeekPngEnd(Stream stream)
     {
         var buffer = new byte[8];
 
+        var pngHeader = new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 };
+
         stream.Read(buffer, 0, 8);
 
-        if (!BytesEqual(buffer, PngHeader))
+        if (!buffer.SequenceEqual(pngHeader))
             return false;
+
+        var pngEnd = System.Text.Encoding.ASCII.GetBytes("IEND");
 
         buffer = new byte[4];
 
@@ -238,19 +123,8 @@ public static class Utility
             stream.Read(buffer, 0, 4);
             stream.Seek(length + 4L, SeekOrigin.Current);
         }
-        while (!BytesEqual(buffer, PngEnd));
+        while (!buffer.SequenceEqual(pngEnd));
 
         return true;
     }
-
-    public static void WriteToFile(string name, IEnumerable<string> list)
-    {
-        if (Path.GetExtension(name) is not ".txt")
-            name += ".txt";
-
-        File.WriteAllLines(Path.Combine(Constants.ConfigPath, name), list.ToArray());
-    }
-
-    public static void WriteToFile(string name, byte[] data) =>
-        File.WriteAllBytes(Path.Combine(Constants.ConfigPath, name), data);
 }

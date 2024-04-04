@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 using MeidoPhotoStudio.Plugin.Core.Schema;
@@ -28,7 +29,7 @@ public class WrappedSerializer : ISceneSerializer
 
         var sceneHeader = Encoding.UTF8.GetBytes("MPSSCENE");
 
-        if (!Utility.BytesEqual(binaryReader.ReadBytes(sceneHeader.Length), sceneHeader))
+        if (!binaryReader.ReadBytes(sceneHeader.Length).SequenceEqual(sceneHeader))
         {
             Utility.LogError("Not a MPS scene!");
 

@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Text;
 
 using MeidoPhotoStudio.Plugin.Core.Schema;
@@ -44,7 +45,7 @@ public class MPSScene
 
         var sceneHeader = Encoding.UTF8.GetBytes("MPSSCENE");
 
-        if (!Utility.BytesEqual(binaryReader.ReadBytes(sceneHeader.Length), sceneHeader))
+        if (!binaryReader.ReadBytes(sceneHeader.Length).SequenceEqual(sceneHeader))
         {
             Utility.LogWarning($"'{FileInfo.FullName}' is not a MPS Scene");
 

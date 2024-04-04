@@ -1,5 +1,3 @@
-using System.Reflection;
-
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -13,10 +11,7 @@ public class BloomEffectManager : IEffectManager
     private static readonly CameraMain Camera = GameMain.Instance.MainCamera;
 
 #pragma warning disable SA1308, SA1310, SA1311
-
-    // TODO: Refactor reflection to using private members directly
     private static readonly float backup_m_fBloomDefIntensity;
-    private static readonly FieldInfo m_fBloomDefIntensity = Utility.GetFieldInfo<CameraMain>("m_fBloomDefIntensity");
 #pragma warning restore SA1308, SA1310, SA1311
 
     // CMSystem's bloomValue;
@@ -102,8 +97,8 @@ public class BloomEffectManager : IEffectManager
 
     private static float BloomDefIntensity
     {
-        get => (float)m_fBloomDefIntensity.GetValue(Camera);
-        set => m_fBloomDefIntensity.SetValue(Camera, value);
+        get => Camera.m_fBloomDefIntensity;
+        set => Camera.m_fBloomDefIntensity = value;
     }
 
     private Bloom Bloom { get; set; }

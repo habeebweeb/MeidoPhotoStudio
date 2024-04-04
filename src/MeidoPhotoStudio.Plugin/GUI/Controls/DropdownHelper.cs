@@ -138,7 +138,7 @@ public static class DropdownHelper
 
         var clickedYou = false;
 
-        if (Utility.AnyMouseDown())
+        if (AnyMouseDown())
         {
             var mousePos = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
             var clickedMe = DropdownWindow.Contains(mousePos);
@@ -163,6 +163,9 @@ public static class DropdownHelper
             Visible = false;
             DropdownClose?.Invoke(null, new(currentDropdownID, scrollPos, clickedYou));
         }
+
+        static bool AnyMouseDown() =>
+            UnityEngine.Input.GetMouseButtonDown(0) || UnityEngine.Input.GetMouseButtonDown(1) || UnityEngine.Input.GetMouseButtonDown(2);
     }
 
     private static void InitializeStyle()

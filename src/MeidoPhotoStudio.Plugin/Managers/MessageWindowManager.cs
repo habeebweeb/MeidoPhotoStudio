@@ -20,9 +20,7 @@ public class MessageWindowManager : IManager
     {
         messageWindowMgr = GameMain.Instance.MsgWnd;
 
-        var messageWindowPanel =
-            Utility.GetFieldValue<MessageWindowMgr, GameObject>(messageWindowMgr, "m_goMessageWindowPanel");
-
+        var messageWindowPanel = messageWindowMgr.m_goMessageWindowPanel;
         var msgParent = UTY.GetChildObject(messageWindowPanel, "MessageViewer/MsgParent");
 
         messageButtons = UTY.GetChildObject(msgParent, "Buttons");

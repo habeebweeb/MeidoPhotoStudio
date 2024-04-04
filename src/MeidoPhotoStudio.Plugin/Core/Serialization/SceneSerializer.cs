@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Text;
 
 using Ionic.Zlib;
@@ -53,7 +54,7 @@ public class SceneSerializer : ISceneSerializer
 
         var sceneHeader = Encoding.UTF8.GetBytes(SceneMagic);
 
-        if (!Utility.BytesEqual(headerReader.ReadBytes(sceneHeader.Length), sceneHeader))
+        if (!headerReader.ReadBytes(sceneHeader.Length).SequenceEqual(sceneHeader))
         {
             Utility.LogError("Not a MPS scene!");
 

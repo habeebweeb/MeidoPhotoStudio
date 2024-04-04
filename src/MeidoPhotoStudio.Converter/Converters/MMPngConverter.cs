@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 using MeidoPhotoStudio.Converter.MultipleMaids;
@@ -55,7 +56,7 @@ public class MMPngConverter : IConverter
 
         // ModifiedMM habeebweeb fork scene data uses 'KANKYO' as a header to identify saved environments.
         // Regular scenes will lack a 'KANKYO' header so the filestream position has to be pulled back.
-        if (MeidoPhotoStudio.Plugin.Utility.BytesEqual(kankyo, KankyoHeader))
+        if (kankyo.SequenceEqual(KankyoHeader))
             background = true;
         else
             fileStream.Position -= KankyoHeader.Length;

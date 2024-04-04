@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Xml.Linq;
 
 using MeidoPhotoStudio.Plugin.Service;
@@ -37,12 +35,7 @@ public class Meido
             "tear1", "tear2", "tear3", "hohos", "hoho", "hohol",
         };
 
-#pragma warning disable SA1308
-
-    // TODO: Refactor reflection to using private members directly
-    private readonly FieldInfo m_eMaskMode = Utility.GetFieldInfo<TBody>("m_eMaskMode");
     private readonly CustomMaidSceneService customMaidSceneService;
-#pragma warning restore SA1308
 
     private bool initialized;
     private float[] blendSetValueBackup;
@@ -83,7 +76,7 @@ public class Meido
     }
 
     public MaskMode CurrentMaskMode =>
-        !Body.isLoadedBody ? default : (MaskMode)m_eMaskMode.GetValue(Body);
+        !Body.isLoadedBody ? default : Body.m_eMaskMode;
 
     public DragPointGravity HairGravityControl { get; private set; }
 
@@ -684,7 +677,7 @@ public class Meido
     {
         Maid.MabatakiUpdateStop = true;
         Body.Face.morph.EyeMabataki = 0f;
-        Utility.SetFieldValue(Maid, "MabatakiVal", 0f);
+        Maid.MabatakiVal = 0f;
     }
 
     public void SetMaskMode(Mask maskMode) =>
@@ -702,7 +695,7 @@ public class Meido
 
     public void SetBodyMask(bool enabled)
     {
-        var table = Utility.GetFieldValue<TBody, Hashtable>(Body, "m_hFoceHide");
+        var table = Body.m_hFoceHide;
 
         foreach (var bodySlot in MaidDressingPane.BodySlots)
             table[bodySlot] = enabled;
@@ -890,7 +883,7 @@ public class Meido
             var customPartsWindow = UTY.GetChildObject(uiRoot, "Window/CustomPartsWindow")
                 .GetComponent<SceneEditWindow.CustomPartsWindow>();
 
-            Utility.SetFieldValue(customPartsWindow, "animation", Maid.GetAnimation());
+            customPartsWindow.animation = Maid.GetAnimation();
         }
 
         void ReinitializeFace()

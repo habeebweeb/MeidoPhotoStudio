@@ -327,7 +327,7 @@ public partial class SceneManager : IManager
 
         try
         {
-            Utility.ResizeToFit(screenshot, (int)SceneDimensions.x, (int)SceneDimensions.y);
+            ResizeToFit(screenshot, (int)SceneDimensions.x, (int)SceneDimensions.y);
 
             if (overwrite && CurrentScene?.FileInfo is not null)
                 savePath = CurrentScene.FileInfo.FullName;
@@ -365,5 +365,20 @@ public partial class SceneManager : IManager
 
         SceneList.Add(new(savePath, screenshot));
         SortScenes(CurrentSortMode);
+
+        static void ResizeToFit(Texture2D texture, int maxWidth, int maxHeight)
+        {
+            var width = texture.width;
+            var height = texture.height;
+
+            if (width == maxWidth && height == maxHeight)
+                return;
+
+            var scale = Mathf.Min(maxWidth / (float)width, maxHeight / (float)height);
+
+            width = Mathf.RoundToInt(width * scale);
+            height = Mathf.RoundToInt(height * scale);
+            TextureScale.Bilinear(texture, width, height);
+        }
     }
 }

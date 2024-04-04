@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 
 namespace MeidoPhotoStudio.Converter.Utility;
 
@@ -15,7 +16,7 @@ internal static class PngUtility
 
         stream.Read(headerBuffer, 0, headerBuffer.Length);
 
-        if (!MeidoPhotoStudio.Plugin.Utility.BytesEqual(headerBuffer, PngHeader))
+        if (!headerBuffer.SequenceEqual(PngHeader))
             return null;
 
         memoryStream.Write(headerBuffer, 0, headerBuffer.Length);
@@ -48,7 +49,7 @@ internal static class PngUtility
                 read = stream.Read(chunkBuffer, 0, (int)(length + 4L));
                 memoryStream.Write(chunkBuffer, 0, read);
             }
-            while (!MeidoPhotoStudio.Plugin.Utility.BytesEqual(fourByteBuffer, PngEnd));
+            while (!fourByteBuffer.SequenceEqual(PngEnd));
         }
         catch
         {
