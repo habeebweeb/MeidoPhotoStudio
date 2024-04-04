@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using BepInEx.Configuration;
 using MeidoPhotoStudio.Plugin.Input;
@@ -79,6 +80,8 @@ public class InputConfiguration
         BindHotkey(Hotkey.HipBoneRotation, "Hip Bone Rotation", new KeyboardHotkey(KeyCode.LeftShift));
         BindHotkey(Hotkey.MoveLocalY, "Move Local Y", new KeyboardHotkey(KeyCode.LeftControl));
 
+        KeyPool = BuildKeyPool();
+
         void BindShortcut(Shortcut shortcut, string key, KeyboardShortcut keyboardShortcut)
         {
             var definition = new ConfigDefinition(Section, key);
@@ -91,8 +94,12 @@ public class InputConfiguration
 
             configEntry.SettingChanged += OnSettingChanged;
 
-            void OnSettingChanged(object sender, EventArgs args) =>
+            void OnSettingChanged(object sender, EventArgs args)
+            {
+                KeyPool = BuildKeyPool();
+
                 keyboardShortcuts[shortcut] = configEntry.Value;
+            }
         }
 
         void BindHotkey(Hotkey hotkey, string key, KeyboardHotkey keyboardHotkey)
@@ -107,10 +114,24 @@ public class InputConfiguration
 
             configEntry.SettingChanged += OnSettingChanged;
 
-            void OnSettingChanged(object sender, EventArgs args) =>
+            void OnSettingChanged(object sender, EventArgs args)
+            {
+                KeyPool = BuildKeyPool();
+
                 keyboardHotkeys[hotkey] = configEntry.Value;
+            }
         }
+
+        IEnumerable<KeyCode> BuildKeyPool() =>
+            keyboardHotkeys.Values.Select(hotkey => hotkey.KeyList)
+                .Concat(keyboardShortcuts.Values.Select(shortcut => shortcut.KeyList))
+                .SelectMany(key => key)
+                .OrderBy(key => key)
+                .Distinct()
+                .ToArray();
     }
+
+    public IEnumerable<KeyCode> KeyPool { get; private set; }
 
     public KeyboardHotkey this[Hotkey hotkey]
     {
