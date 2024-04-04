@@ -1,31 +1,39 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 using HarmonyLib;
 
 namespace MeidoPhotoStudio.Plugin;
 
+#pragma warning disable SA1313, IDE0051
 public static class AllProcPropSeqPatcher
 {
     public static event EventHandler<ProcStartEventArgs> SequenceStarting;
 
     public static event EventHandler<ProcStartEventArgs> SequenceEnded;
 
-    [HarmonyPatch(typeof(Maid), "AllProcPropSeq")]
+    [HarmonyPatch(typeof(Maid), nameof(Maid.AllProcPropSeqStart))]
     [HarmonyPrefix]
-    [SuppressMessage("StyleCop.Analyzers.NamingRules", "SA1313", Justification = "Harmony parameter")]
-    private static void NotifyAllProcPropStarting(Maid __instance)
-    {
-        if (__instance.AllProcProp2Fase is 0 && __instance.AllProcProp2Cnt is 0 && !__instance.boModelChg)
-            SequenceStarting?.Invoke(null, new(__instance));
-    }
+    private static void AllProcPropSeqStartPrefix(Maid __instance) =>
+        SequenceStarting?.Invoke(null, new(__instance));
 
     [HarmonyPatch(typeof(Maid), "AllProcPropSeq")]
     [HarmonyPostfix]
-    [SuppressMessage("StyleCop.Analyzers.NamingRules", "SA1313", Justification = "Harmony parameter")]
-    private static void NotifyAllProcPropEnded(Maid __instance)
+    private static void AllProcPropSeqPostfix(Maid __instance)
     {
-        if (__instance.AllProcProp2Fase is 5 && !__instance.IsAllProcPropBusy)
-            SequenceEnded?.Invoke(null, new(__instance));
+        if (__instance is not { AllProcProp2Fase: 5, IsAllProcPropBusy: false })
+            return;
+
+        SequenceEnded?.Invoke(null, new(__instance));
     }
+
+    [HarmonyPatch(typeof(Maid), nameof(Maid.AllProcProp))]
+    [HarmonyPrefix]
+    private static void AllProcPropPrefix(Maid __instance) =>
+        SequenceStarting?.Invoke(null, new(__instance));
+
+    [HarmonyPatch(typeof(Maid), nameof(Maid.AllProcProp))]
+    [HarmonyPostfix]
+    private static void AllProcPropPostfix(Maid __instance) =>
+        SequenceEnded?.Invoke(null, new(__instance));
 }
+#pragma warning restore
