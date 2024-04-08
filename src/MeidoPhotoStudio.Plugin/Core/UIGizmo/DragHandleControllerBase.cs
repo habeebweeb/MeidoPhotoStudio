@@ -26,6 +26,7 @@ public abstract class DragHandleControllerBase
         Gizmo = gizmo ? gizmo : throw new ArgumentNullException(nameof(gizmo));
     }
 
+    // TODO: Rename to DragHandleEnabled or something
     public bool Enabled
     {
         get =>
@@ -124,6 +125,36 @@ public abstract class DragHandleControllerBase
     }
 
     protected CustomGizmo Gizmo { get; private init; }
+
+    protected bool DragHandleActive
+    {
+        get => DragHandle && Enabled && DragHandle.isActiveAndEnabled;
+        set
+        {
+            if (!DragHandle)
+                return;
+
+            if (!Enabled)
+                return;
+
+            DragHandle.gameObject.SetActive(value);
+        }
+    }
+
+    protected bool GizmoActive
+    {
+        get => Gizmo && GizmoEnabled && Gizmo.isActiveAndEnabled;
+        set
+        {
+            if (!Gizmo)
+                return;
+
+            if (!GizmoEnabled)
+                return;
+
+            Gizmo.gameObject.SetActive(value);
+        }
+    }
 
     public void Destroy()
     {

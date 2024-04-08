@@ -20,12 +20,6 @@ public abstract partial class GeneralDragHandleController
 
         protected virtual T Controller { get; }
 
-        protected bool Enabled =>
-            Controller.Enabled;
-
-        protected bool GizmoEnabled =>
-            Controller.GizmoEnabled;
-
         protected CustomGizmo Gizmo =>
             Controller.Gizmo;
 
@@ -48,11 +42,9 @@ public abstract partial class GeneralDragHandleController
 
         public override void OnModeEnter()
         {
-            DragHandle.gameObject.SetActive(false);
+            Controller.DragHandleActive = false;
             DragHandle.MovementType = DragHandle.MoveType.None;
-
-            if (Gizmo)
-                Gizmo.gameObject.SetActive(false);
+            Controller.GizmoActive = false;
         }
     }
 
@@ -68,15 +60,14 @@ public abstract partial class GeneralDragHandleController
 
         public override void OnModeEnter()
         {
-            DragHandle.gameObject.SetActive(Enabled);
+            Controller.DragHandleActive = true;
             DragHandle.MovementType = DragHandle.MoveType.XZ;
             DragHandle.Color = MoveColour;
 
-            if (Gizmo && GizmoEnabled)
-            {
-                Gizmo.gameObject.SetActive(GizmoEnabled);
+            Controller.GizmoActive = true;
+
+            if (Gizmo)
                 Gizmo.CurrentGizmoType = CustomGizmo.GizmoType.Move;
-            }
         }
     }
 
@@ -92,15 +83,14 @@ public abstract partial class GeneralDragHandleController
 
         public override void OnModeEnter()
         {
-            DragHandle.gameObject.SetActive(Enabled);
+            Controller.DragHandleActive = true;
             DragHandle.MovementType = DragHandle.MoveType.Y;
             DragHandle.Color = MoveColour;
 
+            Controller.GizmoActive = true;
+
             if (Gizmo)
-            {
-                Gizmo.gameObject.SetActive(GizmoEnabled);
                 Gizmo.CurrentGizmoType = CustomGizmo.GizmoType.Move;
-            }
         }
     }
 
@@ -116,15 +106,14 @@ public abstract partial class GeneralDragHandleController
 
         public override void OnModeEnter()
         {
-            DragHandle.gameObject.SetActive(Enabled);
+            Controller.DragHandleActive = true;
             DragHandle.MovementType = DragHandle.MoveType.None;
             DragHandle.Color = RotateColour;
 
+            Controller.GizmoActive = true;
+
             if (Gizmo)
-            {
-                Gizmo.gameObject.SetActive(GizmoEnabled);
                 Gizmo.CurrentGizmoType = CustomGizmo.GizmoType.Rotate;
-            }
         }
     }
 
@@ -208,15 +197,14 @@ public abstract partial class GeneralDragHandleController
 
         public override void OnModeEnter()
         {
-            DragHandle.gameObject.SetActive(Enabled);
+            Controller.DragHandleActive = true;
             DragHandle.MovementType = DragHandle.MoveType.None;
             DragHandle.Color = ScaleColour;
 
+            Controller.GizmoActive = true;
+
             if (Gizmo)
-            {
-                Gizmo.gameObject.SetActive(GizmoEnabled);
                 Gizmo.CurrentGizmoType = CustomGizmo.GizmoType.Scale;
-            }
         }
     }
 
@@ -229,7 +217,7 @@ public abstract partial class GeneralDragHandleController
 
         public override void OnModeEnter()
         {
-            DragHandle.gameObject.SetActive(Enabled);
+            Controller.DragHandleActive = true;
             DragHandle.MovementType = DragHandle.MoveType.None;
             DragHandle.Color = SelectColour;
         }
@@ -244,12 +232,11 @@ public abstract partial class GeneralDragHandleController
 
         public override void OnModeEnter()
         {
-            DragHandle.gameObject.SetActive(Enabled);
+            Controller.DragHandleActive = true;
             DragHandle.MovementType = DragHandle.MoveType.None;
             DragHandle.Color = DeleteColour;
 
-            if (Gizmo)
-                Gizmo.gameObject.SetActive(false);
+            Controller.GizmoActive = false;
         }
     }
 }
