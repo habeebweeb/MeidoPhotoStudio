@@ -4,6 +4,7 @@ using MeidoPhotoStudio.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
@@ -73,6 +74,7 @@ public class PropsAspectLoader : ISceneAspectLoader<PropsSchema>
                 e.PropController,
                 propsSchema.PropAttachment[currentPropIndex],
                 propsSchema.Props[currentPropIndex].Transform);
+            ApplyShapeKeys(e.PropController, propsSchema.Props[currentPropIndex].ShapeKeys);
 
             void ApplyPropSchema(PropController propController, PropControllerSchema propSchema)
             {
@@ -117,6 +119,15 @@ public class PropsAspectLoader : ISceneAspectLoader<PropsSchema>
                     propController.GameObject.transform.localPosition = transformSchema.LocalPosition;
                     propController.GameObject.transform.localRotation = transformSchema.LocalRotation;
                 }
+            }
+
+            void ApplyShapeKeys(PropController propController, PropShapeKeySchema shapeKeySchema)
+            {
+                if (propController.ShapeKeyController is null || shapeKeySchema is null)
+                    return;
+
+                foreach (var (hashKey, blendValue) in shapeKeySchema.BlendValues)
+                    propController.ShapeKeyController[hashKey] = blendValue;
             }
         }
     }

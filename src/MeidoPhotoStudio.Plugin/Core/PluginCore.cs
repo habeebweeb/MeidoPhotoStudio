@@ -331,6 +331,7 @@ public partial class PluginCore : MonoBehaviour
                             iconCache),
                         [PropsPane.PropCategory.MyRoom] = new MyRoomPropsPane(propService, myRoomPropRepository, iconCache),
                     },
+                    new PropShapeKeyPane(propSelectionController),
                     new PropManagerPane(propService, propDragHandleService, propSelectionController, new()),
                     new AttachPropPane(meidoManager, propService, propAttachmentService, propSelectionController),
                 },

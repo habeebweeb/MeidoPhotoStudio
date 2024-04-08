@@ -16,4 +16,6 @@ public class PropControllerSchema
     public bool ShadowCasting { get; init; }
 
     public bool Visible { get; init; }
+
+    public PropShapeKeySchema ShapeKeys { get; init; }
 }

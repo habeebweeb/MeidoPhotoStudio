@@ -11,10 +11,11 @@ namespace MeidoPhotoStudio.Plugin.Core.Props;
 
 public class PropController
 {
-    public PropController(IPropModel propModel, GameObject prop)
+    public PropController(IPropModel propModel, GameObject prop, ShapeKeyController shapeKeyController = null)
     {
         PropModel = propModel ?? throw new ArgumentNullException(nameof(propModel));
         GameObject = prop ? prop : throw new ArgumentNullException(nameof(prop));
+        ShapeKeyController = shapeKeyController;
         InitialTransform = new(prop.transform);
     }
 
@@ -25,6 +26,8 @@ public class PropController
     public GameObject GameObject { get; }
 
     public IPropModel PropModel { get; }
+
+    public ShapeKeyController ShapeKeyController { get; }
 
     public bool ShadowCasting
     {

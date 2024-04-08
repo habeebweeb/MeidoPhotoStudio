@@ -9,8 +9,14 @@ public class PropsWindowPane : BaseMainWindowPane, IEnumerable<BasePane>
     {
         tabsPane.Draw();
 
+        scrollPos = GUILayout.BeginScrollView(scrollPos);
+
         foreach (var pane in Panes)
             pane.Draw();
+
+        GUI.enabled = true;
+
+        GUILayout.EndScrollView();
     }
 
     public void Add(BasePane pane) =>

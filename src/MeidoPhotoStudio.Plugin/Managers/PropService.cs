@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using MeidoPhotoStudio.Database.Props;
+using MeidoPhotoStudio.Database.Props.Menu;
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Props;
@@ -27,12 +28,16 @@ public class PropService : IEnumerable<PropController>, IIndexableCollection<Pro
 
     public void Add(IPropModel propModel)
     {
-        var propGameObject = InstantiateProp(propModel);
+        ShapeKeyController shapeKeyController = null;
+
+        var propGameObject = propModel is MenuFilePropModel menuFilePropModel
+            ? InstantiateMenuProp(menuFilePropModel, out shapeKeyController)
+            : InstantiateProp(propModel);
 
         if (!propGameObject)
             return;
 
-        Add(new PropController(propModel, propGameObject));
+        Add(new PropController(propModel, propGameObject, shapeKeyController));
     }
 
     public void Clone(int index)
@@ -41,12 +46,17 @@ public class PropService : IEnumerable<PropController>, IIndexableCollection<Pro
             throw new ArgumentOutOfRangeException(nameof(index));
 
         var originalProp = propControllers[index];
-        var copiedPropGameObject = InstantiateProp(originalProp.PropModel);
+
+        ShapeKeyController shapeKeyController = null;
+
+        var copiedPropGameObject = originalProp.PropModel is MenuFilePropModel menuFilePropModel
+            ? InstantiateMenuProp(menuFilePropModel, out shapeKeyController)
+            : InstantiateProp(originalProp.PropModel);
 
         if (!copiedPropGameObject)
             return;
 
-        var copiedProp = new PropController(originalProp.PropModel, copiedPropGameObject);
+        var copiedProp = new PropController(originalProp.PropModel, copiedPropGameObject, shapeKeyController);
 
         CopyProperties(originalProp, copiedProp);
 
@@ -63,6 +73,10 @@ public class PropService : IEnumerable<PropController>, IIndexableCollection<Pro
 
             copiedTransform.SetPositionAndRotation(originalTransform.position, originalTransform.rotation);
             copiedTransform.localScale = originalTransform.localScale;
+
+            if (original.ShapeKeyController is not null && copy.ShapeKeyController is not null)
+                foreach (var (shapeKey, value) in original.ShapeKeyController)
+                    copy.ShapeKeyController[shapeKey] = value;
         }
 
         static void MoveProp(Transform original, Transform copy)
@@ -121,6 +135,14 @@ public class PropService : IEnumerable<PropController>, IIndexableCollection<Pro
 
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();
+
+    private GameObject InstantiateMenuProp(
+        MenuFilePropModel menuFilePropModel, out ShapeKeyController shapeKeyController)
+    {
+        var propGameObject = new MenuFilePropInstantiator().Instantiate(menuFilePropModel, out shapeKeyController);
+
+        return propGameObject;
+    }
 
     private GameObject InstantiateProp(IPropModel propModel)
     {
