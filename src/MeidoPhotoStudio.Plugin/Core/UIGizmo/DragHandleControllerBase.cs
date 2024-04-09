@@ -27,7 +27,7 @@ public abstract class DragHandleControllerBase : IDragHandleController
     }
 
     // TODO: Rename to DragHandleEnabled or something
-    public bool Enabled
+    public virtual bool Enabled
     {
         get =>
             Destroyed
@@ -50,7 +50,7 @@ public abstract class DragHandleControllerBase : IDragHandleController
         }
     }
 
-    public bool GizmoEnabled
+    public virtual bool GizmoEnabled
     {
         get =>
             Destroyed

@@ -42,4 +42,38 @@ public static class EnumerableExtensions
         while (firstEnumerator.MoveNext() && secondEnumerator.MoveNext())
             yield return (firstEnumerator.Current, secondEnumerator.Current);
     }
+
+    public static IEnumerable<(int Index, T Item)> WithIndex<T>(this IEnumerable<T> source)
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+
+        using var enumerator = source.GetEnumerator();
+
+        var index = 0;
+
+        while (enumerator.MoveNext())
+            yield return (index++, enumerator.Current);
+    }
+
+    public static int IndexOf<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+    {
+        if (source == null)
+            throw new ArgumentNullException(nameof(source));
+
+        if (predicate == null)
+            throw new ArgumentNullException(nameof(predicate));
+
+        var index = 0;
+
+        foreach (var item in source)
+        {
+            if (predicate(item))
+                return index;
+
+            index++;
+        }
+
+        return -1;
+    }
 }

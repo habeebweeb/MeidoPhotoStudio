@@ -62,7 +62,7 @@ public class LegacyDeserializer : ISceneSerializer
         }
         catch (Exception e)
         {
-            Utility.LogDebug($"Could not deserialize scene because {e}");
+            Utility.LogError($"Could not deserialize scene because {e}");
         }
 
         return false;

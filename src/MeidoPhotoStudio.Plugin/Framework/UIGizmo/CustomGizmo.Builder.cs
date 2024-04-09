@@ -15,6 +15,8 @@ public partial class CustomGizmo
 
         public string Name { get; set; } = "[Gizmo]";
 
+        public Transform PositionTarget { get; set; }
+
         public float Size { get; set; } = 0.25f;
 
         public Transform Target { get; set; }
@@ -38,6 +40,13 @@ public partial class CustomGizmo
         public Builder WithName(string name)
         {
             Name = name;
+
+            return this;
+        }
+
+        public Builder WithPositionTarget(Transform target)
+        {
+            PositionTarget = target;
 
             return this;
         }
@@ -79,6 +88,7 @@ public partial class CustomGizmo
             gizmo.offsetScale = Size;
             gizmo.Mode = Mode;
             gizmo.CurrentGizmoType = Type;
+            gizmo.SetAlternateTarget(PositionTarget);
 
             return gizmo;
         }

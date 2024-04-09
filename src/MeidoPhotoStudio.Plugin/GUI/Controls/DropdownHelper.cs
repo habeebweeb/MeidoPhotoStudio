@@ -1,10 +1,11 @@
 using System;
+using System.Linq;
 
 using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public static class DropdownHelper
+internal static class DropdownHelper
 {
     public static Rect DropdownWindow;
 
@@ -13,14 +14,13 @@ public static class DropdownHelper
     private static bool onScrollBar;
     private static Rect dropdownScrollRect;
     private static Rect dropdownRect;
-    private static GUIStyle dropdownStyle;
+    private static GUIStyle dropdownItemStyle;
     private static GUIStyle windowStyle;
     private static Rect buttonRect;
-    private static string[] dropdownList;
+    private static string[] items;
     private static Vector2 scrollPos;
     private static int currentDropdownID;
     private static int selectedItemIndex;
-    private static bool initialized;
 
     public static event EventHandler<DropdownSelectArgs> SelectionChange;
 
@@ -33,10 +33,33 @@ public static class DropdownHelper
     {
         get
         {
-            if (!initialized)
-                InitializeStyle();
+            return defaultDropdownStyle ??= InitializeStyle();
 
-            return defaultDropdownStyle;
+            static GUIStyle InitializeStyle()
+            {
+                var style = new GUIStyle(GUI.skin.button)
+                {
+                    alignment = TextAnchor.MiddleLeft,
+                    margin = new(0, 0, 0, 0),
+                };
+
+                style.padding.top = style.padding.bottom = 2;
+                style.normal.background = Utility.MakeTex(2, 2, new(0f, 0f, 0f, 0.5f));
+
+                var whiteBackground = new Texture2D(2, 2);
+
+                style.onHover.background
+                    = style.hover.background
+                    = style.onNormal.background
+                    = whiteBackground;
+
+                style.onHover.textColor
+                    = style.onNormal.textColor
+                    = style.hover.textColor
+                    = Color.black;
+
+                return style;
+            }
         }
     }
 
@@ -44,11 +67,15 @@ public static class DropdownHelper
 
     public static bool DropdownOpen { get; private set; }
 
+    private static GUIStyle WindowStyle =>
+        windowStyle ??= new(GUI.skin.box)
+        {
+            padding = new(0, 0, 0, 0),
+            alignment = TextAnchor.UpperRight,
+        };
+
     public static Vector2 CalculateElementSize(string item, GUIStyle style = null)
     {
-        if (!initialized)
-            InitializeStyle();
-
         style ??= DefaultDropdownStyle;
 
         return style.CalcSize(new(item));
@@ -56,39 +83,35 @@ public static class DropdownHelper
 
     public static Vector2 CalculateElementSize(string[] list, GUIStyle style = null)
     {
-        if (!initialized)
-            InitializeStyle();
+        if (list.Length is 0)
+            return Vector2.zero;
 
         style ??= DefaultDropdownStyle;
 
         var content = new GUIContent(list[0]);
-        var calculatedSize = style.CalcSize(content);
 
-        for (var i = 1; i < list.Length; i++)
+        return list.Skip(1).Aggregate(style.CalcSize(content), (accumulate, item) =>
         {
-            content.text = list[i];
+            content.text = item;
 
-            var calcSize = style.CalcSize(content);
+            var newSize = style.CalcSize(content);
 
-            if (calcSize.x > calculatedSize.x)
-                calculatedSize = calcSize;
-        }
-
-        return calculatedSize;
+            return newSize.x > accumulate.x ? newSize : accumulate;
+        });
     }
 
     public static void Set(Dropdown dropdown, GUIStyle style = null)
     {
-        dropdownStyle = style ?? DefaultDropdownStyle;
+        dropdownItemStyle = style ?? DefaultDropdownStyle;
         currentDropdownID = dropdown.DropdownID;
-        dropdownList = dropdown.DropdownList;
+        items = dropdown.DropdownList;
         scrollPos = dropdown.ScrollPos;
         selectedItemIndex = dropdown.SelectedItemIndex;
         scrollPos = dropdown.ScrollPos;
         buttonRect = dropdown.ButtonRect;
 
         var calculatedSize = dropdown.ElementSize;
-        var calculatedListHeight = calculatedSize.y * dropdownList.Length;
+        var calculatedListHeight = calculatedSize.y * items.Length;
         var heightAbove = buttonRect.y;
         var heightBelow = Screen.height - heightAbove - buttonRect.height;
         var rectWidth = Mathf.Max(calculatedSize.x + 5, buttonRect.width);
@@ -117,10 +140,62 @@ public static class DropdownHelper
 
     public static void HandleDropdown()
     {
-        DropdownWindow = GUI.Window(Constants.DropdownWindowID, DropdownWindow, GUIFunc, string.Empty, windowStyle);
+        DropdownWindow = GUI.Window(Constants.DropdownWindowID, DropdownWindow, GUIFunc, string.Empty, WindowStyle);
 
         if (UnityEngine.Input.mouseScrollDelta.y is not 0f && Visible && DropdownWindow.Contains(Event.current.mousePosition))
             UnityEngine.Input.ResetInputAxes();
+    }
+
+    public static void OpenDropdown<T>(
+        Dropdown2<T> dropdown,
+        Vector2 scrollPosition,
+        string[] items,
+        int selectedItemIndex,
+        Rect dropdownButtonRect,
+        Vector2? itemSize = null,
+        GUIStyle style = null)
+    {
+        currentDropdownID = dropdown.ID;
+        scrollPos = scrollPosition;
+        DropdownHelper.items = items;
+        DropdownHelper.selectedItemIndex = selectedItemIndex;
+        buttonRect = dropdownButtonRect;
+        dropdownItemStyle = style ?? DefaultDropdownStyle;
+
+        var calculatedSize = itemSize ?? CalculateElementSize(DropdownHelper.items, dropdownItemStyle);
+        var calculatedListHeight = calculatedSize.y * DropdownHelper.items.Length;
+        var heightAbove = buttonRect.y;
+        var heightBelow = Screen.height - heightAbove - buttonRect.height;
+        var rectWidth = Mathf.Max(calculatedSize.x + 5, buttonRect.width);
+        var rectHeight = Mathf.Min(calculatedListHeight, Mathf.Max(heightAbove, heightBelow));
+
+        if (calculatedListHeight > heightBelow && heightAbove > heightBelow)
+        {
+            DropdownWindow = new(
+                buttonRect.x,
+                buttonRect.y - rectHeight,
+                rectWidth + 18,
+                rectHeight);
+        }
+        else
+        {
+            if (calculatedListHeight > heightBelow)
+                rectHeight -= calculatedSize.y;
+
+            DropdownWindow = new(
+                buttonRect.x,
+                buttonRect.y + buttonRect.height,
+                rectWidth + 18,
+                rectHeight);
+        }
+
+        DropdownWindow.x = Mathf.Clamp(DropdownWindow.x, 0, Screen.width - rectWidth - 18);
+
+        dropdownScrollRect = new(0, 0, DropdownWindow.width, DropdownWindow.height);
+        dropdownRect = new(0, 0, rectWidth, calculatedListHeight);
+
+        DropdownOpen = true;
+        Visible = true;
     }
 
     private static void GUIFunc(int id)
@@ -132,7 +207,7 @@ public static class DropdownHelper
 
         scrollPos = GUI.BeginScrollView(dropdownScrollRect, scrollPos, dropdownRect);
 
-        var selection = GUI.SelectionGrid(dropdownRect, selectedItemIndex, dropdownList, 1, dropdownStyle);
+        var selection = GUI.SelectionGrid(dropdownRect, selectedItemIndex, items, 1, dropdownItemStyle);
 
         GUI.EndScrollView();
 
@@ -166,38 +241,6 @@ public static class DropdownHelper
 
         static bool AnyMouseDown() =>
             UnityEngine.Input.GetMouseButtonDown(0) || UnityEngine.Input.GetMouseButtonDown(1) || UnityEngine.Input.GetMouseButtonDown(2);
-    }
-
-    private static void InitializeStyle()
-    {
-        defaultDropdownStyle = new(GUI.skin.button)
-        {
-            alignment = TextAnchor.MiddleLeft,
-            margin = new(0, 0, 0, 0),
-        };
-
-        defaultDropdownStyle.padding.top = defaultDropdownStyle.padding.bottom = 2;
-        defaultDropdownStyle.normal.background = Utility.MakeTex(2, 2, new(0f, 0f, 0f, 0.5f));
-
-        var whiteBackground = new Texture2D(2, 2);
-
-        defaultDropdownStyle.onHover.background
-            = defaultDropdownStyle.hover.background
-            = defaultDropdownStyle.onNormal.background
-            = whiteBackground;
-
-        defaultDropdownStyle.onHover.textColor
-            = defaultDropdownStyle.onNormal.textColor
-            = defaultDropdownStyle.hover.textColor
-            = Color.black;
-
-        windowStyle = new(GUI.skin.box)
-        {
-            padding = new(0, 0, 0, 0),
-            alignment = TextAnchor.UpperRight,
-        };
-
-        initialized = true;
     }
 
     public class DropdownEventArgs : EventArgs

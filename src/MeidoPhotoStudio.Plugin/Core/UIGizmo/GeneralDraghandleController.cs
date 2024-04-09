@@ -74,7 +74,7 @@ public abstract partial class GeneralDragHandleController : DragHandleController
     public virtual GeneralDragHandleMode<GeneralDragHandleController> Delete =>
         delete ??= new DeleteMode(this);
 
-    protected TransformBackup TransformBackup { get; }
+    protected TransformBackup TransformBackup { get; set; }
 
     protected Transform Target { get; }
 }

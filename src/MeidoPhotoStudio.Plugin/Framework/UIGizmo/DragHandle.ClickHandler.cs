@@ -64,8 +64,8 @@ public partial class DragHandle
 
                 SelectedDragHandle = info.DragHandle;
 
-                SelectedDragHandle.Select(info.Hit);
                 SelectedDragHandle.Click();
+                SelectedDragHandle.Select(info.Hit);
             }
             else if (clicked && !OnlyLeftClickPressed())
             {

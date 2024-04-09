@@ -65,8 +65,18 @@ public class InputConfiguration
         BindHotkey(Hotkey.Scale, "Scale Object", new KeyboardHotkey(KeyCode.C));
 
         // Maid drag handles
-        BindHotkey(Hotkey.DragFinger, "Drag Fingers", new KeyboardHotkey(KeyCode.Space));
+        BindHotkey(Hotkey.DragFinger, "Drag All Fingers", new KeyboardHotkey(KeyCode.Space));
+        BindHotkey(Hotkey.DragFinger1, "Drag First Finger", new KeyboardHotkey(KeyCode.Space, KeyCode.Alpha1));
+        BindHotkey(Hotkey.DragFinger2, "Drag Second Finger", new KeyboardHotkey(KeyCode.Space, KeyCode.Alpha2));
+        BindHotkey(Hotkey.DragFinger3, "Drag Third Finger", new KeyboardHotkey(KeyCode.Space, KeyCode.Alpha3));
+        BindHotkey(Hotkey.DragFinger4, "Drag Fourth Finger", new KeyboardHotkey(KeyCode.Space, KeyCode.Alpha4));
+        BindHotkey(Hotkey.DragFinger5, "Drag Fifth Finger", new KeyboardHotkey(KeyCode.Space, KeyCode.Alpha5));
         BindHotkey(Hotkey.RotateFinger, "Rotate Fingers", new KeyboardHotkey(KeyCode.Space, KeyCode.LeftShift));
+        BindHotkey(Hotkey.RotateFinger1, "Rotate First Finger", new KeyboardHotkey(KeyCode.Space, KeyCode.LeftShift, KeyCode.Alpha1));
+        BindHotkey(Hotkey.RotateFinger2, "Rotate Second Finger", new KeyboardHotkey(KeyCode.Space, KeyCode.LeftShift, KeyCode.Alpha2));
+        BindHotkey(Hotkey.RotateFinger3, "Rotate Third Finger", new KeyboardHotkey(KeyCode.Space, KeyCode.LeftShift, KeyCode.Alpha3));
+        BindHotkey(Hotkey.RotateFinger4, "Rotate Fourth Finger", new KeyboardHotkey(KeyCode.Space, KeyCode.LeftShift, KeyCode.Alpha4));
+        BindHotkey(Hotkey.RotateFinger5, "Rotate Fifth Finger", new KeyboardHotkey(KeyCode.Space, KeyCode.LeftShift, KeyCode.Alpha5));
         BindHotkey(Hotkey.RotateEyesChest, "Rotate Eyes or Chest", new KeyboardHotkey(KeyCode.LeftControl, KeyCode.LeftAlt));
         BindHotkey(Hotkey.RotateEyesChestAlternate, "Alternate Rotate Eyes or Chest", new KeyboardHotkey(KeyCode.LeftControl, KeyCode.LeftAlt, KeyCode.LeftShift));
         BindHotkey(Hotkey.RotateBody, "Body Rotation", new KeyboardHotkey(KeyCode.LeftAlt));
@@ -79,6 +89,9 @@ public class InputConfiguration
         BindHotkey(Hotkey.SpineBoneGizmoRotation, "Spine Bone Gizmo Rotation", new KeyboardHotkey(KeyCode.LeftControl));
         BindHotkey(Hotkey.HipBoneRotation, "Hip Bone Rotation", new KeyboardHotkey(KeyCode.LeftShift));
         BindHotkey(Hotkey.MoveLocalY, "Move Local Y", new KeyboardHotkey(KeyCode.LeftControl));
+
+        // Gravity drag handles
+        BindHotkey(Hotkey.MoveGravityWorldY, "Move Gravity World Y", new KeyboardHotkey(KeyCode.LeftControl));
 
         KeyPool = BuildKeyPool();
 

@@ -33,6 +33,8 @@ public partial class DragHandle
 
         public Transform Target { get; set; }
 
+        public bool Visible { get; set; } = true;
+
         private static GameObject DragHandleParent => dragHandleParent
             ? dragHandleParent
             : dragHandleParent = new("[MPS Drag Handle Parent]");
@@ -107,6 +109,13 @@ public partial class DragHandle
             return this;
         }
 
+        public Builder WithVisible(bool visible)
+        {
+            Visible = visible;
+
+            return this;
+        }
+
         public DragHandle Build()
         {
             var handle = GameObject.CreatePrimitive(Shape);
@@ -128,6 +137,7 @@ public partial class DragHandle
             dragHandle.PositionDelegate = PositionDelegate;
             dragHandle.Priority = Priority;
             dragHandle.RotationDelegate = RotationDelegate;
+            dragHandle.Visible = Visible;
 
             var renderer = dragHandle.Renderer;
 

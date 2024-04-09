@@ -114,6 +114,19 @@ public partial class CustomGizmo : GizmoRender
         hasAlternateTarget = trans != null;
     }
 
+    public void SetVisibleRotateHandles(bool x = true, bool y = true, bool z = true)
+    {
+        VisibleRotateX = x;
+        VisibleRotateY = y;
+        VisibleRotateZ = z;
+    }
+
+    private void OnEnable()
+    {
+        is_drag_ = false;
+        ray_check_ = false;
+    }
+
     private void BeginUpdate()
     {
         var rotation = transform.rotation;
