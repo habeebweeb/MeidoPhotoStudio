@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class ComboBox : BaseControl
@@ -12,7 +10,7 @@ public class ComboBox : BaseControl
         BaseDropDown.SelectionChange += (_, _) =>
             textField.Value = BaseDropDown.SelectedItem;
 
-        Value = itemList[0];
+        Value = itemList.Length > 0 ? itemList[0] : string.Empty;
     }
 
     public Dropdown BaseDropDown { get; }
@@ -33,13 +31,8 @@ public class ComboBox : BaseControl
         Draw(buttonStyle, layoutOptions);
     }
 
-    public void SetDropdownItems(string[] itemList)
-    {
-        var oldValue = Value;
-
-        BaseDropDown.SetDropdownItems(itemList);
-        Value = oldValue;
-    }
+    public void SetDropdownItems(string[] itemList) =>
+        BaseDropDown.SetDropdownItemsWithoutNotify(itemList);
 
     public void SetDropdownItem(int index, string newItem) =>
         BaseDropDown.SetDropdownItem(index, newItem);

@@ -1,10 +1,7 @@
-using System;
 using System.ComponentModel;
-using System.Linq;
 
 using MeidoPhotoStudio.Database.Background;
 using MeidoPhotoStudio.Plugin.Core.Background;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 

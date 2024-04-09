@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class FogEffectManager : IEffectManager

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MeidoPhotoStudio.Database.Props.Menu;
 
 /// <summary>Object representation of a .menu file.</summary>
@@ -10,7 +8,7 @@ public partial class MenuFilePropModel : IPropModel
     public MenuFilePropModel(string filename, bool gameMenu)
     {
         if (string.IsNullOrEmpty(filename))
-            throw new System.ArgumentException($"'{nameof(filename)}' cannot be null or empty.", nameof(filename));
+            throw new ArgumentException($"'{nameof(filename)}' cannot be null or empty.", nameof(filename));
 
         Filename = filename;
         ID = Filename.ToLower();

@@ -1,15 +1,13 @@
-using System.Collections.Generic;
-
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Service;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
 /// <summary>Main window.</summary>
 public partial class MainWindow : BaseWindow
 {
-    private readonly MeidoManager meidoManager;
+    private const float WindowWidth = 260f;
+
     private readonly TabSelectionController tabSelectionController;
     private readonly Dictionary<Constants.Window, BaseMainWindowPane> windowPanes;
     private readonly CustomMaidSceneService customMaidSceneService;
@@ -23,24 +21,20 @@ public partial class MainWindow : BaseWindow
     private Constants.Window selectedWindow;
 
     public MainWindow(
-        MeidoManager meidoManager,
         TabSelectionController tabSelectionController,
         CustomMaidSceneService customMaidSceneService,
         InputRemapper inputRemapper)
     {
-        this.meidoManager = meidoManager;
         this.tabSelectionController = tabSelectionController;
-
-        this.meidoManager.UpdateMeido += UpdateMeido;
 
         this.tabSelectionController.TabSelected += (_, e) =>
             ChangeWindow(e.Tab);
 
         this.customMaidSceneService = customMaidSceneService;
-        this.inputRemapper = inputRemapper ? inputRemapper : throw new System.ArgumentNullException(nameof(inputRemapper));
+        this.inputRemapper = inputRemapper ? inputRemapper : throw new ArgumentNullException(nameof(inputRemapper));
 
         windowPanes = new();
-        WindowRect = new(Screen.width, Screen.height * 0.08f, 240f, Screen.height * 0.9f);
+        WindowRect = new(Screen.width, Screen.height * 0.08f, WindowWidth, Screen.height * 0.9f);
 
         tabsPane = new();
         tabsPane.TabChange += (_, _) =>
@@ -68,7 +62,7 @@ public partial class MainWindow : BaseWindow
     {
         set
         {
-            value.width = 240f;
+            value.width = WindowWidth;
             value.height = Screen.height * 0.9f;
 
             if (customMaidSceneService.EditScene)
@@ -160,20 +154,6 @@ public partial class MainWindow : BaseWindow
         currentWindowPane = windowPanes[selectedWindow];
         currentWindowPane.ActiveWindow = true;
         currentWindowPane.UpdatePanes();
-    }
-
-    private void UpdateMeido(object sender, MeidoUpdateEventArgs args)
-    {
-        if (args.FromMeido)
-        {
-            var newWindow = args.IsBody ? Constants.Window.Pose : Constants.Window.Face;
-
-            ChangeWindow(newWindow);
-        }
-        else
-        {
-            currentWindowPane.UpdatePanes();
-        }
     }
 
     private void ChangeWindow(Constants.Window window)

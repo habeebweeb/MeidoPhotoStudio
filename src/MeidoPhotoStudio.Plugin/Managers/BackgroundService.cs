@@ -1,9 +1,7 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 using HarmonyLib;
 using MeidoPhotoStudio.Database.Background;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Background;
 

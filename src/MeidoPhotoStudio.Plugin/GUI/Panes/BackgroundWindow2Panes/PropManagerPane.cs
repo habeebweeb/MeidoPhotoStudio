@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-
 using MeidoPhotoStudio.Database.Props;
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Props;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -29,6 +25,8 @@ public class PropManagerPane : BasePane
     private readonly TransformControl scaleTransformControl;
     private readonly Button focusButton;
     private readonly Toggle paneHeader;
+    private readonly Toggle toggleAllDragHandles;
+    private readonly Toggle toggleAllGizmos;
 
     private string propManagerHeader;
     private string gizmoSpaceLabel;
@@ -76,6 +74,12 @@ public class PropManagerPane : BasePane
 
         focusButton = new(Translation.Get("propManagerPane", "focusPropButton"));
         focusButton.ControlEvent += OnFocusButtonPushed;
+
+        toggleAllDragHandles = new("Drag Handle");
+        toggleAllDragHandles.ControlEvent += OnToggleAllDragHandlesChanged;
+
+        toggleAllGizmos = new("Gizmo");
+        toggleAllGizmos.ControlEvent += OnToggleAllGizmosChanged;
 
         gizmoSpaceLabel = Translation.Get("propManagerPane", "gizmoSpaceToggle");
 
@@ -186,6 +190,17 @@ public class PropManagerPane : BasePane
 
         GUILayout.EndHorizontal();
 
+        GUILayout.Label("Toggle All");
+
+        MpsGui.BlackLine();
+
+        GUILayout.BeginHorizontal();
+
+        toggleAllDragHandles.Draw();
+        toggleAllGizmos.Draw();
+
+        GUILayout.EndHorizontal();
+
         MpsGui.BlackLine();
 
         positionTransformControl.Draw();
@@ -247,6 +262,22 @@ public class PropManagerPane : BasePane
 
         scaleTransformControl.SetValueWithoutNotify(propTransform.localScale);
         scaleTransformControl.DefaultValue = CurrentProp.InitialTransform.LocalScale;
+    }
+
+    private void OnToggleAllDragHandlesChanged(object sender, EventArgs e)
+    {
+        foreach (var controller in propDragHandleService)
+            controller.Enabled = toggleAllDragHandles.Value;
+
+        dragPointToggle.SetEnabledWithoutNotify(toggleAllDragHandles.Value);
+    }
+
+    private void OnToggleAllGizmosChanged(object sender, EventArgs e)
+    {
+        foreach (var controller in propDragHandleService)
+            controller.GizmoEnabled = toggleAllGizmos.Value;
+
+        gizmoToggle.SetEnabledWithoutNotify(toggleAllGizmos.Value);
     }
 
     private void OnAddedProp(object sender, PropServiceEventArgs e)

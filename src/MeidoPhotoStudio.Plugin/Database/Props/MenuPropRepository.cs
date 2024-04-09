@@ -1,14 +1,8 @@
-using System;
-using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 using MeidoPhotoStudio.Plugin;
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Database.Props.Menu;
 
@@ -18,7 +12,6 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
     private readonly IMenuFileCacheSerializer menuFileCacheSerializer;
 
     private Dictionary<MPN, IList<MenuFilePropModel>> props;
-    private Task<Dictionary<MPN, IList<MenuFilePropModel>>> propInitializationTask;
 
     public MenuPropRepository(
         IMenuPropsConfiguration menuPropsConfiguration, IMenuFileCacheSerializer menuFileCacheSerializer)
@@ -48,8 +41,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
             ? throw new MenuPropRepositoryBusyException()
             : props;
 
-    private bool ProcessingProps =>
-        props is null;
+    private bool ProcessingProps { get; set; } = true;
 
     public IList<MenuFilePropModel> this[MPN category] =>
         Props[category];
@@ -79,13 +71,13 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 
     private void InitializeMenuFiles(IMenuPropsConfiguration menuPropsConfiguration)
     {
-        props = null;
+        ProcessingProps = true;
 
         InitializingProps?.Invoke(this, EventArgs.Empty);
 
         new CoroutineRunner(Process)
         {
-            Name = "[MPS MenuDatabase Checker]",
+            Name = "[MPS Menu File Processor]",
         }.Start();
 
         IEnumerator Process()
@@ -96,15 +88,16 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                 while (!GameMain.Instance.MenuDataBase.JobFinished())
                     yield return wait;
 
-            propInitializationTask = Task<Dictionary<MPN, IList<MenuFilePropModel>>>.Factory.StartNew(
-                () => ProcessMenuFiles(menuPropsConfiguration, menuFileCacheSerializer));
+            Task<Dictionary<MPN, IList<MenuFilePropModel>>>.Factory.StartNew(
+                () => ProcessMenuFiles(menuPropsConfiguration, menuFileCacheSerializer))
+                .ContinueWith(task =>
+                {
+                    props = task.Result;
 
-            while (!propInitializationTask.IsCompleted)
-                yield return wait;
+                    ProcessingProps = false;
 
-            props = propInitializationTask.Result;
-
-            InitializedProps?.Invoke(this, EventArgs.Empty);
+                    InitializedProps?.Invoke(this, EventArgs.Empty);
+                });
         }
 
         static Dictionary<MPN, IList<MenuFilePropModel>> ProcessMenuFiles(
@@ -116,8 +109,10 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                 MPN.acchat, MPN.headset, MPN.wear, MPN.skirt, MPN.onepiece, MPN.mizugi, MPN.bra, MPN.panz, MPN.stkg,
                 MPN.shoes, MPN.acckami, MPN.megane, MPN.acchead, MPN.acchana, MPN.accmimi, MPN.glove, MPN.acckubi,
                 MPN.acckubiwa, MPN.acckamisub, MPN.accnip, MPN.accude, MPN.accheso, MPN.accashi, MPN.accsenaka,
-                MPN.accshippo, MPN.accxxx, MPN.handitem,
+                MPN.accshippo, MPN.accxxx, MPN.handitem, MPN.kousoku_lower, MPN.kousoku_upper,
             };
+
+            var alwaysValidMpn = new HashSet<MPN>() { MPN.handitem, MPN.kousoku_lower, MPN.kousoku_upper, };
 
             var menuFileCache = new ConcurrentDictionary<string, MenuFilePropModel>(menuFileCacheSerializer.Deserialize());
             var menuFileParser = new MenuFileParser();
@@ -132,10 +127,13 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                 if (!validMpn.Contains(menuDatabase.GetMpn()))
                     continue;
 
-                if (menuPropsConfiguration.ModMenuPropsOnly && menuDatabase.GetMpn() is not MPN.handitem)
+                var menuFilename = menuDatabase.GetMenuFileName();
+
+                if (menuFilename.Contains("_crc") || menuFilename.Contains("crc_") || menuFilename.Contains("_del"))
                     continue;
 
-                var menuFilename = menuDatabase.GetMenuFileName();
+                if (menuPropsConfiguration.ModMenuPropsOnly && !alwaysValidMpn.Contains(menuDatabase.GetMpn()))
+                    continue;
 
                 if (!menuFileCache.TryGetValue(menuFilename, out var menuFile))
                 {
@@ -156,7 +154,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 
             Parallel.ForEach(
                 GameUty.ModOnlysMenuFiles,
-                new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount - 4 },
+                new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 4) },
                 menuFilename =>
                 {
                     if (!menuFileCache.TryGetValue(menuFilename, out var menuFile))

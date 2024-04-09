@@ -1,5 +1,3 @@
-using System;
-
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

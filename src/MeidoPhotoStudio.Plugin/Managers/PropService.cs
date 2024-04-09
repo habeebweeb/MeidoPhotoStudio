@@ -1,10 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 using MeidoPhotoStudio.Database.Props;
 using MeidoPhotoStudio.Database.Props.Menu;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Props;
 
@@ -108,7 +103,7 @@ public class PropService : IEnumerable<PropController>, IIndexableCollection<Pro
 
         RemovedProp?.Invoke(this, new(propController, index));
 
-        UnityEngine.Object.Destroy(propController.GameObject);
+        Object.Destroy(propController.GameObject);
     }
 
     public void Remove(PropController propController)

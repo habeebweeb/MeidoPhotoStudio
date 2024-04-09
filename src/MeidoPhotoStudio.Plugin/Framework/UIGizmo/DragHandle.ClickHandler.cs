@@ -1,6 +1,3 @@
-using System.Linq;
-
-using UnityEngine;
 using UnityEngine.EventSystems;
 
 using UInput = UnityEngine.Input;
@@ -50,6 +47,8 @@ public partial class DragHandle
             }
         }
 
+        public WindowManager WindowManager { get; set; }
+
         private void Awake() =>
             mainCamera = GameMain.Instance.MainCamera.camera;
 
@@ -88,6 +87,9 @@ public partial class DragHandle
                 info = (null, default);
 
                 if (UICamera.Raycast(UInput.mousePosition))
+                    return false;
+
+                if (WindowManager?.MouseOverAnyWindow() ?? false)
                     return false;
 
                 var currentEvent = EventSystem.current;

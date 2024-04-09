@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using MeidoPhotoStudio.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -71,11 +66,12 @@ public class MenuPropsPane : BasePane
 
         void Initialize()
         {
-            categories = new[] { MPN.null_mpn }.Concat(
-                menuPropRepository.CategoryMpn
-                    .Where(mpn => mpn is not MPN.handitem)
-                    .OrderBy(mpn => mpn))
-                .ToArray();
+            categories =
+            [
+                MPN.null_mpn, .. menuPropRepository.CategoryMpn
+                    .Where(mpn => mpn is not (MPN.handitem or MPN.kousoku_lower or MPN.kousoku_upper))
+                    .OrderBy(mpn => mpn),
+            ];
 
             propCategoryDropdown.SetDropdownItems(categories
                 .Select(mpn => Translation.Get("clothing", mpn.ToString()))

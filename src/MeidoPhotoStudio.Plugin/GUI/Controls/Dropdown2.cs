@@ -1,10 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin;
 
 // TODO: Migrate other dropdowns to this dropdown

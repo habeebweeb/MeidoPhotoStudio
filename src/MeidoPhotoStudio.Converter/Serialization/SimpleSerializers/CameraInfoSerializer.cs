@@ -1,5 +1,3 @@
-using System.IO;
-
 using MeidoPhotoStudio.Plugin.Core.Camera;
 
 namespace MeidoPhotoStudio.Converter.Serialization;

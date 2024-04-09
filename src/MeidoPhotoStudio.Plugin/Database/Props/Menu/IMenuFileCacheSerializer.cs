@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MeidoPhotoStudio.Database.Props.Menu;
 
 public interface IMenuFileCacheSerializer

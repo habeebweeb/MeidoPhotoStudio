@@ -1,5 +1,3 @@
-using System.IO;
-
 using MeidoPhotoStudio.Plugin.Core.Schema;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;

@@ -1,9 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 
 public class LightRepository : IEnumerable<LightController>, IIndexableCollection<LightController>
@@ -88,7 +82,7 @@ public class LightRepository : IEnumerable<LightController>, IIndexableCollectio
         RemovedLight?.Invoke(this, new(lightController, index));
 
         if (!IsMainLight(lightController))
-            UnityEngine.Object.Destroy(lightController.Light.gameObject);
+            Object.Destroy(lightController.Light.gameObject);
     }
 
     public void RemoveLight(LightController lightController)

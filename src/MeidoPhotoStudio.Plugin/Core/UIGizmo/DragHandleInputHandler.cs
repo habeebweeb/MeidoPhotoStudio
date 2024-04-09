@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 
 namespace MeidoPhotoStudio.Plugin.Core.UIGizmo;

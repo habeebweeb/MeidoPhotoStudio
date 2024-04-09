@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class SceneManagerTitleBarPane : BasePane
@@ -46,12 +44,12 @@ public class SceneManagerTitleBarPane : BasePane
 
         closeButton = new("X");
         closeButton.ControlEvent += (_, _) =>
-            CloseChange?.Invoke(this, System.EventArgs.Empty);
+            CloseChange?.Invoke(this, EventArgs.Empty);
 
         sortLabel = Translation.Get("sceneManager", "sortLabel");
     }
 
-    public event System.EventHandler CloseChange;
+    public event EventHandler CloseChange;
 
     public override void Draw()
     {

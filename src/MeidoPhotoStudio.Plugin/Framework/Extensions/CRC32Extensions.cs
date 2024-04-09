@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-
 namespace MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 public static class CRC32Extensions

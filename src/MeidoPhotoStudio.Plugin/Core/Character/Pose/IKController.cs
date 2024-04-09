@@ -1,16 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
 using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using RootMotion.FinalIK;
-using UnityEngine;
-
-using Object = UnityEngine.Object;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
@@ -244,7 +238,7 @@ public class IKController
         {
             try
             {
-                using var fileStream = System.IO.File.OpenRead(presetModel.Filename);
+                using var fileStream = File.OpenRead(presetModel.Filename);
 
                 return new HandPresetSerializer().Deserialize(fileStream);
             }

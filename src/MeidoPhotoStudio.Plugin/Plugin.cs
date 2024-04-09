@@ -1,5 +1,4 @@
 using BepInEx;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -29,7 +28,6 @@ public class Plugin : BaseUnityPlugin
     {
         harmony = HarmonyLib.Harmony.CreateAndPatchAll(typeof(AllProcPropSeqPatcher));
         harmony.PatchAll(typeof(BgMgrPatcher));
-        harmony.PatchAll(typeof(MeidoManager));
         harmony.PatchAll(typeof(Core.Background.BackgroundService));
 
         var coreGameObject = new GameObject

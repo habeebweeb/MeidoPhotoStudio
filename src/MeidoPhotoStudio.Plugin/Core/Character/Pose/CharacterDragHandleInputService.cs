@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;

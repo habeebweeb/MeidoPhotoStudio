@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using MeidoPhotoStudio.Plugin.Input;
 using MeidoPhotoStudio.Plugin.Service.Input;
-using UnityEngine;
 
 using UInput = UnityEngine.Input;
 

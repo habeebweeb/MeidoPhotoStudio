@@ -1,10 +1,7 @@
-using System;
-
 using MeidoPhotoStudio.Plugin;
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
-using UnityEngine;
 
 public class PropShapeKeyPane(SelectionController<PropController> propSelectionController) : BasePane
 {

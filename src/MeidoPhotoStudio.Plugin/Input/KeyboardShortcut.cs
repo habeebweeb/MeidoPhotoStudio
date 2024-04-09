@@ -1,8 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
-
 using BepInEx.Configuration;
-using UnityEngine;
 
 using UInput = UnityEngine.Input;
 
@@ -26,7 +22,7 @@ public class KeyboardShortcut : KeyboardInput
         : base(SanitizeKeys(new[] { mainKey }.Concat(modifiers).ToArray()))
     {
         if (mainKey is KeyCode.None && modifiers.Any())
-            throw new System.ArgumentException(
+            throw new ArgumentException(
                 $"Can't set {nameof(mainKey)} to KeyCode.None if there are any {nameof(modifiers)}");
     }
 

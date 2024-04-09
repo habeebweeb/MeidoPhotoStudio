@@ -1,7 +1,4 @@
-using System;
 using System.ComponentModel;
-
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 

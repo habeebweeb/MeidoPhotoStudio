@@ -1,7 +1,3 @@
-using System.IO;
-using System.Linq;
-using System.Text;
-
 using Ionic.Zlib;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Framework.Serialization.Json;
@@ -22,10 +18,14 @@ public class SceneSerializer : ISceneSerializer
             {
                 new ColorConverter(),
                 new Vector3Converter(),
+                new Vector2Converter(),
                 new QuaternionConverter(),
                 new PropModelSchemaConverter(),
+                new AnimationModelSchemaConverter(),
+                new BlendSetModelSchemaConverter(),
             },
             NullValueHandling = NullValueHandling.Ignore,
+            Formatting = Formatting.Indented,
         });
 
     public void SerializeScene(Stream stream, SceneSchema sceneSchema)
@@ -37,8 +37,7 @@ public class SceneSerializer : ISceneSerializer
         headerWriter.Write(SceneSchema.SchemaVersion);
         headerWriter.Write(false);
 
-        // WARN: TODO: This needs to change when meido is serialized
-        headerWriter.Write(0);
+        headerWriter.Write(sceneSchema.Character.Characters.Count);
         headerWriter.Write(false);
 
         using var compressionStream = new DeflateStream(stream, CompressionMode.Compress);

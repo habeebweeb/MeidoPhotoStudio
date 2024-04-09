@@ -1,7 +1,4 @@
-using System.Linq;
-
 using MeidoPhotoStudio.Plugin.Core.Camera;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 

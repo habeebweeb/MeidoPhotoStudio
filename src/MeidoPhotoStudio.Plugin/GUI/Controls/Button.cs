@@ -1,15 +1,37 @@
-using System;
-
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class Button : BaseControl
 {
+    private string label;
+    private Texture icon;
+
+    private GUIContent buttonContent;
+
     public Button(string label) =>
         Label = label;
 
-    public string Label { get; set; }
+    public Button(Texture icon) =>
+        Icon = icon;
+
+    public string Label
+    {
+        get => label;
+        set
+        {
+            label = value;
+            buttonContent = new(label);
+        }
+    }
+
+    public Texture Icon
+    {
+        get => icon;
+        set
+        {
+            icon = value;
+            buttonContent = new(icon);
+        }
+    }
 
     public override void Draw(params GUILayoutOption[] layoutOptions)
     {
@@ -20,7 +42,7 @@ public class Button : BaseControl
 
     public void Draw(GUIStyle buttonStyle, params GUILayoutOption[] layoutOptions)
     {
-        if (GUILayout.Button(Label, buttonStyle, layoutOptions))
+        if (GUILayout.Button(buttonContent, buttonStyle, layoutOptions))
             OnControlEvent(EventArgs.Empty);
     }
 }

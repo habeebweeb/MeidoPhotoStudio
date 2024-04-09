@@ -1,5 +1,3 @@
-using System;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public abstract class BasePane

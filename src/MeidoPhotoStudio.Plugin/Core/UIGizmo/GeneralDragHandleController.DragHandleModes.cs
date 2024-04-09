@@ -1,8 +1,5 @@
-using System;
-
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.UIGizmo;
 

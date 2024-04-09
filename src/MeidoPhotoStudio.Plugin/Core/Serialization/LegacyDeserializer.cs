@@ -1,20 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-
 using Ionic.Zlib;
 using MeidoPhotoStudio.Database.Background;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Schema.Background;
 using MeidoPhotoStudio.Plugin.Core.Schema.Camera;
+using MeidoPhotoStudio.Plugin.Core.Schema.Character;
 using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 using MeidoPhotoStudio.Plugin.Core.Schema.Light;
 using MeidoPhotoStudio.Plugin.Core.Schema.Message;
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
@@ -82,71 +76,79 @@ public class LegacyDeserializer : ISceneSerializer
             using var decompressedStream = new DeflateStream(stream, CompressionMode.Decompress, true);
             using var reader = new BinaryReader(decompressedStream);
 
-            var environment = metadata.Environment;
-
-            ReadMeidoManagerSchema(reader, metadata);
-
-            var messageWindow = ReadMessageWindowSchema(reader, metadata);
-            var camera = ReadCameraSchema(reader, metadata);
-            var lights = ReadLightRepositorySchema(reader, metadata);
-            var effects = ReadEffectsSchema(reader, metadata);
-            var background = ReadBackgroundSchema(reader, metadata);
-            var props = ReadPropSchema(reader, metadata);
-
             return new()
             {
-                MessageWindow = messageWindow,
-                Camera = camera,
-                Lights = lights,
-                Effects = effects,
-                Background = background,
-                Props = props,
+                Character = ReadCharactersSchema(reader, metadata),
+                MessageWindow = ReadMessageWindowSchema(reader, metadata),
+                Camera = ReadCameraSchema(reader, metadata),
+                Lights = ReadLightRepositorySchema(reader, metadata),
+                Effects = ReadEffectsSchema(reader, metadata),
+                Background = ReadBackgroundSchema(reader, metadata),
+                Props = ReadPropSchema(reader, metadata),
             };
 
-            static void ReadMeidoManagerSchema(BinaryReader reader, SceneSchemaMetadata metadata)
+            static CharactersSchema ReadCharactersSchema(BinaryReader reader, SceneSchemaMetadata metadata)
             {
                 if (metadata.Environment)
-                    return;
+                    return null;
 
                 _ = reader.ReadString();
 
-                var version = reader.ReadInt16();
+                return new(reader.ReadInt16())
+                {
+                    Characters = ReadMeidoList(reader, metadata),
+                    GlobalGravity = ReadGlobalGravity(reader, metadata),
+                };
 
-                ReadMeidoList(reader, metadata);
-
-                var globalGravityEnabled = reader.ReadBoolean();
-                var hairPosition = reader.ReadVector3();
-                var skirtPosition = reader.ReadVector3();
-
-                static void ReadMeidoList(BinaryReader reader, SceneSchemaMetadata metadata)
+                static List<CharacterSchema> ReadMeidoList(BinaryReader reader, SceneSchemaMetadata metadata)
                 {
                     var listCount = reader.ReadInt32();
 
-                    for (var i = 0; i < listCount; i++)
-                        ReadMeido(reader, metadata);
+                    return Enumerable.Range(0, listCount)
+                        .Select(slot => ReadMeido(reader, metadata, slot))
+                        .ToList();
 
-                    static void ReadMeido(BinaryReader reader, SceneSchemaMetadata metadata)
+                    static CharacterSchema ReadMeido(BinaryReader reader, SceneSchemaMetadata metadata, int slot)
                     {
                         _ = reader.ReadInt64();
 
-                        var version = reader.ReadInt16();
-                        var transform = ReadTransform(reader, metadata);
-
-                        ReadHead(reader, metadata);
-                        ReadBody(reader, metadata);
-                        ReadClothing(reader, metadata);
-
-                        static void ReadHead(BinaryReader reader, SceneSchemaMetadata metadata)
+                        return new(reader.ReadInt16())
                         {
-                            var version = reader.ReadInt16();
-                            var eyeRotationLDelta = reader.ReadQuaternion();
-                            var eyeRotationRDelta = reader.ReadQuaternion();
-                            var freeLook = reader.ReadBoolean();
-                            var offsetLookTarget = reader.ReadVector3();
-                            var headAngle = reader.ReadVector3();
-                            var headToCam = reader.ReadBoolean();
-                            var eyeToCam = reader.ReadBoolean();
-                            var face = ReadFaceData(reader, metadata);
+                            ID = null,
+                            Slot = slot,
+                            Transform = ReadTransform(reader, metadata),
+                            Head = ReadHead(reader, metadata),
+                            Face = ReadFace(reader, metadata),
+                            Pose = ReadPose(reader, metadata),
+                            Clothing = ReadClothing(reader, metadata),
+                        };
+
+                        static HeadSchema ReadHead(BinaryReader reader, SceneSchemaMetadata metadata)
+                        {
+                            return new(reader.ReadInt16())
+                            {
+                                MMConverted = metadata.MMConverted,
+                                LeftEyeRotationDelta = reader.ReadQuaternion(),
+                                RightEyeRotationDelta = reader.ReadQuaternion(),
+                                FreeLook = reader.ReadBoolean(),
+                                OffsetLookTarget = CalculateOffsetLookTarget(reader.ReadVector3()),
+                                HeadLookRotation = reader.ReadVector3(),
+                                HeadToCamera = reader.ReadBoolean(),
+                                EyeToCamera = reader.ReadBoolean(),
+                            };
+
+                            static Vector2 CalculateOffsetLookTarget(Vector3 offsetLookTarget) =>
+                                new(offsetLookTarget.z, offsetLookTarget.x);
+                        }
+
+                        static FaceSchema ReadFace(BinaryReader reader, SceneSchemaMetadata metadata)
+                        {
+                            return new(1)
+                            {
+                                Blink = true,
+                                BlendSet = null,
+                                FacialExpressionSet = ReadFaceData(reader, metadata),
+                            };
 
                             static Dictionary<string, float> ReadFaceData(BinaryReader reader, SceneSchemaMetadata metadata)
                             {
@@ -161,34 +163,35 @@ public class LegacyDeserializer : ISceneSerializer
                             }
                         }
 
-                        static void ReadBody(BinaryReader reader, SceneSchemaMetadata metadata)
+                        static PoseSchema ReadPose(BinaryReader reader, SceneSchemaMetadata metadata)
                         {
                             var version = reader.ReadInt16();
 
-                            var poseBinary = metadata.MMConverted ? null : reader.ReadBytes(reader.ReadInt32());
-
-                            if (metadata.MMConverted)
-                                ReadMMPoseSchema(reader, metadata);
-
-                            ReadPoseInfo(reader, metadata);
-
-                            var muneSubL = version < 2 ? Quaternion.identity : reader.ReadQuaternion();
-                            var muneSubR = version < 2 ? Quaternion.identity : reader.ReadQuaternion();
-
-                            static void ReadPoseInfo(BinaryReader reader, SceneSchemaMetadata metadata)
+                            return new(version)
                             {
-                                var version = reader.ReadInt16();
-                                var poseGroup = reader.ReadString();
-                                var pose = reader.ReadString();
-                                var customPose = reader.ReadBoolean();
-                            }
+                                AnimationFrameBinary = metadata.MMConverted ? null : reader.ReadBytes(reader.ReadInt32()),
+                                MMPose = metadata.MMConverted ? ReadMMPoseSchema(reader, metadata) : null,
+                                Animation = ReadAnimation(reader, metadata),
+                                MuneSubL = version < 2 ? Quaternion.identity : reader.ReadQuaternion(),
+                                MuneSubR = version < 2 ? Quaternion.identity : reader.ReadQuaternion(),
+                                LimbsLimited = false,
+                                DigitsLimited = false,
+                            };
 
-                            static void ReadMMPoseSchema(BinaryReader reader, SceneSchemaMetadata metadata)
+                            static MMPoseSchema ReadMMPoseSchema(BinaryReader reader, SceneSchemaMetadata metadata)
                             {
                                 var sixtyFourFlag = reader.ReadBoolean();
                                 var fingerToeRotations = ReadFingerToeRotations(reader, sixtyFourFlag);
                                 var boneRotations = ReadBoneRotations(reader, sixtyFourFlag, out var properClavicle);
-                                var hipPosition = reader.ReadVector3();
+
+                                return new()
+                                {
+                                    SixtyFourFlag = sixtyFourFlag,
+                                    FingerToeRotations = fingerToeRotations,
+                                    ProperClavicle = properClavicle,
+                                    BoneRotations = boneRotations,
+                                    HipPosition = reader.ReadVector3(),
+                                };
 
                                 static Quaternion[] ReadFingerToeRotations(BinaryReader reader, bool sixtyFour)
                                 {
@@ -235,30 +238,92 @@ public class LegacyDeserializer : ISceneSerializer
                                     return array;
                                 }
                             }
+
+                            static AnimationSchema ReadAnimation(BinaryReader reader, SceneSchemaMetadata metadata)
+                            {
+                                return new(1)
+                                {
+                                    Animation = ReadAnimationModel(reader, metadata),
+                                    Time = 0f,
+                                    Playing = false,
+                                };
+
+                                static IAnimationModelSchema ReadAnimationModel(BinaryReader reader, SceneSchemaMetadata metadata)
+                                {
+                                    var version = reader.ReadInt16();
+                                    var poseGroup = reader.ReadString();
+                                    var pose = reader.ReadString();
+                                    var custom = reader.ReadBoolean();
+
+                                    return custom
+                                        ? new CustomAnimationSchema(version)
+                                        {
+                                            Path = pose,
+                                        }
+                                        : new GameAnimationSchema(version)
+                                        {
+                                            ID = pose.ToLowerInvariant(),
+                                        };
+                                }
+                            }
                         }
 
-                        static void ReadClothing(BinaryReader reader, SceneSchemaMetadata metadata)
+                        static ClothingSchema ReadClothing(BinaryReader reader, SceneSchemaMetadata metadata)
                         {
-                            var version = reader.ReadInt16();
-                            var bodyVisible = reader.ReadBoolean();
-                            var visibleClothing = ReadVisibleClothing(reader, metadata);
-                            var curlingFront = reader.ReadBoolean();
-                            var curlingBack = reader.ReadBoolean();
-                            var pantsuShift = reader.ReadBoolean();
-                            var mpnAttachUpper = reader.ReadBoolean();
-                            var mpnAttachUpperName = reader.ReadString();
-                            var mpnAttachLower = reader.ReadBoolean();
-                            var mpnAttachLowerName = reader.ReadString();
-                            var hairGravityActive = reader.ReadBoolean();
-                            var hairGravityPosition = reader.ReadVector3();
-                            var skirtGravityActive = reader.ReadBoolean();
-                            var skirtGravityPosition = reader.ReadVector3();
+                            return new(reader.ReadInt16())
+                            {
+                                MMConverted = metadata.MMConverted,
+                                BodyVisible = reader.ReadBoolean(),
+                                ClothingSet = ReadVisibleClothing(reader, metadata),
+                                CurlingFront = reader.ReadBoolean(),
+                                CurlingBack = reader.ReadBoolean(),
+                                PantsuShift = reader.ReadBoolean(),
+                                AttachedLowerAccessory = ReadAttachedAccessory(reader, metadata),
+                                AttachedUpperAccessory = ReadAttachedAccessory(reader, metadata),
+                                HairGravityEnabled = reader.ReadBoolean(),
+                                HairGravityPosition = reader.ReadVector3(),
+                                ClothingGravityEnabled = reader.ReadBoolean(),
+                                ClothingGravityPosition = reader.ReadVector3(),
+                                CustomFloorHeight = false,
+                                FloorHeight = 0f,
+                            };
 
-                            static Dictionary<TBody.SlotID, bool> ReadVisibleClothing(BinaryReader reader, SceneSchemaMetadata metadata) =>
-                                MaidDressingPane.ClothingSlots.ToDictionary(slot => slot, _ => reader.ReadBoolean());
+                            static Dictionary<SlotID, bool> ReadVisibleClothing(BinaryReader reader, SceneSchemaMetadata metadata) =>
+                                new SlotID[]
+                                {
+                                    SlotID.wear, SlotID.skirt, SlotID.bra, SlotID.panz, SlotID.headset, SlotID.megane,
+                                    SlotID.accUde, SlotID.glove, SlotID.accSenaka, SlotID.stkg, SlotID.shoes,
+                                    SlotID.body, SlotID.accAshi, SlotID.accHana, SlotID.accHat, SlotID.accHeso,
+                                    SlotID.accKamiSubL, SlotID.accKamiSubR, SlotID.accKami_1_, SlotID.accKami_2_,
+                                    SlotID.accKami_3_, SlotID.accKubi, SlotID.accKubiwa, SlotID.accMiMiL,
+                                    SlotID.accMiMiR, SlotID.accNipL, SlotID.accNipR, SlotID.accShippo, SlotID.accXXX,
+                                }
+                                .ToDictionary(slot => slot, _ => reader.ReadBoolean());
+
+                            static MenuFilePropModelSchema ReadAttachedAccessory(BinaryReader reader, SceneSchemaMetadata metadata)
+                            {
+                                var attached = reader.ReadBoolean();
+                                var menuFilename = reader.ReadString();
+
+                                return attached
+                                    ? new(1)
+                                    {
+                                        ID = menuFilename.ToLowerInvariant(),
+                                        Filename = menuFilename.ToLowerInvariant(),
+                                    }
+                                    : null;
+                            }
                         }
                     }
                 }
+
+                static GlobalGravitySchema ReadGlobalGravity(BinaryReader reader, SceneSchemaMetadata metadata) =>
+                    new()
+                    {
+                        Enabled = reader.ReadBoolean(),
+                        HairGravityPosition = reader.ReadVector3(),
+                        ClothingGravityPosition = reader.ReadVector3(),
+                    };
             }
 
             static MessageWindowSchema ReadMessageWindowSchema(BinaryReader reader, SceneSchemaMetadata metadata)

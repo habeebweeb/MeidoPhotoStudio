@@ -1,8 +1,3 @@
-using System;
-using System.Linq;
-
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
 public abstract class GravityController
@@ -117,7 +112,7 @@ public abstract class GravityController
         var findControlParent = character.Transform.Find(controlName);
 
         if (findControlParent)
-            UnityEngine.Object.Destroy(findControlParent.gameObject);
+            Object.Destroy(findControlParent.gameObject);
 
         var controlParent = new GameObject(controlName);
 

@@ -1,7 +1,3 @@
-using System;
-
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 /// <summary>Drag handle builder.</summary>

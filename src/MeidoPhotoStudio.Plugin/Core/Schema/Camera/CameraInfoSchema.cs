@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Camera;
 
 public class CameraInfoSchema

@@ -1,5 +1,3 @@
-using System.Linq;
-
 using MeidoPhotoStudio.Plugin.Core.Camera;
 using MeidoPhotoStudio.Plugin.Core.Schema.Camera;
 
@@ -12,8 +10,8 @@ public class CameraSchemaBuilder : ISceneSchemaAspectBuilder<CameraSchema>
 
     public CameraSchemaBuilder(CameraSaveSlotController cameraSaveSlotController, ISchemaBuilder<CameraInfoSchema, CameraInfo> cameraInfoSchemaBuilder)
     {
-        this.cameraSaveSlotController = cameraSaveSlotController ?? throw new System.ArgumentNullException(nameof(cameraSaveSlotController));
-        this.cameraInfoSchemaBuilder = cameraInfoSchemaBuilder ?? throw new System.ArgumentNullException(nameof(cameraInfoSchemaBuilder));
+        this.cameraSaveSlotController = cameraSaveSlotController ?? throw new ArgumentNullException(nameof(cameraSaveSlotController));
+        this.cameraInfoSchemaBuilder = cameraInfoSchemaBuilder ?? throw new ArgumentNullException(nameof(cameraInfoSchemaBuilder));
     }
 
     public CameraSchema Build() =>

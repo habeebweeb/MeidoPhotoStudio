@@ -1,11 +1,8 @@
-using System;
-using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 
 using MeidoPhotoStudio.Plugin.Core.Character;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
@@ -35,7 +32,7 @@ public class HandPresetSerializer
             var binaryData = Convert.FromBase64String(base64Data);
 
             using var memoryStream = new MemoryStream(binaryData);
-            using var binaryReader = new BinaryReader(memoryStream, System.Text.Encoding.UTF8);
+            using var binaryReader = new BinaryReader(memoryStream, Encoding.UTF8);
 
             var rotations = new Quaternion[BoneCount];
 
@@ -57,7 +54,7 @@ public class HandPresetSerializer
         _ = preset ?? throw new ArgumentNullException(nameof(preset));
 
         using var memoryStream = new MemoryStream();
-        using var binaryWriter = new BinaryWriter(memoryStream, System.Text.Encoding.UTF8);
+        using var binaryWriter = new BinaryWriter(memoryStream, Encoding.UTF8);
 
         foreach (var rotation in preset)
             binaryWriter.WriteQuaternion(rotation);

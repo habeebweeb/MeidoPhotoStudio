@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-
 using MeidoPhotoStudio.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
@@ -93,7 +87,7 @@ public class MenuFileCacheSerializer : IMenuFileCacheSerializer
             for (var i = 0; i < modelAnimationCount; i++)
                 builder.AddModelAnime(new()
                 {
-                    Slot = (TBody.SlotID)reader.ReadInt32(),
+                    Slot = (SlotID)reader.ReadInt32(),
                     AnimationName = reader.ReadNullableString(),
                     Loop = reader.ReadBoolean(),
                 });
@@ -103,7 +97,7 @@ public class MenuFileCacheSerializer : IMenuFileCacheSerializer
             for (var i = 0; i < modelMaterialAnimationCount; i++)
                 builder.AddModelMaterialAnimation(new()
                 {
-                    Slot = (TBody.SlotID)reader.ReadInt32(),
+                    Slot = (SlotID)reader.ReadInt32(),
                     MaterialIndex = reader.ReadInt32(),
                 });
 

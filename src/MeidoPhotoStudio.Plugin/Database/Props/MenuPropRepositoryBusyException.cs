@@ -1,5 +1,3 @@
-using System;
-
 namespace MeidoPhotoStudio.Database.Props.Menu;
 
 [Serializable]

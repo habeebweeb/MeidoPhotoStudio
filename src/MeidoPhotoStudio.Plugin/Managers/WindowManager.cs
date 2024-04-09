@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-
-using UnityEngine;
-
 using static MeidoPhotoStudio.Plugin.Constants;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -48,5 +44,21 @@ public class WindowManager : IManager
     {
         foreach (var window in windows.Values)
             window.Deactivate();
+    }
+
+    public bool MouseOverAnyWindow()
+    {
+        foreach (var window in windows.Values.Where(window => window.Visible))
+            if (MouseOverWindow(window))
+                return true;
+
+        return false;
+
+        static bool MouseOverWindow(BaseWindow window)
+        {
+            var mousePosition = new Vector2(UnityEngine.Input.mousePosition.x, Screen.height - UnityEngine.Input.mousePosition.y);
+
+            return window.WindowRect.Contains(mousePosition);
+        }
     }
 }

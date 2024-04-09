@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class BloomPane : EffectPane<BloomEffectManager>

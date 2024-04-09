@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-
 using MeidoPhotoStudio.Database.Background;
 
 namespace MeidoPhotoStudio.Database.Props;
@@ -13,7 +9,7 @@ public class BackgroundPropRepository : IEnumerable<BackgroundPropModel>
     private Dictionary<BackgroundCategory, IList<BackgroundPropModel>> props;
 
     public BackgroundPropRepository(BackgroundRepository backgroundRepository) =>
-        this.backgroundRepository = backgroundRepository ?? throw new System.ArgumentNullException(nameof(backgroundRepository));
+        this.backgroundRepository = backgroundRepository ?? throw new ArgumentNullException(nameof(backgroundRepository));
 
     public IEnumerable<BackgroundCategory> Categories =>
         Props.Keys;

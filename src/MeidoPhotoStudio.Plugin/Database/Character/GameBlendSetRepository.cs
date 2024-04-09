@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 namespace MeidoPhotoStudio.Database.Character;
@@ -54,7 +50,7 @@ public class GameBlendSetRepository : IEnumerable<GameBlendSetModel>
             kvp => (IList<GameBlendSetModel>)kvp.Value.AsReadOnly());
     }
 
-    private void OnReloadedTranslation(object sender, System.EventArgs e)
+    private void OnReloadedTranslation(object sender, EventArgs e)
     {
         foreach (var blendSet in this)
             blendSet.Name = Plugin.Translation.Get("faceBlendPresetsDropdown", blendSet.BlendSetName);

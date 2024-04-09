@@ -1,7 +1,4 @@
-using System;
-
 using MeidoPhotoStudio.Database.Background;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Background;
 

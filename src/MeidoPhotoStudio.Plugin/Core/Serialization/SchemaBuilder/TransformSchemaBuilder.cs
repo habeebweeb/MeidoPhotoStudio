@@ -1,5 +1,4 @@
 using MeidoPhotoStudio.Plugin.Core.Schema;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 

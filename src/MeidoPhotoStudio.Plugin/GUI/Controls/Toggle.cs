@@ -1,20 +1,42 @@
-using System;
-
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class Toggle : BaseControl
 {
+    private string label;
+    private Texture icon;
+    private GUIContent toggleContent;
     private bool value;
 
     public Toggle(string label, bool state = false)
-    {
+        : this(state) =>
         Label = label;
+
+    public Toggle(Texture icon, bool state = false)
+        : this(state) =>
+        Icon = icon;
+
+    private Toggle(bool state = false) =>
         value = state;
+
+    public string Label
+    {
+        get => toggleContent.text;
+        set
+        {
+            label = value;
+            toggleContent = new(label);
+        }
     }
 
-    public string Label { get; set; }
+    public Texture Icon
+    {
+        get => toggleContent.image;
+        set
+        {
+            icon = value;
+            toggleContent = new(icon);
+        }
+    }
 
     public bool Value
     {
@@ -27,7 +49,7 @@ public class Toggle : BaseControl
 
     public void Draw(GUIStyle toggleStyle, params GUILayoutOption[] layoutOptions)
     {
-        var value = GUILayout.Toggle(Value, Label, toggleStyle, layoutOptions);
+        var value = GUILayout.Toggle(Value, toggleContent, toggleStyle, layoutOptions);
 
         if (value != Value)
             Value = value;
@@ -35,7 +57,7 @@ public class Toggle : BaseControl
 
     public void Draw(Rect rect)
     {
-        var value = GUI.Toggle(rect, Value, Label);
+        var value = GUI.Toggle(rect, Value, toggleContent);
 
         if (value != Value)
             Value = value;

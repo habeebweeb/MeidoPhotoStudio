@@ -1,6 +1,5 @@
 using MeidoPhotoStudio.Database.Background;
 using MeidoPhotoStudio.Database.Props;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Props;
 
@@ -10,7 +9,7 @@ public class PropInstantiator
 
     public GameObject Instantiate(IPropModel propModel) =>
         propModel is null
-            ? throw new System.ArgumentNullException(nameof(propModel))
+            ? throw new ArgumentNullException(nameof(propModel))
             : propModel switch
             {
                 BackgroundPropModel backgroundPropModel => Instantiate(backgroundPropModel),
@@ -18,7 +17,7 @@ public class PropInstantiator
                 MyRoomPropModel myRoomPropModel => Instantiate(myRoomPropModel),
                 OtherPropModel otherPropModel => Instantiate(otherPropModel),
                 PhotoBgPropModel photoBgPropModel => Instantiate(photoBgPropModel),
-                _ => throw new System.NotImplementedException($"'{propModel.GetType()}' is not implemented"),
+                _ => throw new NotImplementedException($"'{propModel.GetType()}' is not implemented"),
             };
 
     private static GameObject InstantiatePrefab(string prefabName)

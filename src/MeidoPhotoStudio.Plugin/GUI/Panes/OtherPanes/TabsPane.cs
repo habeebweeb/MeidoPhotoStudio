@@ -1,12 +1,16 @@
-using System;
-
-using UnityEngine;
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class TabsPane : BasePane
 {
-    private static readonly string[] TabNames = { "call", "pose", "face", "bg", "bg2" };
+    private static readonly Constants.Window[] Tabs =
+    {
+        Constants.Window.Call,
+        Constants.Window.Pose,
+        Constants.Window.BG,
+        Constants.Window.BG2,
+    };
 
     private readonly SelectionGrid tabs;
 
@@ -17,7 +21,7 @@ public class TabsPane : BasePane
         Translation.ReloadTranslationEvent += (_, _) =>
             ReloadTranslation();
 
-        tabs = new(Translation.GetArray("tabs", TabNames));
+        tabs = new(Translation.GetArray("tabs", Tabs.Select(tab => tab.ToString())));
         tabs.ControlEvent += (_, _) =>
             OnChangeTab();
     }
@@ -27,19 +31,32 @@ public class TabsPane : BasePane
     public Constants.Window SelectedTab
     {
         get => selectedTab;
-        set => tabs.SelectedItemIndex = (int)value;
+        set
+        {
+            var newTab = value;
+
+            if (value is Constants.Window.Face)
+                newTab = Constants.Window.Pose;
+
+            var tabIndex = Array.IndexOf(Tabs, newTab);
+
+            if (tabIndex < 0)
+                return;
+
+            tabs.SelectedItemIndex = tabIndex;
+        }
     }
 
     public override void Draw()
     {
-        tabs.Draw(GUILayout.ExpandWidth(false));
+        tabs.Draw();
         MpsGui.BlackLine();
     }
 
     protected override void ReloadTranslation()
     {
         updating = true;
-        tabs.SetItems(Translation.GetArray("tabs", TabNames), tabs.SelectedItemIndex);
+        tabs.SetItems(Translation.GetArray("tabs", Tabs.Select(tab => tab.ToLower())), tabs.SelectedItemIndex);
         updating = false;
     }
 
@@ -48,7 +65,7 @@ public class TabsPane : BasePane
         if (updating)
             return;
 
-        selectedTab = (Constants.Window)tabs.SelectedItemIndex;
+        selectedTab = Tabs[tabs.SelectedItemIndex];
         TabChange?.Invoke(null, EventArgs.Empty);
     }
 }

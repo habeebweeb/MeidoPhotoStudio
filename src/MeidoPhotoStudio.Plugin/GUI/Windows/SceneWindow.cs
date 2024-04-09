@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin;
 
 /// <summary>Scene management UI.</summary>

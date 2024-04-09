@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class EffectsPane : BasePane

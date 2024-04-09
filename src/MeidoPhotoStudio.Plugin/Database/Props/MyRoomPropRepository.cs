@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace MeidoPhotoStudio.Database.Props;
 
 public class MyRoomPropRepository : IEnumerable<MyRoomPropModel>
@@ -53,7 +49,7 @@ public class MyRoomPropRepository : IEnumerable<MyRoomPropModel>
         return models.ToDictionary(kvp => kvp.Key, kvp => (IList<MyRoomPropModel>)kvp.Value.AsReadOnly());
     }
 
-    private void OnReloadedTranslation(object sender, System.EventArgs e)
+    private void OnReloadedTranslation(object sender, EventArgs e)
     {
         foreach (var prop in this)
             prop.Name = Plugin.Translation.Get("myRoomPropNames", prop.AssetName);

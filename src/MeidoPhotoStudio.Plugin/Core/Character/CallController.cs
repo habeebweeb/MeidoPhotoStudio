@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Service;

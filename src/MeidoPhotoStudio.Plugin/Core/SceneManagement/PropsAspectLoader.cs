@@ -1,6 +1,7 @@
 using MeidoPhotoStudio.Database.Background;
 using MeidoPhotoStudio.Database.Props;
 using MeidoPhotoStudio.Database.Props.Menu;
+using MeidoPhotoStudio.Plugin.Core.Character;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;
@@ -13,7 +14,7 @@ public class PropsAspectLoader : ISceneAspectLoader<PropsSchema>
     private readonly PropService propService;
     private readonly PropDragHandleService propDragHandleService;
     private readonly PropAttachmentService propAttachmentService;
-    private readonly MeidoManager meidoManager;
+    private readonly CharacterService characterService;
     private readonly BackgroundRepository backgroundRepository;
     private readonly DeskPropRepository deskPropRepository;
     private readonly MyRoomPropRepository myRoomPropRepository;
@@ -24,22 +25,22 @@ public class PropsAspectLoader : ISceneAspectLoader<PropsSchema>
         PropService propService,
         PropDragHandleService propDragHandleService,
         PropAttachmentService propAttachmentService,
-        MeidoManager meidoManager,
+        CharacterService characterService,
         BackgroundRepository backgroundRepository,
         DeskPropRepository deskPropRepository,
         MyRoomPropRepository myRoomPropRepository,
         PhotoBgPropRepository photoBgPropRepository,
         MenuPropRepository menuPropRepository)
     {
-        this.propService = propService ?? throw new System.ArgumentNullException(nameof(propService));
-        this.propDragHandleService = propDragHandleService ?? throw new System.ArgumentNullException(nameof(propDragHandleService));
-        this.propAttachmentService = propAttachmentService ?? throw new System.ArgumentNullException(nameof(propAttachmentService));
-        this.meidoManager = meidoManager ?? throw new System.ArgumentNullException(nameof(meidoManager));
-        this.backgroundRepository = backgroundRepository ?? throw new System.ArgumentNullException(nameof(backgroundRepository));
-        this.deskPropRepository = deskPropRepository ?? throw new System.ArgumentNullException(nameof(deskPropRepository));
-        this.myRoomPropRepository = myRoomPropRepository ?? throw new System.ArgumentNullException(nameof(myRoomPropRepository));
-        this.photoBgPropRepository = photoBgPropRepository ?? throw new System.ArgumentNullException(nameof(photoBgPropRepository));
-        this.menuPropRepository = menuPropRepository ?? throw new System.ArgumentNullException(nameof(menuPropRepository));
+        this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
+        this.propDragHandleService = propDragHandleService ?? throw new ArgumentNullException(nameof(propDragHandleService));
+        this.propAttachmentService = propAttachmentService ?? throw new ArgumentNullException(nameof(propAttachmentService));
+        this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
+        this.backgroundRepository = backgroundRepository ?? throw new ArgumentNullException(nameof(backgroundRepository));
+        this.deskPropRepository = deskPropRepository ?? throw new ArgumentNullException(nameof(deskPropRepository));
+        this.myRoomPropRepository = myRoomPropRepository ?? throw new ArgumentNullException(nameof(myRoomPropRepository));
+        this.photoBgPropRepository = photoBgPropRepository ?? throw new ArgumentNullException(nameof(photoBgPropRepository));
+        this.menuPropRepository = menuPropRepository ?? throw new ArgumentNullException(nameof(menuPropRepository));
     }
 
     public void Load(PropsSchema propsSchema, LoadOptions loadOptions)
@@ -97,18 +98,18 @@ public class PropsAspectLoader : ISceneAspectLoader<PropsSchema>
             void ApplyPropAttachment(
                 PropController propController, AttachPointSchema attachPointSchema, TransformSchema transformSchema)
             {
-                if (!meidoManager.HasActiveMeido)
+                if (characterService.Count is 0)
                     return;
 
-                if (attachPointSchema.CharacterIndex >= meidoManager.ActiveMeidoList.Count)
+                if (attachPointSchema.CharacterIndex >= characterService.Count)
                     return;
 
                 if (attachPointSchema.AttachPoint is AttachPoint.None)
                     return;
 
-                var meido = meidoManager.ActiveMeidoList[attachPointSchema.CharacterIndex];
+                var character = characterService[attachPointSchema.CharacterIndex];
 
-                propAttachmentService.AttachPropTo(propController, meido, attachPointSchema.AttachPoint, false);
+                propAttachmentService.AttachPropTo(propController, character, attachPointSchema.AttachPoint, false);
 
                 if (propsSchema.Version is 1)
                 {

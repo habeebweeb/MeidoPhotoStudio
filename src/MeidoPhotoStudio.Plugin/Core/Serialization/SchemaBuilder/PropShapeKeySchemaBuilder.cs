@@ -1,5 +1,3 @@
-using System.Linq;
-
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;
 

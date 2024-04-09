@@ -1,5 +1,3 @@
-using System.Linq;
-
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 

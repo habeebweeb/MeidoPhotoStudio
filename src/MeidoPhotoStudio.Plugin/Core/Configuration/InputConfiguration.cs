@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using BepInEx.Configuration;
 using MeidoPhotoStudio.Plugin.Input;
-using UnityEngine;
 
 using KeyboardShortcut = MeidoPhotoStudio.Plugin.Input.KeyboardShortcut;
 

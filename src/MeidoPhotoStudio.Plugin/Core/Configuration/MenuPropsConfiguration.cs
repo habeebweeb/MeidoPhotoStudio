@@ -10,7 +10,7 @@ public class MenuPropsConfiguration : IMenuPropsConfiguration
 
     public MenuPropsConfiguration(ConfigFile configFile)
     {
-        this.configFile = configFile ?? throw new System.ArgumentNullException(nameof(configFile));
+        this.configFile = configFile ?? throw new ArgumentNullException(nameof(configFile));
 
         menuPropsConfigEntry = this.configFile.Bind("Prop", "ModItemsOnly", false);
     }

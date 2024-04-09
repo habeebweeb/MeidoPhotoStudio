@@ -1,7 +1,4 @@
-using System;
-
 using Newtonsoft.Json;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Framework.Serialization.Json;
 

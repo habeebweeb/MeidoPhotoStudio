@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
 public class CharacterProcessingEventArgs(IEnumerable<MPN> changingSlots)

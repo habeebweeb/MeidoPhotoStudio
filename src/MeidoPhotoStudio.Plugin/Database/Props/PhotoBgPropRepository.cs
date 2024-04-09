@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 namespace MeidoPhotoStudio.Database.Props;
@@ -63,7 +59,7 @@ public class PhotoBgPropRepository : IEnumerable<PhotoBgPropModel>
             kvp => (IList<PhotoBgPropModel>)kvp.Value.AsReadOnly());
     }
 
-    private void OnReloadedTranslation(object sender, System.EventArgs e)
+    private void OnReloadedTranslation(object sender, EventArgs e)
     {
         foreach (var prop in this)
         {

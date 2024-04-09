@@ -1,11 +1,12 @@
-using System.IO;
-
 using com.workman.cm3d2.scene.dailyEtc;
 using MeidoPhotoStudio.Database.Background;
+using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Database.Props;
 using MeidoPhotoStudio.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core.Background;
 using MeidoPhotoStudio.Plugin.Core.Camera;
+using MeidoPhotoStudio.Plugin.Core.Character;
+using MeidoPhotoStudio.Plugin.Core.Character.Pose;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
 using MeidoPhotoStudio.Plugin.Core.Props;
@@ -17,7 +18,6 @@ using MeidoPhotoStudio.Plugin.Framework.Menu;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 using MeidoPhotoStudio.Plugin.Service;
 using MeidoPhotoStudio.Plugin.Service.Input;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace MeidoPhotoStudio.Plugin.Core;
@@ -29,10 +29,8 @@ public partial class PluginCore : MonoBehaviour
 
     private WindowManager windowManager;
     private SceneManager sceneManager;
-    private MeidoManager meidoManager;
     private MessageWindowManager messageWindowManager;
     private PropService propService;
-    private SubCameraController subCameraController;
     private EffectManager effectManager;
     private CameraController cameraController;
     private CameraSpeedController cameraSpeedController;
@@ -49,6 +47,10 @@ public partial class PluginCore : MonoBehaviour
     private BackgroundService backgroundService;
     private BackgroundDragHandleService backgroundDragHandleService;
     private LightRepository lightRepository;
+    private CharacterService characterService;
+    private EditModeMaidService editModeMaidService;
+    private DragHandle.ClickHandler dragHandleClickHandler;
+    private CharacterRepository characterRepository;
 
     public bool UIActive
     {
@@ -84,11 +86,10 @@ public partial class PluginCore : MonoBehaviour
 
         iconCache.Destroy();
 
-        Destroy(GameObject.Find("[MPS DragPoint Parent]"));
         Destroy(GameObject.Find("[MPS Drag Handle Parent]"));
         Destroy(GameObject.Find("[MPS Light Parent]"));
         Destroy(GameObject.Find("[MPS Coroutine Runner Parent]"));
-        Destroy(Utility.MousePositionGameObject);
+        Destroy(GameObject.Find("[IK Solver Target Parent]"));
         WfCameraMoveSupportUtility.Destroy();
     }
 
@@ -101,7 +102,8 @@ public partial class PluginCore : MonoBehaviour
 
         inputPollingService = gameObject.AddComponent<InputPollingService>();
         inputPollingService.AddInputHandler(new InputHandler(this, inputConfiguration));
-        gameObject.AddComponent<DragHandle.ClickHandler>();
+        dragHandleClickHandler = gameObject.AddComponent<DragHandle.ClickHandler>();
+        dragHandleClickHandler.enabled = false;
     }
 
     private void Update()
@@ -149,27 +151,59 @@ public partial class PluginCore : MonoBehaviour
 
         AddPluginActiveInputHandler(generalDragHandleInputService);
 
-        var dragPointMeidoInputService = new DragPointMeidoInputService(
-            new DragPointFingerInputService(inputConfiguration),
-            new DragPointHeadInputService(inputConfiguration),
-            new DragPointLimbInputService(inputConfiguration),
-            new DragPointMuneInputService(inputConfiguration),
-            new DragPointPelvisInputService(inputConfiguration),
-            new DragPointSpineInputService(inputConfiguration),
-            new DragPointHipInputService(inputConfiguration),
-            new DragPointThighInputService(inputConfiguration),
-            new DragPointTorsoInputService(inputConfiguration));
+        var tabSelectionController = new TabSelectionController();
 
-        AddPluginActiveInputHandler(dragPointMeidoInputService);
+        characterRepository = new();
 
-        var generalDragPointInputService = new GeneralDragPointInputService(inputConfiguration);
+        editModeMaidService = new EditModeMaidService(customMaidSceneService, characterRepository);
+        characterService = new CharacterService(customMaidSceneService, editModeMaidService);
 
-        AddPluginActiveInputHandler(generalDragPointInputService);
+        var characterSelectionController = new SelectionController<CharacterController>(characterService);
 
-        meidoManager = new(
-            customMaidSceneService, generalDragPointInputService, dragPointMeidoInputService);
+        AddPluginActiveInputHandler(new CharacterDressingCycler(characterService, inputConfiguration));
 
-        AddPluginActiveInputHandler(new MeidoManager.InputHandler(meidoManager, inputConfiguration));
+        var gravityDragHandleInputService = new GravityDragHandleInputService(inputConfiguration);
+
+        AddPluginActiveInputHandler(gravityDragHandleInputService);
+
+        var gravityDragHandleService = new GravityDragHandleService(gravityDragHandleInputService, characterService);
+
+        var globalGravityService = new GlobalGravityService(characterService);
+
+        var characterDragHandleInputService = new CharacterDragHandleInputService(
+            generalDragHandleInputService,
+            new UpperLimbDragHandleInputHandler(inputConfiguration),
+            new MiddleLimbDragHandleInputHandler(inputConfiguration),
+            new LowerLimbDragHandleInputHandler(inputConfiguration),
+            new TorsoDragHandleInputHandler(inputConfiguration),
+            new HeadDragHandleInputHandler(inputConfiguration),
+            new PelvisDragHandleInputHandler(inputConfiguration),
+            new SpineDragHandleInputHandler(inputConfiguration),
+            new HipDragHandleInputHandler(inputConfiguration),
+            new ThighDragHandleInputHandler(inputConfiguration),
+            new ChestDragHandleInputHandler(inputConfiguration),
+            new ChestSubGizmoInputHandler(inputConfiguration),
+            new DigitBaseDragHandleInputHandler(inputConfiguration),
+            new DigitDragHandleInputHandler(inputConfiguration),
+            new EyeDragHandleInputHandler(inputConfiguration));
+
+        AddPluginActiveInputHandler(characterDragHandleInputService);
+
+        var ikDragHandleService = new IKDragHandleService(
+            characterDragHandleInputService,
+            characterService,
+            characterSelectionController,
+            tabSelectionController);
+
+        var configRoot = Path.Combine(BepInEx.Paths.ConfigPath, Plugin.PluginName);
+        var presetsPath = Path.Combine(configRoot, "Presets");
+        var databasePath = Path.Combine(configRoot, "Database");
+        var customPosePath = Path.Combine(presetsPath, "Custom Poses");
+        var customBlendSetPath = Path.Combine(presetsPath, "Face Presets");
+        var customHandPresetPath = Path.Combine(presetsPath, "Hand Presets");
+
+        var faceShapeKeyConfiguration = new FaceShapeKeyConfiguration(MeidoPhotoStudio.Plugin.Configuration.Config);
+        var facialExpressionBuilder = new FacialExpressionBuilder(faceShapeKeyConfiguration);
 
         messageWindowManager = new();
         messageWindowManager.Activate();
@@ -180,12 +214,11 @@ public partial class PluginCore : MonoBehaviour
         backgroundService = new BackgroundService(backgroundRepository);
         backgroundDragHandleService = new(generalDragHandleInputService, backgroundService);
 
-        var tabSelectionController = new TabSelectionController();
-
         lightRepository = new LightRepository();
 
         var lightSelectionController = new SelectionController<LightController>(lightRepository);
 
+        // TODO: This reference is not used anywhere else.
         var lightDragHandleRepository = new LightDragHandleRepository(
             generalDragHandleInputService, lightRepository, lightSelectionController, tabSelectionController);
 
@@ -193,8 +226,6 @@ public partial class PluginCore : MonoBehaviour
 
         cameraSpeedController = new();
         cameraSaveSlotController = new(cameraController);
-
-        subCameraController = gameObject.AddComponent<SubCameraController>();
 
         AddPluginActiveInputHandler(
             new CameraInputHandler(
@@ -212,7 +243,8 @@ public partial class PluginCore : MonoBehaviour
 
         propService = new();
 
-        var propAttachmentService = new PropAttachmentService(meidoManager, propService);
+        var propAttachmentService = new PropAttachmentService(characterService, propService);
+
         var propSelectionController = new SelectionController<PropController>(propService);
         var propDragHandleService = new PropDragHandleService(
             generalDragHandleInputService, propService, propSelectionController, tabSelectionController);
@@ -228,11 +260,29 @@ public partial class PluginCore : MonoBehaviour
             menuPropsConfiguration,
             new MenuFileCacheSerializer(Path.Combine(BepInEx.Paths.ConfigPath, Plugin.PluginName)));
 
+        var gameAnimationRepository = new GameAnimationRepository(databasePath);
+        var customAnimationRepository = new CustomAnimationRepository(customPosePath);
+
+        var gameBlendSetRepository = new GameBlendSetRepository();
+        var customBlendSetRepository = new CustomBlendSetRepository(customBlendSetPath);
+
         var transformSchemaBuilder = new TransformSchemaBuilder();
+        var propModelSchemaBuilder = new PropModelSchemaBuilder();
 
         // TODO: This is kinda stupid tbf. Maybe look into writing a code generator and attributes to create these
         // "schema" things instead of manually building it.
+        // Would that even be possible? idk.
         var sceneSchemaBuilder = new SceneSchemaBuilder(
+            new CharacterServiceSchemaBuilder(
+                characterService,
+                globalGravityService,
+                new CharacterSchemaBuilder(
+                    facialExpressionBuilder,
+                    new AnimationModelSchemaBuilder(),
+                    new BlendSetModelSchemaBuilder(),
+                    propModelSchemaBuilder,
+                    transformSchemaBuilder),
+                new GlobalGravitySchemaBuilder()),
             new MessageWindowSchemaBuilder(messageWindowManager),
             new CameraSchemaBuilder(cameraSaveSlotController, new CameraInfoSchemaBuilder()),
             new LightRepositorySchemaBuilder(
@@ -258,6 +308,14 @@ public partial class PluginCore : MonoBehaviour
                 new AttachPointSchemaBuilder()));
 
         var sceneLoader = new SceneLoader(
+            new CharacterAspectLoader(
+                characterService,
+                globalGravityService,
+                gameAnimationRepository,
+                customAnimationRepository,
+                gameBlendSetRepository,
+                customBlendSetRepository,
+                menuPropRepository),
             new MessageAspectLoader(messageWindowManager),
             new CameraAspectLoader(cameraSaveSlotController),
             new LightAspectLoader(lightRepository, backgroundService),
@@ -267,7 +325,7 @@ public partial class PluginCore : MonoBehaviour
                 propService,
                 propDragHandleService,
                 propAttachmentService,
-                meidoManager,
+                characterService,
                 backgroundRepository,
                 deskPropRepository,
                 myRoomPropRepository,
@@ -286,22 +344,48 @@ public partial class PluginCore : MonoBehaviour
 
         AddPluginActiveInputHandler(new MessageWindow.InputHandler(messageWindow, inputConfiguration));
 
-        var maidSwitcherPane = new MaidSwitcherPane(meidoManager, customMaidSceneService);
-
-        var mainWindow = new MainWindow(
-            meidoManager,
-            tabSelectionController,
-            customMaidSceneService,
-            inputRemapper)
+        var characterWindowPane = new CharacterWindowPane(
+            new CharacterSwitcherPane(
+                characterService, characterSelectionController, customMaidSceneService, editModeMaidService),
+            tabSelectionController)
         {
-            [Constants.Window.Call] = new CallWindowPane(meidoManager, customMaidSceneService),
-            [Constants.Window.Pose] = new PoseWindowPane(meidoManager, maidSwitcherPane),
-            [Constants.Window.Face] = new FaceWindowPane(meidoManager, maidSwitcherPane),
+            [CharacterWindowPane.CharacterWindowTab.Pose] =
+            [
+                new AnimationSelectorPane(gameAnimationRepository, customAnimationRepository, characterSelectionController),
+                new IKPane(ikDragHandleService, characterSelectionController),
+                new AnimationPane(characterSelectionController),
+                new FreeLookPane(characterSelectionController),
+                new DressingPane(characterSelectionController),
+                new GravityControlPane(gravityDragHandleService, globalGravityService, characterSelectionController),
+                new AttachedAccessoryPane(menuPropRepository, characterSelectionController),
+                new HandPresetSelectorPane(new(customHandPresetPath), characterSelectionController),
+                new CopyPosePane(characterService, characterSelectionController),
+            ],
+            [CharacterWindowPane.CharacterWindowTab.Face] =
+            [
+                new BlendSetSelectorPane(
+                    gameBlendSetRepository,
+                    customBlendSetRepository,
+                    facialExpressionBuilder,
+                    characterSelectionController),
+                new ExpressionPane(characterSelectionController, faceShapeKeyConfiguration),
+            ],
+        };
+
+        var mainWindow = new MainWindow(tabSelectionController, customMaidSceneService, inputRemapper)
+        {
+            [Constants.Window.Call] = new CallWindowPane()
+            {
+                new CharacterPlacementPane(new(characterService)),
+                new CharacterCallPane(new(characterRepository, characterService, customMaidSceneService, editModeMaidService)),
+            },
+            [Constants.Window.Pose] = characterWindowPane,
+            [Constants.Window.Face] = characterWindowPane,
             [Constants.Window.BG] = new BGWindowPane()
                 {
                     new SceneManagementPane(sceneWindow),
                     new BackgroundsPane(backgroundService, backgroundRepository, backgroundDragHandleService),
-                    new DragPointPane(propDragHandleService),
+                    new DragPointPane(propDragHandleService, ikDragHandleService),
                     new CameraPane(cameraController, cameraSaveSlotController),
                     new LightsPane(lightRepository, lightSelectionController),
                     new EffectsPane()
@@ -329,11 +413,12 @@ public partial class PluginCore : MonoBehaviour
                             menuPropRepository,
                             menuPropsConfiguration,
                             iconCache),
-                        [PropsPane.PropCategory.MyRoom] = new MyRoomPropsPane(propService, myRoomPropRepository, iconCache),
+                        [PropsPane.PropCategory.MyRoom] = new MyRoomPropsPane(
+                            propService, myRoomPropRepository, iconCache),
                     },
                     new PropShapeKeyPane(propSelectionController),
                     new PropManagerPane(propService, propDragHandleService, propSelectionController, new()),
-                    new AttachPropPane(meidoManager, propService, propAttachmentService, propSelectionController),
+                    new AttachPropPane(characterService, propAttachmentService, propSelectionController),
                 },
             [Constants.Window.Settings] = new SettingsWindowPane(inputConfiguration, inputRemapper),
         };
@@ -347,11 +432,7 @@ public partial class PluginCore : MonoBehaviour
             [Constants.Window.Save] = sceneWindow,
         };
 
-        meidoManager.BeginCallMeidos += (_, _) =>
-            uiActive = false;
-
-        meidoManager.EndCallMeidos += (_, _) =>
-            uiActive = true;
+        dragHandleClickHandler.WindowManager = windowManager;
 
         void AddPluginActiveInputHandler<T>(T inputHandler)
             where T : IInputHandler =>
@@ -366,14 +447,17 @@ public partial class PluginCore : MonoBehaviour
         if (!initialized)
             Initialize();
 
+        dragHandleClickHandler.enabled = true;
+
         // TODO: Move all this activation/deactivation stuff.
         backgroundRepository.Refresh();
+        characterRepository.Refresh();
 
-        meidoManager.Activate();
         cameraController.Activate();
+        editModeMaidService.Activate();
+        characterService.Activate();
         effectManager.Activate();
         messageWindowManager.Activate();
-        subCameraController.Activate();
         cameraSaveSlotController.Activate();
 
         screenshotService.enabled = true;
@@ -383,6 +467,8 @@ public partial class PluginCore : MonoBehaviour
         backgroundService.ChangeBackground(new(BackgroundCategory.COM3D2, "Theater"));
 
         windowManager.Activate();
+
+        characterService.CallingCharacters += OnCallingCharacters;
 
         uiActive = true;
         active = true;
@@ -397,9 +483,30 @@ public partial class PluginCore : MonoBehaviour
         }
     }
 
+    private void OnCallingCharacters(object sender, CharacterServiceEventArgs e)
+    {
+#if DEBUG
+        return;
+#else
+        if (!active)
+            return;
+
+        uiActive = false;
+
+        characterService.CalledCharacters += OnCharactersCalled;
+
+        void OnCharactersCalled(object sender, CharacterServiceEventArgs e)
+        {
+            uiActive = true;
+
+            characterService.CalledCharacters -= OnCharactersCalled;
+        }
+#endif
+    }
+
     private void Deactivate(bool force = false)
     {
-        if (meidoManager.Busy || SceneManager.Busy)
+        if (characterService.Busy || SceneManager.Busy)
             return;
 
         var sysDialog = GameMain.Instance.SysDlg;
@@ -434,19 +541,38 @@ public partial class PluginCore : MonoBehaviour
         {
             sysDialog.Close();
 
-            meidoManager.Deactivate();
+            dragHandleClickHandler.enabled = false;
+
+            characterService.Deactivate();
             cameraController.Deactivate();
             effectManager.Deactivate();
             messageWindowManager.Deactivate();
             windowManager.Deactivate();
             cameraSpeedController.Deactivate();
-            subCameraController.Deactivate();
             screenshotService.enabled = false;
 
-            if (GameMain.Instance.CharacterMgr.status.isDaytime)
-                GameMain.Instance.BgMgr.ChangeBg(DailyAPI.dayBg);
+            editModeMaidService.Deactivate();
+
+            characterService.CallingCharacters -= OnCallingCharacters;
+
+            // TODO: Should this deactivation stuff be somewhere else?
+            if (customMaidSceneService.EditScene)
+            {
+                SceneEditWindow.BgIconData.GetItemData(SceneEdit.Instance.bgIconWindow.selectedIconId).Exec();
+                SceneEditWindow.PoseIconData.GetItemData(SceneEdit.Instance.pauseIconWindow.selectedIconId).ExecScript();
+
+                if (SceneEdit.Instance.viewReset.GetVisibleEyeToCam())
+                    SceneEdit.Instance.maid.EyeToCamera(Maid.EyeMoveType.目と顔を向ける, 0.8f);
+                else
+                    SceneEdit.Instance.maid.EyeToCamera(Maid.EyeMoveType.無視する, 0.8f);
+            }
             else
-                GameMain.Instance.BgMgr.ChangeBg(DailyAPI.nightBg);
+            {
+                if (GameMain.Instance.CharacterMgr.status.isDaytime)
+                    GameMain.Instance.BgMgr.ChangeBg(DailyAPI.dayBg);
+                else
+                    GameMain.Instance.BgMgr.ChangeBg(DailyAPI.nightBg);
+            }
 
             lightRepository.RemoveAllLights();
             propService.Clear();

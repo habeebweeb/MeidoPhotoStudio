@@ -1,8 +1,3 @@
-using System;
-using System.Linq;
-
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin;
 
 internal static class DropdownHelper

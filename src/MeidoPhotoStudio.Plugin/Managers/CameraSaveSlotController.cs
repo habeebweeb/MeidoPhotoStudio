@@ -1,11 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-
 using MeidoPhotoStudio.Plugin.Framework.Collections;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Camera;
 

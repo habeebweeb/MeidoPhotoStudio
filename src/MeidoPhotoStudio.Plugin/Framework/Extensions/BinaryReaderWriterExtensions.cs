@@ -1,7 +1,3 @@
-using System.IO;
-
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 public static class BinaryReaderWriterExtensions

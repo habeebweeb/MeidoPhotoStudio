@@ -1,5 +1,3 @@
-using System;
-
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Service.Input;
 

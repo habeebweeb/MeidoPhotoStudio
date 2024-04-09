@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-
 namespace MeidoPhotoStudio.Database.Props.Menu;
 
 /// <summary>MenuFile builder.</summary>
@@ -23,7 +20,7 @@ public partial class MenuFilePropModel
         public Builder(string menuFilename, bool gameMenu)
         {
             if (string.IsNullOrEmpty(menuFilename))
-                throw new System.ArgumentException($"'{nameof(menuFilename)}' cannot be null or empty.", nameof(menuFilename));
+                throw new ArgumentException($"'{nameof(menuFilename)}' cannot be null or empty.", nameof(menuFilename));
 
             this.gameMenu = gameMenu;
             this.menuFilename = menuFilename;

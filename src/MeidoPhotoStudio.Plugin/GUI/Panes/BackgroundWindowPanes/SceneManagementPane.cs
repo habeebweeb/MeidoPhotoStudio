@@ -8,7 +8,7 @@ public class SceneManagementPane : BasePane
 
     public SceneManagementPane(SceneWindow sceneWindow)
     {
-        _ = sceneWindow ?? throw new System.ArgumentNullException(nameof(sceneWindow));
+        _ = sceneWindow ?? throw new ArgumentNullException(nameof(sceneWindow));
 
         sceneManagementHeader = Translation.Get("sceneManagementPane", "sceneManagementHeader");
 

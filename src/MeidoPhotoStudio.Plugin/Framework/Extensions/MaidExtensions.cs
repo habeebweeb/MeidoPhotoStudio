@@ -1,5 +1,3 @@
-using System;
-
 namespace MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 public static class MaidExtensions

@@ -1,31 +1,13 @@
-using System;
-using System.IO;
-using System.Linq;
-
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin;
 
 // TODO: 🤮 This and the Constants class are a huge disgrace.
 public static class Utility
 {
-    internal static readonly GameObject MousePositionGameObject;
-    internal static readonly MousePosition MousePositionValue;
-
     private static readonly BepInEx.Logging.ManualLogSource Logger =
         BepInEx.Logging.Logger.CreateLogSource(Plugin.PluginName);
 
-    static Utility()
-    {
-        MousePositionGameObject = new();
-        MousePositionValue = MousePositionGameObject.AddComponent<MousePosition>();
-    }
-
     public static string Timestamp =>
         $"{DateTime.Now:yyyyMMddHHmmss}";
-
-    public static Vector3 MousePosition =>
-        MousePositionValue.Position;
 
     public static void LogInfo(object data) =>
         Logger.LogInfo(data);
@@ -73,29 +55,6 @@ public static class Utility
         return texture2D;
     }
 
-    public static string SanitizePathPortion(string path)
-    {
-        var invalid = Path.GetInvalidFileNameChars();
-
-        path = path.Trim();
-        path = string.Join("_", path.Split(invalid)).Replace(".", string.Empty).Trim('_');
-
-        return path;
-    }
-
-    public static string GP01FbFaceHash(TMorph face, string hash)
-    {
-        if (face.bodyskin.PartsVersion < 120 || hash is "eyeclose3" || !hash.StartsWith("eyeclose"))
-            return hash;
-
-        if (hash is "eyeclose")
-            hash += '1';
-
-        hash += TMorph.crcFaceTypesStr[(int)face.GetFaceTypeGP01FB()];
-
-        return hash;
-    }
-
     public static bool SeekPngEnd(Stream stream)
     {
         var buffer = new byte[8];
@@ -107,7 +66,7 @@ public static class Utility
         if (!buffer.SequenceEqual(pngHeader))
             return false;
 
-        var pngEnd = System.Text.Encoding.ASCII.GetBytes("IEND");
+        var pngEnd = Encoding.ASCII.GetBytes("IEND");
 
         buffer = new byte[4];
 

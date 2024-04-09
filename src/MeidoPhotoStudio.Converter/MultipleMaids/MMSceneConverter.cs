@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Text;
 
 using MeidoPhotoStudio.Converter.Serialization;
@@ -252,7 +249,7 @@ public static class MMSceneConverter
             // hip position
             writer.Write(sixtyFourFlag ? Vector3.zero : ConversionUtility.ParseVector3(maidData[96]));
 
-            Serialization.Serialization.GetSimple<PoseInfo>().Serialize(PoseInfo.DefaultPose, writer);
+            Serialization.Serialization.GetSimple<PoseInfo>().Serialize(new("normal", "maid_stand01", false), writer);
         }
 
         static void ConvertClothing(string[] maidData, BinaryWriter writer)
@@ -264,7 +261,9 @@ public static class MMSceneConverter
             writer.Write(true);
 
             // MM does not serialize clothing visibility
-            for (var i = 0; i < MaidDressingPane.ClothingSlots.Length; i++)
+            const int ClothingSlotCount = 29;
+
+            for (var i = 0; i < ClothingSlotCount; i++)
                 writer.Write(true);
 
             // MM does not serialize curling/shift

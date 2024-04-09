@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Plugin.Core.Character.Pose;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 

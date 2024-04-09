@@ -1,7 +1,3 @@
-using System;
-
-using UnityEngine;
-
 using DropdownCloseArgs = MeidoPhotoStudio.Plugin.DropdownHelper.DropdownCloseArgs;
 using DropdownSelectArgs = MeidoPhotoStudio.Plugin.DropdownHelper.DropdownSelectArgs;
 
@@ -57,7 +53,9 @@ public class Dropdown : BaseControl
         scrollPos;
 
     public string SelectedItem =>
-        DropdownList[SelectedItemIndex];
+        DropdownList.Length is 0
+            ? string.Empty
+            : DropdownList[SelectedItemIndex];
 
     public Rect ButtonRect
     {
@@ -81,10 +79,6 @@ public class Dropdown : BaseControl
 
         elementSize = Vector2.zero;
 
-        // TODO: Calculate scrollpos position maybe
-        if (selectedItemIndex != this.selectedItemIndex || itemList.Length != DropdownList?.Length)
-            scrollPos = Vector2.zero;
-
         DropdownList = itemList;
         SelectedItemIndex = selectedItemIndex;
     }
@@ -95,9 +89,6 @@ public class Dropdown : BaseControl
             selectedItemIndex = SelectedItemIndex;
 
         elementSize = Vector2.zero;
-
-        if (selectedItemIndex != this.selectedItemIndex || itemList.Length != DropdownList?.Length)
-            scrollPos = Vector2.zero;
 
         DropdownList = itemList;
         SetIndexWithoutNotify(selectedItemIndex);
@@ -177,6 +168,8 @@ public class Dropdown : BaseControl
 
     private void InitializeDropdown(GUIStyle dropdownStyle)
     {
+        OnDropdownEvent(DropdownOpen);
+
         showDropdown = false;
 
         buttonRect = GUILayoutUtility.GetLastRect();
@@ -190,8 +183,6 @@ public class Dropdown : BaseControl
             elementSize = DropdownHelper.CalculateElementSize(DropdownList, dropdownStyle);
 
         DropdownHelper.Set(this, dropdownStyle);
-
-        OnDropdownEvent(DropdownOpen);
     }
 
     private void SetIndex(int index, bool notify = true)

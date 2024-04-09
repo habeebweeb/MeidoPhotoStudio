@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-
 using MeidoPhotoStudio.Plugin.Framework.Menu;
 
 namespace MeidoPhotoStudio.Database.Props.Menu;
@@ -21,7 +18,7 @@ internal class MenuFileParser
             return null;
 
         using var aFileBaseStream = new AFileBaseStream(aFileBase);
-        using var binaryReader = new BinaryReader(aFileBaseStream, System.Text.Encoding.UTF8);
+        using var binaryReader = new BinaryReader(aFileBaseStream, Encoding.UTF8);
 
         if (binaryReader.ReadString() is not "CM3D2_MENU")
             return null;
@@ -112,7 +109,7 @@ internal class MenuFileParser
                 if (menuProps.Length < 3)
                     continue;
 
-                var slot = (TBody.SlotID)Enum.Parse(typeof(TBody.SlotID), menuProps[1], true);
+                var slot = (SlotID)Enum.Parse(typeof(SlotID), menuProps[1], true);
                 var animationName = menuProps[2];
                 var loop = false;
 
@@ -128,7 +125,7 @@ internal class MenuFileParser
             }
             else if (header is "animematerial")
             {
-                var slot = (TBody.SlotID)Enum.Parse(typeof(TBody.SlotID), menuProps[1], true);
+                var slot = (SlotID)Enum.Parse(typeof(SlotID), menuProps[1], true);
                 var materialIndex = int.Parse(menuProps[2]);
 
                 menuBuilder.AddModelMaterialAnimation(new()

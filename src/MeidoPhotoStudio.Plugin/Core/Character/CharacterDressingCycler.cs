@@ -15,8 +15,8 @@ public class CharacterDressingCycler : IInputHandler
 
     public CharacterDressingCycler(CharacterService characterService, InputConfiguration inputConfiguration)
     {
-        this.characterService = characterService ?? throw new System.ArgumentNullException(nameof(characterService));
-        this.inputConfiguration = inputConfiguration ?? throw new System.ArgumentNullException(nameof(inputConfiguration));
+        this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
+        this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
 
         this.characterService.CalledCharacters += OnCharactersCalled;
     }

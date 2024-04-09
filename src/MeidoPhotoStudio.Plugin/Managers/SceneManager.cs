@@ -1,14 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
 using BepInEx.Configuration;
 using MeidoPhotoStudio.Plugin.Core.SceneManagement;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
-using UnityEngine;
-
-using Object = UnityEngine.Object;
+using MeidoPhotoStudio.Plugin.Framework;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -27,6 +20,7 @@ public partial class SceneManager : IManager
     private readonly ISceneSerializer sceneSerializer;
     private readonly SceneLoader sceneLoader;
     private readonly SceneSchemaBuilder schemaBuilder;
+    private readonly Comparer<string> fileNameComparer = new WindowsLogicalStringComparer();
 
     public SceneManager(
         ScreenshotService screenshotService,
@@ -170,7 +164,7 @@ public partial class SceneManager : IManager
 
     public void AddDirectory(string directoryName)
     {
-        directoryName = Utility.SanitizePathPortion(directoryName);
+        directoryName = SanitizePathPortion(directoryName);
 
         if (CurrentDirectoryList.Contains(directoryName, StringComparer.InvariantCultureIgnoreCase))
             return;
@@ -194,6 +188,16 @@ public partial class SceneManager : IManager
         CurrentDirectoryIndex = CurrentDirectoryList.IndexOf(directoryName);
 
         UpdateSceneList();
+
+        static string SanitizePathPortion(string path)
+        {
+            var invalid = Path.GetInvalidFileNameChars();
+
+            path = path.Trim();
+            path = string.Join("_", path.Split(invalid)).Replace(".", string.Empty).Trim('_');
+
+            return path;
+        }
     }
 
     public void Refresh()
@@ -250,7 +254,7 @@ public partial class SceneManager : IManager
     }
 
     private int SortByName(MPSScene a, MPSScene b) =>
-        SortDirection * WindowsLogicalComparer.StrCmpLogicalW(a.FileInfo.Name, b.FileInfo.Name);
+        SortDirection * fileNameComparer.Compare(a.FileInfo.Name, b.FileInfo.Name);
 
     private int SortByDateCreated(MPSScene a, MPSScene b) =>
         SortDirection * DateTime.Compare(a.FileInfo.CreationTime, b.FileInfo.CreationTime);
@@ -281,7 +285,7 @@ public partial class SceneManager : IManager
         CurrentDirectoryList.Sort((a, b) =>
             a.Equals(baseDirectoryName, StringComparison.InvariantCultureIgnoreCase)
                 ? -1
-                : WindowsLogicalComparer.StrCmpLogicalW(a, b));
+                : fileNameComparer.Compare(a, b));
     }
 
     private void ClearSceneList()

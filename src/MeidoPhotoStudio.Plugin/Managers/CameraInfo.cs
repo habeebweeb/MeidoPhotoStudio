@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin.Core.Camera;
 
 public readonly struct CameraInfo

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace MeidoPhotoStudio.Database.Background;
 
 public class BackgroundModel : IEquatable<BackgroundModel>

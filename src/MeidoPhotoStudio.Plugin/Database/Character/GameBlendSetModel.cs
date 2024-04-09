@@ -1,5 +1,3 @@
-using System;
-
 namespace MeidoPhotoStudio.Database.Character;
 
 public class GameBlendSetModel(PhotoFaceData photoFaceData, string name = "") : IBlendSetModel

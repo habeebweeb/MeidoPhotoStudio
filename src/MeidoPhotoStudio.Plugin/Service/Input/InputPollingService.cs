@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin.Service.Input;
 
 public class InputPollingService : MonoBehaviour

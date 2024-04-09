@@ -1,5 +1,3 @@
-using System;
-
 namespace MeidoPhotoStudio.Database.Character;
 
 public class AddedBlendSetEventArgs(IBlendSetModel blendSet) : EventArgs

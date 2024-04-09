@@ -8,21 +8,24 @@ public class CameraAspectLoader : ISceneAspectLoader<CameraSchema>
     private readonly CameraSaveSlotController cameraSaveSlotController;
 
     public CameraAspectLoader(CameraSaveSlotController cameraSaveSlotController) =>
-        this.cameraSaveSlotController = cameraSaveSlotController ?? throw new System.ArgumentNullException(nameof(cameraSaveSlotController));
+        this.cameraSaveSlotController = cameraSaveSlotController ?? throw new ArgumentNullException(nameof(cameraSaveSlotController));
 
-    public void Load(CameraSchema sceneAspectSchema, LoadOptions loadOptions)
+    public void Load(CameraSchema cameraSchema, LoadOptions loadOptions)
     {
         if (!loadOptions.Camera)
             return;
 
-        cameraSaveSlotController.CurrentCameraSlot = sceneAspectSchema.CurrentCameraSlot;
+        if (cameraSchema is null)
+            return;
+
+        cameraSaveSlotController.CurrentCameraSlot = cameraSchema.CurrentCameraSlot;
 
         for (var i = 0; i < cameraSaveSlotController.SaveSlotCount; i++)
         {
-            if (i >= sceneAspectSchema.CameraInfo.Count)
+            if (i >= cameraSchema.CameraInfo.Count)
                 break;
 
-            var cameraInfoSchema = sceneAspectSchema.CameraInfo[i];
+            var cameraInfoSchema = cameraSchema.CameraInfo[i];
 
             cameraSaveSlotController[i] = new(
                 cameraInfoSchema.TargetPosition,

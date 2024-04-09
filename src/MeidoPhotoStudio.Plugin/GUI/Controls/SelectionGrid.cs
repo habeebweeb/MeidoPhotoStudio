@@ -1,7 +1,3 @@
-using System;
-
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class SelectionGrid : BaseControl

@@ -1,7 +1,6 @@
 using MeidoPhotoStudio.Plugin.Core.Background;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
 using MeidoPhotoStudio.Plugin.Core.Schema.Light;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
@@ -12,8 +11,8 @@ public class LightAspectLoader : ISceneAspectLoader<LightRepositorySchema>
 
     public LightAspectLoader(LightRepository lightRepository, BackgroundService backgroundService)
     {
-        this.lightRepository = lightRepository ?? throw new System.ArgumentNullException(nameof(lightRepository));
-        this.backgroundService = backgroundService ?? throw new System.ArgumentNullException(nameof(backgroundService));
+        this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
+        this.backgroundService = backgroundService ?? throw new ArgumentNullException(nameof(backgroundService));
     }
 
     public void Load(LightRepositorySchema lightRepositorySchema, LoadOptions loadOptions)

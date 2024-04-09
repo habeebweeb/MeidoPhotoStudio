@@ -1,5 +1,3 @@
-using System.IO;
-
 namespace MeidoPhotoStudio.Converter.Serialization;
 
 public class TransformDTOSerializer : SimpleSerializer<TransformDTO>

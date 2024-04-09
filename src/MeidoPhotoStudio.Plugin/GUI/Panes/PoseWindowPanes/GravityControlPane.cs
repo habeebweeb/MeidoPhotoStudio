@@ -1,109 +1,158 @@
-using UnityEngine;
+using MeidoPhotoStudio.Plugin.Core;
+using MeidoPhotoStudio.Plugin.Core.Character;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class GravityControlPane : BasePane
 {
-    private readonly MeidoManager meidoManager;
-    private readonly Toggle hairToggle;
-    private readonly Toggle skirtToggle;
-    private readonly Toggle globalToggle;
+    private readonly GravityDragHandleService gravityDragHandleService;
+    private readonly GlobalGravityService globalGravityService;
+    private readonly SelectionController<CharacterController> characterSelectionController;
+    private readonly Toggle paneHeader;
+    private readonly Toggle hairGravityEnabledToggle;
+    private readonly Toggle hairGravityDragHandleEnabledToggle;
+    private readonly Toggle clothingGravityEnabledToggle;
+    private readonly Toggle clothingGravityDragHandleEnabledToggle;
+    private readonly Toggle globalGravityEnabledToggle;
 
-    private string header;
-
-    public GravityControlPane(MeidoManager meidoManager)
+    public GravityControlPane(
+        GravityDragHandleService gravityDragHandleService,
+        GlobalGravityService globalGravityService,
+        SelectionController<CharacterController> characterSelectionController)
     {
-        this.meidoManager = meidoManager;
+        this.gravityDragHandleService = gravityDragHandleService ?? throw new ArgumentNullException(nameof(gravityDragHandleService));
+        this.globalGravityService = globalGravityService ?? throw new ArgumentNullException(nameof(globalGravityService));
+        this.characterSelectionController = characterSelectionController ?? throw new ArgumentNullException(nameof(characterSelectionController));
 
-        hairToggle = new(Translation.Get("gravityControlPane", "hairToggle"));
-        hairToggle.ControlEvent += (_, _) =>
-            ToggleGravity(hairToggle.Value, skirt: false);
+        this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
-        skirtToggle = new(Translation.Get("gravityControlPane", "skirtToggle"));
-        skirtToggle.ControlEvent += (_, _) =>
-            ToggleGravity(skirtToggle.Value, skirt: true);
+        paneHeader = new("Gravity", true);
+        hairGravityEnabledToggle = new(Translation.Get("gravityControlPane", "hairToggle"));
+        hairGravityEnabledToggle.ControlEvent += OnHairGravityEnabledChanged;
 
-        globalToggle = new(Translation.Get("gravityControlPane", "globalToggle"));
-        globalToggle.ControlEvent += (_, _) =>
-            SetGlobalGravity(globalToggle.Value);
+        hairGravityDragHandleEnabledToggle = new("Drag Handle");
+        hairGravityDragHandleEnabledToggle.ControlEvent += OnHairGravityDragHandleEnabledChanged;
 
-        header = Translation.Get("gravityControlPane", "gravityHeader");
+        clothingGravityEnabledToggle = new(Translation.Get("gravityControlPane", "clothingToggle"));
+        clothingGravityEnabledToggle.ControlEvent += OnClothingGravityEnabledChanged;
+
+        clothingGravityDragHandleEnabledToggle = new("Drag Handle");
+        clothingGravityDragHandleEnabledToggle.ControlEvent += OnClothingGravityDragHandleEnabledChanged;
+
+        globalGravityEnabledToggle = new(Translation.Get("gravityControlPane", "globalToggle"));
+        globalGravityEnabledToggle.ControlEvent += OnGlobalGravityEnabledToggleChanged;
     }
+
+    private ClothingController CurrentClothing =>
+        characterSelectionController.Current?.Clothing;
+
+    private GravityDragHandleSet CurrentDragHandleSet =>
+        characterSelectionController.Current is null
+            ? null
+            : gravityDragHandleService[characterSelectionController.Current];
 
     public override void Draw()
     {
-        var enabled = meidoManager.HasActiveMeido;
+        var enabled = characterSelectionController.Current is not null;
 
         GUI.enabled = enabled;
 
-        MpsGui.Header(header);
+        paneHeader.Draw();
         MpsGui.WhiteLine();
 
-        var meido = meidoManager.ActiveMeido;
+        if (!paneHeader.Value)
+            return;
 
         GUILayout.BeginHorizontal();
 
-        GUI.enabled = enabled && meido.HairGravityControl.Valid;
-        hairToggle.Draw();
+        var hairGravityValid = CurrentClothing?.HairGravityController.Valid ?? false;
 
-        GUI.enabled = enabled && meido.SkirtGravityControl.Valid;
-        skirtToggle.Draw();
+        GUI.enabled = enabled && hairGravityValid;
+        hairGravityEnabledToggle.Draw();
+
+        GUI.enabled = enabled && hairGravityValid && hairGravityEnabledToggle.Value;
+        hairGravityDragHandleEnabledToggle.Draw();
 
         GUILayout.EndHorizontal();
 
+        MpsGui.BlackLine();
+
+        GUILayout.BeginHorizontal();
+
+        var clothingGravityValid = CurrentClothing?.ClothingGravityController.Valid ?? false;
+
+        GUI.enabled = enabled && clothingGravityValid;
+        clothingGravityEnabledToggle.Draw();
+
+        GUI.enabled = enabled && clothingGravityValid && clothingGravityEnabledToggle.Value;
+        clothingGravityDragHandleEnabledToggle.Draw();
+
+        GUILayout.EndHorizontal();
+
+        MpsGui.BlackLine();
+
         GUI.enabled = enabled;
-        globalToggle.Draw();
-
-        GUI.enabled = true;
+        globalGravityEnabledToggle.Draw();
     }
 
-    public override void UpdatePane()
+    private void OnHairGravityEnabledChanged(object sender, EventArgs e)
     {
-        if (!meidoManager.HasActiveMeido)
+        if (CurrentClothing is null)
             return;
 
-        var meido = meidoManager.ActiveMeido;
-
-        updating = true;
-
-        hairToggle.Value = meido.HairGravityActive;
-        skirtToggle.Value = meido.SkirtGravityActive;
-
-        updating = false;
+        CurrentClothing.HairGravityController.Enabled = hairGravityEnabledToggle.Value;
+        CurrentDragHandleSet.HairDragHandle.Enabled = hairGravityEnabledToggle.Value;
+        hairGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(hairGravityEnabledToggle.Value);
     }
 
-    protected override void ReloadTranslation()
+    private void OnHairGravityDragHandleEnabledChanged(object sender, EventArgs e)
     {
-        hairToggle.Label = Translation.Get("gravityControlPane", "hairToggle");
-        skirtToggle.Label = Translation.Get("gravityControlPane", "skirtToggle");
-        globalToggle.Label = Translation.Get("gravityControlPane", "globalToggle");
-        header = Translation.Get("gravityControlPane", "gravityHeader");
-    }
-
-    private void ToggleGravity(bool value, bool skirt = false)
-    {
-        if (updating)
+        if (CurrentClothing is null)
             return;
 
-        if (meidoManager.GlobalGravity)
-        {
-            foreach (var meido in meidoManager.ActiveMeidoList)
-            {
-                if (skirt)
-                    meido.SkirtGravityActive = value;
-                else
-                    meido.HairGravityActive = value;
-            }
-        }
-        else
-        {
-            if (skirt)
-                meidoManager.ActiveMeido.SkirtGravityActive = value;
-            else
-                meidoManager.ActiveMeido.HairGravityActive = value;
-        }
+        if (!CurrentClothing.HairGravityController.Valid)
+            return;
+
+        CurrentDragHandleSet.HairDragHandle.Enabled = hairGravityDragHandleEnabledToggle.Value;
     }
 
-    private void SetGlobalGravity(bool value) =>
-        meidoManager.GlobalGravity = value;
+    private void OnClothingGravityEnabledChanged(object sender, EventArgs e)
+    {
+        if (CurrentClothing is null)
+            return;
+
+        CurrentClothing.ClothingGravityController.Enabled = clothingGravityEnabledToggle.Value;
+        CurrentDragHandleSet.ClothingDragHandle.Enabled = clothingGravityEnabledToggle.Value;
+        clothingGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(clothingGravityEnabledToggle.Value);
+    }
+
+    private void OnClothingGravityDragHandleEnabledChanged(object sender, EventArgs e)
+    {
+        if (CurrentClothing is null)
+            return;
+
+        if (!CurrentClothing.ClothingGravityController.Valid)
+            return;
+
+        CurrentDragHandleSet.ClothingDragHandle.Enabled = clothingGravityDragHandleEnabledToggle.Value;
+    }
+
+    private void OnGlobalGravityEnabledToggleChanged(object sender, EventArgs e)
+    {
+        if (CurrentClothing is null)
+            return;
+
+        globalGravityService.Enabled = globalGravityEnabledToggle.Value;
+    }
+
+    private void OnCharacterSelectionChanged(object sender, SelectionEventArgs<CharacterController> e)
+    {
+        if (e.Selected is null)
+            return;
+
+        hairGravityEnabledToggle.SetEnabledWithoutNotify(CurrentClothing.HairGravityController.Enabled);
+        hairGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(CurrentDragHandleSet.HairDragHandle.Enabled);
+        clothingGravityEnabledToggle.SetEnabledWithoutNotify(CurrentClothing.ClothingGravityController.Enabled);
+        clothingGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(CurrentDragHandleSet.ClothingDragHandle.Enabled);
+    }
 }

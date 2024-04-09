@@ -22,7 +22,7 @@ public class PropModelSchemaBuilder
             OtherPropModel otherPropModel => Build(otherPropModel),
             PhotoBgPropModel photoBgPropModel => Build(photoBgPropModel),
             MenuFilePropModel menuFile => Build(menuFile),
-            _ => throw new System.NotImplementedException($"'{value.GetType()}' is not implemented"),
+            _ => throw new NotImplementedException($"'{value.GetType()}' is not implemented"),
         };
 
     public BackgroundPropModelSchema Build(BackgroundPropModel propModel) =>

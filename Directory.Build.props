@@ -7,6 +7,7 @@
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)StyleCop.ruleset</CodeAnalysisRuleSet>
     <Platforms>AnyCPU</Platforms>
     <Configurations>Debug-COM25;Release-COM25;Release;Debug</Configurations>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <PropertyGroup Condition=" $(Configuration.StartsWith('Debug')) ">

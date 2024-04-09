@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel;
 
+using MeidoPhotoStudio.Plugin.Core.Character;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Props;
 
@@ -34,19 +32,21 @@ public class PropAttachmentService
         [AttachPoint.Spine0] = "Bip01 Spine",
     };
 
-    private readonly Dictionary<PropController, AttachPointInfo> attachedProps = new();
-    private readonly MeidoManager meidoManager;
+    private readonly Dictionary<PropController, AttachPointInfo> attachedProps = [];
+    private readonly CharacterService characterService;
+
     private readonly PropService propService;
 
-    public PropAttachmentService(MeidoManager meidoManager, PropService propService)
+    public PropAttachmentService(CharacterService characterService, PropService propService)
     {
-        this.meidoManager = meidoManager ?? throw new ArgumentNullException(nameof(meidoManager));
+        this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
 
-        this.meidoManager.BeginCallMeidos += OnLoadingMeido;
-        this.meidoManager.EndCallMeidos += OnLoadedMeido;
+        this.characterService.CallingCharacters += OnCallingCharacters;
+        this.characterService.CalledCharacters += OnCalledCharacters;
+        this.characterService.Deactivating += OnDeactivating;
 
-        this.propService.RemovedProp += OnRemovedProp;
+        this.propService.RemovedProp += OnPropRemoved;
     }
 
     public AttachPointInfo this[PropController propController] =>
@@ -62,15 +62,23 @@ public class PropAttachmentService
             ? throw new ArgumentNullException(nameof(propController))
             : attachedProps.ContainsKey(propController);
 
-    public void AttachPropTo(PropController prop, Meido meido, AttachPoint attachPoint, bool keepPosition)
+    public void AttachPropTo(PropController prop, CharacterController character, AttachPoint attachPoint, bool keepPosition)
     {
-        AttachProp(prop, meido, attachPoint, keepPosition);
+        _ = prop ?? throw new ArgumentNullException(nameof(prop));
+        _ = character ?? throw new ArgumentNullException(nameof(character));
 
-        attachedProps[prop] = new(attachPoint, meido);
+        if (!Enum.IsDefined(typeof(AttachPoint), attachPoint))
+            throw new InvalidEnumArgumentException(nameof(attachPoint), (int)attachPoint, typeof(AttachPoint));
+
+        AttachProp(prop, character, attachPoint, keepPosition);
+
+        attachedProps[prop] = new(attachPoint, character);
     }
 
     public void DetachProp(PropController prop)
     {
+        _ = prop ?? throw new ArgumentNullException(nameof(prop));
+
         if (!attachedProps.ContainsKey(prop))
             return;
 
@@ -84,9 +92,9 @@ public class PropAttachmentService
         attachedProps.Remove(prop);
     }
 
-    private void AttachProp(PropController prop, Meido meido, AttachPoint attachPoint, bool keepPosition)
+    private void AttachProp(PropController prop, CharacterController character, AttachPoint attachPoint, bool keepPosition)
     {
-        var attachTransform = meido.Body.GetBone(AttachPointToBoneName[attachPoint]);
+        var attachTransform = character.IK.GetBone(AttachPointToBoneName[attachPoint]);
         var propTransform = prop.GameObject.transform;
 
         var rotation = propTransform.rotation;
@@ -107,34 +115,40 @@ public class PropAttachmentService
         propTransform.localScale = localScale;
     }
 
-    private void OnLoadingMeido(object sender, EventArgs e)
+    private void OnCallingCharacters(object sender, CharacterServiceEventArgs e)
     {
         foreach (var attachedProp in attachedProps.Keys.Select(prop => prop.GameObject.transform))
             attachedProp.SetParent(null, true);
     }
 
-    private void OnLoadedMeido(object sender, EventArgs e)
+    private void OnCalledCharacters(object sender, CharacterServiceEventArgs e)
     {
         foreach (var (prop, attachInfo) in attachedProps.ToArray())
         {
-            var meido = meidoManager.GetMeido(attachInfo.MaidGuid);
+            var character = characterService.GetCharacterControllerByID(attachInfo.MaidGuid);
 
-            if (meido is null)
+            if (character is null)
             {
                 attachedProps.Remove(prop);
 
                 continue;
             }
 
-            AttachProp(prop, meido, attachInfo.AttachPoint, true);
+            AttachProp(prop, character, attachInfo.AttachPoint, true);
         }
     }
 
-    private void OnRemovedProp(object sender, PropServiceEventArgs e)
+    private void OnPropRemoved(object sender, PropServiceEventArgs e)
     {
         if (!attachedProps.ContainsKey(e.PropController))
             return;
 
         attachedProps.Remove(e.PropController);
+    }
+
+    private void OnDeactivating(object sender, EventArgs e)
+    {
+        foreach (var prop in attachedProps.Keys.Select(prop => prop.GameObject.transform))
+            prop.SetParent(null, true);
     }
 }

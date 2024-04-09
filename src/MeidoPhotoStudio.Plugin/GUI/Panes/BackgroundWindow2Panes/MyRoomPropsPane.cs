@@ -1,11 +1,7 @@
-using System.Collections.Generic;
-using System.Linq;
-
 using MeidoPhotoStudio.Database.Props;
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -23,9 +19,9 @@ public class MyRoomPropsPane : BasePane
     public MyRoomPropsPane(
         PropService propService, MyRoomPropRepository myRoomPropRepository, IconCache iconCache)
     {
-        this.propService = propService ?? throw new System.ArgumentNullException(nameof(propService));
-        this.myRoomPropRepository = myRoomPropRepository ?? throw new System.ArgumentNullException(nameof(myRoomPropRepository));
-        this.iconCache = iconCache ?? throw new System.ArgumentNullException(nameof(iconCache));
+        this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
+        this.myRoomPropRepository = myRoomPropRepository ?? throw new ArgumentNullException(nameof(myRoomPropRepository));
+        this.iconCache = iconCache ?? throw new ArgumentNullException(nameof(iconCache));
 
         categories = new[] { -1 }.Concat(myRoomPropRepository.CategoryIDs.OrderBy(id => id)).ToArray();
 
@@ -130,6 +126,6 @@ public class MyRoomPropsPane : BasePane
         currentPropList = myRoomPropRepository[currentCategory];
     }
 
-    private void OnPropCategoryDropdownChanged(object sender, System.EventArgs e) =>
+    private void OnPropCategoryDropdownChanged(object sender, EventArgs e) =>
         UpdateCurrentPropList();
 }

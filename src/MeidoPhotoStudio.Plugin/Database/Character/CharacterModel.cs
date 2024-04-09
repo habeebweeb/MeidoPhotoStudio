@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
-
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Database.Character;
 

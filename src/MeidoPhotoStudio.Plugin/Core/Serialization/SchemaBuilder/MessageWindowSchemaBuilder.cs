@@ -7,7 +7,7 @@ public class MessageWindowSchemaBuilder : ISceneSchemaAspectBuilder<MessageWindo
     private readonly MessageWindowManager messageWindowManager;
 
     public MessageWindowSchemaBuilder(MessageWindowManager messageWindowManager) =>
-        this.messageWindowManager = messageWindowManager ?? throw new System.ArgumentNullException(nameof(messageWindowManager));
+        this.messageWindowManager = messageWindowManager ?? throw new ArgumentNullException(nameof(messageWindowManager));
 
     public MessageWindowSchema Build() =>
         new()

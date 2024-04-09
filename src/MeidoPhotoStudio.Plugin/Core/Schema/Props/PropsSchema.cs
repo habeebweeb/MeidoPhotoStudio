@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Props;
 
 public class PropsSchema

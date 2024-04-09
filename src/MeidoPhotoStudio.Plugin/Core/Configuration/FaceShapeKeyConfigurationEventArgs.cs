@@ -1,5 +1,3 @@
-using System;
-
 namespace MeidoPhotoStudio.Plugin.Core.Configuration;
 
 public class FaceShapeKeyConfigurationEventArgs(string changedShapeKeys) : EventArgs

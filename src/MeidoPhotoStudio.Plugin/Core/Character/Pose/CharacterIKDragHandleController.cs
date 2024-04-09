@@ -1,9 +1,6 @@
-using System;
-
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 using RootMotion.FinalIK;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
@@ -57,7 +54,7 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
     protected override void OnDestroying()
     {
         if (IKTarget)
-            UnityEngine.Object.Destroy(IKTarget.gameObject);
+            Object.Destroy(IKTarget.gameObject);
     }
 
     private void OnGizmoDragging(object sender, EventArgs e) =>

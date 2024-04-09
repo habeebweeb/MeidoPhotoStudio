@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin.Core.Schema;
 
 public class TransformSchema

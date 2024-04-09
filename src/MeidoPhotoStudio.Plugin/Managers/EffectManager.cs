@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class EffectManager : IManager, IEnumerable<IEffectManager>

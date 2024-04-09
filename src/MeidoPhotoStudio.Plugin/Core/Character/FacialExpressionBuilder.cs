@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;

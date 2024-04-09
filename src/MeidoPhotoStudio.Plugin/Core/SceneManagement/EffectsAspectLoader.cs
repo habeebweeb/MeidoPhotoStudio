@@ -7,7 +7,7 @@ public class EffectsAspectLoader : ISceneAspectLoader<EffectsSchema>
     private readonly EffectManager effectManager;
 
     public EffectsAspectLoader(EffectManager effectManager) =>
-        this.effectManager = effectManager ?? throw new System.ArgumentNullException(nameof(effectManager));
+        this.effectManager = effectManager ?? throw new ArgumentNullException(nameof(effectManager));
 
     public void Load(EffectsSchema effectsSchema, LoadOptions loadOptions)
     {

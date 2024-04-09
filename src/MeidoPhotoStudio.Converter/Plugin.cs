@@ -1,5 +1,3 @@
-using System.IO;
-
 using BepInEx;
 using BepInEx.Logging;
 using MeidoPhotoStudio.Converter.Converters;

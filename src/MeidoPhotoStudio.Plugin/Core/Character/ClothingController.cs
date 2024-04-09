@@ -1,11 +1,7 @@
-using System;
-using System.Linq;
-
 using MeidoPhotoStudio.Database.Props.Menu;
 
 using CostumeType = MaidExtension.MaidCostumeChangeController.CostumeType;
 using MaskMode = TBody.MaskMode;
-using SlotID = TBody.SlotID;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 

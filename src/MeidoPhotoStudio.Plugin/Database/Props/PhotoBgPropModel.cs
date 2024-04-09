@@ -8,14 +8,14 @@ public class PhotoBgPropModel : IPropModel
 
     public PhotoBgPropModel(PhotoBGObjectData data, string name = "")
     {
-        this.data = data ?? throw new System.ArgumentNullException(nameof(data));
+        this.data = data ?? throw new ArgumentNullException(nameof(data));
         this.name = string.IsNullOrEmpty(name) ? data.name : name;
     }
 
     public string Name
     {
         get => name;
-        set => name = value ?? throw new System.ArgumentNullException(nameof(value));
+        set => name = value ?? throw new ArgumentNullException(nameof(value));
     }
 
     public string IconFilename =>

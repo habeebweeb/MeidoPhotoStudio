@@ -1,8 +1,5 @@
-using System;
-
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Service;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Camera;
 

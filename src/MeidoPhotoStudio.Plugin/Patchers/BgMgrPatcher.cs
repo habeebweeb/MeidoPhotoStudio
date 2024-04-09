@@ -1,5 +1,3 @@
-using System;
-
 using HarmonyLib;
 
 namespace MeidoPhotoStudio.Plugin;

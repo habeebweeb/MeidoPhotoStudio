@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 public static class UnityExtensions

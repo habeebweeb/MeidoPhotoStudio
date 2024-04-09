@@ -1,10 +1,7 @@
-using System;
 using System.IO;
-using System.Linq;
 
 using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 

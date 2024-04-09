@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class TransformClipboard

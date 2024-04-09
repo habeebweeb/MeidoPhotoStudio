@@ -1,9 +1,5 @@
-using System.Collections.Generic;
-using System.Linq;
-
 using MeidoPhotoStudio.Database.Props;
 using MeidoPhotoStudio.Database.Props.Menu;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core;
 

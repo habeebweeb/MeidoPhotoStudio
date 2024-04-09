@@ -1,9 +1,6 @@
-using System;
-
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 

@@ -4,6 +4,8 @@ public class SceneSchema
 {
     public const short SchemaVersion = 4;
 
+    public Character.CharactersSchema Character { get; init; }
+
     public Message.MessageWindowSchema MessageWindow { get; init; }
 
     public Camera.CameraSchema Camera { get; init; }

@@ -1,5 +1,3 @@
-using System.IO;
-
 using SevenZip.Compression.LZMA;
 
 namespace MeidoPhotoStudio.Converter.Utility;

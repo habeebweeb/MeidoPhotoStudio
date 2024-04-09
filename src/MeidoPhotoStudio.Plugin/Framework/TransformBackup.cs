@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin.Framework;
 
 public readonly record struct TransformBackup(Space Space, Vector3 Position, Quaternion Rotation, Vector3 LocalScale)

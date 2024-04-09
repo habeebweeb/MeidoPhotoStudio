@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Props;
 
-public class PropDragHandleService
+public class PropDragHandleService : IEnumerable<PropDragHandleController>
 {
     private readonly (float Small, float Normal) handleSize = (0.5f, 1f);
     private readonly (float Small, float Normal) gizmoSize = (0.225f, 0.45f);
@@ -56,6 +52,12 @@ public class PropDragHandleService
         controller is null
             ? throw new ArgumentNullException(nameof(controller))
             : propDragHandleControllers[controller];
+
+    public IEnumerator<PropDragHandleController> GetEnumerator() =>
+        propDragHandleControllers.Values.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() =>
+        GetEnumerator();
 
     private void OnAddedProp(object sender, PropServiceEventArgs e)
     {

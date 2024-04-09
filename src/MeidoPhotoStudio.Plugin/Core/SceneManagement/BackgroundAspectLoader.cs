@@ -10,7 +10,7 @@ public class BackgroundAspectLoader : ISceneAspectLoader<BackgroundSchema>
     private readonly BackgroundService backgroundService;
 
     public BackgroundAspectLoader(BackgroundService backgroundService) =>
-        this.backgroundService = backgroundService ?? throw new System.ArgumentNullException(nameof(backgroundService));
+        this.backgroundService = backgroundService ?? throw new ArgumentNullException(nameof(backgroundService));
 
     public void Load(BackgroundSchema backgroundSchema, LoadOptions loadOptions)
     {

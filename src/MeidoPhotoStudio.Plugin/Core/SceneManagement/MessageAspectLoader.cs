@@ -7,11 +7,14 @@ public class MessageAspectLoader : ISceneAspectLoader<MessageWindowSchema>
     private readonly MessageWindowManager messageWindowManager;
 
     public MessageAspectLoader(MessageWindowManager messageWindowManager) =>
-        this.messageWindowManager = messageWindowManager ?? throw new System.ArgumentNullException(nameof(messageWindowManager));
+        this.messageWindowManager = messageWindowManager ?? throw new ArgumentNullException(nameof(messageWindowManager));
 
     public void Load(MessageWindowSchema messageWindowSchema, LoadOptions loadOptions)
     {
         if (!loadOptions.Message)
+            return;
+
+        if (messageWindowSchema is null)
             return;
 
         messageWindowManager.CloseMessagePanel();

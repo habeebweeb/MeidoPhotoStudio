@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -25,7 +22,7 @@ public class BlendSetSerializer
 
     public void Serialize(FacialExpressionSet expressionSet, Stream stream)
     {
-        _ = expressionSet ?? throw new System.ArgumentNullException(nameof(expressionSet));
+        _ = expressionSet ?? throw new ArgumentNullException(nameof(expressionSet));
 
         using var xmlWriter = XmlWriter.Create(stream, new() { Indent = true });
 

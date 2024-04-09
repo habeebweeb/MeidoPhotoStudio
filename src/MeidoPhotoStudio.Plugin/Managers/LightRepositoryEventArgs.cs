@@ -1,5 +1,3 @@
-using System;
-
 namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 
 public class LightRepositoryEventArgs : EventArgs

@@ -1,10 +1,4 @@
-using System;
-using System.Collections;
-using System.IO;
-using System.Linq;
-
 using MeidoPhotoStudio.Plugin.Core;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -17,7 +11,7 @@ public partial class ScreenshotService : MonoBehaviour
     public PluginCore PluginCore { get; set; }
 
     private GameObject DragHandleParent =>
-        dragHandleParent ? dragHandleParent : (dragHandleParent = GameObject.Find("[MPS DragPoint Parent]"));
+        dragHandleParent ? dragHandleParent : (dragHandleParent = GameObject.Find("[MPS Drag Handle Parent]"));
 
     public void TakeScreenshotToFile(CMSystem.SSSuperSizeType? superSizeType = null)
     {

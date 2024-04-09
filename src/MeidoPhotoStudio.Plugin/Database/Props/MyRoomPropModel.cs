@@ -10,7 +10,7 @@ public class MyRoomPropModel : IPropModel
 
     public MyRoomPropModel(PlacementData.Data data, string name = "")
     {
-        this.data = data ?? throw new System.ArgumentNullException(nameof(data));
+        this.data = data ?? throw new ArgumentNullException(nameof(data));
 
         this.name = string.IsNullOrEmpty(name) ? data.drawName : name;
     }

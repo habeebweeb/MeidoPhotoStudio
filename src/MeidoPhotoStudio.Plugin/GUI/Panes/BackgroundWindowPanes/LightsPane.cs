@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 

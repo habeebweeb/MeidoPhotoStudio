@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 using BepInEx.Configuration;
 
 namespace MeidoPhotoStudio.Plugin.Core.Configuration;

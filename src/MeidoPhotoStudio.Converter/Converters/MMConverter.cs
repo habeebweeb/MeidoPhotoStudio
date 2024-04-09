@@ -1,7 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
-
 using ExIni;
 using MeidoPhotoStudio.Converter.MultipleMaids;
 using MeidoPhotoStudio.Converter.Serialization;

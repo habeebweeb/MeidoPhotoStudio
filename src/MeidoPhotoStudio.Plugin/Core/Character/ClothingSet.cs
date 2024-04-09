@@ -1,9 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-
-using SlotID = TBody.SlotID;
-
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
 public class ClothingSet : IEnumerable<KeyValuePair<SlotID, bool>>
@@ -15,13 +9,13 @@ public class ClothingSet : IEnumerable<KeyValuePair<SlotID, bool>>
 
     public ClothingSet(IDictionary<SlotID, bool> clothingStates)
     {
-        _ = clothingStates ?? throw new System.ArgumentException(nameof(clothingStates));
+        _ = clothingStates ?? throw new ArgumentException(nameof(clothingStates));
         this.clothingStates = clothingStates.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }
 
     public ClothingSet(IEnumerable<KeyValuePair<SlotID, bool>> clothingStates)
     {
-        _ = clothingStates ?? throw new System.ArgumentException(nameof(clothingStates));
+        _ = clothingStates ?? throw new ArgumentException(nameof(clothingStates));
         this.clothingStates = clothingStates.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }
 

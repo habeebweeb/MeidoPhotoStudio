@@ -1,7 +1,4 @@
-using System.Linq;
-
 using BepInEx.Configuration;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Input;
 

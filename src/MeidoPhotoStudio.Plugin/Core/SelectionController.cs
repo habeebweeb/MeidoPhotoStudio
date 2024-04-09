@@ -1,7 +1,6 @@
-using System;
-
 namespace MeidoPhotoStudio.Plugin.Core;
 
+// TODO: What's the difference between this and a SelectList?
 public class SelectionController<T>
 {
     private readonly IIndexableCollection<T> indexable;

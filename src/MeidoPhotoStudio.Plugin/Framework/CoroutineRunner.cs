@@ -1,8 +1,3 @@
-using System;
-using System.Collections;
-
-using UnityEngine;
-
 namespace MeidoPhotoStudio.Plugin.Framework;
 
 public class CoroutineRunner
@@ -31,7 +26,7 @@ public class CoroutineRunner
 
             coroutineRunnerParent = new("[MPS Coroutine Runner Parent]");
 
-            UnityEngine.Object.DontDestroyOnLoad(coroutineRunnerParent);
+            Object.DontDestroyOnLoad(coroutineRunnerParent);
 
             return coroutineRunnerParent;
         }
@@ -60,14 +55,14 @@ public class CoroutineRunner
             }
             catch
             {
-                UnityEngine.Object.Destroy(coroutineContainer);
+                Object.Destroy(coroutineContainer);
 
                 throw;
             }
 
             yield return result;
 
-            UnityEngine.Object.Destroy(coroutineContainer);
+            Object.Destroy(coroutineContainer);
         }
     }
 

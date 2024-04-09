@@ -1,5 +1,3 @@
-using System;
-
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.UIGizmo;
@@ -164,10 +162,10 @@ public abstract class DragHandleControllerBase : IDragHandleController
         OnDestroying();
 
         if (DragHandle)
-            UnityEngine.Object.Destroy(DragHandle.gameObject);
+            Object.Destroy(DragHandle.gameObject);
 
         if (Gizmo)
-            UnityEngine.Object.Destroy(Gizmo.gameObject);
+            Object.Destroy(Gizmo.gameObject);
 
         Destroyed = true;
     }

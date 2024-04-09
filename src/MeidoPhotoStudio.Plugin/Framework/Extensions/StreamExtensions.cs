@@ -1,5 +1,3 @@
-using System.IO;
-
 using Ionic.Zlib;
 
 namespace MeidoPhotoStudio.Plugin.Framework.Extensions;

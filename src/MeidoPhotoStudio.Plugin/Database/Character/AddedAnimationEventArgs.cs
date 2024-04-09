@@ -1,5 +1,3 @@
-using System;
-
 namespace MeidoPhotoStudio.Database.Character;
 
 public class AddedAnimationEventArgs(IAnimationModel animation) : EventArgs

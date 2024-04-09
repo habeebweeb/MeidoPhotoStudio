@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
 using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 

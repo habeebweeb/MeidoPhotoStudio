@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Input;
-using UnityEngine;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -15,7 +10,6 @@ public class SettingsWindowPane : BaseMainWindowPane
     private readonly Dictionary<Hotkey, string> hotkeyName;
     private readonly InputConfiguration inputConfiguration;
     private readonly InputRemapper inputRemapper;
-    private readonly Button reloadAllPresetsButton;
     private readonly Button reloadTranslationButton;
     private readonly Dictionary<SettingHeader, string> settingHeaders;
     private readonly Dictionary<Shortcut, string> shortcutMapping;
@@ -69,14 +63,6 @@ public class SettingsWindowPane : BaseMainWindowPane
         reloadTranslationButton.ControlEvent += (_, _) =>
             Translation.ReinitializeTranslation();
 
-        reloadAllPresetsButton = new(Translation.Get("settingsLabels", "reloadAllPresets"));
-        reloadAllPresetsButton.ControlEvent += (_, _) =>
-        {
-            Constants.InitializeCustomFaceBlends();
-            Constants.InitializeHandPresets();
-            Constants.InitializeCustomPoses();
-        };
-
         pushAnyKeyLabel = Translation.Get("settingsLabels", "pushAnyKey");
         cancelRebindLabel = Translation.Get("settingsLabels", "cancelRebind");
     }
@@ -107,7 +93,6 @@ public class SettingsWindowPane : BaseMainWindowPane
         DrawHeader(SettingHeader.Reload);
 
         reloadTranslationButton.Draw();
-        reloadAllPresetsButton.Draw();
 
         GUILayout.EndScrollView();
 
@@ -261,7 +246,6 @@ public class SettingsWindowPane : BaseMainWindowPane
             settingHeaders[settingHeader] = Translation.Get("settingsHeaders", EnumToLower(settingHeader));
 
         reloadTranslationButton.Label = Translation.Get("settingsLabels", "reloadTranslation");
-        reloadAllPresetsButton.Label = Translation.Get("settingsLabels", "reloadAllPresets");
         pushAnyKeyLabel = Translation.Get("settingsLabels", "pushAnyKey");
         cancelRebindLabel = Translation.Get("settingsLabels", "cancelRebind");
     }

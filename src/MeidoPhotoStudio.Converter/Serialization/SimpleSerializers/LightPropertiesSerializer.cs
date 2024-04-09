@@ -1,5 +1,3 @@
-using System.IO;
-
 using MeidoPhotoStudio.Plugin.Core.Lighting;
 
 namespace MeidoPhotoStudio.Converter.Serialization;

@@ -8,7 +8,7 @@ public class DeskPropModel : IPropModel
 
     public DeskPropModel(DeskManager.ItemData itemData, string name = "")
     {
-        this.itemData = itemData ?? throw new System.ArgumentNullException(nameof(itemData));
+        this.itemData = itemData ?? throw new ArgumentNullException(nameof(itemData));
         this.name = string.IsNullOrEmpty(name) ? itemData.name : name;
     }
 

@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
 public class HairGravityController(CharacterController characterController)

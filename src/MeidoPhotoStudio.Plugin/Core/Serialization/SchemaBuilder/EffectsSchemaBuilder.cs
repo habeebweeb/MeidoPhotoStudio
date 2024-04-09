@@ -1,5 +1,3 @@
-using System;
-
 using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;

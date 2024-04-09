@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MeidoPhotoStudio.Plugin.Framework.Collections;
 
 public interface ISelectList<T> : IList<T>

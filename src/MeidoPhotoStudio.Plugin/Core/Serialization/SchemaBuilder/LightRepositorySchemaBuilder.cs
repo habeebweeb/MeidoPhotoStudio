@@ -1,5 +1,3 @@
-using System.Linq;
-
 using MeidoPhotoStudio.Plugin.Core.Lighting;
 using MeidoPhotoStudio.Plugin.Core.Schema.Light;
 
@@ -12,8 +10,8 @@ public class LightRepositorySchemaBuilder : ISceneSchemaAspectBuilder<LightRepos
 
     public LightRepositorySchemaBuilder(LightRepository lightRepository, ISchemaBuilder<LightSchema, LightController> lightSchemaBuilder)
     {
-        this.lightRepository = lightRepository ?? throw new System.ArgumentNullException(nameof(lightRepository));
-        this.lightSchemaBuilder = lightSchemaBuilder ?? throw new System.ArgumentNullException(nameof(lightSchemaBuilder));
+        this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
+        this.lightSchemaBuilder = lightSchemaBuilder ?? throw new ArgumentNullException(nameof(lightSchemaBuilder));
     }
 
     public LightRepositorySchema Build() =>

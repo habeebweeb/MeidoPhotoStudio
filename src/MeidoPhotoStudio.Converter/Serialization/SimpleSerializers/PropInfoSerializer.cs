@@ -1,5 +1,3 @@
-using System.IO;
-
 using MeidoPhotoStudio.Plugin;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
