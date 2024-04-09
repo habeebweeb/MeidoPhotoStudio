@@ -16,20 +16,20 @@ public class DragPointLimbInputService
     void IDragPointInputRepository<DragPointMeido>.RemoveDragHandle(DragPointMeido dragHandle) =>
         RemoveDragHandle((DragPointLimb)dragHandle);
 
-    protected override DragHandleMode CheckDragType()
+    protected override LegacyDragHandleMode CheckDragType()
     {
         if (inputConfiguration[Hotkey.DragLowerLimb].IsPressed())
-            return DragHandleMode.DragLowerLimb;
+            return LegacyDragHandleMode.DragLowerLimb;
         else if (inputConfiguration[Hotkey.DragMiddleBone].IsPressed())
-            return DragHandleMode.DragMiddleBone;
+            return LegacyDragHandleMode.DragMiddleBone;
         else if (inputConfiguration[Hotkey.RotateBody].IsPressed())
-            return DragHandleMode.RotateBody;
+            return LegacyDragHandleMode.RotateBody;
         else if (inputConfiguration[Hotkey.RotateBodyAlternate].IsPressed())
-            return DragHandleMode.RotateBodyAlternate;
+            return LegacyDragHandleMode.RotateBodyAlternate;
         else if (IgnoredInput())
-            return DragHandleMode.Ignore;
+            return LegacyDragHandleMode.Ignore;
         else
-            return DragHandleMode.None;
+            return LegacyDragHandleMode.None;
     }
 
     private bool IgnoredInput() =>

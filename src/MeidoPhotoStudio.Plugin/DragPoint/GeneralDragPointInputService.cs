@@ -1,5 +1,4 @@
 using MeidoPhotoStudio.Plugin.Core.Configuration;
-using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -10,25 +9,25 @@ public class GeneralDragPointInputService : DragPointInputRepository<IModalDragH
     {
     }
 
-    protected override DragHandleMode CheckDragType()
+    protected override LegacyDragHandleMode CheckDragType()
     {
         if (inputConfiguration[Hotkey.Select].IsPressed())
-            return DragHandleMode.Select;
+            return LegacyDragHandleMode.Select;
         else if (inputConfiguration[Hotkey.Delete].IsPressed())
-            return DragHandleMode.Delete;
+            return LegacyDragHandleMode.Delete;
         else if (inputConfiguration[Hotkey.MoveWorldXZ].IsPressed())
-            return DragHandleMode.MoveWorldXZ;
+            return LegacyDragHandleMode.MoveWorldXZ;
         else if (inputConfiguration[Hotkey.MoveWorldY].IsPressed())
-            return DragHandleMode.MoveWorldY;
+            return LegacyDragHandleMode.MoveWorldY;
         else if (inputConfiguration[Hotkey.RotateWorldY].IsPressed())
-            return DragHandleMode.RotateWorldY;
+            return LegacyDragHandleMode.RotateWorldY;
         else if (inputConfiguration[Hotkey.RotateLocalY].IsPressed())
-            return DragHandleMode.RotateLocalY;
+            return LegacyDragHandleMode.RotateLocalY;
         else if (inputConfiguration[Hotkey.RotateLocalXZ].IsPressed())
-            return DragHandleMode.RotateLocalXZ;
+            return LegacyDragHandleMode.RotateLocalXZ;
         else if (inputConfiguration[Hotkey.Scale].IsPressed())
-            return DragHandleMode.Scale;
+            return LegacyDragHandleMode.Scale;
         else
-            return DragHandleMode.None;
+            return LegacyDragHandleMode.None;
     }
 }

@@ -16,16 +16,16 @@ public class DragPointSpineInputService
     void IDragPointInputRepository<DragPointMeido>.RemoveDragHandle(DragPointMeido dragHandle) =>
         RemoveDragHandle((DragPointSpine)dragHandle);
 
-    protected override DragHandleMode CheckDragType()
+    protected override LegacyDragHandleMode CheckDragType()
     {
         if (inputConfiguration[Hotkey.SpineBoneRotation].IsPressed())
-            return DragHandleMode.SpineBoneRotation;
+            return LegacyDragHandleMode.SpineBoneRotation;
         else if (inputConfiguration[Hotkey.SpineBoneGizmoRotation].IsPressed())
-            return DragHandleMode.SpineBoneGizmoRotation;
+            return LegacyDragHandleMode.SpineBoneGizmoRotation;
         else if (IgnoredInput())
-            return DragHandleMode.Ignore;
+            return LegacyDragHandleMode.Ignore;
         else
-            return DragHandleMode.None;
+            return LegacyDragHandleMode.None;
     }
 
     private bool IgnoredInput() =>

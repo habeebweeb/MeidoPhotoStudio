@@ -16,19 +16,19 @@ public class DragPointHeadInputService
     void IDragPointInputRepository<DragPointMeido>.RemoveDragHandle(DragPointMeido dragHandle) =>
         RemoveDragHandle((DragPointHead)dragHandle);
 
-    protected override DragHandleMode CheckDragType()
+    protected override LegacyDragHandleMode CheckDragType()
     {
         if (inputConfiguration[Hotkey.RotateEyesChest].IsPressed())
-            return DragHandleMode.RotateEyesChest;
+            return LegacyDragHandleMode.RotateEyesChest;
         else if (inputConfiguration[Hotkey.RotateEyesChestAlternate].IsPressed())
-            return DragHandleMode.RotateEyesChestAlternate;
+            return LegacyDragHandleMode.RotateEyesChestAlternate;
         else if (inputConfiguration[Hotkey.RotateBody].IsPressed())
-            return DragHandleMode.RotateBody;
+            return LegacyDragHandleMode.RotateBody;
         else if (inputConfiguration[Hotkey.RotateBodyAlternate].IsPressed())
-            return DragHandleMode.RotateBodyAlternate;
+            return LegacyDragHandleMode.RotateBodyAlternate;
         else if (inputConfiguration[Hotkey.Select].IsPressed())
-            return DragHandleMode.Select;
+            return LegacyDragHandleMode.Select;
         else
-            return DragHandleMode.None;
+            return LegacyDragHandleMode.None;
     }
 }

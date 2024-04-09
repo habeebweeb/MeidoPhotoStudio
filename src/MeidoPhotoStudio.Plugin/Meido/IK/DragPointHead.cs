@@ -23,13 +23,13 @@ public class DragPointHead : DragPointMeido
         {
             var current = CurrentDragType;
             var active = current is
-                DragHandleMode.RotateEyesChest or DragHandleMode.RotateEyesChestAlternate or DragHandleMode.Select;
+                LegacyDragHandleMode.RotateEyesChest or LegacyDragHandleMode.RotateEyesChestAlternate or LegacyDragHandleMode.Select;
 
             ApplyProperties(active, false, false);
         }
         else
         {
-            ApplyProperties(CurrentDragType is not DragHandleMode.None, false, false);
+            ApplyProperties(CurrentDragType is not LegacyDragHandleMode.None, false, false);
         }
     }
 
@@ -37,7 +37,7 @@ public class DragPointHead : DragPointMeido
     {
         base.OnMouseDown();
 
-        if (CurrentDragType is DragHandleMode.Select)
+        if (CurrentDragType is LegacyDragHandleMode.Select)
             Select?.Invoke(this, EventArgs.Empty);
 
         headRotation = MyObject.rotation;
@@ -48,12 +48,12 @@ public class DragPointHead : DragPointMeido
 
     protected override void OnDoubleClick()
     {
-        if (CurrentDragType is DragHandleMode.RotateEyesChest or DragHandleMode.RotateEyesChestAlternate)
+        if (CurrentDragType is LegacyDragHandleMode.RotateEyesChest or LegacyDragHandleMode.RotateEyesChestAlternate)
         {
             meido.Body.quaDefEyeL = meido.DefaultEyeRotL;
             meido.Body.quaDefEyeR = meido.DefaultEyeRotR;
         }
-        else if (CurrentDragType is DragHandleMode.RotateBody or DragHandleMode.RotateBodyAlternate)
+        else if (CurrentDragType is LegacyDragHandleMode.RotateBody or LegacyDragHandleMode.RotateBodyAlternate)
         {
             meido.FreeLook = !meido.FreeLook;
         }
@@ -65,31 +65,31 @@ public class DragPointHead : DragPointMeido
 
     protected override void Drag()
     {
-        if (IsIK || CurrentDragType is DragHandleMode.Select)
+        if (IsIK || CurrentDragType is LegacyDragHandleMode.Select)
             return;
 
-        if (CurrentDragType is not DragHandleMode.RotateEyesChest and not DragHandleMode.RotateEyesChestAlternate
+        if (CurrentDragType is not LegacyDragHandleMode.RotateEyesChest and not LegacyDragHandleMode.RotateEyesChestAlternate
             && isPlaying)
             meido.Stop = true;
 
         var mouseDelta = MouseDelta();
 
-        if (CurrentDragType is DragHandleMode.RotateBody)
+        if (CurrentDragType is LegacyDragHandleMode.RotateBody)
         {
             MyObject.rotation = headRotation;
             MyObject.Rotate(camera.transform.forward, -mouseDelta.x / 3f, Space.World);
             MyObject.Rotate(camera.transform.right, mouseDelta.y / 3f, Space.World);
         }
 
-        if (CurrentDragType is DragHandleMode.RotateBodyAlternate)
+        if (CurrentDragType is LegacyDragHandleMode.RotateBodyAlternate)
         {
             MyObject.rotation = headRotation;
             MyObject.Rotate(Vector3.right * mouseDelta.x / 3f);
         }
 
-        if (CurrentDragType is DragHandleMode.RotateEyesChest or DragHandleMode.RotateEyesChestAlternate)
+        if (CurrentDragType is LegacyDragHandleMode.RotateEyesChest or LegacyDragHandleMode.RotateEyesChestAlternate)
         {
-            var inv = CurrentDragType is DragHandleMode.RotateEyesChestAlternate ? -1 : 1;
+            var inv = CurrentDragType is LegacyDragHandleMode.RotateEyesChestAlternate ? -1 : 1;
 
             meido.Body.quaDefEyeL.eulerAngles =
                 new(eyeRotationL.x, eyeRotationL.y - mouseDelta.x / 10f, eyeRotationL.z - mouseDelta.y / 10f);

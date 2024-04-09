@@ -27,16 +27,16 @@ public class DragPointSpine : DragPointMeido
     {
         var current = CurrentDragType;
 
-        if (!IsBone || current is DragHandleMode.Ignore)
+        if (!IsBone || current is LegacyDragHandleMode.Ignore)
         {
             ApplyProperties(false, false, false);
 
             return;
         }
 
-        if (current is DragHandleMode.None or DragHandleMode.SpineBoneRotation)
+        if (current is LegacyDragHandleMode.None or LegacyDragHandleMode.SpineBoneRotation)
             ApplyProperties(true, true, false);
-        else if (current is DragHandleMode.SpineBoneGizmoRotation)
+        else if (current is LegacyDragHandleMode.SpineBoneGizmoRotation)
             ApplyProperties(false, false, true);
         else
             ApplyProperties(false, false, false);
@@ -56,7 +56,7 @@ public class DragPointSpine : DragPointMeido
 
         var mouseDelta = MouseDelta();
 
-        if (CurrentDragType is DragHandleMode.None)
+        if (CurrentDragType is LegacyDragHandleMode.None)
         {
             if (isHead)
                 meido.HeadToCam = false;
@@ -66,7 +66,7 @@ public class DragPointSpine : DragPointMeido
             MyObject.Rotate(camera.transform.right, mouseDelta.y / 3f, Space.World);
         }
 
-        if (CurrentDragType is DragHandleMode.SpineBoneRotation)
+        if (CurrentDragType is LegacyDragHandleMode.SpineBoneRotation)
         {
             if (isHead)
                 meido.HeadToCam = false;

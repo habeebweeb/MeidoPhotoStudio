@@ -16,11 +16,11 @@ public class DragPointThighInputService
     void IDragPointInputRepository<DragPointMeido>.RemoveDragHandle(DragPointMeido dragHandle) =>
         RemoveDragHandle((DragPointThigh)dragHandle);
 
-    protected override DragHandleMode CheckDragType()
+    protected override LegacyDragHandleMode CheckDragType()
     {
         if (inputConfiguration[Hotkey.DragUpperBone].IsPressed())
-            return DragHandleMode.DragUpperBone;
+            return LegacyDragHandleMode.DragUpperBone;
         else
-            return DragHandleMode.None;
+            return LegacyDragHandleMode.None;
     }
 }

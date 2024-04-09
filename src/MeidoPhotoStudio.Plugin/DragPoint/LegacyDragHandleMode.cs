@@ -1,6 +1,6 @@
 namespace MeidoPhotoStudio.Plugin;
 
-public enum DragHandleMode
+public enum LegacyDragHandleMode
 {
     None,
     Ignore,

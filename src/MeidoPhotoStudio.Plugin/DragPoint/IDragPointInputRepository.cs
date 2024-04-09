@@ -1,4 +1,3 @@
-using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Service.Input;
 
 namespace MeidoPhotoStudio.Plugin;

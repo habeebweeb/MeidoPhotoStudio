@@ -11,7 +11,7 @@ public class DragPointPelvis : DragPointMeido
         if (IsBone)
             ApplyProperties(false, false, false);
         else
-            ApplyProperties(CurrentDragType is not DragHandleMode.None, false, false);
+            ApplyProperties(CurrentDragType is not LegacyDragHandleMode.None, false, false);
     }
 
     protected override void OnMouseDown()
@@ -23,7 +23,7 @@ public class DragPointPelvis : DragPointMeido
 
     protected override void Drag()
     {
-        if (CurrentDragType is DragHandleMode.None)
+        if (CurrentDragType is LegacyDragHandleMode.None)
             return;
 
         if (isPlaying)
@@ -31,14 +31,14 @@ public class DragPointPelvis : DragPointMeido
 
         var mouseDelta = MouseDelta();
 
-        if (CurrentDragType is DragHandleMode.RotateBody)
+        if (CurrentDragType is LegacyDragHandleMode.RotateBody)
         {
             MyObject.rotation = pelvisRotation;
             MyObject.Rotate(camera.transform.forward, mouseDelta.x / 6f, Space.World);
             MyObject.Rotate(camera.transform.right, mouseDelta.y / 4f, Space.World);
         }
 
-        if (CurrentDragType is DragHandleMode.RotateBodyAlternate)
+        if (CurrentDragType is LegacyDragHandleMode.RotateBodyAlternate)
         {
             MyObject.rotation = pelvisRotation;
             MyObject.Rotate(Vector3.right * (mouseDelta.x / 2.2f));

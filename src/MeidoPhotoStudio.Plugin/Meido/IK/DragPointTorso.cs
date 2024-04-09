@@ -30,7 +30,7 @@ public class DragPointTorso : DragPointMeido
         if (IsBone)
             ApplyProperties(false, false, false);
         else
-            ApplyProperties(CurrentDragType is not DragHandleMode.None, false, false);
+            ApplyProperties(CurrentDragType is not LegacyDragHandleMode.None, false, false);
     }
 
     protected override void OnMouseDown()
@@ -43,7 +43,7 @@ public class DragPointTorso : DragPointMeido
 
     protected override void Drag()
     {
-        if (CurrentDragType is DragHandleMode.None)
+        if (CurrentDragType is LegacyDragHandleMode.None)
             return;
 
         if (isPlaying)
@@ -51,7 +51,7 @@ public class DragPointTorso : DragPointMeido
 
         var mouseDelta = MouseDelta();
 
-        if (CurrentDragType is DragHandleMode.RotateBody)
+        if (CurrentDragType is LegacyDragHandleMode.RotateBody)
             for (var i = 0; i < spine.Length; i++)
             {
                 spine[i].localRotation = spineRotation[i];
@@ -59,7 +59,7 @@ public class DragPointTorso : DragPointMeido
                 spine[i].Rotate(camera.transform.right, mouseDelta.y * Blah[i], Space.World);
             }
 
-        if (CurrentDragType is DragHandleMode.RotateBodyAlternate)
+        if (CurrentDragType is LegacyDragHandleMode.RotateBodyAlternate)
             for (var i = 0; i < spine.Length; i++)
             {
                 spine[i].localRotation = spineRotation[i];

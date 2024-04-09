@@ -2,5 +2,5 @@ namespace MeidoPhotoStudio.Plugin;
 
 public interface IModalDragHandle
 {
-    public DragHandleMode CurrentDragType { get; set; }
+    public LegacyDragHandleMode CurrentDragType { get; set; }
 }

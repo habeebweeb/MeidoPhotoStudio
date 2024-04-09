@@ -16,13 +16,13 @@ public class DragPointTorsoInputService
     void IDragPointInputRepository<DragPointMeido>.RemoveDragHandle(DragPointMeido dragHandle) =>
         RemoveDragHandle((DragPointTorso)dragHandle);
 
-    protected override DragHandleMode CheckDragType()
+    protected override LegacyDragHandleMode CheckDragType()
     {
         if (inputConfiguration[Hotkey.RotateBody].IsPressed())
-            return DragHandleMode.RotateBody;
+            return LegacyDragHandleMode.RotateBody;
         else if (inputConfiguration[Hotkey.RotateBodyAlternate].IsPressed())
-            return DragHandleMode.RotateBodyAlternate;
+            return LegacyDragHandleMode.RotateBodyAlternate;
         else
-            return DragHandleMode.None;
+            return LegacyDragHandleMode.None;
     }
 }

@@ -16,13 +16,13 @@ public class DragPointFingerInputService
     void IDragPointInputRepository<DragPointMeido>.RemoveDragHandle(DragPointMeido dragHandle) =>
         RemoveDragHandle((DragPointFinger)dragHandle);
 
-    protected override DragHandleMode CheckDragType()
+    protected override LegacyDragHandleMode CheckDragType()
     {
         if (inputConfiguration[Hotkey.RotateFinger].IsPressed())
-            return DragHandleMode.RotateFinger;
+            return LegacyDragHandleMode.RotateFinger;
         else if (inputConfiguration[Hotkey.DragFinger].IsPressed())
-            return DragHandleMode.DragFinger;
+            return LegacyDragHandleMode.DragFinger;
         else
-            return DragHandleMode.None;
+            return LegacyDragHandleMode.None;
     }
 }

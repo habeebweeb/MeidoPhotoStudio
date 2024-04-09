@@ -6,16 +6,16 @@ public class DragPointHip : DragPointSpine
     {
         var current = CurrentDragType;
 
-        if (!IsBone || current is DragHandleMode.Ignore)
+        if (!IsBone || current is LegacyDragHandleMode.Ignore)
         {
             ApplyProperties(false, false, false);
 
             return;
         }
 
-        if (current is DragHandleMode.None or DragHandleMode.MoveLocalY)
+        if (current is LegacyDragHandleMode.None or LegacyDragHandleMode.MoveLocalY)
             ApplyProperties(true, true, false);
-        else if (current is DragHandleMode.HipBoneRotation)
+        else if (current is LegacyDragHandleMode.HipBoneRotation)
             ApplyProperties(false, false, true);
         else
             ApplyProperties(false, false, false);
@@ -25,7 +25,7 @@ public class DragPointHip : DragPointSpine
     {
         base.Drag();
 
-        if (CurrentDragType is DragHandleMode.MoveLocalY)
+        if (CurrentDragType is LegacyDragHandleMode.MoveLocalY)
         {
             var cursorPosition = CursorPosition();
 

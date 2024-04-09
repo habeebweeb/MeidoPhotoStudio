@@ -36,9 +36,9 @@ public class DragPointFinger : DragPointMeido
 
     protected override void ApplyDragType()
     {
-        if (baseFinger && CurrentDragType is DragHandleMode.RotateFinger)
+        if (baseFinger && CurrentDragType is LegacyDragHandleMode.RotateFinger)
             ApplyProperties(true, true, false);
-        else if (CurrentDragType is DragHandleMode.DragFinger)
+        else if (CurrentDragType is LegacyDragHandleMode.DragFinger)
             ApplyProperties(true, true, false);
         else
             ApplyProperties(false, false, false);
@@ -61,7 +61,7 @@ public class DragPointFinger : DragPointMeido
         if (isPlaying)
             meido.Stop = true;
 
-        if (CurrentDragType is DragHandleMode.DragFinger)
+        if (CurrentDragType is LegacyDragHandleMode.DragFinger)
         {
             Porc(ik, ikCtrlData, ikChain[JointUpper], ikChain[JointUpper], ikChain[JointMiddle]);
 
@@ -76,7 +76,7 @@ public class DragPointFinger : DragPointMeido
                 jointRotation[JointMiddle] = ikChain[JointMiddle].localRotation;
             }
         }
-        else if (CurrentDragType is DragHandleMode.RotateFinger)
+        else if (CurrentDragType is LegacyDragHandleMode.RotateFinger)
         {
             var mouseDelta = MouseDelta();
 

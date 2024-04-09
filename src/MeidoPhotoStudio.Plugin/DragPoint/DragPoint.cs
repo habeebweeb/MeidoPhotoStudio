@@ -1,6 +1,5 @@
 using System;
 
-using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using UnityEngine;
 
 using static MeidoPhotoStudio.Plugin.CustomGizmo;
@@ -34,8 +33,8 @@ public abstract class DragPoint : MonoBehaviour, IModalDragHandle
     private Vector3 startOffset;
     private Vector3 newOffset;
     private Vector3 baseScale;
-    private DragHandleMode oldDragHandleMode;
-    private DragHandleMode currentDragHandleMode;
+    private LegacyDragHandleMode oldDragHandleMode;
+    private LegacyDragHandleMode currentDragHandleMode;
     private bool dragPointEnabled = true;
     private float dragPointScale = 1f;
     private bool gizmoEnabled = true;
@@ -97,7 +96,7 @@ public abstract class DragPoint : MonoBehaviour, IModalDragHandle
         }
     }
 
-    public DragHandleMode CurrentDragType
+    public LegacyDragHandleMode CurrentDragType
     {
         get => currentDragHandleMode;
         set
@@ -113,25 +112,25 @@ public abstract class DragPoint : MonoBehaviour, IModalDragHandle
     }
 
     protected bool Transforming =>
-        CurrentDragType is >= DragHandleMode.MoveWorldXZ and <= DragHandleMode.Scale;
+        CurrentDragType is >= LegacyDragHandleMode.MoveWorldXZ and <= LegacyDragHandleMode.Scale;
 
     protected bool Special =>
-        CurrentDragType is DragHandleMode.Select or DragHandleMode.Delete;
+        CurrentDragType is LegacyDragHandleMode.Select or LegacyDragHandleMode.Delete;
 
     protected bool Moving =>
-        CurrentDragType is DragHandleMode.MoveWorldXZ or DragHandleMode.MoveWorldY;
+        CurrentDragType is LegacyDragHandleMode.MoveWorldXZ or LegacyDragHandleMode.MoveWorldY;
 
     protected bool Rotating =>
-        CurrentDragType is >= DragHandleMode.RotateWorldY and <= DragHandleMode.RotateLocalXZ;
+        CurrentDragType is >= LegacyDragHandleMode.RotateWorldY and <= LegacyDragHandleMode.RotateLocalXZ;
 
     protected bool Scaling =>
-        CurrentDragType is DragHandleMode.Scale;
+        CurrentDragType is LegacyDragHandleMode.Scale;
 
     protected bool Selecting =>
-        CurrentDragType is DragHandleMode.Select;
+        CurrentDragType is LegacyDragHandleMode.Select;
 
     protected bool Deleting =>
-        CurrentDragType is DragHandleMode.Delete;
+        CurrentDragType is LegacyDragHandleMode.Delete;
 
     public static T Make<T>(PrimitiveType primitiveType, Vector3 scale)
         where T : DragPoint

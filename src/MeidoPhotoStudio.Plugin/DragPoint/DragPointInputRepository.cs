@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 
 using MeidoPhotoStudio.Plugin.Core.Configuration;
-using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -13,7 +12,7 @@ public abstract class DragPointInputRepository<T> : IDragPointInputRepository<T>
 
     private readonly List<T> dragPoints = new();
 
-    private DragHandleMode currentDragType;
+    private LegacyDragHandleMode currentDragType;
 
     public DragPointInputRepository(InputConfiguration inputConfiguration) =>
         this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
@@ -21,7 +20,7 @@ public abstract class DragPointInputRepository<T> : IDragPointInputRepository<T>
     public virtual bool Active =>
         dragPoints.Count > 0;
 
-    private DragHandleMode CurrentDragType
+    private LegacyDragHandleMode CurrentDragType
     {
         get => currentDragType;
         set
@@ -62,7 +61,7 @@ public abstract class DragPointInputRepository<T> : IDragPointInputRepository<T>
     public virtual void CheckInput() =>
         CurrentDragType = CheckDragType();
 
-    protected abstract DragHandleMode CheckDragType();
+    protected abstract LegacyDragHandleMode CheckDragType();
 
     private void NotifyDragTypeChange()
     {

@@ -6,14 +6,14 @@ public class DragPointThigh : DragPointSpine
     {
         var current = CurrentDragType;
 
-        if (!IsBone || current is DragHandleMode.Ignore)
+        if (!IsBone || current is LegacyDragHandleMode.Ignore)
         {
             ApplyProperties(false, false, false);
 
             return;
         }
 
-        if (current is DragHandleMode.DragUpperBone)
+        if (current is LegacyDragHandleMode.DragUpperBone)
             ApplyProperties(false, false, true);
         else
             ApplyProperties(false, false, false);

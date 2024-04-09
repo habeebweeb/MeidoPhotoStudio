@@ -134,28 +134,28 @@ public abstract class DragPointGeneral : DragPoint
         var mouseDelta = MouseDelta();
 
         // CurrentDragType can only be one thing at a time afaik so maybe refactor to else if chain
-        if (CurrentDragType is DragHandleMode.MoveWorldXZ)
+        if (CurrentDragType is LegacyDragHandleMode.MoveWorldXZ)
         {
             MyObject.position = new(cursorPosition.x, MyObject.position.y, cursorPosition.z);
 
             OnMove();
         }
 
-        if (CurrentDragType is DragHandleMode.MoveWorldY)
+        if (CurrentDragType is LegacyDragHandleMode.MoveWorldY)
         {
             MyObject.position = new(MyObject.position.x, cursorPosition.y, MyObject.position.z);
 
             OnMove();
         }
 
-        if (CurrentDragType is DragHandleMode.RotateWorldY)
+        if (CurrentDragType is LegacyDragHandleMode.RotateWorldY)
         {
             MyObject.rotation = currentRotation;
             MyObject.Rotate(Vector3.up, -mouseDelta.x / 3f, Space.World);
             OnRotate();
         }
 
-        if (CurrentDragType is DragHandleMode.RotateLocalXZ)
+        if (CurrentDragType is LegacyDragHandleMode.RotateLocalXZ)
         {
             MyObject.rotation = currentRotation;
 
@@ -170,7 +170,7 @@ public abstract class DragPointGeneral : DragPoint
             OnRotate();
         }
 
-        if (CurrentDragType is DragHandleMode.RotateLocalY)
+        if (CurrentDragType is LegacyDragHandleMode.RotateLocalY)
         {
             MyObject.rotation = currentRotation;
             MyObject.Rotate(Vector3.up * -mouseDelta.x / 2.2f);
@@ -178,7 +178,7 @@ public abstract class DragPointGeneral : DragPoint
             OnRotate();
         }
 
-        if (CurrentDragType is DragHandleMode.Scale)
+        if (CurrentDragType is LegacyDragHandleMode.Scale)
         {
             scaling = true;
 
