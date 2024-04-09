@@ -52,7 +52,20 @@ public class CoroutineRunner
 
         IEnumerator RunCoroutine()
         {
-            yield return coroutine();
+            IEnumerator result;
+
+            try
+            {
+                result = coroutine();
+            }
+            catch
+            {
+                UnityEngine.Object.Destroy(coroutineContainer);
+
+                throw;
+            }
+
+            yield return result;
 
             UnityEngine.Object.Destroy(coroutineContainer);
         }
