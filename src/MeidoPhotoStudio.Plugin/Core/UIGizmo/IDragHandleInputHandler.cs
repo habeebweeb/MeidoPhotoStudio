@@ -3,7 +3,7 @@ using MeidoPhotoStudio.Plugin.Service.Input;
 namespace MeidoPhotoStudio.Plugin.Core.UIGizmo;
 
 public interface IDragHandleInputHandler<T> : IInputHandler
-    where T : DragHandleControllerBase
+    where T : IDragHandleController
 {
     void AddController(T controller);
 

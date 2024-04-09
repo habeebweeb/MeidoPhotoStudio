@@ -4,7 +4,7 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.UIGizmo;
 
-public abstract class DragHandleControllerBase
+public abstract class DragHandleControllerBase : IDragHandleController
 {
     protected static readonly UnityEngine.Camera Camera = GameMain.Instance.MainCamera.camera;
 

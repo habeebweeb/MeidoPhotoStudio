@@ -7,7 +7,7 @@ using MeidoPhotoStudio.Plugin.Core.Configuration;
 namespace MeidoPhotoStudio.Plugin.Core.UIGizmo;
 
 public abstract class DragHandleInputHandler<T> : IDragHandleInputHandler<T>, IEnumerable<T>
-    where T : DragHandleControllerBase
+    where T : IDragHandleController
 {
     protected readonly InputConfiguration inputConfiguration;
 
