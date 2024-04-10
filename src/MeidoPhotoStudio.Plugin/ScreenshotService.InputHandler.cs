@@ -6,19 +6,15 @@ namespace MeidoPhotoStudio.Plugin;
 /// <summary>Screenshot service input handler.</summary>
 public partial class ScreenshotService
 {
-    public class InputHandler : IInputHandler
+    public class InputHandler(ScreenshotService screenshotService, InputConfiguration inputConfiguration)
+        : IInputHandler
     {
-        private readonly ScreenshotService screenshotService;
-        private readonly InputConfiguration inputConfiguration;
+        private readonly ScreenshotService screenshotService = screenshotService
+            ? screenshotService
+            : throw new ArgumentNullException(nameof(screenshotService));
 
-        public InputHandler(ScreenshotService screenshotService, InputConfiguration inputConfiguration)
-        {
-            this.screenshotService = screenshotService
-                ? screenshotService
-                : throw new ArgumentNullException(nameof(screenshotService));
-
-            this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
-        }
+        private readonly InputConfiguration inputConfiguration = inputConfiguration
+            ?? throw new ArgumentNullException(nameof(inputConfiguration));
 
         public bool Active { get; } = true;
 

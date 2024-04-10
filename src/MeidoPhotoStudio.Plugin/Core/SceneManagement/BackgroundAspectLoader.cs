@@ -5,12 +5,10 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Background;
 
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
-public class BackgroundAspectLoader : ISceneAspectLoader<BackgroundSchema>
+public class BackgroundAspectLoader(BackgroundService backgroundService) : ISceneAspectLoader<BackgroundSchema>
 {
-    private readonly BackgroundService backgroundService;
-
-    public BackgroundAspectLoader(BackgroundService backgroundService) =>
-        this.backgroundService = backgroundService ?? throw new ArgumentNullException(nameof(backgroundService));
+    private readonly BackgroundService backgroundService = backgroundService
+        ?? throw new ArgumentNullException(nameof(backgroundService));
 
     public void Load(BackgroundSchema backgroundSchema, LoadOptions loadOptions)
     {

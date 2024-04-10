@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 
-public class EffectsSchema
+public class EffectsSchema(short version = EffectsSchema.SchemaVersion)
 {
     public const short SchemaVersion = 1;
 
-    public EffectsSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public BloomSchema Bloom { get; init; }
 

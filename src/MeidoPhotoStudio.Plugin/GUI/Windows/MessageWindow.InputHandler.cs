@@ -6,16 +6,13 @@ namespace MeidoPhotoStudio.Plugin;
 /// <summary>Message window input handler.</summary>
 public partial class MessageWindow
 {
-    public class InputHandler : IInputHandler
+    public class InputHandler(MessageWindow messageWindow, InputConfiguration inputConfiguration) : IInputHandler
     {
-        private readonly MessageWindow messageWindow;
-        private readonly InputConfiguration inputConfiguration;
+        private readonly MessageWindow messageWindow = messageWindow
+            ?? throw new ArgumentNullException(nameof(messageWindow));
 
-        public InputHandler(MessageWindow messageWindow, InputConfiguration inputConfiguration)
-        {
-            this.messageWindow = messageWindow ?? throw new ArgumentNullException(nameof(messageWindow));
-            this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
-        }
+        private readonly InputConfiguration inputConfiguration = inputConfiguration
+            ?? throw new ArgumentNullException(nameof(inputConfiguration));
 
         public bool Active { get; } = true;
 

@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Props;
 
-public class PropInfoSchema
+public class PropInfoSchema(short version = PropInfoSchema.SchemaVersion)
 {
     public const short SchemaVersion = 1;
 
-    public PropInfoSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public PropInfo.PropType Type { get; init; }
 

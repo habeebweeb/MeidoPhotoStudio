@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Input;
 
-public abstract class KeyboardInput
+public abstract class KeyboardInput(params KeyCode[] keys)
 {
     private const KeyCode UpperKeyCode = KeyCode.RightApple;
 
     private static KeyCode[] keyPool = DefaultKeyPool;
-
-    protected KeyboardInput(params KeyCode[] keys) =>
-        Keys = keys;
 
     public static KeyCode[] KeyPool
     {
@@ -28,7 +25,7 @@ public abstract class KeyboardInput
     public IEnumerable<KeyCode> KeyList =>
         Keys;
 
-    protected KeyCode[] Keys { get; }
+    protected KeyCode[] Keys { get; } = keys;
 
     private static KeyCode[] DefaultKeyPool =>
         ((KeyCode[])Enum.GetValues(typeof(KeyCode)))

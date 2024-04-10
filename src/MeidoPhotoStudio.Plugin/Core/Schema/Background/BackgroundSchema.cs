@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Background;
 
-public class BackgroundSchema
+public class BackgroundSchema(short version = BackgroundSchema.SchemaVersion)
 {
     public const short SchemaVersion = 2;
 
-    public BackgroundSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public string BackgroundName { get; init; }
 

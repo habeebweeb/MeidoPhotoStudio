@@ -1,5 +1,3 @@
-using System.IO;
-
 namespace MeidoPhotoStudio.Database.Character;
 
 public class GameAnimationModel : IEquatable<GameAnimationModel>, IAnimationModel

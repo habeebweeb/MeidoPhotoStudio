@@ -2,12 +2,10 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
-public class EffectsAspectLoader : ISceneAspectLoader<EffectsSchema>
+public class EffectsAspectLoader(EffectManager effectManager) : ISceneAspectLoader<EffectsSchema>
 {
-    private readonly EffectManager effectManager;
-
-    public EffectsAspectLoader(EffectManager effectManager) =>
-        this.effectManager = effectManager ?? throw new ArgumentNullException(nameof(effectManager));
+    private readonly EffectManager effectManager = effectManager
+        ?? throw new ArgumentNullException(nameof(effectManager));
 
     public void Load(EffectsSchema effectsSchema, LoadOptions loadOptions)
     {

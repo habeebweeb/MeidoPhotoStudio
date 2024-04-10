@@ -2,19 +2,16 @@ using UnityEngine;
 
 namespace MeidoPhotoStudio.Converter;
 
-public class UI
+public class UI(PluginCore pluginCore)
 {
     public bool Visible;
 
     private const int WindowID = 0xEA4040;
     private const string WindowTitle = Plugin.PluginName + " " + Plugin.PluginVersion;
 
-    private readonly PluginCore core;
+    private readonly PluginCore core = pluginCore;
 
     private Rect windowRect;
-
-    public UI(PluginCore pluginCore) =>
-        core = pluginCore;
 
     public void Draw()
     {

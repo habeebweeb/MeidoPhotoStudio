@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 
-public class VignetteSchema
+public class VignetteSchema(short version = VignetteSchema.SchemaVersion)
 {
     public const short SchemaVersion = 1;
 
-    public VignetteSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public bool Active { get; init; }
 

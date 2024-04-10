@@ -3,12 +3,10 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Camera;
 
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
-public class CameraAspectLoader : ISceneAspectLoader<CameraSchema>
+public class CameraAspectLoader(CameraSaveSlotController cameraSaveSlotController) : ISceneAspectLoader<CameraSchema>
 {
-    private readonly CameraSaveSlotController cameraSaveSlotController;
-
-    public CameraAspectLoader(CameraSaveSlotController cameraSaveSlotController) =>
-        this.cameraSaveSlotController = cameraSaveSlotController ?? throw new ArgumentNullException(nameof(cameraSaveSlotController));
+    private readonly CameraSaveSlotController cameraSaveSlotController = cameraSaveSlotController
+        ?? throw new ArgumentNullException(nameof(cameraSaveSlotController));
 
     public void Load(CameraSchema cameraSchema, LoadOptions loadOptions)
     {

@@ -2,18 +2,11 @@ using MeidoPhotoStudio.Converter.Converters;
 
 namespace MeidoPhotoStudio.Converter;
 
-public class PluginCore
+public class PluginCore(string workingDirectory, params IConverter[] converters)
 {
-    private readonly IConverter[] converters;
+    private readonly IConverter[] converters = converters;
 
-    public PluginCore(string workingDirectory, params IConverter[] converters)
-    {
-        WorkingDirectory = workingDirectory;
-
-        this.converters = converters;
-    }
-
-    public string WorkingDirectory { get; set; }
+    public string WorkingDirectory { get; set; } = workingDirectory;
 
     public void Convert()
     {

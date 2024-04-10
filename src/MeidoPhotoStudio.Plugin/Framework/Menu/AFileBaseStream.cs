@@ -1,12 +1,9 @@
 namespace MeidoPhotoStudio.Plugin.Framework.Menu;
 
-public class AFileBaseStream : Stream
+public class AFileBaseStream(AFileBase aFileBase) : Stream
 {
-    private AFileBase aFileBase;
+    private AFileBase aFileBase = aFileBase ?? throw new ArgumentNullException(nameof(aFileBase));
     private bool disposed;
-
-    public AFileBaseStream(AFileBase aFileBase) =>
-        this.aFileBase = aFileBase ?? throw new ArgumentNullException(nameof(aFileBase));
 
     public override bool CanRead =>
         true;

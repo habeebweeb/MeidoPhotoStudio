@@ -3,16 +3,16 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Camera;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class CameraSchemaBuilder : ISceneSchemaAspectBuilder<CameraSchema>
+public class CameraSchemaBuilder(
+    CameraSaveSlotController cameraSaveSlotController,
+    ISchemaBuilder<CameraInfoSchema, CameraInfo> cameraInfoSchemaBuilder)
+    : ISceneSchemaAspectBuilder<CameraSchema>
 {
-    private readonly CameraSaveSlotController cameraSaveSlotController;
-    private readonly ISchemaBuilder<CameraInfoSchema, CameraInfo> cameraInfoSchemaBuilder;
+    private readonly CameraSaveSlotController cameraSaveSlotController = cameraSaveSlotController
+        ?? throw new ArgumentNullException(nameof(cameraSaveSlotController));
 
-    public CameraSchemaBuilder(CameraSaveSlotController cameraSaveSlotController, ISchemaBuilder<CameraInfoSchema, CameraInfo> cameraInfoSchemaBuilder)
-    {
-        this.cameraSaveSlotController = cameraSaveSlotController ?? throw new ArgumentNullException(nameof(cameraSaveSlotController));
-        this.cameraInfoSchemaBuilder = cameraInfoSchemaBuilder ?? throw new ArgumentNullException(nameof(cameraInfoSchemaBuilder));
-    }
+    private readonly ISchemaBuilder<CameraInfoSchema, CameraInfo> cameraInfoSchemaBuilder = cameraInfoSchemaBuilder
+        ?? throw new ArgumentNullException(nameof(cameraInfoSchemaBuilder));
 
     public CameraSchema Build() =>
         new()

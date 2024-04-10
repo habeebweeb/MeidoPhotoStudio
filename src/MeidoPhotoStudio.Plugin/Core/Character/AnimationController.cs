@@ -1,5 +1,3 @@
-using System.IO;
-
 using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 

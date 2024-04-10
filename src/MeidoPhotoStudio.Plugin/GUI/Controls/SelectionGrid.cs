@@ -91,17 +91,11 @@ public class SelectionGrid : BaseControl
         return toggles;
     }
 
-    private class SimpleToggle
+    private class SimpleToggle(string label, bool value = false)
     {
         public int ToggleIndex;
-        public bool Value;
-        public string Label;
-
-        public SimpleToggle(string label, bool value = false)
-        {
-            Label = label;
-            Value = value;
-        }
+        public bool Value = value;
+        public string Label = label;
 
         public event EventHandler ControlEvent;
 

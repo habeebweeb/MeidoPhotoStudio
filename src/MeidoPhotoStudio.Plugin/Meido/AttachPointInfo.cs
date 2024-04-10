@@ -1,5 +1,3 @@
-using MeidoPhotoStudio.Plugin.Core.Character;
-
 namespace MeidoPhotoStudio.Plugin.Core.Props;
 
 public readonly record struct AttachPointInfo(AttachPoint AttachPoint, string MaidGuid, int MaidIndex)

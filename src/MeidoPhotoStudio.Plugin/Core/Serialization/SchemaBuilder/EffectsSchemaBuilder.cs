@@ -2,33 +2,36 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class EffectsSchemaBuilder : ISceneSchemaAspectBuilder<EffectsSchema>
+public class EffectsSchemaBuilder(
+    EffectManager effectManager,
+    ISchemaBuilder<BloomSchema, BloomEffectManager> bloomSchemaBuilder,
+    ISchemaBuilder<DepthOfFieldSchema, DepthOfFieldEffectManager> depthOfFieldSchemaBuilder,
+    ISchemaBuilder<FogSchema, FogEffectManager> fogSchemaBuilder,
+    ISchemaBuilder<VignetteSchema, VignetteEffectManager> vignetteSchemaBuilder,
+    ISchemaBuilder<SepiaToneSchema, SepiaToneEffectManager> sepiaToneSchemaBuilder,
+    ISchemaBuilder<BlurSchema, BlurEffectManager> blurSchemaBuilder)
+    : ISceneSchemaAspectBuilder<EffectsSchema>
 {
-    private readonly EffectManager effectManager;
-    private readonly ISchemaBuilder<BloomSchema, BloomEffectManager> bloomSchemaBuilder;
-    private readonly ISchemaBuilder<DepthOfFieldSchema, DepthOfFieldEffectManager> depthOfFieldSchemaBuilder;
-    private readonly ISchemaBuilder<FogSchema, FogEffectManager> fogSchemaBuilder;
-    private readonly ISchemaBuilder<VignetteSchema, VignetteEffectManager> vignetteSchemaBuilder;
-    private readonly ISchemaBuilder<SepiaToneSchema, SepiaToneEffectManager> sepiaToneSchemaBuilder;
-    private readonly ISchemaBuilder<BlurSchema, BlurEffectManager> blurSchemaBuilder;
+    private readonly EffectManager effectManager = effectManager
+        ?? throw new ArgumentNullException(nameof(effectManager));
 
-    public EffectsSchemaBuilder(
-        EffectManager effectManager,
-        ISchemaBuilder<BloomSchema, BloomEffectManager> bloomSchemaBuilder,
-        ISchemaBuilder<DepthOfFieldSchema, DepthOfFieldEffectManager> depthOfFieldSchemaBuilder,
-        ISchemaBuilder<FogSchema, FogEffectManager> fogSchemaBuilder,
-        ISchemaBuilder<VignetteSchema, VignetteEffectManager> vignetteSchemaBuilder,
-        ISchemaBuilder<SepiaToneSchema, SepiaToneEffectManager> sepiaToneSchemaBuilder,
-        ISchemaBuilder<BlurSchema, BlurEffectManager> blurSchemaBuilder)
-    {
-        this.effectManager = effectManager ?? throw new ArgumentNullException(nameof(effectManager));
-        this.bloomSchemaBuilder = bloomSchemaBuilder ?? throw new ArgumentNullException(nameof(bloomSchemaBuilder));
-        this.depthOfFieldSchemaBuilder = depthOfFieldSchemaBuilder ?? throw new ArgumentNullException(nameof(depthOfFieldSchemaBuilder));
-        this.fogSchemaBuilder = fogSchemaBuilder ?? throw new ArgumentNullException(nameof(fogSchemaBuilder));
-        this.vignetteSchemaBuilder = vignetteSchemaBuilder ?? throw new ArgumentNullException(nameof(vignetteSchemaBuilder));
-        this.sepiaToneSchemaBuilder = sepiaToneSchemaBuilder ?? throw new ArgumentNullException(nameof(sepiaToneSchemaBuilder));
-        this.blurSchemaBuilder = blurSchemaBuilder ?? throw new ArgumentNullException(nameof(blurSchemaBuilder));
-    }
+    private readonly ISchemaBuilder<BloomSchema, BloomEffectManager> bloomSchemaBuilder = bloomSchemaBuilder
+        ?? throw new ArgumentNullException(nameof(bloomSchemaBuilder));
+
+    private readonly ISchemaBuilder<DepthOfFieldSchema, DepthOfFieldEffectManager> depthOfFieldSchemaBuilder = depthOfFieldSchemaBuilder
+        ?? throw new ArgumentNullException(nameof(depthOfFieldSchemaBuilder));
+
+    private readonly ISchemaBuilder<FogSchema, FogEffectManager> fogSchemaBuilder = fogSchemaBuilder
+        ?? throw new ArgumentNullException(nameof(fogSchemaBuilder));
+
+    private readonly ISchemaBuilder<VignetteSchema, VignetteEffectManager> vignetteSchemaBuilder = vignetteSchemaBuilder
+        ?? throw new ArgumentNullException(nameof(vignetteSchemaBuilder));
+
+    private readonly ISchemaBuilder<SepiaToneSchema, SepiaToneEffectManager> sepiaToneSchemaBuilder = sepiaToneSchemaBuilder
+        ?? throw new ArgumentNullException(nameof(sepiaToneSchemaBuilder));
+
+    private readonly ISchemaBuilder<BlurSchema, BlurEffectManager> blurSchemaBuilder = blurSchemaBuilder
+        ?? throw new ArgumentNullException(nameof(blurSchemaBuilder));
 
     public EffectsSchema Build() =>
         new()

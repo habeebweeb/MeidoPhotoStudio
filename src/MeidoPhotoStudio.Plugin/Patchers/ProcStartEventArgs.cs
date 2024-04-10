@@ -1,9 +1,6 @@
 namespace MeidoPhotoStudio.Plugin;
 
-public class ProcStartEventArgs : EventArgs
+public class ProcStartEventArgs(Maid maid) : EventArgs
 {
-    public readonly Maid Maid;
-
-    public ProcStartEventArgs(Maid maid) =>
-        Maid = maid;
+    public readonly Maid Maid = maid;
 }

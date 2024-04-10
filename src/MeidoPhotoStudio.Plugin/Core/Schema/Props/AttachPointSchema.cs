@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Props;
 
-public class AttachPointSchema
+public class AttachPointSchema(short version = AttachPointSchema.SchemaVersion)
 {
     public const short SchemaVersion = 2;
 
-    public AttachPointSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public AttachPoint AttachPoint { get; init; }
 

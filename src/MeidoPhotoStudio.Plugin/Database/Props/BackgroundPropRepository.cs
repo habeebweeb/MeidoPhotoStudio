@@ -2,14 +2,12 @@ using MeidoPhotoStudio.Database.Background;
 
 namespace MeidoPhotoStudio.Database.Props;
 
-public class BackgroundPropRepository : IEnumerable<BackgroundPropModel>
+public class BackgroundPropRepository(BackgroundRepository backgroundRepository) : IEnumerable<BackgroundPropModel>
 {
-    private readonly BackgroundRepository backgroundRepository;
+    private readonly BackgroundRepository backgroundRepository = backgroundRepository
+        ?? throw new ArgumentNullException(nameof(backgroundRepository));
 
     private Dictionary<BackgroundCategory, IList<BackgroundPropModel>> props;
-
-    public BackgroundPropRepository(BackgroundRepository backgroundRepository) =>
-        this.backgroundRepository = backgroundRepository ?? throw new ArgumentNullException(nameof(backgroundRepository));
 
     public IEnumerable<BackgroundCategory> Categories =>
         Props.Keys;
@@ -35,7 +33,8 @@ public class BackgroundPropRepository : IEnumerable<BackgroundPropModel>
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();
 
-    private static Dictionary<BackgroundCategory, IList<BackgroundPropModel>> Initialize(BackgroundRepository backgroundRepository)
+    private static Dictionary<BackgroundCategory, IList<BackgroundPropModel>>
+        Initialize(BackgroundRepository backgroundRepository)
     {
         backgroundRepository.Refresh();
 

@@ -2,15 +2,9 @@ using MeidoPhotoStudio.Database.Background;
 
 namespace MeidoPhotoStudio.Plugin.Core.Background;
 
-public class BackgroundChangeEventArgs : EventArgs
+public class BackgroundChangeEventArgs(BackgroundModel backgroundInfo, Transform backgroundTransform) : EventArgs
 {
-    public BackgroundChangeEventArgs(BackgroundModel backgroundInfo, Transform backgroundTransform)
-    {
-        BackgroundInfo = backgroundInfo;
-        BackgroundTransform = backgroundTransform;
-    }
+    public Transform BackgroundTransform { get; } = backgroundTransform;
 
-    public Transform BackgroundTransform { get; }
-
-    public BackgroundModel BackgroundInfo { get; }
+    public BackgroundModel BackgroundInfo { get; } = backgroundInfo;
 }

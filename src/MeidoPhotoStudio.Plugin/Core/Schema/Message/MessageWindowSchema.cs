@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Message;
 
-public class MessageWindowSchema
+public class MessageWindowSchema(short version = MessageWindowSchema.SchemaVersion)
 {
     public const short SchemaVersion = 1;
 
-    public MessageWindowSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public bool ShowingMessage { get; init; }
 

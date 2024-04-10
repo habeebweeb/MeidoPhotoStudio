@@ -1,15 +1,12 @@
 namespace MeidoPhotoStudio.Plugin.Framework;
 
-public class CoroutineRunner
+public class CoroutineRunner(Func<IEnumerator> coroutine)
 {
     private static GameObject coroutineRunnerParent;
 
-    private readonly Func<IEnumerator> coroutine;
+    private readonly Func<IEnumerator> coroutine = coroutine ?? throw new ArgumentNullException(nameof(coroutine));
 
     private string name;
-
-    public CoroutineRunner(Func<IEnumerator> coroutine) =>
-        this.coroutine = coroutine ?? throw new ArgumentNullException(nameof(coroutine));
 
     public string Name
     {

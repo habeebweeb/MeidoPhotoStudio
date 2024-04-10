@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 
-public class BlurSchema
+public class BlurSchema(short version = BlurSchema.SchemaVersion)
 {
     public const short SchemaVersion = 1;
 
-    public BlurSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public bool Active { get; init; }
 

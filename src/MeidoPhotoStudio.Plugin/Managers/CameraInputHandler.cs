@@ -4,24 +4,24 @@ using MeidoPhotoStudio.Plugin.Service.Input;
 namespace MeidoPhotoStudio.Plugin.Core.Camera;
 
 /// <summary>Camera manager input handler.</summary>
-public class CameraInputHandler : IInputHandler
+public class CameraInputHandler(
+    CameraController cameraController,
+    CameraSpeedController cameraSpeedController,
+    CameraSaveSlotController cameraSaveSlotController,
+    InputConfiguration inputConfiguration)
+    : IInputHandler
 {
-    private readonly CameraController cameraController;
-    private readonly CameraSpeedController cameraSpeedController;
-    private readonly CameraSaveSlotController cameraSaveSlotController;
-    private readonly InputConfiguration inputConfiguration;
+    private readonly CameraController cameraController = cameraController
+        ?? throw new ArgumentNullException(nameof(cameraController));
 
-    public CameraInputHandler(
-        CameraController cameraController,
-        CameraSpeedController cameraSpeedController,
-        CameraSaveSlotController cameraSaveSlotController,
-        InputConfiguration inputConfiguration)
-    {
-        this.cameraController = cameraController ?? throw new ArgumentNullException(nameof(cameraController));
-        this.cameraSpeedController = cameraSpeedController ?? throw new ArgumentNullException(nameof(cameraSpeedController));
-        this.cameraSaveSlotController = cameraSaveSlotController ?? throw new ArgumentNullException(nameof(cameraSaveSlotController));
-        this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
-    }
+    private readonly CameraSpeedController cameraSpeedController = cameraSpeedController
+        ?? throw new ArgumentNullException(nameof(cameraSpeedController));
+
+    private readonly CameraSaveSlotController cameraSaveSlotController = cameraSaveSlotController
+        ?? throw new ArgumentNullException(nameof(cameraSaveSlotController));
+
+    private readonly InputConfiguration inputConfiguration = inputConfiguration
+        ?? throw new ArgumentNullException(nameof(inputConfiguration));
 
     public bool Active { get; } = true;
 

@@ -60,13 +60,9 @@ public class LightDragHandleController : GeneralDragHandleController
     private void UpdateControllerRotation() =>
         LightController.Rotation = Target.rotation;
 
-    private class LightSelectMode : SelectMode
+    private class LightSelectMode(LightDragHandleController controller) : SelectMode(controller)
     {
-        public LightSelectMode(LightDragHandleController controller)
-            : base(controller) =>
-            Controller = controller;
-
-        private new LightDragHandleController Controller { get; }
+        private new LightDragHandleController Controller { get; } = controller;
 
         public override void OnClicked()
         {
@@ -75,14 +71,10 @@ public class LightDragHandleController : GeneralDragHandleController
         }
     }
 
-    private class LightScaleMode : ScaleMode
+    private class LightScaleMode(LightDragHandleController controller) : ScaleMode(controller)
     {
-        public LightScaleMode(LightDragHandleController controller)
-            : base(controller) =>
-            Controller = controller;
-
         // NOTE: No covariant returns and I don't want to cast every update tick.
-        private new LightDragHandleController Controller { get; }
+        private new LightDragHandleController Controller { get; } = controller;
 
         private LightController LightController =>
             Controller.LightController;
@@ -110,13 +102,9 @@ public class LightDragHandleController : GeneralDragHandleController
         }
     }
 
-    private class LightDeleteMode : DeleteMode
+    private class LightDeleteMode(LightDragHandleController controller) : DeleteMode(controller)
     {
-        public LightDeleteMode(LightDragHandleController controller)
-            : base(controller) =>
-            Controller = controller;
-
-        private new LightDragHandleController Controller { get; }
+        private new LightDragHandleController Controller { get; } = controller;
 
         public override void OnModeEnter()
         {
@@ -143,31 +131,23 @@ public class LightDragHandleController : GeneralDragHandleController
         }
     }
 
-    private abstract class LightDragHandleRotateMode : GeneralDragHandleRotateMode
+    private abstract class LightDragHandleRotateMode(LightDragHandleController controller)
+        : GeneralDragHandleRotateMode(controller)
     {
-        protected LightDragHandleRotateMode(LightDragHandleController controller)
-            : base(controller) =>
-            Controller = controller;
-
-        private new LightDragHandleController Controller { get; }
+        private new LightDragHandleController Controller { get; } = controller;
 
         public override void OnDoubleClicked() =>
             Controller.UpdateControllerRotation();
     }
 
-    private class WrappedRotationMode : LightDragHandleRotateMode
+    private class WrappedRotationMode(
+        LightDragHandleController controller, GeneralDragHandleMode<GeneralDragHandleController> rotateMode)
+        : LightDragHandleRotateMode(controller)
     {
-        private readonly GeneralDragHandleMode<GeneralDragHandleController> rotateMode;
+        private readonly GeneralDragHandleMode<GeneralDragHandleController> rotateMode = rotateMode
+            ?? throw new ArgumentNullException(nameof(rotateMode));
 
-        public WrappedRotationMode(
-            LightDragHandleController controller, GeneralDragHandleMode<GeneralDragHandleController> rotateMode)
-            : base(controller)
-        {
-            Controller = controller;
-            this.rotateMode = rotateMode ?? throw new ArgumentNullException(nameof(rotateMode));
-        }
-
-        private new LightDragHandleController Controller { get; }
+        private new LightDragHandleController Controller { get; } = controller;
 
         public override void OnDragging()
         {

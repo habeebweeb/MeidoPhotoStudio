@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema;
 
-public class TransformSchema
+public class TransformSchema(short version = TransformSchema.SchemaVersion)
 {
     public const short SchemaVersion = 1;
 
-    public TransformSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public Vector3 Position { get; init; }
 

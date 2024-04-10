@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Props;
 
-public class LegacyPropSchema
+public class LegacyPropSchema(short version = LegacyPropSchema.SchemaVersion)
 {
     public const short SchemaVersion = 2;
 
-    public LegacyPropSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public PropInfoSchema PropInfo { get; init; }
 

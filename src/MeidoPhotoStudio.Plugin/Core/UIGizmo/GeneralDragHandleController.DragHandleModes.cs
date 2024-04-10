@@ -6,16 +6,13 @@ namespace MeidoPhotoStudio.Plugin.Core.UIGizmo;
 /// <summary>Drag handle modes for general drag handles.</summary>
 public abstract partial class GeneralDragHandleController
 {
-    public abstract class GeneralDragHandleMode<T> : DragHandleMode
+    public abstract class GeneralDragHandleMode<T>(T controller) : DragHandleMode
         where T : GeneralDragHandleController
     {
-        public GeneralDragHandleMode(T controller) =>
-            Controller = controller ?? throw new ArgumentNullException(nameof(controller));
-
         protected static Vector2 MouseDelta =>
             new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
 
-        protected virtual T Controller { get; }
+        protected virtual T Controller { get; } = controller ?? throw new ArgumentNullException(nameof(controller));
 
         protected CustomGizmo Gizmo =>
             Controller.Gizmo;
@@ -30,13 +27,9 @@ public abstract partial class GeneralDragHandleController
             Controller.TransformBackup;
     }
 
-    public class NoneMode : GeneralDragHandleMode<GeneralDragHandleController>
+    public class NoneMode(GeneralDragHandleController controller)
+        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
     {
-        public NoneMode(GeneralDragHandleController controller)
-            : base(controller)
-        {
-        }
-
         public override void OnModeEnter()
         {
             Controller.DragHandleActive = false;
@@ -45,13 +38,9 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class MoveWorldXZMode : GeneralDragHandleMode<GeneralDragHandleController>
+    public class MoveWorldXZMode(GeneralDragHandleController controller)
+        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
     {
-        public MoveWorldXZMode(GeneralDragHandleController controller)
-            : base(controller)
-        {
-        }
-
         public override void OnDoubleClicked() =>
             TransformBackup.ApplyPosition(Target);
 
@@ -68,13 +57,9 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class MoveWorldYMode : GeneralDragHandleMode<GeneralDragHandleController>
+    public class MoveWorldYMode(GeneralDragHandleController controller)
+        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
     {
-        public MoveWorldYMode(GeneralDragHandleController controller)
-            : base(controller)
-        {
-        }
-
         public override void OnDoubleClicked() =>
             TransformBackup.ApplyPosition(Target);
 
@@ -91,13 +76,9 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public abstract class GeneralDragHandleRotateMode : GeneralDragHandleMode<GeneralDragHandleController>
+    public abstract class GeneralDragHandleRotateMode(GeneralDragHandleController controller)
+        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
     {
-        protected GeneralDragHandleRotateMode(GeneralDragHandleController controller)
-            : base(controller)
-        {
-        }
-
         public override void OnDoubleClicked() =>
             TransformBackup.ApplyRotation(Target);
 
@@ -114,13 +95,9 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class RotateLocalXZMode : GeneralDragHandleRotateMode
+    public class RotateLocalXZMode(GeneralDragHandleController controller)
+        : GeneralDragHandleRotateMode(controller)
     {
-        public RotateLocalXZMode(GeneralDragHandleController controller)
-            : base(controller)
-        {
-        }
-
         public override void OnDragging()
         {
             var cameraTransform = Camera.transform;
@@ -139,13 +116,9 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class RotateWorldYMode : GeneralDragHandleRotateMode
+    public class RotateWorldYMode(GeneralDragHandleController controller)
+        : GeneralDragHandleRotateMode(controller)
     {
-        public RotateWorldYMode(GeneralDragHandleController controller)
-            : base(controller)
-        {
-        }
-
         public override void OnDragging()
         {
             var mouseX = MouseDelta.x;
@@ -154,13 +127,9 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class RotateLocalYMode : GeneralDragHandleRotateMode
+    public class RotateLocalYMode(GeneralDragHandleController controller)
+        : GeneralDragHandleRotateMode(controller)
     {
-        public RotateLocalYMode(GeneralDragHandleController controller)
-            : base(controller)
-        {
-        }
-
         public override void OnDragging()
         {
             var mouseX = MouseDelta.x;
@@ -169,13 +138,9 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class ScaleMode : GeneralDragHandleMode<GeneralDragHandleController>
+    public class ScaleMode(GeneralDragHandleController controller)
+        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
     {
-        public ScaleMode(GeneralDragHandleController controller)
-            : base(controller)
-        {
-        }
-
         public override void OnDoubleClicked() =>
             TransformBackup.ApplyScale(Target);
 
@@ -205,13 +170,9 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class SelectMode : GeneralDragHandleMode<GeneralDragHandleController>
+    public class SelectMode(GeneralDragHandleController controller)
+        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
     {
-        public SelectMode(GeneralDragHandleController controller)
-            : base(controller)
-        {
-        }
-
         public override void OnModeEnter()
         {
             Controller.DragHandleActive = true;
@@ -220,13 +181,9 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class DeleteMode : GeneralDragHandleMode<GeneralDragHandleController>
+    public class DeleteMode(GeneralDragHandleController controller)
+        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
     {
-        public DeleteMode(GeneralDragHandleController controller)
-            : base(controller)
-        {
-        }
-
         public override void OnModeEnter()
         {
             Controller.DragHandleActive = true;

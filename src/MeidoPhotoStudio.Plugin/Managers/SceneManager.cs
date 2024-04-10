@@ -6,7 +6,12 @@ using MeidoPhotoStudio.Plugin.Framework;
 namespace MeidoPhotoStudio.Plugin;
 
 /// <summary>Scene management.</summary>
-public partial class SceneManager : IManager
+public partial class SceneManager(
+    ScreenshotService screenshotService,
+    ISceneSerializer sceneSerializer,
+    SceneLoader sceneLoader,
+    SceneSchemaBuilder schemaBuilder)
+    : IManager
 {
     public static readonly Vector2 SceneDimensions = new(480, 270);
 
@@ -16,23 +21,18 @@ public partial class SceneManager : IManager
     private static readonly ConfigEntry<SortMode> CurrentSortModeConfig =
         Configuration.Config.Bind("SceneManager", "SortMode", SortMode.Name, "Scene sorting mode");
 
-    private readonly ScreenshotService screenshotService;
-    private readonly ISceneSerializer sceneSerializer;
-    private readonly SceneLoader sceneLoader;
-    private readonly SceneSchemaBuilder schemaBuilder;
-    private readonly Comparer<string> fileNameComparer = new WindowsLogicalStringComparer();
+    private readonly ScreenshotService screenshotService = screenshotService
+        ? screenshotService : throw new ArgumentNullException(nameof(screenshotService));
 
-    public SceneManager(
-        ScreenshotService screenshotService,
-        ISceneSerializer sceneSerializer,
-        SceneLoader sceneLoader,
-        SceneSchemaBuilder schemaBuilder)
-    {
-        this.screenshotService = screenshotService ? screenshotService : throw new ArgumentNullException(nameof(screenshotService));
-        this.sceneSerializer = sceneSerializer ?? throw new ArgumentNullException(nameof(sceneSerializer));
-        this.sceneLoader = sceneLoader ?? throw new ArgumentNullException(nameof(sceneLoader));
-        this.schemaBuilder = schemaBuilder ?? throw new ArgumentNullException(nameof(schemaBuilder));
-    }
+    private readonly ISceneSerializer sceneSerializer = sceneSerializer
+        ?? throw new ArgumentNullException(nameof(sceneSerializer));
+
+    private readonly SceneLoader sceneLoader = sceneLoader ?? throw new ArgumentNullException(nameof(sceneLoader));
+
+    private readonly SceneSchemaBuilder schemaBuilder = schemaBuilder
+        ?? throw new ArgumentNullException(nameof(schemaBuilder));
+
+    private readonly Comparer<string> fileNameComparer = new WindowsLogicalStringComparer();
 
     public enum SortMode
     {

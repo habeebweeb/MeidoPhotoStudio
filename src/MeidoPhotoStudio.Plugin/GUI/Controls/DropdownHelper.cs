@@ -238,34 +238,21 @@ internal static class DropdownHelper
             UnityEngine.Input.GetMouseButtonDown(0) || UnityEngine.Input.GetMouseButtonDown(1) || UnityEngine.Input.GetMouseButtonDown(2);
     }
 
-    public class DropdownEventArgs : EventArgs
+    public class DropdownEventArgs(int dropdownID) : EventArgs
     {
-        public DropdownEventArgs(int dropdownID) =>
-            DropdownID = dropdownID;
-
-        public int DropdownID { get; }
+        public int DropdownID { get; } = dropdownID;
     }
 
-    public class DropdownSelectArgs : DropdownEventArgs
+    public class DropdownSelectArgs(int dropdownID, int selection) : DropdownEventArgs(dropdownID)
     {
-        public DropdownSelectArgs(int dropdownID, int selection)
-            : base(dropdownID) =>
-            SelectedItemIndex = selection;
-
-        public int SelectedItemIndex { get; }
+        public int SelectedItemIndex { get; } = selection;
     }
 
-    public class DropdownCloseArgs : DropdownEventArgs
+    public class DropdownCloseArgs(int dropdownID, Vector2 scrollPos, bool clickedYou = false)
+        : DropdownEventArgs(dropdownID)
     {
-        public DropdownCloseArgs(int dropdownID, Vector2 scrollPos, bool clickedYou = false)
-            : base(dropdownID)
-        {
-            ScrollPos = scrollPos;
-            ClickedYou = clickedYou;
-        }
+        public Vector2 ScrollPos { get; } = scrollPos;
 
-        public Vector2 ScrollPos { get; }
-
-        public bool ClickedYou { get; }
+        public bool ClickedYou { get; } = clickedYou;
     }
 }

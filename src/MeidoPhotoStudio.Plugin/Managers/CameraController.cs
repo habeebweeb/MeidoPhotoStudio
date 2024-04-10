@@ -3,12 +3,10 @@ using MeidoPhotoStudio.Plugin.Service;
 
 namespace MeidoPhotoStudio.Plugin.Core.Camera;
 
-public class CameraController : IManager
+public class CameraController(CustomMaidSceneService customMaidSceneService) : IManager
 {
-    private readonly CustomMaidSceneService customMaidSceneService;
-
-    public CameraController(CustomMaidSceneService customMaidSceneService) =>
-        this.customMaidSceneService = customMaidSceneService ?? throw new ArgumentNullException(nameof(customMaidSceneService));
+    private readonly CustomMaidSceneService customMaidSceneService = customMaidSceneService
+        ?? throw new ArgumentNullException(nameof(customMaidSceneService));
 
     public event EventHandler CameraChange;
 

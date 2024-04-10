@@ -3,12 +3,12 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Light;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class LightSchemaBuilder : ISchemaBuilder<LightSchema, LightController>
+public class LightSchemaBuilder(
+    ISchemaBuilder<LightPropertiesSchema, LightProperties> lightPropertiesSchemaBuilder)
+    : ISchemaBuilder<LightSchema, LightController>
 {
-    private readonly ISchemaBuilder<LightPropertiesSchema, LightProperties> lightPropertiesSchemaBuilder;
-
-    public LightSchemaBuilder(ISchemaBuilder<LightPropertiesSchema, LightProperties> lightPropertiesSchemaBuilder) =>
-        this.lightPropertiesSchemaBuilder = lightPropertiesSchemaBuilder ?? throw new ArgumentNullException(nameof(lightPropertiesSchemaBuilder));
+    private readonly ISchemaBuilder<LightPropertiesSchema, LightProperties> lightPropertiesSchemaBuilder = lightPropertiesSchemaBuilder
+        ?? throw new ArgumentNullException(nameof(lightPropertiesSchemaBuilder));
 
     public LightSchema Build(LightController lightController) =>
         new()

@@ -5,7 +5,7 @@ namespace MeidoPhotoStudio.Plugin.Input;
 /// <summary>
 /// BepInEx's KeyboardShortcut but every key must be pressed and the order of the keys are pressed doesn't matter.
 /// </summary>
-public class KeyboardHotkey : KeyboardInput
+public class KeyboardHotkey(params KeyCode[] keys) : KeyboardInput(SanitizeKeys(keys))
 {
     public static readonly KeyboardHotkey Empty = new();
 
@@ -17,11 +17,6 @@ public class KeyboardHotkey : KeyboardInput
                 ConvertToString = (hotkey, _) => ((KeyboardHotkey)hotkey).Serialize(),
                 ConvertToObject = (data, _) => Deserialize(data),
             });
-
-    public KeyboardHotkey(params KeyCode[] keys)
-        : base(SanitizeKeys(keys))
-    {
-    }
 
     public override bool IsDown() =>
         false;

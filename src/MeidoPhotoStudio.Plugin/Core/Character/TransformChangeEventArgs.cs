@@ -1,7 +1,6 @@
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
-public class TransformChangeEventArgs(TransformChangeEventArgs.TransformType transformType)
-    : EventArgs
+public class TransformChangeEventArgs(TransformChangeEventArgs.TransformType transformType) : EventArgs
 {
     public enum TransformType
     {

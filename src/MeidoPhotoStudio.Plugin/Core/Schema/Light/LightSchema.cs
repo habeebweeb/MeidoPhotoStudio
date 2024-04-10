@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Light;
 
-public class LightSchema
+public class LightSchema(short version = LightSchema.SchemaVersion)
 {
     public const short SchemaVersion = 2;
 
-    public LightSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public LightPropertiesSchema DirectionalProperties { get; init; }
 

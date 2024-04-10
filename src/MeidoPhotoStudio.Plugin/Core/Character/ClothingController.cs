@@ -9,7 +9,8 @@ public class ClothingController(CharacterController characterController)
 {
     private const float DefaultFloorHeight = -1000f;
 
-    private readonly CharacterController characterController = characterController ?? throw new ArgumentNullException(nameof(characterController));
+    private readonly CharacterController characterController = characterController
+        ?? throw new ArgumentNullException(nameof(characterController));
 
     private bool customFloorHeight;
     private float floorHeight;

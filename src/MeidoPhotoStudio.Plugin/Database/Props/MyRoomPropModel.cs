@@ -2,18 +2,11 @@ using MyRoomCustom;
 
 namespace MeidoPhotoStudio.Database.Props;
 
-public class MyRoomPropModel : IPropModel
+public class MyRoomPropModel(PlacementData.Data data, string name = "") : IPropModel
 {
-    private readonly PlacementData.Data data;
+    private readonly PlacementData.Data data = data ?? throw new ArgumentNullException(nameof(data));
 
-    private string name;
-
-    public MyRoomPropModel(PlacementData.Data data, string name = "")
-    {
-        this.data = data ?? throw new ArgumentNullException(nameof(data));
-
-        this.name = string.IsNullOrEmpty(name) ? data.drawName : name;
-    }
+    private string name = string.IsNullOrEmpty(name) ? data.drawName : name;
 
     public string Name
     {

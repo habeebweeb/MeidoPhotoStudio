@@ -5,7 +5,9 @@ using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 public class PropShapeKeyPane(SelectionController<PropController> propSelectionController) : BasePane
 {
-    private readonly SelectionController<PropController> propSelectionController = propSelectionController ?? throw new ArgumentNullException(nameof(propSelectionController));
+    private readonly SelectionController<PropController> propSelectionController = propSelectionController
+        ?? throw new ArgumentNullException(nameof(propSelectionController));
+
     private readonly Toggle paneHeader = new("ShapeKeys", true);
 
     private ShapeKeyController CurrentShapeKeyController =>

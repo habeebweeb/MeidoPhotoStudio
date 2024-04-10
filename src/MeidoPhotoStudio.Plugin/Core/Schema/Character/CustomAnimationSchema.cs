@@ -1,7 +1,6 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Character;
 
-public class CustomAnimationSchema(short version = CustomAnimationSchema.SchemaVersion)
-    : IAnimationModelSchema
+public class CustomAnimationSchema(short version = CustomAnimationSchema.SchemaVersion) : IAnimationModelSchema
 {
     public const short SchemaVersion = 1;
 

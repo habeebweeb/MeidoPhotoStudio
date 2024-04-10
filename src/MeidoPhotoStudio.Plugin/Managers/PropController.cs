@@ -4,25 +4,17 @@ using UnityEngine.Rendering;
 
 namespace MeidoPhotoStudio.Plugin.Core.Props;
 
-public class PropController
+public class PropController(IPropModel propModel, GameObject prop, ShapeKeyController shapeKeyController = null)
 {
-    public PropController(IPropModel propModel, GameObject prop, ShapeKeyController shapeKeyController = null)
-    {
-        PropModel = propModel ?? throw new ArgumentNullException(nameof(propModel));
-        GameObject = prop ? prop : throw new ArgumentNullException(nameof(prop));
-        ShapeKeyController = shapeKeyController;
-        InitialTransform = new(prop.transform);
-    }
-
     public event EventHandler TransformChanged;
 
-    public TransformBackup InitialTransform { get; init; }
+    public TransformBackup InitialTransform { get; init; } = new(prop.transform);
 
-    public GameObject GameObject { get; }
+    public GameObject GameObject { get; } = prop ? prop : throw new ArgumentNullException(nameof(prop));
 
-    public IPropModel PropModel { get; }
+    public IPropModel PropModel { get; } = propModel ?? throw new ArgumentNullException(nameof(propModel));
 
-    public ShapeKeyController ShapeKeyController { get; }
+    public ShapeKeyController ShapeKeyController { get; } = shapeKeyController;
 
     public bool ShadowCasting
     {

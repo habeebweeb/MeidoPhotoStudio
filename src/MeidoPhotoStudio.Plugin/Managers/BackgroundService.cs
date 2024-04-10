@@ -152,11 +152,8 @@ public class BackgroundService
         ChangedBackground?.Invoke(this, new(model, BackgroundTransform));
     }
 
-    private class ExternalBackgroundChangeEventArgs : EventArgs
+    private class ExternalBackgroundChangeEventArgs(string assetName) : EventArgs
     {
-        public ExternalBackgroundChangeEventArgs(string assetName) =>
-            AssetName = assetName;
-
-        public string AssetName { get; }
+        public string AssetName { get; } = assetName;
     }
 }

@@ -1,9 +1,6 @@
 namespace MeidoPhotoStudio.Plugin;
 
-public class TabSelectionEventArgs : EventArgs
+public class TabSelectionEventArgs(Constants.Window tab) : EventArgs
 {
-    public TabSelectionEventArgs(Constants.Window tab) =>
-        Tab = tab;
-
-    public Constants.Window Tab { get; }
+    public Constants.Window Tab { get; } = tab;
 }

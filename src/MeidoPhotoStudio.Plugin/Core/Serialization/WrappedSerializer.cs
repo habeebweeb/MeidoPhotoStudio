@@ -2,16 +2,14 @@ using MeidoPhotoStudio.Plugin.Core.Schema;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class WrappedSerializer : ISceneSerializer
+public class WrappedSerializer(SceneSerializer sceneSerializer, LegacyDeserializer legacyDeserializer)
+    : ISceneSerializer
 {
-    private readonly LegacyDeserializer legacyDeserializer;
-    private readonly SceneSerializer sceneSerializer;
+    private readonly LegacyDeserializer legacyDeserializer = legacyDeserializer
+        ?? throw new ArgumentNullException(nameof(legacyDeserializer));
 
-    public WrappedSerializer(SceneSerializer sceneSerializer, LegacyDeserializer legacyDeserializer)
-    {
-        this.sceneSerializer = sceneSerializer ?? throw new ArgumentNullException(nameof(sceneSerializer));
-        this.legacyDeserializer = legacyDeserializer ?? throw new ArgumentNullException(nameof(legacyDeserializer));
-    }
+    private readonly SceneSerializer sceneSerializer = sceneSerializer
+        ?? throw new ArgumentNullException(nameof(sceneSerializer));
 
     public void SerializeScene(Stream stream, SceneSchema sceneSchema) =>
         sceneSerializer.SerializeScene(stream, sceneSchema);

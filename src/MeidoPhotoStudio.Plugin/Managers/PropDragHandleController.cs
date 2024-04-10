@@ -80,13 +80,9 @@ public class PropDragHandleController : GeneralDragHandleController
     private void OnGizmoDragged(object sender, EventArgs e) =>
         UpdatePropTransform();
 
-    private class PropSelectMode : SelectMode
+    private class PropSelectMode(PropDragHandleController controller) : SelectMode(controller)
     {
-        public PropSelectMode(PropDragHandleController controller)
-            : base(controller) =>
-            Controller = controller;
-
-        private new PropDragHandleController Controller { get; }
+        private new PropDragHandleController Controller { get; } = controller;
 
         public override void OnClicked()
         {
@@ -98,30 +94,22 @@ public class PropDragHandleController : GeneralDragHandleController
             Controller.propController.Focus();
     }
 
-    private class PropDeleteMode : DeleteMode
+    private class PropDeleteMode(PropDragHandleController controller) : DeleteMode(controller)
     {
-        public PropDeleteMode(PropDragHandleController controller)
-            : base(controller) =>
-            Controller = controller;
-
-        private new PropDragHandleController Controller { get; }
+        private new PropDragHandleController Controller { get; } = controller;
 
         public override void OnClicked() =>
             Controller.propService.Remove(Controller.propController);
     }
 
-    private class UpdateTransformMode : GeneralDragHandleMode<GeneralDragHandleController>
+    private class UpdateTransformMode(
+        PropDragHandleController controller, GeneralDragHandleMode<GeneralDragHandleController> mode)
+        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
     {
-        private readonly GeneralDragHandleMode<GeneralDragHandleController> mode;
+        private readonly GeneralDragHandleMode<GeneralDragHandleController> mode = mode
+            ?? throw new ArgumentNullException(nameof(mode));
 
-        public UpdateTransformMode(PropDragHandleController controller, GeneralDragHandleMode<GeneralDragHandleController> mode)
-            : base(controller)
-        {
-            Controller = controller;
-            this.mode = mode ?? throw new ArgumentNullException(nameof(mode));
-        }
-
-        private new PropDragHandleController Controller { get; }
+        private new PropDragHandleController Controller { get; } = controller;
 
         public override void OnModeEnter() =>
             mode.OnModeEnter();

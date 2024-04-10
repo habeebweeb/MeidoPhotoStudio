@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema;
 
-public class DragHandleSchema
+public class DragHandleSchema(short version = DragHandleSchema.SchemaVersion)
 {
     public const short SchemaVersion = 1;
 
-    public DragHandleSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; init; }
+    public short Version { get; init; } = version;
 
     public bool HandleEnabled { get; init; }
 

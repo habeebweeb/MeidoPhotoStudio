@@ -4,16 +4,14 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Light;
 
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
-public class LightAspectLoader : ISceneAspectLoader<LightRepositorySchema>
+public class LightAspectLoader(LightRepository lightRepository, BackgroundService backgroundService)
+    : ISceneAspectLoader<LightRepositorySchema>
 {
-    private readonly LightRepository lightRepository;
-    private readonly BackgroundService backgroundService;
+    private readonly LightRepository lightRepository = lightRepository
+        ?? throw new ArgumentNullException(nameof(lightRepository));
 
-    public LightAspectLoader(LightRepository lightRepository, BackgroundService backgroundService)
-    {
-        this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
-        this.backgroundService = backgroundService ?? throw new ArgumentNullException(nameof(backgroundService));
-    }
+    private readonly BackgroundService backgroundService = backgroundService
+        ?? throw new ArgumentNullException(nameof(backgroundService));
 
     public void Load(LightRepositorySchema lightRepositorySchema, LoadOptions loadOptions)
     {

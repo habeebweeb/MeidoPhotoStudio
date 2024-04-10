@@ -3,16 +3,15 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Light;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class LightRepositorySchemaBuilder : ISceneSchemaAspectBuilder<LightRepositorySchema>
+public class LightRepositorySchemaBuilder(
+    LightRepository lightRepository, ISchemaBuilder<LightSchema, LightController> lightSchemaBuilder)
+    : ISceneSchemaAspectBuilder<LightRepositorySchema>
 {
-    private readonly LightRepository lightRepository;
-    private readonly ISchemaBuilder<LightSchema, LightController> lightSchemaBuilder;
+    private readonly LightRepository lightRepository = lightRepository
+        ?? throw new ArgumentNullException(nameof(lightRepository));
 
-    public LightRepositorySchemaBuilder(LightRepository lightRepository, ISchemaBuilder<LightSchema, LightController> lightSchemaBuilder)
-    {
-        this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
-        this.lightSchemaBuilder = lightSchemaBuilder ?? throw new ArgumentNullException(nameof(lightSchemaBuilder));
-    }
+    private readonly ISchemaBuilder<LightSchema, LightController> lightSchemaBuilder = lightSchemaBuilder
+        ?? throw new ArgumentNullException(nameof(lightSchemaBuilder));
 
     public LightRepositorySchema Build() =>
         new()

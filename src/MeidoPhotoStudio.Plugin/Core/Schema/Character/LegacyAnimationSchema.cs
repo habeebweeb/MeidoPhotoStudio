@@ -1,7 +1,6 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Character;
 
-public class LegacyAnimationSchema(short version = LegacyAnimationSchema.SchemaVersion)
-    : IAnimationModelSchema
+public class LegacyAnimationSchema(short version = LegacyAnimationSchema.SchemaVersion) : IAnimationModelSchema
 {
     public const short SchemaVersion = 1;
 

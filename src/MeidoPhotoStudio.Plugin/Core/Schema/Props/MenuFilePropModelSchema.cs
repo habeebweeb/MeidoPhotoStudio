@@ -1,16 +1,13 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Props;
 
-public class MenuFilePropModelSchema : IPropModelSchema
+public class MenuFilePropModelSchema(short version = MenuFilePropModelSchema.SchemaVersion) : IPropModelSchema
 {
     public const short SchemaVersion = 1;
-
-    public MenuFilePropModelSchema(short version = SchemaVersion) =>
-        Version = version;
 
     public PropType Type =>
         PropType.Menu;
 
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public string ID { get; init; }
 

@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 
-public class DepthOfFieldSchema
+public class DepthOfFieldSchema(short version = DepthOfFieldSchema.SchemaVersion)
 {
     public const short SchemaVersion = 1;
 
-    public DepthOfFieldSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public bool Active { get; init; }
 

@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Camera;
 
-public class CameraSchema
+public class CameraSchema(short version = CameraSchema.SchemaVersion)
 {
     public const short SchemaVersion = 1;
 
-    public CameraSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public int CurrentCameraSlot { get; init; }
 

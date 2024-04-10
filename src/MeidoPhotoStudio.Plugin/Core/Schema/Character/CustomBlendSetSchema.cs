@@ -1,7 +1,6 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Character;
 
-public class CustomBlendSetSchema(short version = CustomBlendSetSchema.SchemaVersion)
-    : IBlendSetModelSchema
+public class CustomBlendSetSchema(short version = CustomBlendSetSchema.SchemaVersion) : IBlendSetModelSchema
 {
     public const short SchemaVersion = 1;
 

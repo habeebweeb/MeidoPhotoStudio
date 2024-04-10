@@ -1,12 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core;
 
 // TODO: What's the difference between this and a SelectList?
-public class SelectionController<T>
+public class SelectionController<T>(IIndexableCollection<T> indexable)
 {
-    private readonly IIndexableCollection<T> indexable;
-
-    public SelectionController(IIndexableCollection<T> indexable) =>
-        this.indexable = indexable ?? throw new ArgumentNullException(nameof(indexable));
+    private readonly IIndexableCollection<T> indexable = indexable
+        ?? throw new ArgumentNullException(nameof(indexable));
 
     public event EventHandler<SelectionEventArgs<T>> Selecting;
 

@@ -2,12 +2,9 @@ using MeidoPhotoStudio.Database.Background;
 
 namespace MeidoPhotoStudio.Database.Props;
 
-public class BackgroundPropModel : IPropModel
+public class BackgroundPropModel(BackgroundModel backgroundModel) : IPropModel
 {
-    private readonly BackgroundModel backgroundModel;
-
-    public BackgroundPropModel(BackgroundModel backgroundModel) =>
-        this.backgroundModel = backgroundModel;
+    private readonly BackgroundModel backgroundModel = backgroundModel;
 
     public string Name =>
         backgroundModel.Name;

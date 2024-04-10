@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Light;
 
-public class LightPropertiesSchema
+public class LightPropertiesSchema(short version = LightPropertiesSchema.SchemaVersion)
 {
     public const short SchemaVersion = 1;
 
-    public LightPropertiesSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public Quaternion Rotation { get; init; }
 

@@ -1,10 +1,7 @@
 namespace MeidoPhotoStudio.Plugin;
 
-public class PropInfo
+public class PropInfo(PropInfo.PropType type)
 {
-    public PropInfo(PropType type) =>
-        Type = type;
-
     public enum PropType
     {
         Mod,
@@ -13,7 +10,7 @@ public class PropInfo
         Odogu,
     }
 
-    public PropType Type { get; }
+    public PropType Type { get; } = type;
 
     public string IconFile { get; set; }
 

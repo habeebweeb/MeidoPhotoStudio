@@ -1,13 +1,10 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 
-public class FogSchema
+public class FogSchema(short version = FogSchema.SchemaVersion)
 {
     public const short SchemaVersion = 1;
 
-    public FogSchema(short version = SchemaVersion) =>
-        Version = version;
-
-    public short Version { get; }
+    public short Version { get; } = version;
 
     public bool Active { get; init; }
 

@@ -1,14 +1,8 @@
 namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 
-public class LightSelectionEventArgs : EventArgs
+public class LightSelectionEventArgs(LightController lightController, int lightIndex) : EventArgs
 {
-    public LightSelectionEventArgs(LightController lightController, int lightIndex)
-    {
-        LightController = lightController;
-        LightIndex = lightIndex;
-    }
+    public LightController LightController { get; } = lightController;
 
-    public LightController LightController { get; }
-
-    public int LightIndex { get; }
+    public int LightIndex { get; } = lightIndex;
 }

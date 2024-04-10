@@ -1,11 +1,8 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema;
 
-public class SceneSchemaMetadata
+public class SceneSchemaMetadata(short sceneVersion = SceneSchema.SchemaVersion)
 {
-    public SceneSchemaMetadata(short sceneVersion = SceneSchema.SchemaVersion) =>
-        SceneVersion = sceneVersion;
-
-    public short SceneVersion { get; }
+    public short SceneVersion { get; } = sceneVersion;
 
     public bool Environment { get; init; }
 

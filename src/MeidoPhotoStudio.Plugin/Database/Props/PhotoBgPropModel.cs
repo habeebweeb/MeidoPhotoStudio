@@ -1,16 +1,10 @@
 namespace MeidoPhotoStudio.Database.Props;
 
-public class PhotoBgPropModel : IPropModel
+public class PhotoBgPropModel(PhotoBGObjectData data, string name = "") : IPropModel
 {
-    private readonly PhotoBGObjectData data;
+    private readonly PhotoBGObjectData data = data ?? throw new ArgumentNullException(nameof(data));
 
-    private string name;
-
-    public PhotoBgPropModel(PhotoBGObjectData data, string name = "")
-    {
-        this.data = data ?? throw new ArgumentNullException(nameof(data));
-        this.name = string.IsNullOrEmpty(name) ? data.name : name;
-    }
+    private string name = string.IsNullOrEmpty(name) ? data.name : name;
 
     public string Name
     {

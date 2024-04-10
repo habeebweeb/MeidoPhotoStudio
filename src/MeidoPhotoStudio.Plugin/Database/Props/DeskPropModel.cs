@@ -1,16 +1,10 @@
 namespace MeidoPhotoStudio.Database.Props;
 
-public class DeskPropModel : IPropModel
+public class DeskPropModel(DeskManager.ItemData itemData, string name = "") : IPropModel
 {
-    private readonly DeskManager.ItemData itemData;
+    private readonly DeskManager.ItemData itemData = itemData ?? throw new ArgumentNullException(nameof(itemData));
 
-    private string name;
-
-    public DeskPropModel(DeskManager.ItemData itemData, string name = "")
-    {
-        this.itemData = itemData ?? throw new ArgumentNullException(nameof(itemData));
-        this.name = string.IsNullOrEmpty(name) ? itemData.name : name;
-    }
+    private string name = string.IsNullOrEmpty(name) ? itemData.name : name;
 
     public string Name
     {

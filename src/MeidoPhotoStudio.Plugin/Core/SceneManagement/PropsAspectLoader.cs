@@ -9,39 +9,44 @@ using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
-public class PropsAspectLoader : ISceneAspectLoader<PropsSchema>
+public class PropsAspectLoader(
+    PropService propService,
+    PropDragHandleService propDragHandleService,
+    PropAttachmentService propAttachmentService,
+    CharacterService characterService,
+    BackgroundRepository backgroundRepository,
+    DeskPropRepository deskPropRepository,
+    MyRoomPropRepository myRoomPropRepository,
+    PhotoBgPropRepository photoBgPropRepository,
+    MenuPropRepository menuPropRepository)
+    : ISceneAspectLoader<PropsSchema>
 {
-    private readonly PropService propService;
-    private readonly PropDragHandleService propDragHandleService;
-    private readonly PropAttachmentService propAttachmentService;
-    private readonly CharacterService characterService;
-    private readonly BackgroundRepository backgroundRepository;
-    private readonly DeskPropRepository deskPropRepository;
-    private readonly MyRoomPropRepository myRoomPropRepository;
-    private readonly PhotoBgPropRepository photoBgPropRepository;
-    private readonly MenuPropRepository menuPropRepository;
+    private readonly PropService propService = propService
+        ?? throw new ArgumentNullException(nameof(propService));
 
-    public PropsAspectLoader(
-        PropService propService,
-        PropDragHandleService propDragHandleService,
-        PropAttachmentService propAttachmentService,
-        CharacterService characterService,
-        BackgroundRepository backgroundRepository,
-        DeskPropRepository deskPropRepository,
-        MyRoomPropRepository myRoomPropRepository,
-        PhotoBgPropRepository photoBgPropRepository,
-        MenuPropRepository menuPropRepository)
-    {
-        this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
-        this.propDragHandleService = propDragHandleService ?? throw new ArgumentNullException(nameof(propDragHandleService));
-        this.propAttachmentService = propAttachmentService ?? throw new ArgumentNullException(nameof(propAttachmentService));
-        this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
-        this.backgroundRepository = backgroundRepository ?? throw new ArgumentNullException(nameof(backgroundRepository));
-        this.deskPropRepository = deskPropRepository ?? throw new ArgumentNullException(nameof(deskPropRepository));
-        this.myRoomPropRepository = myRoomPropRepository ?? throw new ArgumentNullException(nameof(myRoomPropRepository));
-        this.photoBgPropRepository = photoBgPropRepository ?? throw new ArgumentNullException(nameof(photoBgPropRepository));
-        this.menuPropRepository = menuPropRepository ?? throw new ArgumentNullException(nameof(menuPropRepository));
-    }
+    private readonly PropDragHandleService propDragHandleService = propDragHandleService
+        ?? throw new ArgumentNullException(nameof(propDragHandleService));
+
+    private readonly PropAttachmentService propAttachmentService = propAttachmentService
+        ?? throw new ArgumentNullException(nameof(propAttachmentService));
+
+    private readonly CharacterService characterService = characterService
+        ?? throw new ArgumentNullException(nameof(characterService));
+
+    private readonly BackgroundRepository backgroundRepository = backgroundRepository
+        ?? throw new ArgumentNullException(nameof(backgroundRepository));
+
+    private readonly DeskPropRepository deskPropRepository = deskPropRepository
+        ?? throw new ArgumentNullException(nameof(deskPropRepository));
+
+    private readonly MyRoomPropRepository myRoomPropRepository = myRoomPropRepository
+        ?? throw new ArgumentNullException(nameof(myRoomPropRepository));
+
+    private readonly PhotoBgPropRepository photoBgPropRepository = photoBgPropRepository
+        ?? throw new ArgumentNullException(nameof(photoBgPropRepository));
+
+    private readonly MenuPropRepository menuPropRepository = menuPropRepository
+        ?? throw new ArgumentNullException(nameof(menuPropRepository));
 
     public void Load(PropsSchema propsSchema, LoadOptions loadOptions)
     {

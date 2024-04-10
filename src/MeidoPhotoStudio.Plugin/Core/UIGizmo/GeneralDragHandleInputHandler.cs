@@ -2,14 +2,10 @@ using MeidoPhotoStudio.Plugin.Core.Configuration;
 
 namespace MeidoPhotoStudio.Plugin.Core.UIGizmo;
 
-public class GeneralDragHandleInputHandler : DragHandleInputHandler<GeneralDragHandleController>
+public class GeneralDragHandleInputHandler(InputConfiguration inputConfiguration)
+    : DragHandleInputHandler<GeneralDragHandleController>(inputConfiguration)
 {
     private GeneralDragHandleMode currentDragHandleMode;
-
-    public GeneralDragHandleInputHandler(InputConfiguration inputConfiguration)
-        : base(inputConfiguration)
-    {
-    }
 
     private enum GeneralDragHandleMode
     {
