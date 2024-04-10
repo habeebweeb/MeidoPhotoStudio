@@ -1,10 +1,3 @@
 namespace MeidoPhotoStudio.Database.Props.Menu;
 
-public readonly struct ModelAnimation
-{
-    public SlotID Slot { get; init; }
-
-    public string AnimationName { get; init; }
-
-    public bool Loop { get; init; }
-}
+public readonly record struct ModelAnimation(SlotID Slot, string AnimationName, bool Loop);
