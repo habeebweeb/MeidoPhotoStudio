@@ -13,7 +13,7 @@ public class LightController
     public LightController(Light light)
     {
         Light = light ? light : throw new ArgumentNullException(nameof(light));
-        lightProperties = new LightProperties[] { new(), new(), new() };
+        lightProperties = [new(), new(), new()];
 
         Type = LightType.Directional;
 

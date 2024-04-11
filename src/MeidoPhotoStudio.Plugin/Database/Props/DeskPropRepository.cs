@@ -43,7 +43,7 @@ public class DeskPropRepository : IEnumerable<DeskPropModel>
             var model = new DeskPropModel(data, Translation.Get("propNames", assetName));
 
             if (!models.ContainsKey(data.category_id))
-                models[data.category_id] = new();
+                models[data.category_id] = [];
 
             models[model.CategoryID].Add(model);
         }

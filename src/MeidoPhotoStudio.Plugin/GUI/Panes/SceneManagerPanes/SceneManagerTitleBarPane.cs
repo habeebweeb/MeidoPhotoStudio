@@ -2,7 +2,7 @@ namespace MeidoPhotoStudio.Plugin;
 
 public class SceneManagerTitleBarPane : BasePane
 {
-    private static readonly string[] SortModes = new[] { "sortName", "sortCreated", "sortModified" };
+    private static readonly string[] SortModes = ["sortName", "sortCreated", "sortModified"];
 
     private readonly SceneManager sceneManager;
     private readonly Button kankyoToggle;

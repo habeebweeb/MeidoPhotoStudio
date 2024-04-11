@@ -6,12 +6,12 @@ namespace MeidoPhotoStudio.Plugin.Core;
 public class IconCache
 {
     private readonly Dictionary<MPN, Dictionary<int, Texture2D>> menuTextureCache = new(EnumEqualityComparer<MPN>.Instance);
-    private readonly Dictionary<int, Dictionary<int, Texture>> myRoomTextureCache = new();
+    private readonly Dictionary<int, Dictionary<int, Texture>> myRoomTextureCache = [];
 
     public Texture2D GetMenuIcon(MenuFilePropModel model)
     {
         if (!menuTextureCache.ContainsKey(model.CategoryMpn))
-            menuTextureCache[model.CategoryMpn] = new();
+            menuTextureCache[model.CategoryMpn] = [];
 
         if (menuTextureCache[model.CategoryMpn].TryGetValue(model.ID.GetHashCode(), out var icon))
             return icon;
@@ -58,7 +58,7 @@ public class IconCache
     public Texture GetMyRoomIcon(MyRoomPropModel model)
     {
         if (!myRoomTextureCache.ContainsKey(model.CategoryID))
-            myRoomTextureCache[model.CategoryID] = new();
+            myRoomTextureCache[model.CategoryID] = [];
 
         if (myRoomTextureCache[model.CategoryID].TryGetValue(model.ID, out var icon))
             return icon;

@@ -2,7 +2,7 @@ namespace MeidoPhotoStudio.Plugin.Service.Input;
 
 public class InputPollingService : MonoBehaviour
 {
-    private readonly List<IInputHandler> inputHandlers = new();
+    private readonly List<IInputHandler> inputHandlers = [];
 
     public void AddInputHandler(IInputHandler inputHandler)
     {

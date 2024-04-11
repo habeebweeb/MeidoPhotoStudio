@@ -4,12 +4,12 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
 {
     private readonly Dropdown propTypeDropdown;
     private readonly Dictionary<PropCategory, BasePane> propPanes = new(EnumEqualityComparer<PropCategory>.Instance);
-    private readonly List<PropCategory> propTypes = new();
+    private readonly List<PropCategory> propTypes = [];
     private readonly Toggle paneHeader;
 
     public PropsPane()
     {
-        propTypeDropdown = new(new[] { "PROP TYPES" });
+        propTypeDropdown = new(["PROP TYPES"]);
         propTypeDropdown.ControlEvent += OnPropTypeSelectionChanged;
 
         paneHeader = new(Translation.Get("propsPane", "header"), true);

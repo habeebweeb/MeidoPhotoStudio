@@ -4,7 +4,7 @@ public abstract class BaseWindow : BasePane
 {
     public readonly int WindowID = ID;
 
-    protected readonly List<BasePane> Panes = new();
+    protected readonly List<BasePane> Panes = [];
 
     protected Vector2 scrollPos;
     protected Rect windowRect = new(0f, 0f, 480f, 270f);

@@ -4,7 +4,7 @@ public class LightRepository : IEnumerable<LightController>, IIndexableCollectio
 {
     private static GameObject lightParent;
 
-    private readonly List<LightController> lightControllers = new();
+    private readonly List<LightController> lightControllers = [];
 
     public event EventHandler<LightRepositoryEventArgs> AddedLight;
 

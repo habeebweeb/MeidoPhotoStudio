@@ -18,7 +18,7 @@ public class BackgroundPropsPane : BasePane
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
         this.backgroundPropRepository = backgroundPropRepository ?? throw new ArgumentNullException(nameof(backgroundPropRepository));
 
-        categories = backgroundPropRepository.Categories.OrderBy(category => category).ToArray();
+        categories = [.. backgroundPropRepository.Categories.OrderBy(category => category)];
 
         propCategoryDropdown = new(
             categories

@@ -9,7 +9,7 @@ public class LightDragHandleRepository
     private readonly LightRepository lightRepository;
     private readonly SelectionController<LightController> lightSelectionController;
     private readonly TabSelectionController tabSelectionController;
-    private readonly Dictionary<LightController, LightDragHandleController> lightDragHandleControllers = new();
+    private readonly Dictionary<LightController, LightDragHandleController> lightDragHandleControllers = [];
 
     public LightDragHandleRepository(
         GeneralDragHandleInputHandler generalDragHandleInputService,

@@ -96,7 +96,7 @@ public class HandItemPropsPane : BasePane
 
     private string[] PropList() =>
         menuPropRepository.Busy
-            ? new[] { Translation.Get("systemMessage", "initializing") }
+            ? [Translation.Get("systemMessage", "initializing")]
             : menuPropRepository[MPN.handitem]
                 .Select(prop => prop.Name)
                 .ToArray();

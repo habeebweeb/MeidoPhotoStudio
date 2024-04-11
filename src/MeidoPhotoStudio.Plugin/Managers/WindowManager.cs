@@ -4,7 +4,7 @@ namespace MeidoPhotoStudio.Plugin;
 
 public class WindowManager : IManager
 {
-    private readonly Dictionary<Window, BaseWindow> windows = new();
+    private readonly Dictionary<Window, BaseWindow> windows = [];
 
     public BaseWindow this[Window id]
     {

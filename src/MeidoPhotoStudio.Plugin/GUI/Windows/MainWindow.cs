@@ -33,7 +33,7 @@ public partial class MainWindow : BaseWindow
         this.customMaidSceneService = customMaidSceneService;
         this.inputRemapper = inputRemapper ? inputRemapper : throw new ArgumentNullException(nameof(inputRemapper));
 
-        windowPanes = new();
+        windowPanes = [];
         WindowRect = new(Screen.width, Screen.height * 0.08f, WindowWidth, Screen.height * 0.9f);
 
         tabsPane = new();

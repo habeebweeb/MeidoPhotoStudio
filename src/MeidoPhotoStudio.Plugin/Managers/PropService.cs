@@ -5,7 +5,7 @@ namespace MeidoPhotoStudio.Plugin.Core.Props;
 
 public class PropService : IEnumerable<PropController>, IIndexableCollection<PropController>
 {
-    private readonly List<PropController> propControllers = new();
+    private readonly List<PropController> propControllers = [];
 
     public event EventHandler<PropServiceEventArgs> AddedProp;
 

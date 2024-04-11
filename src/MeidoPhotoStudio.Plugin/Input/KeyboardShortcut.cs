@@ -19,7 +19,7 @@ public class KeyboardShortcut : KeyboardInput
             });
 
     public KeyboardShortcut(KeyCode mainKey, params KeyCode[] modifiers)
-        : base(SanitizeKeys(new[] { mainKey }.Concat(modifiers).ToArray()))
+        : base(SanitizeKeys([mainKey, .. modifiers]))
     {
         if (mainKey is KeyCode.None && modifiers.Any())
             throw new ArgumentException(
@@ -79,9 +79,8 @@ public class KeyboardShortcut : KeyboardInput
 
     private static KeyCode[] SanitizeKeys(params KeyCode[] keys) =>
         keys.Length is 0 || keys.Any(key => key is KeyCode.None)
-            ? new[] { KeyCode.None }
-            : new[] { keys[0] }
-                .Concat(keys.Skip(1).Distinct().Where(key => key != keys[0]).OrderBy(key => (int)key)).ToArray();
+            ? [KeyCode.None]
+            : [keys[0], .. keys.Skip(1).Distinct().Where(key => key != keys[0]).OrderBy(key => (int)key)];
 
     private bool AllModifiersPressed()
     {

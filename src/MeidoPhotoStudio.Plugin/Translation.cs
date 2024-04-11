@@ -11,7 +11,7 @@ public static class Translation
 {
     private const string SettingsHeader = "Translation";
 
-    private static readonly string[] Props = { "ui", "props", "bg", "face" };
+    private static readonly string[] Props = ["ui", "props", "bg", "face"];
     private static readonly ConfigEntry<string> CurrentLanguageConfig = Configuration.Config.Bind(
         SettingsHeader,
         "Language",

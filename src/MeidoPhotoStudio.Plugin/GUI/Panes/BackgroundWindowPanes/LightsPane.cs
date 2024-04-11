@@ -46,7 +46,7 @@ public class LightsPane : BasePane
         resetHeader = Translation.Get("lightsPane", "resetLabel");
         noLights = Translation.Get("lightsPane", "noLights");
 
-        lightDropdown = new(new[] { noLights });
+        lightDropdown = new([noLights]);
         lightDropdown.SelectionChange += LightDropdownSelectionChanged;
 
         lightTypeGrid = new SelectionGrid(Translation.GetArray("lightType", new[] { "normal", "spot", "point" }));
@@ -332,7 +332,7 @@ public class LightsPane : BasePane
     {
         if (lightRepository.Count is 0)
         {
-            lightDropdown.SetDropdownItems(new[] { noLights }, 0);
+            lightDropdown.SetDropdownItems([noLights], 0);
 
             return;
         }
@@ -345,14 +345,14 @@ public class LightsPane : BasePane
 
         lightNameList.RemoveAt(e.LightIndex);
 
-        lightDropdown.SetDropdownItems(lightNameList.ToArray(), lightIndex);
+        lightDropdown.SetDropdownItems([.. lightNameList], lightIndex);
     }
 
     private void OnAddedLight(object sender, LightRepositoryEventArgs e)
     {
         if (lightRepository.Count is 1)
         {
-            lightDropdown.SetDropdownItems(new[] { LightName(e.LightController.Light) }, 0);
+            lightDropdown.SetDropdownItems([LightName(e.LightController.Light)], 0);
 
             return;
         }
@@ -361,7 +361,7 @@ public class LightsPane : BasePane
 
         lightNameList.Insert(e.LightIndex, GetNewLightName());
 
-        lightDropdown.SetDropdownItems(lightNameList.ToArray(), lightRepository.Count - 1);
+        lightDropdown.SetDropdownItems([.. lightNameList], lightRepository.Count - 1);
 
         string GetNewLightName()
         {

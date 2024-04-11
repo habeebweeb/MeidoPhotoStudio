@@ -63,7 +63,7 @@ public partial class MenuFilePropModel
 
         public Builder AddMaterialChange(MaterialChange materialChange)
         {
-            materialChanges ??= new List<MaterialChange>();
+            materialChanges ??= [];
             materialChanges.Add(materialChange);
 
             return this;
@@ -71,7 +71,7 @@ public partial class MenuFilePropModel
 
         public Builder AddModelAnime(ModelAnimation modelAnimation)
         {
-            modelAnimations ??= new List<ModelAnimation>();
+            modelAnimations ??= [];
             modelAnimations.Add(modelAnimation);
 
             return this;
@@ -79,7 +79,7 @@ public partial class MenuFilePropModel
 
         public Builder AddModelMaterialAnimation(ModelMaterialAnimation modelMaterialAnimation)
         {
-            modelMaterialAnimations ??= new List<ModelMaterialAnimation>();
+            modelMaterialAnimations ??= [];
             modelMaterialAnimations.Add(modelMaterialAnimation);
 
             return this;

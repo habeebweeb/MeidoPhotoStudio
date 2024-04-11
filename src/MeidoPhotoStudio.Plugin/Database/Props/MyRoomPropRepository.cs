@@ -41,7 +41,7 @@ public class MyRoomPropRepository : IEnumerable<MyRoomPropModel>
             var model = new MyRoomPropModel(data, Plugin.Translation.Get("myRoomPropNames", assetName));
 
             if (!models.ContainsKey(data.categoryID))
-                models[data.categoryID] = new List<MyRoomPropModel>();
+                models[data.categoryID] = [];
 
             models[model.CategoryID].Add(model);
         }

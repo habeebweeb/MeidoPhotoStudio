@@ -47,8 +47,8 @@ public class KeyboardHotkey(params KeyCode[] keys) : KeyboardInput(SanitizeKeys(
 
     private static KeyCode[] SanitizeKeys(params KeyCode[] keys) =>
         keys.Length is 0 || keys.Any(key => key is KeyCode.None)
-            ? new[] { KeyCode.None }
-            : keys.Distinct().OrderBy(keyCode => (int)keyCode).ToArray();
+            ? [KeyCode.None]
+            : [.. keys.Distinct().OrderBy(keyCode => (int)keyCode)];
 
     private bool AllKeys() =>
         Keys.All(UnityEngine.Input.GetKey);

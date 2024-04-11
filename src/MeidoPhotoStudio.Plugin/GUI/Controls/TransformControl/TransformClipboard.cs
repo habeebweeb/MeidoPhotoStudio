@@ -2,7 +2,7 @@ namespace MeidoPhotoStudio.Plugin;
 
 public class TransformClipboard
 {
-    private readonly Dictionary<TransformType, Vector3?> transformInformation = new();
+    private readonly Dictionary<TransformType, Vector3?> transformInformation = [];
 
     public enum TransformType
     {

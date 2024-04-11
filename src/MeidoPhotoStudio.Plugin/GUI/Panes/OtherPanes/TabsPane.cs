@@ -5,12 +5,12 @@ namespace MeidoPhotoStudio.Plugin;
 public class TabsPane : BasePane
 {
     private static readonly Constants.Window[] Tabs =
-    {
+    [
         Constants.Window.Call,
         Constants.Window.Pose,
         Constants.Window.BG,
         Constants.Window.BG2,
-    };
+    ];
 
     private readonly SelectionGrid tabs;
 

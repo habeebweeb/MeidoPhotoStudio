@@ -10,8 +10,8 @@ public class InputConfiguration
     public const string Section = "Input";
 
     private readonly ConfigFile configFile;
-    private readonly Dictionary<Shortcut, ConfigDefinition> shortcutDefinitions = new();
-    private readonly Dictionary<Hotkey, ConfigDefinition> hotkeyDefinitions = new();
+    private readonly Dictionary<Shortcut, ConfigDefinition> shortcutDefinitions = [];
+    private readonly Dictionary<Hotkey, ConfigDefinition> hotkeyDefinitions = [];
     private readonly Dictionary<Hotkey, KeyboardHotkey> keyboardHotkeys = new(EnumEqualityComparer<Hotkey>.Instance);
     private readonly Dictionary<Shortcut, KeyboardShortcut> keyboardShortcuts = new(EnumEqualityComparer<Shortcut>.Instance);
 

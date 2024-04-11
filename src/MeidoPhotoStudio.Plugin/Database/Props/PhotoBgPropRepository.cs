@@ -37,12 +37,12 @@ public class PhotoBgPropRepository : IEnumerable<PhotoBgPropModel>
     {
         PhotoBGObjectData.Create();
 
-        Dictionary<string, List<PhotoBgPropModel>> props = new();
+        Dictionary<string, List<PhotoBgPropModel>> props = [];
 
         foreach (var (category, propList) in PhotoBGObjectData.category_list)
         {
             if (!props.ContainsKey(category))
-                props[category] = new List<PhotoBgPropModel>();
+                props[category] = [];
 
             foreach (var prop in propList)
             {

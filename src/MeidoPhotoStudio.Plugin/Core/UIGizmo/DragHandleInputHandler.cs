@@ -8,7 +8,7 @@ public abstract class DragHandleInputHandler<T>(InputConfiguration inputConfigur
 {
     protected readonly InputConfiguration inputConfiguration = inputConfiguration;
 
-    private readonly List<T> controllers = new();
+    private readonly List<T> controllers = [];
 
     public virtual bool Active =>
         controllers.Count > 0;

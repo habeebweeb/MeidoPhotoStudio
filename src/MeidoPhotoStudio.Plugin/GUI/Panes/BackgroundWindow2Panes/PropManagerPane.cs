@@ -6,7 +6,7 @@ namespace MeidoPhotoStudio.Plugin;
 
 public class PropManagerPane : BasePane
 {
-    private static readonly string[] GizmoSpaceTranslationKeys = new[] { "gizmoSpaceLocal", "gizmoSpaceWorld" };
+    private static readonly string[] GizmoSpaceTranslationKeys = ["gizmoSpaceLocal", "gizmoSpaceWorld"];
 
     private readonly PropService propService;
     private readonly PropDragHandleService propDragHandleService;
@@ -48,7 +48,7 @@ public class PropManagerPane : BasePane
         this.propSelectionController.Selecting += OnSelectingProp;
         this.propSelectionController.Selected += OnSelectedProp;
 
-        propDropdown = new(new[] { "No props" });
+        propDropdown = new(["No props"]);
         propDropdown.SelectionChange += OnPropDropdownSelectionChange;
 
         dragPointToggle = new(Translation.Get("propManagerPane", "dragPointToggle"));
@@ -284,7 +284,7 @@ public class PropManagerPane : BasePane
     {
         if (propService.Count is 1)
         {
-            propDropdown.SetDropdownItems(new[] { PropName(e.PropController.PropModel) }, 0);
+            propDropdown.SetDropdownItems([PropName(e.PropController.PropModel)], 0);
 
             return;
         }
@@ -293,7 +293,7 @@ public class PropManagerPane : BasePane
         var propNameList = new List<string>(propDropdown.DropdownList);
 
         propNameList.Insert(e.PropIndex, UniquePropName(currentNames, e.PropController.PropModel));
-        propDropdown.SetDropdownItems(propNameList.ToArray(), propService.Count - 1);
+        propDropdown.SetDropdownItems([.. propNameList], propService.Count - 1);
 
         static string UniquePropName(HashSet<string> currentNames, IPropModel propModel)
         {
@@ -318,7 +318,7 @@ public class PropManagerPane : BasePane
     {
         if (propService.Count is 0)
         {
-            propDropdown.SetDropdownItems(new[] { "No Props" }, 0);
+            propDropdown.SetDropdownItems(["No Props"], 0);
 
             return;
         }
@@ -330,7 +330,7 @@ public class PropManagerPane : BasePane
         var propNameList = new List<string>(propDropdown.DropdownList);
 
         propNameList.RemoveAt(e.PropIndex);
-        propDropdown.SetDropdownItems(propNameList.ToArray(), propIndex);
+        propDropdown.SetDropdownItems([.. propNameList], propIndex);
     }
 
     private void OnPropTransformChanged(object sender, EventArgs e)

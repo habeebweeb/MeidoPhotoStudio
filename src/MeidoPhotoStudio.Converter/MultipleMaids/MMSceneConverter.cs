@@ -16,7 +16,7 @@ public static class MMSceneConverter
     private const int KankyoMagic = -765;
 
     private static readonly int[] BodyRotationIndices =
-    {
+    [
         71, // Hip
         44, // Pelvis
         40, // Spine
@@ -42,7 +42,7 @@ public static class MMSceneConverter
         48, // Hand R
         51, // Foot L
         54, // Foot R
-    };
+    ];
 
     private static readonly int[] BodyRotationIndices64 =
         BodyRotationIndices.Where(rotation => rotation < 64).ToArray();

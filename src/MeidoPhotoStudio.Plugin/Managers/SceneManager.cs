@@ -49,7 +49,7 @@ public partial class SceneManager(
 
     public int CurrentSceneIndex { get; private set; } = -1;
 
-    public List<MPSScene> SceneList { get; } = new();
+    public List<MPSScene> SceneList { get; } = [];
 
     public int CurrentDirectoryIndex { get; private set; } = -1;
 

@@ -167,13 +167,13 @@ public class CharacterAspectLoader(
                 }
 
                 var boneNames = sixtyFour
-                    ? new[]
-                    {
+                    ?
+                    [
                         "Bip01 Pelvis", "Bip01 Spine", "Bip01 Spine0a", "Bip01 Spine1", "Bip01 Spine1a", "Bip01 Neck",
                         "Bip01 L UpperArm", "Bip01 R UpperArm", "Bip01 L Forearm", "Bip01 R Forearm", "Bip01 L Thigh",
                         "Bip01 R Thigh", "Bip01 L Calf", "Bip01 R Calf", "Bip01 L Hand", "Bip01 R Hand", "Bip01 L Foot",
                         "Bip01 R Foot",
-                    }
+                    ]
                     : new[]
                     {
                         "Bip01", "Bip01 Pelvis", "Bip01 Spine", "Bip01 Spine0a", "Bip01 Spine1", "Bip01 Spine1a",

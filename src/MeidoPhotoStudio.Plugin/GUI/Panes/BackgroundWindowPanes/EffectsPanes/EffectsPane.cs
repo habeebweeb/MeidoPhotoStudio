@@ -2,15 +2,15 @@ namespace MeidoPhotoStudio.Plugin;
 
 public class EffectsPane : BasePane
 {
-    private readonly Dictionary<string, BasePane> effectPanes = new();
-    private readonly List<string> effectList = new();
+    private readonly Dictionary<string, BasePane> effectPanes = [];
+    private readonly List<string> effectList = [];
     private readonly SelectionGrid effectToggles;
 
     private BasePane currentEffectPane;
 
     public EffectsPane()
     {
-        effectToggles = new(new[] { "dummy" /* thicc */ });
+        effectToggles = new(["dummy" /* thicc */]);
         effectToggles.ControlEvent += (_, _) =>
             SetEffectPane(effectList[effectToggles.SelectedItemIndex]);
     }

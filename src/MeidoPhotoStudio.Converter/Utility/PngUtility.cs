@@ -2,7 +2,7 @@ namespace MeidoPhotoStudio.Converter.Utility;
 
 internal static class PngUtility
 {
-    private static readonly byte[] PngHeader = { 137, 80, 78, 71, 13, 10, 26, 10 };
+    private static readonly byte[] PngHeader = [137, 80, 78, 71, 13, 10, 26, 10];
     private static readonly byte[] PngEnd = System.Text.Encoding.ASCII.GetBytes("IEND");
 
     public static byte[]? ExtractPng(Stream stream)

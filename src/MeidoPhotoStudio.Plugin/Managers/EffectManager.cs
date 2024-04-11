@@ -5,7 +5,7 @@ public class EffectManager : IManager, IEnumerable<IEffectManager>
     public const string Header = "EFFECT";
     public const string Footer = "END_EFFECT";
 
-    private readonly Dictionary<Type, IEffectManager> effectManagers = new();
+    private readonly Dictionary<Type, IEffectManager> effectManagers = [];
 
     public IEffectManager this[Type type]
     {

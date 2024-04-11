@@ -12,7 +12,7 @@ public class PropDragHandleService : IEnumerable<PropDragHandleController>
     private readonly PropService propService;
     private readonly SelectionController<PropController> propSelectionController;
     private readonly TabSelectionController tabSelectionController;
-    private readonly Dictionary<PropController, PropDragHandleController> propDragHandleControllers = new();
+    private readonly Dictionary<PropController, PropDragHandleController> propDragHandleControllers = [];
 
     private bool smallHandle;
 

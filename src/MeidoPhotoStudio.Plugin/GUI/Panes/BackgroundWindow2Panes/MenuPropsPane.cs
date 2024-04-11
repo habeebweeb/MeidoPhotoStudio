@@ -33,7 +33,7 @@ public class MenuPropsPane : BasePane
         this.menuPropsConfiguration = menuPropsConfiguration;
         this.iconCache = iconCache ?? throw new ArgumentNullException(nameof(iconCache));
 
-        propCategoryDropdown = new(new[] { ":)" });
+        propCategoryDropdown = new([":)"]);
         propCategoryDropdown.SelectionChange += OnPropCategoryDropdownChanged;
 
         modFilterToggle = new(Translation.Get("background2Window", "modsToggle"));

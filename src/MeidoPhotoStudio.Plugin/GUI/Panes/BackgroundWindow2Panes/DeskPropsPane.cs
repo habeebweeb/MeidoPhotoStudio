@@ -19,7 +19,7 @@ public class DeskPropsPane : BasePane
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
         this.deskPropRepository = deskPropRepository ?? throw new ArgumentNullException(nameof(deskPropRepository));
 
-        categories = deskPropRepository.CategoryIDs.OrderBy(id => id).ToArray();
+        categories = [.. deskPropRepository.CategoryIDs.OrderBy(id => id)];
 
         propCategoryDropdown = new(categories
             .Select(id => Translation.Get("deskpropCategories", id.ToString()))
@@ -103,7 +103,7 @@ public class DeskPropsPane : BasePane
         hasProps = propList.Length is not 0;
 
         if (propList.Length is 0)
-            propList = new[] { Translation.Get("systemMessage", "noProps") };
+            propList = [Translation.Get("systemMessage", "noProps")];
 
         return propList;
     }

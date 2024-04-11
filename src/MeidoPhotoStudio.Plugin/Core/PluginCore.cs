@@ -231,17 +231,17 @@ public partial class PluginCore : MonoBehaviour
             new CameraInputHandler(
                 cameraController, cameraSpeedController, cameraSaveSlotController, inputConfiguration));
 
-        effectManager = new()
-        {
+        effectManager =
+        [
             new BloomEffectManager(),
             new DepthOfFieldEffectManager(),
             new FogEffectManager(),
             new VignetteEffectManager(),
             new SepiaToneEffectManager(),
             new BlurEffectManager(),
-        };
+        ];
 
-        propService = new();
+        propService = [];
 
         var propAttachmentService = new PropAttachmentService(characterService, propService);
 

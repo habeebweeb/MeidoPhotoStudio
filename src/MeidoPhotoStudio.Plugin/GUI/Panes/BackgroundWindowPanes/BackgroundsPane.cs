@@ -34,10 +34,10 @@ public class BackgroundsPane : BasePane
 
         backgroundHeader = Translation.Get("backgroundsPane", "header");
 
-        backgroundCategoryDropdown = new(new[] { string.Empty });
+        backgroundCategoryDropdown = new([string.Empty]);
         backgroundCategoryDropdown.SelectionChange += OnChangedCategory;
 
-        backgroundDropdown = new(new[] { string.Empty });
+        backgroundDropdown = new([string.Empty]);
         backgroundDropdown.SelectionChange += OnChangedBackground;
 
         dragHandleEnabledToggle = new(

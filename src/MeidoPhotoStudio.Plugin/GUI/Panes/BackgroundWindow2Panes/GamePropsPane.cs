@@ -100,7 +100,7 @@ public class GamePropsPane : BasePane
         hasProps = propList.Length is not 0;
 
         if (propList.Length is 0)
-            propList = new[] { Translation.Get("systemMessage", "noProps") };
+            propList = [Translation.Get("systemMessage", "noProps")];
 
         return propList;
     }

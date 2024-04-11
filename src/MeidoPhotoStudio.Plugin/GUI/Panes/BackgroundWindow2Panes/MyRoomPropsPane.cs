@@ -23,7 +23,7 @@ public class MyRoomPropsPane : BasePane
         this.myRoomPropRepository = myRoomPropRepository ?? throw new ArgumentNullException(nameof(myRoomPropRepository));
         this.iconCache = iconCache ?? throw new ArgumentNullException(nameof(iconCache));
 
-        categories = new[] { -1 }.Concat(myRoomPropRepository.CategoryIDs.OrderBy(id => id)).ToArray();
+        categories = [-1, .. myRoomPropRepository.CategoryIDs.OrderBy(id => id)];
 
         propCategoryDropdown = new(categories
             .Select(id => Translation.Get("myRoomPropCategories", id.ToString()))
