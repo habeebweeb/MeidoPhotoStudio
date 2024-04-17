@@ -2,6 +2,8 @@ namespace MeidoPhotoStudio.Plugin;
 
 public class CharacterWindowPane : BaseMainWindowPane
 {
+    private static readonly string[] CharacterTabTranslationKeys = ["bodyTab", "faceTab"];
+
     private readonly CharacterSwitcherPane characterSwitcherPane;
     private readonly TabSelectionController tabSelectionController;
     private readonly Dictionary<CharacterWindowTab, CharacterWindowTabPane> windowPanes =
@@ -23,7 +25,7 @@ public class CharacterWindowPane : BaseMainWindowPane
 
         this.tabSelectionController.TabSelected += OnTabSelected;
 
-        tabs = new SelectionGrid(["Body", "Face"]);
+        tabs = new SelectionGrid(Translation.GetArray("characterWindowPane", CharacterTabTranslationKeys));
         tabs.ControlEvent += OnTabChanged;
     }
 
@@ -61,6 +63,9 @@ public class CharacterWindowPane : BaseMainWindowPane
 
         tabs.SelectedItemIndex = 0;
     }
+
+    protected override void ReloadTranslation() =>
+        tabs.SetItemsWithoutNotify(Translation.GetArray("characterWindowPane", CharacterTabTranslationKeys));
 
     private void OnTabSelected(object sender, TabSelectionEventArgs e)
     {

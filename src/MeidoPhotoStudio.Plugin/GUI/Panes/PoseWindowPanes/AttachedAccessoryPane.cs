@@ -8,8 +8,9 @@ namespace MeidoPhotoStudio.Plugin;
 public class AttachedAccessoryPane : BasePane
 {
     private const int NoAccessory = 0;
-    private const string NoCategoryTranslationKey = "noAccessory";
+    private const string NoAccessoryTranslationKey = "noAccessory";
 
+    private static readonly string[] AccessoryCategoryTranslationKeys = ["upperAccessoryTab", "lowerAccessoryTab"];
     private static readonly MPN[] AccessoryCategory = [MPN.kousoku_upper, MPN.kousoku_lower];
 
     private readonly MenuPropRepository menuPropRepository;
@@ -29,15 +30,15 @@ public class AttachedAccessoryPane : BasePane
 
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
-        paneHeader = new("Attached Accessories", true);
+        paneHeader = new(Translation.Get("attachMpnPropPane", "header"), true);
 
-        accessoryCategoryGrid = new(["Upper", "Lower"]);
+        accessoryCategoryGrid = new(Translation.GetArray("attachMpnPropPane", AccessoryCategoryTranslationKeys));
         accessoryCategoryGrid.ControlEvent += OnAccessoryCategoryChanged;
 
         accessoryDropdown = new([":)"]);
         accessoryDropdown.SelectionChange += OnAccessoryChanged;
 
-        detachAllAccessoriesButton = new("Detach All");
+        detachAllAccessoriesButton = new(Translation.Get("attachMpnPropPane", "detachAllButton"));
         detachAllAccessoriesButton.ControlEvent += OnDetachAllButtonPressed;
 
         if (menuPropRepository.Busy)
@@ -110,6 +111,15 @@ public class AttachedAccessoryPane : BasePane
 
             GUILayout.EndHorizontal();
         }
+    }
+
+    protected override void ReloadTranslation()
+    {
+        paneHeader.Label = Translation.Get("attachMpnPropPane", "header");
+        accessoryCategoryGrid.SetItemsWithoutNotify(Translation.GetArray("attachMpnPropPane", AccessoryCategoryTranslationKeys));
+        detachAllAccessoriesButton.Label = Translation.Get("attachMpnPropPane", "detachAllButton");
+
+        accessoryDropdown.SetDropdownItemsWithoutNotify(AccessoryList());
     }
 
     private void OnAccessoryCategoryChanged(object sender, EventArgs e)
@@ -188,10 +198,10 @@ public class AttachedAccessoryPane : BasePane
     private string[] AccessoryList()
     {
         var accessoryList = menuPropRepository.Busy
-            ? ["Initializing"]
-            : new[] { NoCategoryTranslationKey }
+            ? [Translation.Get("systemMessage", "initializing")]
+            : new[] { Translation.Get("attachMpnPropPane", NoAccessoryTranslationKey) }
                 .Concat(menuPropRepository[AccessoryCategory[accessoryCategoryGrid.SelectedItemIndex]]
-                    .Select(prop => prop.Name))
+                    .Select(prop => Translation.Get("mpnAttachPropNames", prop.Filename)))
                 .ToArray();
 
         return accessoryList;

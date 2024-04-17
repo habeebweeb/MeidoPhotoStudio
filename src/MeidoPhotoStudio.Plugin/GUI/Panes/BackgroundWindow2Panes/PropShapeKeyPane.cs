@@ -8,7 +8,7 @@ public class PropShapeKeyPane(SelectionController<PropController> propSelectionC
     private readonly SelectionController<PropController> propSelectionController = propSelectionController
         ?? throw new ArgumentNullException(nameof(propSelectionController));
 
-    private readonly Toggle paneHeader = new("ShapeKeys", true);
+    private readonly Toggle paneHeader = new(Translation.Get("propShapeKeyPane", "header"), true);
 
     private ShapeKeyController CurrentShapeKeyController =>
         propSelectionController.Current?.ShapeKeyController;
@@ -21,7 +21,7 @@ public class PropShapeKeyPane(SelectionController<PropController> propSelectionC
             return;
 
         paneHeader.Draw();
-        MpsGui.BlackLine();
+        MpsGui.WhiteLine();
 
         if (!paneHeader.Value)
             return;
@@ -50,4 +50,7 @@ public class PropShapeKeyPane(SelectionController<PropController> propSelectionC
             GUILayout.EndHorizontal();
         }
     }
+
+    protected override void ReloadTranslation() =>
+        paneHeader.Label = Translation.Get("propShapeKeyPane", "header");
 }

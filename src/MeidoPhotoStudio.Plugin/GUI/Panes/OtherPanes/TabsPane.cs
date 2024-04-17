@@ -18,9 +18,6 @@ public class TabsPane : BasePane
 
     public TabsPane()
     {
-        Translation.ReloadTranslationEvent += (_, _) =>
-            ReloadTranslation();
-
         tabs = new(Translation.GetArray("tabs", Tabs.Select(tab => tab.ToString())));
         tabs.ControlEvent += (_, _) =>
             OnChangeTab();

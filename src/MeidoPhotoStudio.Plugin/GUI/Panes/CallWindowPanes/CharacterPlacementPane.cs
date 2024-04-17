@@ -35,6 +35,16 @@ public class CharacterPlacementPane : BasePane
         GUILayout.EndHorizontal();
     }
 
+    protected override void ReloadTranslation()
+    {
+        placementDropdown.SetDropdownItemsWithoutNotify(placementTypes
+            .Select(placement => placement.ToLower())
+            .Select(placement => Translation.Get("placementDropdown", placement))
+            .ToArray());
+
+        applyPlacementButton.Label = Translation.Get("maidCallWindow", "okButton");
+    }
+
     private void OnPlacementButtonPushed(object sender, EventArgs e) =>
         characterPlacementController.ApplyPlacement(placementTypes[placementDropdown.SelectedItemIndex]);
 }

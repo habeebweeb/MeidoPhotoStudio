@@ -37,33 +37,33 @@ public class HandPresetSelectorPane : BasePane
         this.handPresetRepository.AddedHandPreset += OnHandPresetAdded;
         this.handPresetRepository.Refreshed += OnHandPresetRepositoryRefreshed;
 
-        paneHeader = new("Hand Presets", true);
+        paneHeader = new(Translation.Get("handPane", "header"), true);
 
         presetCategoryDropdown = new(PresetCategoryList());
         presetCategoryDropdown.SelectionChanged += OnPresetCategoryChanged;
 
         presetDropdown = new(PresetList(), formatter: (preset, index) => $"{index + 1}: {preset.Name}");
 
-        applyLeftHandButton = new("Left");
+        applyLeftHandButton = new(Translation.Get("handPane", "leftHand"));
         applyLeftHandButton.ControlEvent += OnApplyLeftButtonPushed;
 
-        applyRightHandButton = new("Right");
+        applyRightHandButton = new(Translation.Get("handPane", "rightHand"));
         applyRightHandButton.ControlEvent += OnApplyRightButtonPushed;
 
-        swapHandsButton = new("Swap");
+        swapHandsButton = new(Translation.Get("handPane", "swapHands"));
         swapHandsButton.ControlEvent += OnSwapButtonPushed;
 
-        savePresetToggle = new("Save Preset");
+        savePresetToggle = new(Translation.Get("handPane", "saveToggle"));
         handPresetCategoryComboBox = new(this.handPresetRepository.Categories.ToArray());
         handPresetNameTextField = new();
 
-        saveLeftPresetButton = new("Save Left");
+        saveLeftPresetButton = new(Translation.Get("handPane", "saveLeftButton"));
         saveLeftPresetButton.ControlEvent += OnSaveLeftPresetButtonPushed;
 
-        saveRightPresetButton = new("Save Right");
+        saveRightPresetButton = new(Translation.Get("handPane", "saveRightButton"));
         saveRightPresetButton.ControlEvent += OnSaveRightPresetButtonPushed;
 
-        refreshButton = new("Refresh");
+        refreshButton = new(Translation.Get("handPane", "refreshButton"));
         refreshButton.ControlEvent += OnRefreshButtonPushed;
 
         handPresetDirectoryHeader = new(Translation.Get("handPane", "categoryHeader"));
@@ -186,6 +186,7 @@ public class HandPresetSelectorPane : BasePane
         savePresetToggle.Label = Translation.Get("handPane", "saveToggle");
         saveLeftPresetButton.Label = Translation.Get("handPane", "saveLeftButton");
         saveRightPresetButton.Label = Translation.Get("handPane", "saveRightButton");
+        refreshButton.Label = Translation.Get("handPane", "refreshButton");
         handPresetDirectoryHeader.Text = Translation.Get("handPane", "categoryHeader");
         handPresetFilenameHeader.Text = Translation.Get("handPane", "nameHeader");
         noPresetsLabel.Text = Translation.Get("handPane", "noPresetsMessage");

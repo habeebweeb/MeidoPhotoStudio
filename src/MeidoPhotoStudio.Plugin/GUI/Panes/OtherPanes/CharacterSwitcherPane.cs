@@ -39,7 +39,7 @@ public class CharacterSwitcherPane : BasePane
         nextButton.ControlEvent += (_, _) =>
             NextCharacter();
 
-        editToggle = new("Edit");
+        editToggle = new(Translation.Get("characterSwitcher", "editToggle"));
         editToggle.ControlEvent += OnEditCharacterChanged;
     }
 
@@ -125,6 +125,9 @@ public class CharacterSwitcherPane : BasePane
         if (characterService.Count > 0)
             GUI.Label(labelRect, $"{character.Slot + 1}", slotStyle);
     }
+
+    protected override void ReloadTranslation() =>
+        editToggle.Label = Translation.Get("characterSwitcher", "editToggle");
 
     private static int Wrap(int value, int min, int max) =>
         value < min ? max : value > max ? min : value;

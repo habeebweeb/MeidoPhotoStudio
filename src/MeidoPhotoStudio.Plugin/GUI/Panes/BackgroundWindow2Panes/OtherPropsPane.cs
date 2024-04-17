@@ -67,8 +67,6 @@ public class OtherPropsPane : BasePane
 
     protected override void ReloadTranslation()
     {
-        base.ReloadTranslation();
-
         propCategoryDropdown.SetDropdownItemsWithoutNotify(Translation.GetArray("otherPropCategories", categories));
         propDropdown.SetDropdownItemsWithoutNotify(PropList(propCategoryDropdown.SelectedItemIndex));
         addPropButton.Label = Translation.Get("propsPane", "addProp");

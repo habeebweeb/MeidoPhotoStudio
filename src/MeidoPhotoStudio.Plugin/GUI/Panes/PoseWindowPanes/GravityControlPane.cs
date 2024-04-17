@@ -26,17 +26,17 @@ public class GravityControlPane : BasePane
 
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
-        paneHeader = new("Gravity", true);
+        paneHeader = new(Translation.Get("gravityControlPane", "header"), true);
         hairGravityEnabledToggle = new(Translation.Get("gravityControlPane", "hairToggle"));
         hairGravityEnabledToggle.ControlEvent += OnHairGravityEnabledChanged;
 
-        hairGravityDragHandleEnabledToggle = new("Drag Handle");
+        hairGravityDragHandleEnabledToggle = new(Translation.Get("gravityControlPane", "hairDragHandleToggle"));
         hairGravityDragHandleEnabledToggle.ControlEvent += OnHairGravityDragHandleEnabledChanged;
 
         clothingGravityEnabledToggle = new(Translation.Get("gravityControlPane", "clothingToggle"));
         clothingGravityEnabledToggle.ControlEvent += OnClothingGravityEnabledChanged;
 
-        clothingGravityDragHandleEnabledToggle = new("Drag Handle");
+        clothingGravityDragHandleEnabledToggle = new(Translation.Get("gravityControlPane", "clothingDragHandleToggle"));
         clothingGravityDragHandleEnabledToggle.ControlEvent += OnClothingGravityDragHandleEnabledChanged;
 
         globalGravityEnabledToggle = new(Translation.Get("gravityControlPane", "globalToggle"));
@@ -93,6 +93,16 @@ public class GravityControlPane : BasePane
 
         GUI.enabled = enabled;
         globalGravityEnabledToggle.Draw();
+    }
+
+    protected override void ReloadTranslation()
+    {
+        paneHeader.Label = Translation.Get("gravityControlPane", "header");
+        hairGravityEnabledToggle.Label = Translation.Get("gravityControlPane", "hairToggle");
+        hairGravityDragHandleEnabledToggle.Label = Translation.Get("gravityControlPane", "hairDragHandleToggle");
+        clothingGravityEnabledToggle.Label = Translation.Get("gravityControlPane", "clothingToggle");
+        clothingGravityDragHandleEnabledToggle.Label = Translation.Get("gravityControlPane", "clothingDragHandleToggle");
+        globalGravityEnabledToggle.Label = Translation.Get("gravityControlPane", "globalToggle");
     }
 
     private void OnHairGravityEnabledChanged(object sender, EventArgs e)

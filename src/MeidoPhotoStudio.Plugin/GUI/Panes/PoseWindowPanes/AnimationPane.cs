@@ -48,7 +48,7 @@ public class AnimationPane : BasePane
         stepAmountField = new(0.01f);
         stepAmountField.ControlEvent += OnStepAmountFieldChanged;
 
-        paneHeader = new("Animation", true);
+        paneHeader = new(Translation.Get("characterAnimationPane", "header"), true);
     }
 
     private static Texture2D PlayIcon =>
@@ -119,6 +119,9 @@ public class AnimationPane : BasePane
 
         animationSlider.SetValueWithoutNotify(CurrentAnimation.Time);
     }
+
+    protected override void ReloadTranslation() =>
+        paneHeader.Label = Translation.Get("characterAnimationPane", "header");
 
     private static Texture2D LoadIconFromBase64(string base64)
     {

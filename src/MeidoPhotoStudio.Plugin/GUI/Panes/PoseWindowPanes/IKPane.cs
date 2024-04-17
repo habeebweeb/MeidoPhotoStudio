@@ -16,6 +16,8 @@ public class IKPane : BasePane
     private readonly NumericalTextField floorHeightTextfield;
     private readonly Button flipButton;
 
+    private string customFloorHeightHeader;
+
     public IKPane(
         IKDragHandleService ikDragHandleService,
         SelectionController<CharacterController> characterSelectionController)
@@ -25,27 +27,29 @@ public class IKPane : BasePane
 
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
-        paneHeader = new("Posing", true);
+        paneHeader = new(Translation.Get("maidPoseWindow", "header"), true);
 
-        ikEnabledToggle = new("Enabled", true);
+        ikEnabledToggle = new(Translation.Get("maidPoseWindow", "enabledToggle"), true);
         ikEnabledToggle.ControlEvent += OnIKEnabledChanged;
 
-        boneModeEnabledToggle = new("Bone", false);
+        boneModeEnabledToggle = new(Translation.Get("maidPoseWindow", "boneToggle"), false);
         boneModeEnabledToggle.ControlEvent += OnBoneModeEnabledChanged;
 
-        limitLimbRotationsToggle = new("Limit Joints");
+        limitLimbRotationsToggle = new(Translation.Get("maidPoseWindow", "limitJointsToggle"));
         limitLimbRotationsToggle.ControlEvent += OnLimitLimbRotationsChanged;
 
-        limitDigitRotationsToggle = new("Limit Digits");
+        limitDigitRotationsToggle = new(Translation.Get("maidPoseWindow", "limitDigitsToggle"));
         limitDigitRotationsToggle.ControlEvent += OnLimitDigitRotationsChanged;
 
-        customFloorHeightToggle = new("Enabled", false);
+        customFloorHeightHeader = Translation.Get("maidPoseWindow", "customFloorHeightHeader");
+
+        customFloorHeightToggle = new(Translation.Get("maidPoseWindow", "customFloorHeightEnabledToggle"), false);
         customFloorHeightToggle.ControlEvent += OnCustomFloorHeightToggleChanged;
 
         floorHeightTextfield = new(0f);
         floorHeightTextfield.ControlEvent += OnFloorHeightChanged;
 
-        flipButton = new("Flip");
+        flipButton = new(Translation.Get("maidPoseWindow", "flipPoseToggle"));
         flipButton.ControlEvent += OnFlipButtonPushed;
     }
 
@@ -101,7 +105,7 @@ public class IKPane : BasePane
         {
             GUI.enabled = enabled;
 
-            GUILayout.Label("Custom Floor Height");
+            GUILayout.Label(customFloorHeightHeader);
 
             MpsGui.BlackLine();
 
@@ -133,6 +137,18 @@ public class IKPane : BasePane
 
             flipButton.Draw(GUILayout.ExpandWidth(false));
         }
+    }
+
+    protected override void ReloadTranslation()
+    {
+        paneHeader.Label = Translation.Get("maidPoseWindow", "header");
+        ikEnabledToggle.Label = Translation.Get("maidPoseWindow", "enabledToggle");
+        boneModeEnabledToggle.Label = Translation.Get("maidPoseWindow", "boneToggle");
+        limitLimbRotationsToggle.Label = Translation.Get("maidPoseWindow", "limitJointsToggle");
+        limitDigitRotationsToggle.Label = Translation.Get("maidPoseWindow", "limitDigitsToggle");
+        customFloorHeightHeader = Translation.Get("maidPoseWindow", "customFloorHeightHeader");
+        customFloorHeightToggle.Label = Translation.Get("maidPoseWindow", "customFloorHeightEnabledToggle");
+        flipButton.Label = Translation.Get("maidPoseWindow", "flipPoseToggle");
     }
 
     private void OnCharacterSelectionChanged(object sender, SelectionEventArgs<CharacterController> e)

@@ -111,6 +111,13 @@ public class CharacterCallPane : BasePane
         activeCharactersListScrollPosition = Vector2.zero;
     }
 
+    protected override void ReloadTranslation()
+    {
+        clearSelectedButton.Label = Translation.Get("maidCallWindow", "clearButton");
+        callButton.Label = Translation.Get("maidCallWindow", "callButton");
+        activeCharacterToggle.Label = Translation.Get("maidCallWindow", "activeOnlyToggle");
+    }
+
     private void OnClearMaidsButttonPushed(object sender, EventArgs e) =>
         characterCallController.ClearSelected();
 

@@ -13,36 +13,40 @@ public class FreeLookPane : BasePane
     private readonly Toggle eyeToCameraToggle;
     private readonly Toggle headToCameraToggle;
 
+    private string bindLabel = string.Empty;
+
     public FreeLookPane(SelectionController<CharacterController> characterSelectionController)
     {
         this.characterSelectionController = characterSelectionController ?? throw new ArgumentNullException(nameof(characterSelectionController));
 
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
-        paneHeader = new("Free Look", true);
+        paneHeader = new(Translation.Get("freeLookPane", "header"), true);
 
-        freeLookToggle = new("Enabled", false);
+        freeLookToggle = new(Translation.Get("freeLookPane", "freeLookToggle"), false);
         freeLookToggle.ControlEvent += OnFreeLookToggleChanged;
 
-        offsetLookXSlider = new("Look X", -0.6f, 0.6f)
+        offsetLookXSlider = new(Translation.Get("freeLookPane", "xSlider"), -0.6f, 0.6f)
         {
             HasReset = true,
         };
 
         offsetLookXSlider.ControlEvent += OnEyeXSliderChanged;
 
-        offsetLookYSlider = new("Look Y", 0.5f, -0.55f)
+        offsetLookYSlider = new(Translation.Get("freeLookPane", "ySlider"), 0.5f, -0.55f)
         {
             HasReset = true,
         };
 
         offsetLookYSlider.ControlEvent += OnEyeYSliderChanged;
 
-        eyeToCameraToggle = new("Eyes", true);
+        eyeToCameraToggle = new(Translation.Get("freeLookPane", "eyeToCamToggle"), true);
         eyeToCameraToggle.ControlEvent += OnBindEyeToggleChanged;
 
-        headToCameraToggle = new("Head", true);
+        headToCameraToggle = new(Translation.Get("freeLookPane", "headToCamToggle"), true);
         headToCameraToggle.ControlEvent += OnBindHeadToggleChanged;
+
+        bindLabel = Translation.Get("freeLookPane", "bindLabel");
     }
 
     private HeadController CurrentHead =>
@@ -81,12 +85,23 @@ public class FreeLookPane : BasePane
 
         GUILayout.BeginHorizontal();
 
-        GUILayout.Label("Bind:", GUILayout.ExpandWidth(false));
+        GUILayout.Label(bindLabel, GUILayout.ExpandWidth(false));
 
         eyeToCameraToggle.Draw();
         headToCameraToggle.Draw();
 
         GUILayout.EndHorizontal();
+    }
+
+    protected override void ReloadTranslation()
+    {
+        paneHeader.Label = Translation.Get("freeLookPane", "header");
+        freeLookToggle.Label = Translation.Get("freeLookPane", "freeLookToggle");
+        offsetLookXSlider.Label = Translation.Get("freeLookPane", "xSlider");
+        offsetLookYSlider.Label = Translation.Get("freeLookPane", "ySlider");
+        eyeToCameraToggle.Label = Translation.Get("freeLookPane", "eyeToCamToggle");
+        headToCameraToggle.Label = Translation.Get("freeLookPane", "headToCamToggle");
+        bindLabel = Translation.Get("freeLookPane", "bindLabel");
     }
 
     private void OnCharacterSelectionChanged(object sender, SelectionEventArgs<CharacterController> e)

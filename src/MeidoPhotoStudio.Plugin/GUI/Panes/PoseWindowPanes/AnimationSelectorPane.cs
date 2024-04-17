@@ -43,7 +43,7 @@ public class AnimationSelectorPane : BasePane
         this.customAnimationRepository.Refreshed += OnCustomAnimationRepositoryRefreshed;
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
-        animationSourceGrid = new(Translation.GetArray("posePane", new[] { "basePane", "customTab" }));
+        animationSourceGrid = new(Translation.GetArray("posePane", AnimationSourceTranslationKeys));
         animationSourceGrid.ControlEvent += OnAnimationSourceChanged;
 
         animationCategoryDropdown = new(
@@ -57,15 +57,15 @@ public class AnimationSelectorPane : BasePane
 
         animationDropdown.SelectionChanged += OnAnimationChanged;
 
-        paneHeader = new("Animations", true);
+        paneHeader = new(Translation.Get("posePane", "header"), true);
 
         saveAnimationToggle = new(Translation.Get("posePane", "saveToggle"), false);
         animationCategoryComboBox = new([.. this.customAnimationRepository.Categories]);
         animationNameTextField = new();
-        savePoseButton = new("Add");
+        savePoseButton = new(Translation.Get("posePane", "saveButton"));
         savePoseButton.ControlEvent += OnSavePoseButtonPushed;
 
-        refreshButton = new("Refresh");
+        refreshButton = new(Translation.Get("posePane", "refreshButton"));
         refreshButton.ControlEvent += OnRefreshButtonPushed;
 
         animationDirectoryHeader = new(Translation.Get("posePane", "categoryHeader"));
@@ -212,6 +212,7 @@ public class AnimationSelectorPane : BasePane
         paneHeader.Label = Translation.Get("posePane", "header");
         saveAnimationToggle.Label = Translation.Get("posePane", "saveToggle");
         savePoseButton.Label = Translation.Get("posePane", "saveButton");
+        refreshButton.Label = Translation.Get("posePane", "refreshButton");
         animationDirectoryHeader.Text = Translation.Get("posePane", "categoryHeader");
         animationFilenameHeader.Text = Translation.Get("posePane", "nameHeader");
         initializingLabel.Text = Translation.Get("systemMessage", "initializing");

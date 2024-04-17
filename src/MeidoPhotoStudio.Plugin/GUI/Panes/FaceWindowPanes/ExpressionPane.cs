@@ -9,6 +9,8 @@ public class ExpressionPane : BasePane
 {
     private const int BaseGameIndex = 0;
 
+    private static readonly string[] KeySourceGridTranslationKeys = ["baseTab", "shapeKeyTab"];
+
     private static readonly string[] EyeHashes =
     [
         "eyeclose", "eyeclose2", "eyeclose3", "eyebig", "eyeclose6", "eyeclose5", "eyeclose8", "eyeclose7", "hitomih",
@@ -52,15 +54,15 @@ public class ExpressionPane : BasePane
         this.faceShapeKeyConfiguration.AddedCustomShapeKey += OnShapeKeyAdded;
         this.faceShapeKeyConfiguration.RemovedCustomShapeKey += OnShapeKeyRemoved;
 
-        editShapeKeysToggle = new("Edit");
+        editShapeKeysToggle = new(Translation.Get("expressionPane", "editShapeKeysToggle"));
 
-        addShapeKeyDropdown = new(["Add Shape Keys"]);
+        addShapeKeyDropdown = new([Translation.Get("expressionPane", "noShapeKeys")]);
 
         shapeKeys = [.. this.faceShapeKeyConfiguration.CustomShapeKeys];
 
         foreach (var hashKey in EyeHashes.Concat(MouthHashes).Concat(shapeKeys))
         {
-            var slider = new Slider(hashKey, 0f, 1f);
+            var slider = new Slider(Translation.Get("faceBlendValues", hashKey, false), 0f, 1f);
 
             slider.ControlEvent += OnControlChanged(hashKey);
 
@@ -69,19 +71,19 @@ public class ExpressionPane : BasePane
 
         foreach (var hashKey in FaceHashes)
         {
-            var toggle = new Toggle(hashKey);
+            var toggle = new Toggle(Translation.Get("faceBlendValues", hashKey));
 
             toggle.ControlEvent += OnControlChanged(hashKey);
 
             controls.Add(hashKey, toggle);
         }
 
-        blinkToggle = new("Blink", true);
+        blinkToggle = new(Translation.Get("expressionPane", "blinkToggle"), true);
         blinkToggle.ControlEvent += OnBlinkToggleChanged;
 
-        keySourceGrid = new(["Base Game", "Shape Key"]);
+        keySourceGrid = new(Translation.GetArray("expressionPane", KeySourceGridTranslationKeys));
 
-        paneHeader = new("Facial Expression", true);
+        paneHeader = new(Translation.Get("expressionPane", "header"), true);
     }
 
     private FaceController CurrentFace =>
@@ -228,6 +230,28 @@ public class ExpressionPane : BasePane
         }
     }
 
+    protected override void ReloadTranslation()
+    {
+        editShapeKeysToggle.Label = Translation.Get("expressionPane", "editShapeKeysToggle");
+
+        if (!hasShapeKeys)
+            addShapeKeyDropdown.SetDropdownItemsWithoutNotify([Translation.Get("expressionPane", "noShapeKeys")]);
+
+        foreach (var (hashKey, control) in EyeHashes.Concat(MouthHashes).Concat(FaceHashes).Select(hashKey => (hashKey, controls[hashKey])))
+        {
+            var translation = Translation.Get("faceBlendValues", hashKey);
+
+            if (control is Slider slider)
+                slider.Label = translation;
+            else if (control is Toggle toggle)
+                toggle.Label = translation;
+        }
+
+        blinkToggle.Label = Translation.Get("expressionPane", "blinkToggle");
+        keySourceGrid.SetItemsWithoutNotify(Translation.GetArray("expressionPane", KeySourceGridTranslationKeys));
+        paneHeader.Label = Translation.Get("expressionPane", "header");
+    }
+
     private EventHandler OnControlChanged(string hashKey) =>
         (object sender, EventArgs e) =>
         {
@@ -326,7 +350,7 @@ public class ExpressionPane : BasePane
         hasShapeKeys = shapeKeyList.Length is not 0;
 
         if (shapeKeyList.Length is 0)
-            shapeKeyList = ["No shape keys"];
+            shapeKeyList = [Translation.Get("expressionPane", "noShapeKeys")];
 
         addShapeKeyDropdown.SetDropdownItems(shapeKeyList);
     }

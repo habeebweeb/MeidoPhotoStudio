@@ -73,8 +73,6 @@ public class BackgroundPropsPane : BasePane
 
     protected override void ReloadTranslation()
     {
-        base.ReloadTranslation();
-
         propCategoryDropdown.SetDropdownItemsWithoutNotify(
             categories.Select(category => Translation.Get("backgroundSource", category.ToString())).ToArray());
         propDropdown.SetDropdownItemsWithoutNotify(PropList(categories[propCategoryDropdown.SelectedItemIndex]));

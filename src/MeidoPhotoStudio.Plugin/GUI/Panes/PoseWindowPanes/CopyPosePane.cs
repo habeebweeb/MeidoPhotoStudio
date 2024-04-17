@@ -16,6 +16,8 @@ public class CopyPosePane : BasePane
     private readonly CharacterService characterService;
     private readonly SelectionController<CharacterController> characterSelectionController;
 
+    private string copyHandHeader = string.Empty;
+
     public CopyPosePane(CharacterService characterService, SelectionController<CharacterController> characterSelectionController)
     {
         this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
@@ -23,27 +25,29 @@ public class CopyPosePane : BasePane
 
         this.characterService.CalledCharacters += OnCharactersCalled;
 
-        paneHeader = new("Copy Pose", true);
+        paneHeader = new(Translation.Get("copyPosePane", "header"), true);
 
-        otherCharacterDropdown = new(["No Characters"]);
+        otherCharacterDropdown = new([Translation.Get("systemMessage", "noMaids")]);
 
-        copyPoseButton = new("Copy Pose");
+        copyPoseButton = new(Translation.Get("copyPosePane", "copyButton"));
         copyPoseButton.ControlEvent += OnCopyPoseButtonPushed;
 
-        copyBothHandsButton = new("Copy Both Hands");
+        copyBothHandsButton = new(Translation.Get("copyPosePane", "copyBothHands"));
         copyBothHandsButton.ControlEvent += OnCopyBothHandsButtonPushed;
 
-        copyLeftHandToLeftButton = new("L > L");
+        copyLeftHandToLeftButton = new(Translation.Get("copyPosePane", "copyLeftHandToLeft"));
         copyLeftHandToLeftButton.ControlEvent += OnCopyLefHandToLeftButtonPushed;
 
-        copyLeftHandToRightButton = new("L > R");
+        copyLeftHandToRightButton = new(Translation.Get("copyPosePane", "copyLeftHandToRight"));
         copyLeftHandToRightButton.ControlEvent += OnCopyLefHandToRightButtonPushed;
 
-        copyRightHandToLeftButton = new("R > L");
+        copyRightHandToLeftButton = new(Translation.Get("copyPosePane", "copyRightHandToLeft"));
         copyRightHandToLeftButton.ControlEvent += OnCopyRightHandToLeftButtonPushed;
 
-        copyRightHandToRightButton = new("R > R");
+        copyRightHandToRightButton = new(Translation.Get("copyPosePane", "copyRightHandToRight"));
         copyRightHandToRightButton.ControlEvent += OnCopyRightHandToRightButtonPushed;
+
+        copyHandHeader = Translation.Get("copyPosePane", "copyHandHeader");
     }
 
     private CharacterController OtherCharacter =>
@@ -73,7 +77,7 @@ public class CopyPosePane : BasePane
             copyPoseButton.Draw();
         }
 
-        GUILayout.Label("Copy Hand");
+        GUILayout.Label(copyHandHeader);
         MpsGui.BlackLine();
 
         if (CurrentCharacter != OtherCharacter)
@@ -128,11 +132,23 @@ public class CopyPosePane : BasePane
         }
     }
 
+    protected override void ReloadTranslation()
+    {
+        paneHeader.Label = Translation.Get("copyPosePane", "header");
+        copyPoseButton.Label = Translation.Get("copyPosePane", "copyButton");
+        copyBothHandsButton.Label = Translation.Get("copyPosePane", "copyBothHands");
+        copyLeftHandToLeftButton.Label = Translation.Get("copyPosePane", "copyLeftHandToLeft");
+        copyLeftHandToRightButton.Label = Translation.Get("copyPosePane", "copyLeftHandToRight");
+        copyRightHandToLeftButton.Label = Translation.Get("copyPosePane", "copyRightHandToLeft");
+        copyRightHandToRightButton.Label = Translation.Get("copyPosePane", "copyRightHandToRight");
+        copyHandHeader = Translation.Get("copyPosePane", "copyHandHeader");
+    }
+
     private void OnCharactersCalled(object sender, EventArgs e)
     {
         if (characterService.Count is 0)
         {
-            otherCharacterDropdown.SetDropdownItemsWithoutNotify(["No Characters"]);
+            otherCharacterDropdown.SetDropdownItemsWithoutNotify([Translation.Get("systemMessage", "noMaids")]);
 
             return;
         }

@@ -62,15 +62,15 @@ public class BlendSetSelectorPane : BasePane
 
         blendSetDropdown.SelectionChanged += OnBlendSetChanged;
 
-        paneHeader = new("Face Blend Sets", true);
+        paneHeader = new(Translation.Get("maidFaceWindow", "header"), true);
 
-        saveBlendSetToggle = new("Save Blend Set", false);
+        saveBlendSetToggle = new(Translation.Get("maidFaceWindow", "savePaneToggle"), false);
         blendSetCategoryComboBox = new(this.customBlendSetRepository.Categories.ToArray());
         blendSetNameTextField = new();
-        saveBlendSetButton = new("Save");
+        saveBlendSetButton = new(Translation.Get("maidFaceWindow", "saveButton"));
         saveBlendSetButton.ControlEvent += OnSaveBlendSetButtonPushed;
 
-        refreshButton = new("Refresh");
+        refreshButton = new(Translation.Get("maidFaceWindow", "refreshButton"));
         refreshButton.ControlEvent += OnRefreshButtonPushed;
 
         noBlendSetsLabel = new(Translation.Get("maidFaceWindow", "noBlendSets"));
@@ -176,13 +176,13 @@ public class BlendSetSelectorPane : BasePane
     protected override void ReloadTranslation()
     {
         blendSetSourceGrid.SetItemsWithoutNotify(Translation.GetArray("maidFaceWindow", BlendSetSourceTranslationKeys));
-
         if (blendSetSourceGrid.SelectedItemIndex is GameBlendSet)
             blendSetCategoryDropdown.Reformat();
 
         paneHeader.Label = Translation.Get("maidFaceWindow", "header");
         saveBlendSetToggle.Label = Translation.Get("maidFaceWindow", "savePaneToggle");
         saveBlendSetButton.Label = Translation.Get("maidFaceWindow", "saveButton");
+        refreshButton.Label = Translation.Get("maidFaceWindow", "refreshButton");
         noBlendSetsLabel.Text = Translation.Get("maidFaceWindow", "noBlendSets");
         blendSetDirectoryHeader.Text = Translation.Get("maidFaceWindow", "directoryHeader");
         blendSetFilenameHeader.Text = Translation.Get("maidFaceWindow", "filenameHeader");

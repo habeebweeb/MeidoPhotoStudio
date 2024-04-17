@@ -27,12 +27,25 @@
     "wave": "M",
     "waveInverse": "W"
   },
+  "characterSwitcher": {
+    "editToggle": "Edit"
+  },
+  "characterWindowPane": {
+    "bodyTab": "Body",
+    "faceTab": "Face"
+  },
+  "characterAnimationPane": {
+    "header": "Animation"
+  },
   "maidPoseWindow": {
-    "ikToggle": "IK",
-    "releaseToggle": "Release",
-    "boneToggle": "Bone",
-    "flipToggle": "Flip IK",
-    "fixSkirtToggle": "Fix Skirt"
+    "header": "Posing",
+    "enabledToggle": "IK Enabled",
+    "boneToggle": "Precise Mode",
+    "limitJointsToggle": "Limit Joints",
+    "limitDigitsToggle": "Limit Fingers/Toes",
+    "customFloorHeightHeader": "Custom Floor Height",
+    "customFloorHeightEnabledToggle": "Enabled",
+    "flipPoseToggle": "Flip Pose"
   },
   "poseGroupDropdown": {
     "normal": "Normal",
@@ -58,16 +71,20 @@
     "ero2": "Ero 2"
   },
   "posePane": {
+    "header": "Animations",
     "categoryHeader": "Category",
+    "noAnimations": "No Animations",
     "nameHeader": "Name",
     "saveToggle": "Save Pose",
+    "refreshButton": "Refresh",
     "saveButton": "Add",
     "deleteButton": "D",
     "baseTab": "Base",
     "customTab": "Custom"
   },
   "freeLookPane": {
-    "freeLookToggle": "F-Look",
+    "header": "Free Look",
+    "freeLookToggle": "Enabled",
     "headToCamToggle": "Head",
     "eyeToCamToggle": "Eye",
     "xSlider": "Look X",
@@ -78,7 +95,20 @@
     "attachButton": "Attach",
     "detachButton": "Detach",
     "detachAllButton": "Detach All",
-    "header": "SM Restraints"
+    "upperAccessoryTab": "Upper",
+    "lowerAccessoryTab": "Lower",
+    "noAccessory": "No Accessory",
+    "header": "Attached Accessories"
+  },
+  "dressingPane": {
+    "header": "Clothing",
+    "detailedClothing": "Detailed Clothing",
+    "curlingFront": "Curl Front",
+    "curlingBack": "Curl Rear",
+    "shiftPanties": "Panties",
+    "all": "All",
+    "underwear": "Underwear",
+    "nude": "Nude"
   },
   "clothing": {
     "null_mpn": " --- ",
@@ -119,48 +149,58 @@
     "accAshi": "Ankles",
     "accXXX": "Genitals",
     "body": "Body",
-    "headwear": "Headwear",
-    "curlingFront": "Curl Front",
-    "curlingBack": "Curl Rear",
-    "shiftPanties": "Shift",
-    "detail": "Detailed Clothing",
-    "all": "All",
-    "underwear": "Underwear",
-    "nude": "Nude"
+    "headwear": "Headwear"
   },
   "gravityControlPane": {
+    "header": "Gravity",
     "hairToggle": "Hair",
-    "skirtToggle": "Skirt",
+    "clothingToggle": "Clothing",
     "globalToggle": "Global",
-    "gravityHeader": "Gravity Control"
+    "gravityHeader": "Gravity Control",
+    "hairDragHandleToggle": "Drag Handle",
+    "clothingDragHandleToggle": "Drag Handle"
   },
   "handPane": {
-    "header": "Hand Preset",
-    "saveToggle": "Save Hand",
+    "header": "Hand Presets",
+    "saveToggle": "Save Preset",
+    "refreshButton": "Refresh",
     "categoryHeader": "Category",
     "nameHeader": "Name",
     "saveLeftButton": "Left",
     "saveRightButton": "Right",
     "rightHand": "Right",
     "leftHand": "Left",
+    "swapHands": "Swap",
     "noPresetsMessage": "No Hand Presets"
   },
   "copyPosePane": {
-    "header": "Copy IK",
-    "copyButton": "Copy"
-  },
-  "flipIK": {
-    "header": "Flip IK",
-    "flipButton": "Flip"
-  },
-  "voiceLines": {
-    "speak": "Speak",
-    "speakEro": "H Lines"
+    "header": "Copy Pose",
+    "copyHandHeader": "Copy Hands",
+    "copyButton": "Copy Pose",
+    "copyBothHands": "Copy Both Hands",
+    "copyLeftHandToLeft": "L > L",
+    "copyLeftHandToRight": "L > R",
+    "copyRightHandToLeft": "R > L",
+    "copyRightHandToRight": "R > R"
   },
   "maidFaceWindow": {
-    "savePaneToggle": "Save",
+    "noBlendSets": "No Blend Sets",
+    "header": "Face Blend Sets",
+    "savePaneToggle": "Save Blend Set",
+    "saveButton": "Save",
+    "refreshButton": "Refresh",
     "baseTab": "Base",
-    "customTab": "Custom"
+    "customTab": "Custom",
+    "directoryHeader": "Category",
+    "filenameHeader": "Name"
+  },
+  "expressionPane": {
+    "header": "Facial Expression",
+    "editShapeKeysToggle": "Edit",
+    "noShapeKeys": "No shape keys",
+    "blinkToggle": "Blink",
+    "baseTab": "Base Game",
+    "shapeKeyTab": "Shape Key"
   },
   "faceBlendValues": {
     "eyeclose": "Eye Shut",
@@ -262,6 +302,10 @@
     "header": "Manage Props",
     "dragPointToggle": "Cube",
     "gizmoToggle": "Gizmo",
+    "toggleAllHandlesHeader": "Toggle All Handles",
+    "allDragHandleToggle": "Drag Handle",
+    "allGizmoToggle": "Gizmo",
+    "noProps": "No Props",
     "shadowCastingToggle": "Shadow",
     "visibleToggle": "Visible",
     "copyButton": "Copy",
@@ -273,6 +317,9 @@
     "positionControl": "Position",
     "rotationControl": "Rotation",
     "scaleControl": "Scale"
+  },
+  "propShapeKeyPane": {
+    "header": "Prop Shape Keys"
   },
   "movementCube": {
     "header": "Movement Cube",
@@ -452,12 +499,11 @@
   "systemMessage": {
     "exitConfirm": "Are you sure you want to quit {0}?\nAny unsaved data will be lost.",
     "initializing": "Initializing",
-    "noMaids": "No Maids",
+    "noMaids": "No Characters",
     "noProps": "No Props"
   },
   "controls": {
     "activate": "Activate MPS",
-    "screenshot": "Screenshot",
     "toggleUI": "Hide/Show UI",
     "toggleMessage": "Message Box",
     "meidoUndressing": "Undressing",
@@ -470,7 +516,6 @@
     "dragMove": "Move",
     "dragRotate": "Rotate",
     "dragScale": "Scale",
-    "dragFinger": "Show Fingers",
     "saveScene": "Quick Save",
     "loadScene": "Quick Load",
     "openSceneManager": "Open Scene Manager",
