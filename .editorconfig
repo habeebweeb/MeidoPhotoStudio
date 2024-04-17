@@ -27,6 +27,11 @@ indent_size = 4
 tab_width = 4
 insert_final_newline = true
 
+[*.json]
+indent_side = 2
+tab_width = 2
+insert_final_newline = true
+
 # Coding style
 [*.cs]
 
