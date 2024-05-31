@@ -21,7 +21,7 @@ public partial class ScreenshotService
         public void CheckInput()
         {
             if (inputConfiguration[Shortcut.Screenshot].IsDown())
-                screenshotService.TakeScreenshotToFile();
+                screenshotService.TakeScreenshotToFile(new());
         }
     }
 }

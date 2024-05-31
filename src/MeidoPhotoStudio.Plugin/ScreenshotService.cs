@@ -1,41 +1,44 @@
 using MeidoPhotoStudio.Plugin.Core;
 
+using ScreenshotScale = CMSystem.SSSuperSizeType;
+
 namespace MeidoPhotoStudio.Plugin;
 
 /// <summary>Screenshot service.</summary>
 public partial class ScreenshotService : MonoBehaviour
 {
-    private bool takingScreenshot;
     private GameObject dragHandleParent;
 
     public PluginCore PluginCore { get; set; }
 
+    public bool TakingScreenshot { get; set; }
+
     private GameObject DragHandleParent =>
         dragHandleParent ? dragHandleParent : (dragHandleParent = GameObject.Find("[MPS Drag Handle Parent]"));
 
-    public void TakeScreenshotToFile(CMSystem.SSSuperSizeType? superSizeType = null)
+    public void TakeScreenshotToFile(ScreenshotOptions screenshotOptions)
     {
-        if (takingScreenshot)
+        if (TakingScreenshot)
         {
             Utility.LogInfo("Screenshot in progress");
 
             return;
         }
 
-        StartCoroutine(DoScreenshot(ScreenshotAction));
+        StartCoroutine(DoScreenshot(ScreenshotAction, screenshotOptions));
 
-        void ScreenshotAction()
+        static void ScreenshotAction()
         {
-            superSizeType ??= GameMain.Instance.CMSystem.ScreenShotSuperSize;
+            var superSizeType = GameMain.Instance.CMSystem.ScreenShotSuperSize;
 
             var superSize = superSizeType switch
             {
-                CMSystem.SSSuperSizeType.X1 => 1,
-                CMSystem.SSSuperSizeType.X2 => 2,
-                CMSystem.SSSuperSizeType.X4 => 4,
+                ScreenshotScale.X1 => 1,
+                ScreenshotScale.X2 => 2,
+                ScreenshotScale.X4 => 4,
 
                 // This value is never used in game so 8 is just a guess for what MAX could represent
-                CMSystem.SSSuperSizeType.MAX => 8,
+                ScreenshotScale.MAX => 8,
                 _ => 1,
             };
 
@@ -51,9 +54,9 @@ public partial class ScreenshotService : MonoBehaviour
         }
     }
 
-    public void TakeScreenshotToTexture(Action<Texture2D> screenshotCallback, bool drawMessageBox = true)
+    public void TakeScreenshotToTexture(Action<Texture2D> screenshotCallback, ScreenshotOptions screenshotOptions)
     {
-        if (takingScreenshot)
+        if (TakingScreenshot)
         {
             Utility.LogInfo("Screenshot in progress");
 
@@ -63,14 +66,14 @@ public partial class ScreenshotService : MonoBehaviour
         if (screenshotCallback is null)
             throw new ArgumentNullException(nameof(screenshotCallback), "Screenshot callback is null");
 
-        StartCoroutine(DoScreenshot(ScreenshotAction));
+        StartCoroutine(DoScreenshot(ScreenshotAction, screenshotOptions));
 
         void ScreenshotAction() =>
-            screenshotCallback?.Invoke(TakeInMemoryScreenshot(drawMessageBox));
+            screenshotCallback?.Invoke(TakeInMemoryScreenshot(screenshotOptions));
 
-        Texture2D TakeInMemoryScreenshot(bool drawMessageBox)
+        Texture2D TakeInMemoryScreenshot(ScreenshotOptions screenshotOptions)
         {
-            if (drawMessageBox)
+            if (screenshotOptions.CaptureMessageBox)
                 return TakeScreenshot();
 
             var renderTexture = new RenderTexture(Screen.width, Screen.height, 24);
@@ -90,7 +93,7 @@ public partial class ScreenshotService : MonoBehaviour
 
             return screenshot;
 
-            Texture2D TakeScreenshot()
+            static Texture2D TakeScreenshot()
             {
                 var screenshot = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
 
@@ -102,18 +105,29 @@ public partial class ScreenshotService : MonoBehaviour
         }
     }
 
-    private IEnumerator DoScreenshot(Action screenshotAction)
+    private IEnumerator DoScreenshot(Action screenshotAction, ScreenshotOptions screenshotOptions)
     {
-        takingScreenshot = true;
+        TakingScreenshot = true;
 
         var uiPanels = GetNguiUIPanels();
         var enabledCanvases = GetEnabledUguiCanvases();
 
-        SetElementsVisible(false);
+        SetElementsVisible(screenshotOptions.CaptureUI);
 
         yield return new WaitForEndOfFrame();
 
-        screenshotAction?.Invoke();
+        try
+        {
+            screenshotAction?.Invoke();
+        }
+        catch
+        {
+            SetElementsVisible(true);
+
+            TakingScreenshot = false;
+
+            throw;
+        }
 
         PlayScreenshotSound();
 
@@ -121,7 +135,7 @@ public partial class ScreenshotService : MonoBehaviour
 
         SetElementsVisible(true);
 
-        takingScreenshot = false;
+        TakingScreenshot = false;
 
         void SetElementsVisible(bool visible)
         {

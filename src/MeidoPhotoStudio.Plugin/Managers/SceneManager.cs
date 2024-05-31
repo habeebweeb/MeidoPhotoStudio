@@ -138,7 +138,7 @@ public partial class SceneManager(
         if (!Directory.Exists(CurrentScenesDirectory))
             Directory.CreateDirectory(CurrentScenesDirectory);
 
-        screenshotService.TakeScreenshotToTexture(SaveScene);
+        screenshotService.TakeScreenshotToTexture(SaveScene, new());
 
         void SaveScene(Texture2D screenshot) =>
             SaveSceneToFile(screenshot, overwrite);
