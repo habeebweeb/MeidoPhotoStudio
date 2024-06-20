@@ -9,15 +9,26 @@ public class EffectsAspectLoader(EffectManager effectManager) : ISceneAspectLoad
 
     public void Load(EffectsSchema effectsSchema, LoadOptions loadOptions)
     {
-        if (!loadOptions.Effects)
+        if (!loadOptions.Effects.Load)
             return;
 
-        ApplyBloom(effectsSchema.Bloom);
-        ApplyDepthOfField(effectsSchema.DepthOfField);
-        ApplyFog(effectsSchema.Fog);
-        ApplyVignette(effectsSchema.Vignette);
-        ApplySepiaTone(effectsSchema.SepiaTone);
-        ApplyBlur(effectsSchema.Blur);
+        if (loadOptions.Effects.Bloom)
+            ApplyBloom(effectsSchema.Bloom);
+
+        if (loadOptions.Effects.DepthOfField)
+            ApplyDepthOfField(effectsSchema.DepthOfField);
+
+        if (loadOptions.Effects.Fog)
+            ApplyFog(effectsSchema.Fog);
+
+        if (loadOptions.Effects.Vignette)
+            ApplyVignette(effectsSchema.Vignette);
+
+        if (loadOptions.Effects.SepiaTone)
+            ApplySepiaTone(effectsSchema.SepiaTone);
+
+        if (loadOptions.Effects.Blur)
+            ApplyBlur(effectsSchema.Blur);
     }
 
     private void ApplyBlur(BlurSchema blurSchema)

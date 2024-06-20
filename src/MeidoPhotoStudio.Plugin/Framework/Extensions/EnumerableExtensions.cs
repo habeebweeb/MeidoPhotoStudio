@@ -73,4 +73,19 @@ public static class EnumerableExtensions
 
         return -1;
     }
+
+    public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(
+        this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, bool descending) =>
+            source == null ? throw new ArgumentException(nameof(source)) :
+            keySelector == null ? throw new ArgumentNullException(nameof(keySelector)) :
+            descending ? source.OrderByDescending(keySelector) :
+            source.OrderBy(keySelector);
+
+    public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(
+        this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer, bool descending) =>
+            source == null ? throw new ArgumentException(nameof(source)) :
+            keySelector == null ? throw new ArgumentNullException(nameof(keySelector)) :
+            comparer == null ? throw new ArgumentException(nameof(comparer)) :
+            descending ? source.OrderByDescending(keySelector, comparer) :
+            source.OrderBy(keySelector, comparer);
 }

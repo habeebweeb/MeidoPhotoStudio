@@ -1,16 +1,28 @@
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
 public readonly record struct LoadOptions(
-    bool Maids, bool Message, bool Camera, bool Lights, bool Effects, bool Background, bool Props)
+    CharacterLoadOptions Characters, bool Message, bool Camera, bool Lights, EffectLoadOptions Effects, bool Background, bool Props)
 {
     public static LoadOptions All =>
         new()
         {
-            Maids = true,
+            Characters = new()
+            {
+                Load = true,
+                ByID = false,
+            },
             Message = true,
             Camera = true,
             Lights = true,
-            Effects = true,
+            Effects = new()
+            {
+                Bloom = true,
+                DepthOfField = true,
+                Vignette = true,
+                Fog = true,
+                SepiaTone = true,
+                Blur = true,
+            },
             Background = true,
             Props = true,
         };
@@ -18,11 +30,23 @@ public readonly record struct LoadOptions(
     public static LoadOptions Environment =>
         new()
         {
-            Maids = false,
+            Characters = new()
+            {
+                Load = false,
+                ByID = false,
+            },
             Message = false,
             Camera = false,
             Lights = true,
-            Effects = true,
+            Effects = new()
+            {
+                Bloom = true,
+                DepthOfField = true,
+                Vignette = true,
+                Fog = true,
+                SepiaTone = true,
+                Blur = true,
+            },
             Background = true,
             Props = true,
         };

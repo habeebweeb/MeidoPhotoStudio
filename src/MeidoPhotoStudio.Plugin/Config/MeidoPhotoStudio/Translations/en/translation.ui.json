@@ -272,7 +272,9 @@
   },
   "sceneManagementPane": {
     "manageScenesButton": "Manage Scenes",
-    "sceneManagementHeader": "Scene Management"
+    "sceneManagementHeader": "Scene Management",
+    "quickSaveButton": "Quick Save",
+    "quickLoadButton": "Quick Load"
   },
   "propsPane": {
     "addProp": "Add Prop",
@@ -478,18 +480,38 @@
     "infoMaidPlural": "{0} Maids",
     "deleteButton": "Delete",
     "cancelButton": "Cancel",
-    "overwriteButton": "Overwrite"
+    "overwriteButton": "Overwrite",
+    "loadOptionsToggle": "Load Options",
+    "sceneLoadErrorMessage": "Could not open scene '{0}'"
+  },
+  "sceneManagerModalLoadOptions": {
+    "loadCharactersToggle": "Maids",
+    "loadCharactersByIDToggle": "Load by ID",
+    "loadMessageToggle": "Message",
+    "loadCameraToggle": "Camera",
+    "loadLightsToggle": "Lights",
+    "loadEffectsToggle": "Effects",
+    "loadBloomToggle": "Bloom",
+    "loadDepthOfFieldToggle": "Depth of Field",
+    "loadVignetteToggle": "Vignette",
+    "loadFogToggle": "Fog",
+    "loadSepiaToneToggle": "Sepia Tone",
+    "loadBlurToggle": "Blur",
+    "loadBackgroundToggle": "Background",
+    "loadPropsToggle": "Props"
   },
   "sceneManager": {
-    "createDirectoryButton": "New Folder",
+    "createDirectoryButton": "Add Folder",
     "deleteDirectoryButton": "Delete",
-    "kankyoToggle": "Backgrounds",
+    "saveSceneButton": "Save Scene",
     "refreshButton": "Refresh",
     "sortName": "Name",
     "sortCreated": "Date Created",
     "sortModified": "Date Modified",
     "descendingToggle": "Descending",
-    "sortLabel": "Sort"
+    "sortLabel": "Sort",
+    "noDirectoriesLabel": "No directories",
+    "noScenesLabel": "No scenes"
   },
   "messageWindow": {
     "name": "Name",

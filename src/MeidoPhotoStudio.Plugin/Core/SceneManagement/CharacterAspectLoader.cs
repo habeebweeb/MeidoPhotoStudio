@@ -11,6 +11,7 @@ namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
 public class CharacterAspectLoader(
     CharacterService characterService,
+    CharacterRepository characterRepository,
     GlobalGravityService globalGravityService,
     GameAnimationRepository gameAnimationRepository,
     CustomAnimationRepository customAnimationRepository,
@@ -21,6 +22,9 @@ public class CharacterAspectLoader(
 {
     private readonly CharacterService characterService = characterService
         ?? throw new ArgumentNullException(nameof(characterService));
+
+    private readonly CharacterRepository characterRepository = characterRepository
+        ?? throw new ArgumentNullException(nameof(characterRepository));
 
     private readonly GlobalGravityService globalGravityService = globalGravityService
         ?? throw new ArgumentNullException(nameof(globalGravityService));
@@ -40,18 +44,45 @@ public class CharacterAspectLoader(
     private readonly MenuPropRepository menuPropRepository = menuPropRepository
         ?? throw new ArgumentNullException(nameof(menuPropRepository));
 
-    public void Load(CharactersSchema schema, LoadOptions loadOptions)
+    public void Load(CharactersSchema charactersSchema, LoadOptions loadOptions)
     {
-        if (!loadOptions.Maids)
+        if (!loadOptions.Characters.Load)
             return;
 
-        if (schema is null)
+        if (charactersSchema is null)
             return;
 
-        foreach (var (character, characterSchema) in characterService.Zip(schema.Characters))
-            ApplyCharacter(character, characterSchema);
+        if (charactersSchema.Version >= 2 && loadOptions.Characters.ByID)
+            LoadCharactersByID(charactersSchema);
+        else
+            Apply();
 
-        ApplyGlobalGravity(globalGravityService, schema.GlobalGravity);
+        void LoadCharactersByID(CharactersSchema schema)
+        {
+            var charactersToLoad = schema.Characters
+                .Select(character => character.ID)
+                .Where(id => !string.IsNullOrEmpty(id))
+                .Select(characterRepository.GetByID)
+                .Where(model => model is not null);
+
+            characterService.Call(charactersToLoad);
+            characterService.CalledCharacters += OnCharactersCalled;
+
+            void OnCharactersCalled(object sender, CharacterServiceEventArgs e)
+            {
+                characterService.CalledCharacters -= OnCharactersCalled;
+
+                Apply();
+            }
+        }
+
+        void Apply()
+        {
+            foreach (var (character, characterSchema) in characterService.Zip(charactersSchema.Characters))
+                ApplyCharacter(character, characterSchema);
+
+            ApplyGlobalGravity(globalGravityService, charactersSchema.GlobalGravity);
+        }
     }
 
     private void ApplyCharacter(CharacterController character, CharacterSchema schema)

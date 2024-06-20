@@ -310,6 +310,7 @@ public partial class PluginCore : MonoBehaviour
         var sceneLoader = new SceneLoader(
             new CharacterAspectLoader(
                 characterService,
+                characterRepository,
                 globalGravityService,
                 gameAnimationRepository,
                 customAnimationRepository,

@@ -103,27 +103,47 @@ public class PropsAspectLoader(
             void ApplyPropAttachment(
                 PropController propController, AttachPointSchema attachPointSchema, TransformSchema transformSchema)
             {
-                if (characterService.Count is 0)
-                    return;
-
-                if (attachPointSchema.CharacterIndex >= characterService.Count)
-                    return;
-
-                if (attachPointSchema.AttachPoint is AttachPoint.None)
-                    return;
-
-                var character = characterService[attachPointSchema.CharacterIndex];
-
-                propAttachmentService.AttachPropTo(propController, character, attachPointSchema.AttachPoint, false);
-
-                if (propsSchema.Version is 1)
+                if (characterService.Busy)
                 {
-                    propController.GameObject.transform.SetPositionAndRotation(transformSchema.Position, transformSchema.Rotation);
+                    characterService.CalledCharacters += OnCharactersLoaded;
+
+                    void OnCharactersLoaded(object sender, CharacterServiceEventArgs e)
+                    {
+                        characterService.CalledCharacters -= OnCharactersLoaded;
+
+                        Attach();
+                    }
                 }
                 else
                 {
-                    propController.GameObject.transform.localPosition = transformSchema.LocalPosition;
-                    propController.GameObject.transform.localRotation = transformSchema.LocalRotation;
+                    Attach();
+                }
+
+                void Attach()
+                {
+                    if (characterService.Count is 0)
+                        return;
+
+                    if (attachPointSchema.CharacterIndex >= characterService.Count)
+                        return;
+
+                    if (attachPointSchema.AttachPoint is AttachPoint.None)
+                        return;
+
+                    var character = characterService[attachPointSchema.CharacterIndex];
+
+                    propAttachmentService.AttachPropTo(propController, character, attachPointSchema.AttachPoint, false);
+
+                    if (propsSchema.Version is 1)
+                    {
+                        propController.GameObject.transform.SetPositionAndRotation(
+                            transformSchema.Position, transformSchema.Rotation);
+                    }
+                    else
+                    {
+                        propController.GameObject.transform.localPosition = transformSchema.LocalPosition;
+                        propController.GameObject.transform.localRotation = transformSchema.LocalRotation;
+                    }
                 }
             }
 
