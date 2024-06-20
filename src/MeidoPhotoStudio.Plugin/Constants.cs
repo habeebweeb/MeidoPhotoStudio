@@ -1,8 +1,5 @@
-using MeidoPhotoStudio.Plugin.Framework;
-
 namespace MeidoPhotoStudio.Plugin;
 
-// TODO: 😮 Holy moly! Destroy all static utility classes.
 public static class Constants
 {
     public const string SceneDirectory = "Scenes";
@@ -45,47 +42,5 @@ public static class Constants
         Save,
         SaveModal,
         Settings,
-    }
-
-    public static void Initialize()
-    {
-        InitializeSceneDirectories();
-        InitializeKankyoDirectories();
-    }
-
-    public static void InitializeSceneDirectories()
-    {
-        SceneDirectoryList.Clear();
-        SceneDirectoryList.Add(SceneDirectory);
-
-        foreach (var directory in Directory.GetDirectories(ScenesPath))
-            SceneDirectoryList.Add(new DirectoryInfo(directory).Name);
-
-        SceneDirectoryList.Sort((a, b) => KeepAtTop(a, b, SceneDirectory, new WindowsLogicalStringComparer()));
-    }
-
-    public static void InitializeKankyoDirectories()
-    {
-        KankyoDirectoryList.Clear();
-        KankyoDirectoryList.Add(KankyoDirectory);
-
-        foreach (var directory in Directory.GetDirectories(KankyoPath))
-            KankyoDirectoryList.Add(new DirectoryInfo(directory).Name);
-
-        KankyoDirectoryList.Sort((a, b) => KeepAtTop(a, b, KankyoDirectory, new WindowsLogicalStringComparer()));
-    }
-
-    private static int KeepAtTop(string a, string b, string topItem, IComparer<string> comparer)
-    {
-        if (a == b)
-            return 0;
-
-        if (a == topItem)
-            return -1;
-
-        if (b == topItem)
-            return 1;
-
-        return comparer.Compare(a, b);
     }
 }

@@ -3,6 +3,7 @@ using MeidoPhotoStudio.Database.Background;
 using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Database.Props;
 using MeidoPhotoStudio.Database.Props.Menu;
+using MeidoPhotoStudio.Database.Scenes;
 using MeidoPhotoStudio.Plugin.Core.Background;
 using MeidoPhotoStudio.Plugin.Core.Camera;
 using MeidoPhotoStudio.Plugin.Core.Character;
@@ -11,6 +12,7 @@ using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Core.SceneManagement;
+using MeidoPhotoStudio.Plugin.Core.Scenes;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
@@ -28,7 +30,6 @@ public partial class PluginCore : MonoBehaviour
     private readonly IconCache iconCache = new();
 
     private WindowManager windowManager;
-    private SceneManager sceneManager;
     private MessageWindowManager messageWindowManager;
     private PropService propService;
     private EffectManager effectManager;
@@ -72,7 +73,7 @@ public partial class PluginCore : MonoBehaviour
 
         customMaidSceneService = new();
 
-        UnityEngine.SceneManagement.SceneManager.activeSceneChanged += OnSceneChanged;
+        SceneManager.activeSceneChanged += OnSceneChanged;
     }
 
     private void OnDestroy()
@@ -82,7 +83,7 @@ public partial class PluginCore : MonoBehaviour
 
         GameMain.Instance.MainCamera.ResetCalcNearClip();
 
-        UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= OnSceneChanged;
+        SceneManager.activeSceneChanged -= OnSceneChanged;
 
         iconCache.Destroy();
 
@@ -95,7 +96,6 @@ public partial class PluginCore : MonoBehaviour
 
     private void Start()
     {
-        Constants.Initialize();
         Translation.Initialize(Translation.CurrentLanguage);
 
         inputConfiguration = new InputConfiguration(MeidoPhotoStudio.Plugin.Configuration.Config);
@@ -115,6 +115,9 @@ public partial class PluginCore : MonoBehaviour
             return;
 
         windowManager.Update();
+
+        if (Modal.Visible)
+            Modal.Update();
     }
 
     private void OnGUI()
@@ -333,13 +336,24 @@ public partial class PluginCore : MonoBehaviour
                 gamePropRepository,
                 menuPropRepository));
 
-        sceneManager = new(screenshotService, new WrappedSerializer(new(), new()), sceneLoader, sceneSchemaBuilder);
+        var sceneSerializer = new WrappedSerializer(new(), new());
 
-        AddPluginActiveInputHandler(new SceneManager.InputHandler(sceneManager, inputConfiguration));
+        var sceneRepository = new SceneRepository(Path.Combine(configRoot, "Scenes"), sceneSerializer);
 
-        var sceneWindow = new SceneWindow(sceneManager);
+        var sceneBrowser = new SceneBrowserWindow(
+            sceneRepository,
+            new(sceneRepository, screenshotService, sceneSchemaBuilder, sceneSerializer, sceneLoader),
+            sceneSchemaBuilder,
+            screenshotService,
+            new(MeidoPhotoStudio.Plugin.Configuration.Config));
 
-        AddPluginActiveInputHandler(new SceneWindow.InputHandler(sceneWindow, inputConfiguration));
+        AddPluginActiveInputHandler(new SceneBrowserWindowInputHandler(sceneBrowser, inputConfiguration));
+
+        var quickSaveService = new QuickSaveService(configRoot, characterService, sceneSchemaBuilder, sceneSerializer, sceneLoader);
+
+        AddPluginActiveInputHandler(new QuickSaveInputHandler(
+            quickSaveService,
+            inputConfiguration));
 
         var messageWindow = new MessageWindow(messageWindowManager);
 
@@ -384,7 +398,7 @@ public partial class PluginCore : MonoBehaviour
             [Constants.Window.Face] = characterWindowPane,
             [Constants.Window.BG] = new BGWindowPane()
                 {
-                    new SceneManagementPane(sceneWindow),
+                    new SceneManagementPane(sceneBrowser, quickSaveService),
                     new BackgroundsPane(backgroundService, backgroundRepository, backgroundDragHandleService),
                     new DragPointPane(propDragHandleService, ikDragHandleService),
                     new CameraPane(cameraController, cameraSaveSlotController),
@@ -430,7 +444,7 @@ public partial class PluginCore : MonoBehaviour
         {
             [Constants.Window.Main] = mainWindow,
             [Constants.Window.Message] = messageWindow,
-            [Constants.Window.Save] = sceneWindow,
+            [Constants.Window.Save] = sceneBrowser,
         };
 
         dragHandleClickHandler.WindowManager = windowManager;
@@ -507,7 +521,7 @@ public partial class PluginCore : MonoBehaviour
 
     private void Deactivate(bool force = false)
     {
-        if (characterService.Busy || SceneManager.Busy)
+        if (characterService.Busy)
             return;
 
         var sysDialog = GameMain.Instance.SysDlg;

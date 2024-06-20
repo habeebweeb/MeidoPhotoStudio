@@ -4,7 +4,7 @@ public static class Modal
 {
     private static BaseWindow currentModal;
 
-    public static bool Visible
+    internal static bool Visible
     {
         get => currentModal?.Visible ?? false;
         set
@@ -16,7 +16,7 @@ public static class Modal
         }
     }
 
-    public static void Show(BaseWindow modalWindow)
+    internal static void Show(BaseWindow modalWindow)
     {
         if (currentModal is not null)
             Close();
@@ -25,14 +25,28 @@ public static class Modal
         Visible = true;
     }
 
-    public static void Close()
+    internal static void Close()
     {
         Visible = false;
         currentModal = null;
     }
 
-    public static void Draw()
+    internal static void Update()
     {
+        if (UnityEngine.Input.mouseScrollDelta.y is 0f || !Visible)
+            return;
+
+        var mousePos = new Vector2(UnityEngine.Input.mousePosition.x, Screen.height - UnityEngine.Input.mousePosition.y);
+
+        if (currentModal.WindowRect.Contains(mousePos))
+            UnityEngine.Input.ResetInputAxes();
+    }
+
+    internal static void Draw()
+    {
+        if (!Visible)
+            return;
+
         var windowStyle = new GUIStyle(GUI.skin.box);
 
         currentModal.WindowRect =
