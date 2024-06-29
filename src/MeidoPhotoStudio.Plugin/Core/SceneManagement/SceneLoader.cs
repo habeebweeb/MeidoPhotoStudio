@@ -47,9 +47,9 @@ public class SceneLoader(
         characterAspectLoader.Load(sceneSchema.Character, loadOptions);
         messageAspectLoader.Load(sceneSchema.MessageWindow, loadOptions);
         cameraAspectLoader.Load(sceneSchema.Camera, loadOptions);
-        lightingAspectLoader.Load(sceneSchema.Lights, loadOptions);
         effectsAspectLoader.Load(sceneSchema.Effects, loadOptions);
         backgroundAspectLoader.Load(sceneSchema.Background, loadOptions);
+        lightingAspectLoader.Load(sceneSchema.Lights, loadOptions);
         propsAspectLoader.Load(sceneSchema.Props, loadOptions);
     }
 }

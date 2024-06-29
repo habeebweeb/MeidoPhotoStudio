@@ -46,7 +46,10 @@ public class LightAspectLoader(LightRepository lightRepository, BackgroundServic
 
             // NOTE: Camera background colour was set through main light in older version
             if (lightSchema.ColourMode)
+            {
                 backgroundService.BackgroundColour = lightSchema.DirectionalProperties.Colour;
+                backgroundService.BackgroundVisible = false;
+            }
 
             LightProperties MakeLightProperties(LightPropertiesSchema lightPropertiesSchema) =>
                 new()

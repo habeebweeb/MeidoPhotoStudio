@@ -324,7 +324,7 @@ public partial class PluginCore : MonoBehaviour
             new CameraAspectLoader(cameraSaveSlotController),
             new LightAspectLoader(lightRepository, backgroundService),
             new EffectsAspectLoader(effectManager),
-            new BackgroundAspectLoader(backgroundService),
+            new BackgroundAspectLoader(backgroundService, backgroundRepository),
             new PropsAspectLoader(
                 propService,
                 propDragHandleService,

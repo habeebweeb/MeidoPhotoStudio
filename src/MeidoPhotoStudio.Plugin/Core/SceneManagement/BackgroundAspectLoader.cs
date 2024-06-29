@@ -1,11 +1,13 @@
 using System.Text.RegularExpressions;
 
+using MeidoPhotoStudio.Database.Background;
 using MeidoPhotoStudio.Plugin.Core.Background;
 using MeidoPhotoStudio.Plugin.Core.Schema.Background;
 
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
-public class BackgroundAspectLoader(BackgroundService backgroundService) : ISceneAspectLoader<BackgroundSchema>
+public class BackgroundAspectLoader(BackgroundService backgroundService, BackgroundRepository backgroundRepository)
+    : ISceneAspectLoader<BackgroundSchema>
 {
     private readonly BackgroundService backgroundService = backgroundService
         ?? throw new ArgumentNullException(nameof(backgroundService));
@@ -15,19 +17,15 @@ public class BackgroundAspectLoader(BackgroundService backgroundService) : IScen
         if (!loadOptions.Background)
             return;
 
-        if (backgroundSchema.Version is 1)
-        {
-            if (IsGuidString(backgroundSchema.BackgroundName))
-                GameMain.Instance.BgMgr.ChangeBgMyRoom(backgroundSchema.BackgroundName);
-            else
-                GameMain.Instance.BgMgr.ChangeBg(backgroundSchema.BackgroundName);
-        }
-        else if (backgroundSchema.Version >= 2)
-        {
-            var modelSchema = backgroundSchema.Background;
+        BackgroundModel backgroundModel = null;
 
-            backgroundService.ChangeBackground(new(modelSchema.Category, modelSchema.AssetName, modelSchema.Name));
-        }
+        if (backgroundSchema.Version is 1)
+            backgroundModel = GetModelFromID(backgroundSchema.BackgroundName);
+        else if (backgroundSchema.Version >= 2)
+            backgroundModel = GetModelFromSchema(backgroundSchema.Background);
+
+        if (backgroundModel is not null)
+            backgroundService.ChangeBackground(backgroundModel);
 
         if (backgroundService.BackgroundTransform)
         {
@@ -37,14 +35,41 @@ public class BackgroundAspectLoader(BackgroundService backgroundService) : IScen
         }
 
         if (backgroundSchema.Version >= 2)
+        {
             backgroundService.BackgroundColour = backgroundSchema.Colour;
-    }
+            backgroundService.BackgroundVisible = backgroundSchema.Visible;
+        }
 
-    private static bool IsGuidString(string guid)
-    {
-        var guidRegEx =
-            new Regex(@"^[a-f0-9]{8}(\-[a-f0-9]{4}){3}\-[a-f0-9]{12}$", RegexOptions.IgnoreCase);
+        BackgroundModel GetModelFromID(string backgroundName)
+        {
+            if (IsGuidString(backgroundName))
+            {
+                return backgroundRepository[BackgroundCategory.MyRoomCustom].FirstOrDefault(model =>
+                    string.Equals(backgroundName, model.ID, StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                IEnumerable<BackgroundModel> models = backgroundRepository[BackgroundCategory.COM3D2];
 
-        return !string.IsNullOrEmpty(guid) && guid.Length is 36 && guidRegEx.IsMatch(guid);
+                if (backgroundRepository.ContainsCategory(BackgroundCategory.CM3D2))
+                    models = models.Concat(backgroundRepository[BackgroundCategory.CM3D2]);
+
+                return models.FirstOrDefault(model => string.Equals(backgroundName, model.ID, StringComparison.OrdinalIgnoreCase));
+            }
+
+            static bool IsGuidString(string guid)
+            {
+                var guidRegEx =
+                    new Regex(@"^[a-f0-9]{8}(\-[a-f0-9]{4}){3}\-[a-f0-9]{12}$", RegexOptions.IgnoreCase);
+
+                return !string.IsNullOrEmpty(guid) && guid.Length is 36 && guidRegEx.IsMatch(guid);
+            }
+        }
+
+        BackgroundModel GetModelFromSchema(BackgroundModelSchema schema) =>
+            backgroundRepository.ContainsCategory(schema.Category)
+                ? backgroundRepository[schema.Category]
+                    .FirstOrDefault(model => string.Equals(model.ID, schema.ID, StringComparison.OrdinalIgnoreCase))
+                : null;
     }
 }

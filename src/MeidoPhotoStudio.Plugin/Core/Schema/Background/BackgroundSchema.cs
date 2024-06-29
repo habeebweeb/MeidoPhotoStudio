@@ -13,4 +13,6 @@ public class BackgroundSchema(short version = BackgroundSchema.SchemaVersion)
     public TransformSchema Transform { get; init; }
 
     public Color Colour { get; init; }
+
+    public bool Visible { get; init; } = true;
 }
