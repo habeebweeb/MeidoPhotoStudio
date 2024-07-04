@@ -1,10 +1,11 @@
+using MeidoPhotoStudio.Plugin.Core.Effects;
 using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class VignetteSchemaBuilder : ISchemaBuilder<VignetteSchema, VignetteEffectManager>
+public class VignetteSchemaBuilder : ISchemaBuilder<VignetteSchema, VignetteController>
 {
-    public VignetteSchema Build(VignetteEffectManager vignette) =>
+    public VignetteSchema Build(VignetteController vignette) =>
         new()
         {
             Active = vignette.Active,

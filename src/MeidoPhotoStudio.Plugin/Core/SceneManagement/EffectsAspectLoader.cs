@@ -1,11 +1,34 @@
+using MeidoPhotoStudio.Plugin.Core.Effects;
 using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
-public class EffectsAspectLoader(EffectManager effectManager) : ISceneAspectLoader<EffectsSchema>
+public class EffectsAspectLoader(
+    BloomController bloomController,
+    DepthOfFieldController depthOfFieldController,
+    VignetteController vignetteController,
+    FogController fogController,
+    BlurController blurController,
+    SepiaToneController sepiaToneController)
+    : ISceneAspectLoader<EffectsSchema>
 {
-    private readonly EffectManager effectManager = effectManager
-        ?? throw new ArgumentNullException(nameof(effectManager));
+    private readonly BloomController bloomController = bloomController
+        ?? throw new ArgumentException(nameof(bloomController));
+
+    private readonly DepthOfFieldController depthOfFieldController = depthOfFieldController
+        ?? throw new ArgumentException(nameof(depthOfFieldController));
+
+    private readonly VignetteController vignetteController = vignetteController
+        ?? throw new ArgumentException(nameof(vignetteController));
+
+    private readonly FogController fogController = fogController
+        ?? throw new ArgumentException(nameof(fogController));
+
+    private readonly BlurController blurController = blurController
+        ?? throw new ArgumentException(nameof(blurController));
+
+    private readonly SepiaToneController sepiaToneController = sepiaToneController
+        ?? throw new ArgumentException(nameof(sepiaToneController));
 
     public void Load(EffectsSchema effectsSchema, LoadOptions loadOptions)
     {
@@ -33,62 +56,62 @@ public class EffectsAspectLoader(EffectManager effectManager) : ISceneAspectLoad
 
     private void ApplyBlur(BlurSchema blurSchema)
     {
-        var blur = effectManager.Get<BlurEffectManager>();
+        var (blurSize, blurIterations, downsample) =
+            (blurSchema.BlurSize, blurSchema.BlurIterations, blurSchema.Downsample);
 
-        blur.SetEffectActive(blurSchema.Active);
-        blur.BlurSize = blurSchema.BlurSize;
+        if (blurSchema.Version is 1)
+        {
+            var realBlurSize = blurSize / 10f;
+
+            (blurSize, blurIterations, downsample) = realBlurSize >= 3f
+                ? (realBlurSize - 0.3f, 1, 1)
+                : (realBlurSize, 0, 0);
+        }
+
+        blurController.Active = blurSchema.Active;
+        blurController.BlurSize = blurSize;
+        blurController.BlurIterations = blurIterations;
+        blurController.Downsample = downsample;
     }
 
-    private void ApplySepiaTone(SepiaToneSchema sepiaToneSchema)
-    {
-        var sepiaTone = effectManager.Get<SepiaToneEffectManager>();
-
-        sepiaTone.SetEffectActive(sepiaToneSchema.Active);
-    }
+    private void ApplySepiaTone(SepiaToneSchema sepiaToneSchema) =>
+        sepiaToneController.Active = sepiaToneSchema.Active;
 
     private void ApplyVignette(VignetteSchema vignetteSchema)
     {
-        var vignette = effectManager.Get<VignetteEffectManager>();
-
-        vignette.SetEffectActive(vignetteSchema.Active);
-        vignette.Intensity = vignetteSchema.Intensity;
-        vignette.Blur = vignetteSchema.Blur;
-        vignette.BlurSpread = vignetteSchema.BlurSpread;
-        vignette.ChromaticAberration = vignetteSchema.ChromaticAberration;
+        vignetteController.Active = vignetteSchema.Active;
+        vignetteController.Intensity = vignetteSchema.Intensity;
+        vignetteController.Blur = vignetteSchema.Blur;
+        vignetteController.BlurSpread = vignetteSchema.BlurSpread;
+        vignetteController.ChromaticAberration = vignetteSchema.ChromaticAberration;
     }
 
     private void ApplyFog(FogSchema fogSchema)
     {
-        var fog = effectManager.Get<FogEffectManager>();
-
-        fog.SetEffectActive(fogSchema.Active);
-        fog.Distance = fogSchema.Distance;
-        fog.Density = fogSchema.Density;
-        fog.HeightScale = fogSchema.HeightScale;
-        fog.Height = fogSchema.Height;
-        fog.FogColour = fogSchema.FogColour;
+        fogController.Active = fogSchema.Active;
+        fogController.Distance = fogSchema.Distance;
+        fogController.Density = fogSchema.Density;
+        fogController.HeightScale = fogSchema.HeightScale;
+        fogController.Height = fogSchema.Height;
+        fogController.FogColour = fogSchema.FogColour;
     }
 
     private void ApplyDepthOfField(DepthOfFieldSchema depthOfFieldSchema)
     {
-        var dof = effectManager.Get<DepthOfFieldEffectManager>();
-
-        dof.SetEffectActive(depthOfFieldSchema.Active);
-        dof.FocalLength = depthOfFieldSchema.FocalLength;
-        dof.FocalSize = depthOfFieldSchema.FocalSize;
-        dof.Aperture = depthOfFieldSchema.Aperture;
-        dof.MaxBlurSize = depthOfFieldSchema.MaxBlurSize;
-        dof.VisualizeFocus = depthOfFieldSchema.VisualizeFocus;
+        depthOfFieldController.Active = depthOfFieldSchema.Active;
+        depthOfFieldController.FocalLength = depthOfFieldSchema.FocalLength;
+        depthOfFieldController.FocalSize = depthOfFieldSchema.FocalSize;
+        depthOfFieldController.Aperture = depthOfFieldSchema.Aperture;
+        depthOfFieldController.MaxBlurSize = depthOfFieldSchema.MaxBlurSize;
+        depthOfFieldController.VisualizeFocus = depthOfFieldSchema.VisualizeFocus;
     }
 
     private void ApplyBloom(BloomSchema bloomSchema)
     {
-        var bloom = effectManager.Get<BloomEffectManager>();
-
-        bloom.SetEffectActive(bloomSchema.Active);
-        bloom.BloomValue = bloomSchema.BloomValue;
-        bloom.BlurIterations = bloomSchema.BlurIterations;
-        bloom.BloomThresholdColour = bloomSchema.BloomThresholdColour;
-        bloom.BloomHDR = bloomSchema.BloomHDR;
+        bloomController.Active = bloomSchema.Active;
+        bloomController.BloomValue = (int)bloomSchema.BloomValue;
+        bloomController.BlurIterations = bloomSchema.BlurIterations;
+        bloomController.BloomThresholdColour = bloomSchema.BloomThresholdColour;
+        bloomController.HDR = bloomSchema.BloomHDR;
     }
 }

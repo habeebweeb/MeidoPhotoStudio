@@ -367,6 +367,7 @@
     "light": "Light"
   },
   "effectsPane": {
+    "header": "Effects",
     "onToggle": "On",
     "bloom": "Bloom",
     "dof": "DOF",
@@ -375,37 +376,43 @@
     "sepia": "Sepia",
     "reset": "Reset Effect"
   },
+  "effectTypes": {
+    "bloom": "Bloom",
+    "depthOfField": "Depth of Field",
+    "vignette": "Vignette",
+    "fog": "Fog",
+    "sepiaTone": "Sepia Tone",
+    "blur": "Blur"
+  },
   "effectBloom": {
     "intensity": "Intensity",
     "blur": "Blur",
-    "hdrToggle": "HDR"
+    "hdrToggle": "HDR",
+    "red": "Red",
+    "green": "Green",
+    "blue": "Blue"
   },
   "effectDof": {
     "focalLength": "Focal Length",
     "focalArea": "Focal Area",
     "aperture": "Aperture",
     "blur": "Blur",
-    "thicknessToggle": "Thickness"
+    "visualizeFocus": "Visualize Focus"
   },
   "effectVignette": {
     "intensity": "Strength",
     "blur": "Blur",
     "blurSpread": "Spread",
-    "aberration": "Aberration"
+    "chromaticAberration": "Chromatic Aberration"
   },
   "effectFog": {
     "distance": "Distance",
     "density": "Density",
-    "strength": "Strength",
-    "height": "Height"
-  },
-  "effectSepia": {
-    "toggle": "Sepia",
-    "blur": "Blur"
-  },
-  "otherEffectsPane": {
-    "sepiaToggle": "Sepia",
-    "blurSlider": "Blur"
+    "heightScale": "Height Scale",
+    "height": "Height",
+    "red": "Red",
+    "green": "Green",
+    "blue": "Blue"
   },
   "background2Window": {
     "envButton": "Environments",

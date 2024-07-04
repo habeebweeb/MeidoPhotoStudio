@@ -1,84 +1,50 @@
+using MeidoPhotoStudio.Plugin.Core.Effects;
+
 namespace MeidoPhotoStudio.Plugin;
 
-public abstract class EffectPane<T> : BasePane
-    where T : IEffectManager
+public class EffectPane<T> : BasePane
+    where T : EffectControllerBase
 {
-    protected readonly Toggle effectToggle;
+    protected readonly Toggle effectActiveToggle;
     protected readonly Button resetEffectButton;
 
-    private bool enabled;
-
-    protected EffectPane(EffectManager effectManager)
+    public EffectPane(T effectController)
     {
-        EffectManager = effectManager.Get<T>();
+        Effect = effectController ?? throw new ArgumentNullException(nameof(effectController));
+
+        effectActiveToggle = new(Translation.Get("effectsPane", "onToggle"));
+        effectActiveToggle.ControlEvent += OnEffectActiveToggleChanged;
 
         resetEffectButton = new(Translation.Get("effectsPane", "reset"));
-        resetEffectButton.ControlEvent += (_, _) =>
-            ResetEffect();
-
-        effectToggle = new(Translation.Get("effectsPane", "onToggle"));
-        effectToggle.ControlEvent += (_, _) =>
-            Enabled = effectToggle.Value;
+        resetEffectButton.ControlEvent += OnResetEffectButtonPushed;
     }
 
-    public override bool Enabled
-    {
-        get => enabled;
-        set
-        {
-            enabled = value;
-
-            if (updating)
-                return;
-
-            EffectManager.SetEffectActive(enabled);
-        }
-    }
-
-    protected abstract T EffectManager { get; set; }
-
-    public override void UpdatePane()
-    {
-        if (!EffectManager.Ready)
-            return;
-
-        updating = true;
-        effectToggle.Value = EffectManager.Active;
-        UpdateControls();
-        updating = false;
-    }
+    protected T Effect { get; }
 
     public override void Draw()
     {
         GUILayout.BeginHorizontal();
-        effectToggle.Draw();
+
+        effectActiveToggle.Draw();
+
         GUILayout.FlexibleSpace();
-        GUI.enabled = Enabled;
+
+        GUI.enabled = Effect.Active;
+
         resetEffectButton.Draw();
+
         GUILayout.EndHorizontal();
-        DrawPane();
-        GUI.enabled = true;
     }
 
     protected override void ReloadTranslation()
     {
-        updating = true;
-        effectToggle.Label = Translation.Get("effectsPane", "onToggle");
+        effectActiveToggle.Label = Translation.Get("effectsPane", "onToggle");
         resetEffectButton.Label = Translation.Get("effectsPane", "reset");
-        TranslatePane();
-        updating = false;
     }
 
-    protected abstract void TranslatePane();
+    private void OnEffectActiveToggleChanged(object sender, EventArgs e) =>
+        Effect.Active = ((Toggle)sender).Value;
 
-    protected abstract void UpdateControls();
-
-    protected abstract void DrawPane();
-
-    private void ResetEffect()
-    {
-        EffectManager.Deactivate();
-        EffectManager.SetEffectActive(true);
-        UpdatePane();
-    }
+    private void OnResetEffectButtonPushed(object sender, EventArgs e) =>
+        Effect.Reset();
 }

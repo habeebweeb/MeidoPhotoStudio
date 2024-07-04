@@ -1,6 +1,8 @@
+using MeidoPhotoStudio.Plugin.Core.Effects;
+
 namespace MeidoPhotoStudio.Plugin;
 
-public class BloomPane : EffectPane<BloomEffectManager>
+public class BloomPane : EffectPane<BloomController>
 {
     private readonly Slider intensitySlider;
     private readonly Slider blurSlider;
@@ -9,70 +11,76 @@ public class BloomPane : EffectPane<BloomEffectManager>
     private readonly Slider blueSlider;
     private readonly Toggle hdrToggle;
 
-    public BloomPane(EffectManager effectManager)
-        : base(effectManager)
+    public BloomPane(BloomController effectController)
+        : base(effectController)
     {
-        intensitySlider = new(Translation.Get("effectBloom", "intensity"), 0f, 100f, EffectManager.BloomValue);
-        intensitySlider.ControlEvent += (_, _) =>
+        intensitySlider = new(
+            Translation.Get("effectBloom", "intensity"), 0f, 100f, Effect.BloomValue, Effect.BloomValue)
         {
-            if (updating)
-                return;
-
-            EffectManager.BloomValue = intensitySlider.Value;
+            HasTextField = true,
+            HasReset = true,
         };
 
-        blurSlider = new(Translation.Get("effectBloom", "blur"), 0f, 15f, EffectManager.BlurIterations);
-        blurSlider.ControlEvent += (_, _) =>
-        {
-            if (updating)
-                return;
+        intensitySlider.ControlEvent += OnItensitySliderChanged;
 
-            EffectManager.BlurIterations = (int)blurSlider.Value;
+        blurSlider = new(Translation.Get("effectBloom", "blur"), 0f, 15f, Effect.BlurIterations, Effect.BlurIterations)
+        {
+            HasTextField = true,
+            HasReset = true,
         };
 
-        redSlider = new(Translation.Get("backgroundWindow", "red"), 1f, 0.5f, EffectManager.BloomThresholdColorRed);
-        redSlider.ControlEvent += (_, _) =>
-        {
-            if (updating)
-                return;
+        blurSlider.ControlEvent += OnBlurSliderChanged;
 
-            EffectManager.BloomThresholdColorRed = redSlider.Value;
+        var bloomThresholdColour = Effect.BloomThresholdColour;
+
+        redSlider = new(Translation.Get("effectBloom", "red"), 1f, 0f, bloomThresholdColour.r, bloomThresholdColour.r)
+        {
+            HasTextField = true,
+            HasReset = true,
         };
 
-        greenSlider =
-            new(Translation.Get("backgroundWindow", "green"), 1f, 0.5f, EffectManager.BloomThresholdColorGreen);
+        redSlider.ControlEvent += OnRedSliderChanged;
 
-        greenSlider.ControlEvent += (_, _) =>
+        greenSlider = new(
+            Translation.Get("effectBloom", "green"), 1f, 0f, bloomThresholdColour.g, bloomThresholdColour.g)
         {
-            if (updating)
-                return;
-
-            EffectManager.BloomThresholdColorGreen = greenSlider.Value;
+            HasTextField = true,
+            HasReset = true,
         };
 
-        blueSlider = new(Translation.Get("backgroundWindow", "blue"), 1f, 0.5f, EffectManager.BloomThresholdColorBlue);
-        blueSlider.ControlEvent += (_, _) =>
-        {
-            if (updating)
-                return;
+        greenSlider.ControlEvent += OnGreenSliderChanged;
 
-            EffectManager.BloomThresholdColorBlue = blueSlider.Value;
+        blueSlider = new(
+            Translation.Get("effectBloom", "blue"), 1f, 0f, bloomThresholdColour.b, bloomThresholdColour.b)
+        {
+            HasTextField = true,
+            HasReset = true,
         };
 
-        hdrToggle = new(Translation.Get("effectBloom", "hdrToggle"), EffectManager.BloomHDR);
-        hdrToggle.ControlEvent += (_, _) =>
-        {
-            if (updating)
-                return;
+        blueSlider.ControlEvent += OnBlueSliderChanged;
 
-            EffectManager.BloomHDR = hdrToggle.Value;
-        };
+        hdrToggle = new(Translation.Get("effectBloom", "hdrToggle"), Effect.HDR);
+        hdrToggle.ControlEvent += OnHDRToggleChanged;
     }
 
-    protected override BloomEffectManager EffectManager { get; set; }
-
-    protected override void TranslatePane()
+    public override void Draw()
     {
+        base.Draw();
+
+        intensitySlider.Draw();
+        blurSlider.Draw();
+        redSlider.Draw();
+        greenSlider.Draw();
+        blueSlider.Draw();
+        hdrToggle.Draw();
+
+        GUI.enabled = true;
+    }
+
+    protected override void ReloadTranslation()
+    {
+        base.ReloadTranslation();
+
         intensitySlider.Label = Translation.Get("effectBloom", "intensity");
         blurSlider.Label = Translation.Get("effectBloom", "blur");
         redSlider.Label = Translation.Get("backgroundWindow", "red");
@@ -81,34 +89,21 @@ public class BloomPane : EffectPane<BloomEffectManager>
         hdrToggle.Label = Translation.Get("effectBloom", "hdrToggle");
     }
 
-    protected override void UpdateControls()
-    {
-        intensitySlider.Value = EffectManager.BloomValue;
-        blurSlider.Value = EffectManager.BlurIterations;
-        redSlider.Value = EffectManager.BloomThresholdColorRed;
-        greenSlider.Value = EffectManager.BloomThresholdColorGreen;
-        blueSlider.Value = EffectManager.BloomThresholdColorBlue;
-        hdrToggle.Value = EffectManager.BloomHDR;
-    }
+    private void OnItensitySliderChanged(object sender, EventArgs e) =>
+        Effect.BloomValue = (int)((Slider)sender).Value;
 
-    protected override void DrawPane()
-    {
-        var sliderWidth = MpsGui.HalfSlider;
+    private void OnBlurSliderChanged(object sender, EventArgs e) =>
+        Effect.BlurIterations = (int)((Slider)sender).Value;
 
-        GUILayout.BeginHorizontal();
-        intensitySlider.Draw(sliderWidth);
-        blurSlider.Draw(sliderWidth);
-        GUILayout.EndHorizontal();
+    private void OnRedSliderChanged(object sender, EventArgs e) =>
+        Effect.BloomThresholdColour = Effect.BloomThresholdColour with { r = ((Slider)sender).Value };
 
-        GUILayout.BeginHorizontal();
-        redSlider.Draw(sliderWidth);
-        greenSlider.Draw(sliderWidth);
-        GUILayout.EndHorizontal();
+    private void OnGreenSliderChanged(object sender, EventArgs e) =>
+        Effect.BloomThresholdColour = Effect.BloomThresholdColour with { g = ((Slider)sender).Value };
 
-        GUILayout.BeginHorizontal();
-        blueSlider.Draw(sliderWidth);
-        GUILayout.FlexibleSpace();
-        hdrToggle.Draw(GUILayout.ExpandWidth(false));
-        GUILayout.EndHorizontal();
-    }
+    private void OnBlueSliderChanged(object sender, EventArgs e) =>
+        Effect.BloomThresholdColour = Effect.BloomThresholdColour with { b = ((Slider)sender).Value };
+
+    private void OnHDRToggleChanged(object sender, EventArgs e) =>
+        Effect.HDR = ((Toggle)sender).Value;
 }

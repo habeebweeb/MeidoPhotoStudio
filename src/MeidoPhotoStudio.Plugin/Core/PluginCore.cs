@@ -9,6 +9,7 @@ using MeidoPhotoStudio.Plugin.Core.Camera;
 using MeidoPhotoStudio.Plugin.Core.Character;
 using MeidoPhotoStudio.Plugin.Core.Character.Pose;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
+using MeidoPhotoStudio.Plugin.Core.Effects;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Core.SceneManagement;
@@ -32,7 +33,6 @@ public partial class PluginCore : MonoBehaviour
     private WindowManager windowManager;
     private MessageWindowManager messageWindowManager;
     private PropService propService;
-    private EffectManager effectManager;
     private CameraController cameraController;
     private CameraSpeedController cameraSpeedController;
     private CameraSaveSlotController cameraSaveSlotController;
@@ -52,6 +52,12 @@ public partial class PluginCore : MonoBehaviour
     private EditModeMaidService editModeMaidService;
     private DragHandle.ClickHandler dragHandleClickHandler;
     private CharacterRepository characterRepository;
+    private BloomController bloomController;
+    private DepthOfFieldController depthOfFieldController;
+    private VignetteController vignetteController;
+    private FogController fogController;
+    private BlurController blurController;
+    private SepiaToneController sepiaToneController;
 
     public bool UIActive
     {
@@ -234,15 +240,12 @@ public partial class PluginCore : MonoBehaviour
             new CameraInputHandler(
                 cameraController, cameraSpeedController, cameraSaveSlotController, inputConfiguration));
 
-        effectManager =
-        [
-            new BloomEffectManager(),
-            new DepthOfFieldEffectManager(),
-            new FogEffectManager(),
-            new VignetteEffectManager(),
-            new SepiaToneEffectManager(),
-            new BlurEffectManager(),
-        ];
+        bloomController = new BloomController(GameMain.Instance.MainCamera.camera);
+        depthOfFieldController = new DepthOfFieldController(GameMain.Instance.MainCamera.camera);
+        vignetteController = new VignetteController(GameMain.Instance.MainCamera.camera);
+        fogController = new FogController(GameMain.Instance.MainCamera.camera);
+        blurController = new BlurController(GameMain.Instance.MainCamera.camera);
+        sepiaToneController = new SepiaToneController(GameMain.Instance.MainCamera.camera);
 
         propService = [];
 
@@ -291,7 +294,12 @@ public partial class PluginCore : MonoBehaviour
             new LightRepositorySchemaBuilder(
                 lightRepository, new LightSchemaBuilder(new LightPropertiesSchemaBuilder())),
             new EffectsSchemaBuilder(
-                effectManager,
+                bloomController,
+                depthOfFieldController,
+                fogController,
+                vignetteController,
+                sepiaToneController,
+                blurController,
                 new BloomSchemaBuilder(),
                 new DepthOfFieldSchemaBuilder(),
                 new FogSchemaBuilder(),
@@ -323,7 +331,13 @@ public partial class PluginCore : MonoBehaviour
             new MessageAspectLoader(messageWindowManager),
             new CameraAspectLoader(cameraSaveSlotController),
             new LightAspectLoader(lightRepository, backgroundService),
-            new EffectsAspectLoader(effectManager),
+            new EffectsAspectLoader(
+                bloomController,
+                depthOfFieldController,
+                vignetteController,
+                fogController,
+                blurController,
+                sepiaToneController),
             new BackgroundAspectLoader(backgroundService, backgroundRepository),
             new PropsAspectLoader(
                 propService,
@@ -405,12 +419,13 @@ public partial class PluginCore : MonoBehaviour
                     new LightsPane(lightRepository, lightSelectionController),
                     new EffectsPane()
                     {
-                        ["bloom"] = new BloomPane(effectManager),
-                        ["dof"] = new DepthOfFieldPane(effectManager),
-                        ["vignette"] = new VignettePane(effectManager),
-                        ["fog"] = new FogPane(effectManager),
+                        [EffectsPane.EffectType.Bloom] = new BloomPane(bloomController),
+                        [EffectsPane.EffectType.DepthOfField] = new DepthOfFieldPane(depthOfFieldController),
+                        [EffectsPane.EffectType.Vignette] = new VignettePane(vignetteController),
+                        [EffectsPane.EffectType.Fog] = new FogPane(fogController),
+                        [EffectsPane.EffectType.Blur] = new BlurPane(blurController),
+                        [EffectsPane.EffectType.SepiaTone] = new SepiaTonePane(sepiaToneController),
                     },
-                    new OtherEffectsPane(effectManager),
                 },
             [Constants.Window.BG2] = new PropsWindowPane()
                 {
@@ -471,7 +486,6 @@ public partial class PluginCore : MonoBehaviour
         cameraController.Activate();
         editModeMaidService.Activate();
         characterService.Activate();
-        effectManager.Activate();
         messageWindowManager.Activate();
         cameraSaveSlotController.Activate();
 
@@ -480,6 +494,13 @@ public partial class PluginCore : MonoBehaviour
         lightRepository.AddLight(GameMain.Instance.MainLight.GetComponent<Light>());
 
         backgroundService.ChangeBackground(new(BackgroundCategory.COM3D2, "Theater"));
+
+        bloomController.Activate();
+        depthOfFieldController.Activate();
+        vignetteController.Activate();
+        fogController.Activate();
+        blurController.Activate();
+        sepiaToneController.Activate();
 
         windowManager.Activate();
 
@@ -560,11 +581,17 @@ public partial class PluginCore : MonoBehaviour
 
             characterService.Deactivate();
             cameraController.Deactivate();
-            effectManager.Deactivate();
             messageWindowManager.Deactivate();
             windowManager.Deactivate();
             cameraSpeedController.Deactivate();
             screenshotService.enabled = false;
+
+            bloomController.Deactivate();
+            depthOfFieldController.Deactivate();
+            vignetteController.Deactivate();
+            fogController.Deactivate();
+            blurController.Deactivate();
+            sepiaToneController.Deactivate();
 
             editModeMaidService.Deactivate();
 

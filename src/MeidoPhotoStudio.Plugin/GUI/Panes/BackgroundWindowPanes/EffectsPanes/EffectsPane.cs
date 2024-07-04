@@ -1,49 +1,94 @@
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
+
 namespace MeidoPhotoStudio.Plugin;
 
-public class EffectsPane : BasePane
+public class EffectsPane : BasePane, IEnumerable<KeyValuePair<EffectsPane.EffectType, BasePane>>
 {
-    private readonly Dictionary<string, BasePane> effectPanes = [];
-    private readonly List<string> effectList = [];
-    private readonly SelectionGrid effectToggles;
-
-    private BasePane currentEffectPane;
+    private readonly Dropdown2<EffectType> effectTypesDropdown;
+    private readonly Dictionary<EffectType, BasePane> effectsPanes = new(EnumEqualityComparer<EffectType>.Instance);
+    private readonly Toggle paneHeader;
 
     public EffectsPane()
     {
-        effectToggles = new(["dummy" /* thicc */]);
-        effectToggles.ControlEvent += (_, _) =>
-            SetEffectPane(effectList[effectToggles.SelectedItemIndex]);
+        effectTypesDropdown = new((type, _) => Translation.Get("effectTypes", type.ToLower()));
+
+        paneHeader = new(Translation.Get("effectsPane", "header"), true);
     }
 
-    public BasePane this[string effectUI]
+    public enum EffectType
     {
-        private get => effectPanes[effectUI];
-        set
-        {
-            effectPanes[effectUI] = value;
-            effectList.Add(effectUI);
-            effectToggles.SetItems(Translation.GetArray("effectsPane", effectList), 0);
-        }
+        Bloom,
+        DepthOfField,
+        Vignette,
+        Fog,
+        SepiaTone,
+        Blur,
     }
 
-    public override void UpdatePane() =>
-        currentEffectPane.UpdatePane();
+    public BasePane this[EffectType type]
+    {
+        get => effectsPanes[type];
+        set => Add(type, value);
+    }
 
     public override void Draw()
     {
-        MpsGui.Header("Effects");
+        paneHeader.Draw();
         MpsGui.WhiteLine();
-        effectToggles.Draw();
-        MpsGui.BlackLine();
-        currentEffectPane.Draw();
+
+        if (!paneHeader.Value)
+            return;
+
+        GUILayout.BeginHorizontal();
+
+        effectTypesDropdown.Draw();
+
+        var arrowLayoutOptions = new[]
+        {
+            GUILayout.ExpandWidth(false),
+            GUILayout.ExpandHeight(false),
+        };
+
+        if (GUILayout.Button("<", arrowLayoutOptions))
+            effectTypesDropdown.CyclePrevious();
+
+        if (GUILayout.Button(">", arrowLayoutOptions))
+            effectTypesDropdown.CycleNext();
+
+        GUILayout.EndHorizontal();
+
+        effectsPanes[effectTypesDropdown.SelectedItem].Draw();
     }
 
-    protected override void ReloadTranslation() =>
-        effectToggles.SetItems(Translation.GetArray("effectsPane", effectList));
+    public IEnumerator<KeyValuePair<EffectType, BasePane>> GetEnumerator() =>
+        effectsPanes.GetEnumerator();
 
-    private void SetEffectPane(string effectUI)
+    IEnumerator IEnumerable.GetEnumerator() =>
+        GetEnumerator();
+
+    public override void SetParent(BaseWindow window)
     {
-        currentEffectPane = effectPanes[effectUI];
-        currentEffectPane.UpdatePane();
+        base.SetParent(window);
+
+        foreach (var pane in effectsPanes.Values)
+            pane.SetParent(parent);
+    }
+
+    public void Add(EffectType type, BasePane pane)
+    {
+        _ = pane ?? throw new ArgumentNullException(nameof(pane));
+
+        effectsPanes[type] = pane;
+
+        var effects = effectTypesDropdown.Concat(new[] { type });
+
+        effectTypesDropdown.SetItemsWithoutNotify(effects, 0);
+    }
+
+    protected override void ReloadTranslation()
+    {
+        effectTypesDropdown.Reformat();
+
+        paneHeader.Label = Translation.Get("effectsPane", "header");
     }
 }

@@ -541,7 +541,7 @@ public static class MMSceneConverter
         if (data.Length < 5)
             return;
 
-        writer.Write(EffectManager.Header);
+        writer.Write("EFFECT");
 
         // EffectManagerSerializer version
         writer.WriteVersion(1);
@@ -549,7 +549,7 @@ public static class MMSceneConverter
         var effectData = data[2].Split(',');
 
         // bloom
-        writer.Write(BloomEffectManager.Header);
+        writer.Write("EFFECT_BLOOM");
         writer.WriteVersion(1);
 
         writer.Write(int.Parse(effectData[1]) is 1); // active
@@ -564,7 +564,7 @@ public static class MMSceneConverter
         writer.Write(int.Parse(effectData[7]) is 1); // hdr
 
         // vignetting
-        writer.Write(VignetteEffectManager.Header);
+        writer.Write("EFFECT_VIGNETTE");
         writer.WriteVersion(1);
 
         writer.Write(int.Parse(effectData[8]) is 1); // active
@@ -574,7 +574,7 @@ public static class MMSceneConverter
         writer.Write(float.Parse(effectData[12])); // chromatic aberration
 
         // blur
-        writer.Write(BlurEffectManager.Header);
+        writer.Write("EFFECT_BLUR");
         writer.WriteVersion(1);
 
         var blurSize = float.Parse(effectData[13]);
@@ -583,7 +583,7 @@ public static class MMSceneConverter
         writer.Write(blurSize); // blur size
 
         // Sepia Tone
-        writer.Write(SepiaToneEffectManager.Header);
+        writer.Write("EFFECT_SEPIA");
         writer.WriteVersion(1);
 
         writer.Write(int.Parse(effectData[29]) is 1);
@@ -591,7 +591,7 @@ public static class MMSceneConverter
         if (effectData.Length > 15)
         {
             // depth of field
-            writer.Write(DepthOfFieldEffectManager.Header);
+            writer.Write("EFFECT_DOF");
             writer.WriteVersion(1);
 
             writer.Write(int.Parse(effectData[15]) is 1); // active
@@ -602,7 +602,7 @@ public static class MMSceneConverter
             writer.Write(int.Parse(effectData[20]) is 1); // visualize focus
 
             // fog
-            writer.Write(FogEffectManager.Header);
+            writer.Write("EFFECT_FOG");
             writer.WriteVersion(1);
 
             writer.Write(int.Parse(effectData[21]) is 1); // active
@@ -617,7 +617,7 @@ public static class MMSceneConverter
                 new(float.Parse(effectData[26]), float.Parse(effectData[27]), float.Parse(effectData[28]), 1f));
         }
 
-        writer.Write(EffectManager.Footer);
+        writer.Write("END_EFFECT");
 
         static void WriteColour(BinaryWriter writer, Color colour)
         {

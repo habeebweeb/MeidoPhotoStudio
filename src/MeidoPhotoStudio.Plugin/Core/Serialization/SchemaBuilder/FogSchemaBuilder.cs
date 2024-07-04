@@ -1,10 +1,11 @@
+using MeidoPhotoStudio.Plugin.Core.Effects;
 using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class FogSchemaBuilder : ISchemaBuilder<FogSchema, FogEffectManager>
+public class FogSchemaBuilder : ISchemaBuilder<FogSchema, FogController>
 {
-    public FogSchema Build(FogEffectManager fog) =>
+    public FogSchema Build(FogController fog) =>
         new()
         {
             Active = fog.Active,

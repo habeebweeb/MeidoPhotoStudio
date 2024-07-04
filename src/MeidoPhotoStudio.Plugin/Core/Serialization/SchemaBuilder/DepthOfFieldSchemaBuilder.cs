@@ -1,10 +1,11 @@
+using MeidoPhotoStudio.Plugin.Core.Effects;
 using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class DepthOfFieldSchemaBuilder : ISchemaBuilder<DepthOfFieldSchema, DepthOfFieldEffectManager>
+public class DepthOfFieldSchemaBuilder : ISchemaBuilder<DepthOfFieldSchema, DepthOfFieldController>
 {
-    public DepthOfFieldSchema Build(DepthOfFieldEffectManager dof) =>
+    public DepthOfFieldSchema Build(DepthOfFieldController dof) =>
         new()
         {
             Active = dof.Active,
