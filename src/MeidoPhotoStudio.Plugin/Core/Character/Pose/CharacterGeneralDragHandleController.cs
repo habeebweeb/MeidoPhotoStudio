@@ -10,12 +10,6 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
     private readonly TabSelectionController tabSelectionController;
 
     private bool ikEnabled = true;
-    private UpdateTransformMode moveWorldXZ;
-    private UpdateTransformMode moveWorldY;
-    private UpdateTransformMode rotateLocalXZ;
-    private UpdateTransformMode rotateWorldY;
-    private UpdateTransformMode rotateLocalY;
-    private UpdateTransformMode scale;
     private CharacterSelectMode select;
 
     public CharacterGeneralDragHandleController(
@@ -104,49 +98,11 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
     public override GeneralDragHandleMode<GeneralDragHandleController> Delete =>
         None;
 
-    public override GeneralDragHandleMode<GeneralDragHandleController> MoveWorldXZ =>
-        IKEnabled
-            ? moveWorldXZ ??= new UpdateTransformMode(
-                this, base.MoveWorldXZ, TransformChangeEventArgs.TransformType.Position)
-            : None;
-
-    public override GeneralDragHandleMode<GeneralDragHandleController> MoveWorldY =>
-        IKEnabled
-            ? moveWorldY ??= new UpdateTransformMode(
-                this, base.MoveWorldY, TransformChangeEventArgs.TransformType.Position)
-            : None;
-
-    public override GeneralDragHandleMode<GeneralDragHandleController> RotateLocalXZ =>
-        IKEnabled
-            ? rotateLocalXZ ??= new UpdateTransformMode(
-                this, base.RotateLocalXZ, TransformChangeEventArgs.TransformType.Rotation)
-            : None;
-
-    public override GeneralDragHandleMode<GeneralDragHandleController> RotateWorldY =>
-        IKEnabled
-            ? rotateWorldY ??= new UpdateTransformMode(
-                this, base.RotateWorldY, TransformChangeEventArgs.TransformType.Rotation)
-            : None;
-
-    public override GeneralDragHandleMode<GeneralDragHandleController> RotateLocalY =>
-        IKEnabled
-            ? rotateLocalY ??= new UpdateTransformMode(
-                this, base.RotateLocalY, TransformChangeEventArgs.TransformType.Rotation)
-            : None;
-
-    public override GeneralDragHandleMode<GeneralDragHandleController> Scale =>
-        IKEnabled
-            ? scale ??= new UpdateTransformMode(this, base.Scale, TransformChangeEventArgs.TransformType.Scale)
-            : None;
-
     public override GeneralDragHandleMode<GeneralDragHandleController> Select =>
         IKEnabled ? select ??= new CharacterSelectMode(this) : None;
 
     protected override void OnDestroying() =>
         character.ChangedTransform -= OnTransformChanged;
-
-    private void UpdateCharacterTransform(TransformChangeEventArgs.TransformType type) =>
-        character.UpdateTransform(type);
 
     private void OnTransformChanged(object sender, TransformChangeEventArgs e)
     {
@@ -172,41 +128,5 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
 
         public override void OnDoubleClicked() =>
             Controller.character.FocusOnBody();
-    }
-
-    private class UpdateTransformMode(
-        CharacterGeneralDragHandleController controller,
-        GeneralDragHandleMode<GeneralDragHandleController> mode,
-        TransformChangeEventArgs.TransformType transformType)
-        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
-    {
-        private readonly GeneralDragHandleMode<GeneralDragHandleController> mode = mode;
-
-        private readonly TransformChangeEventArgs.TransformType transformType = transformType;
-
-        private new CharacterGeneralDragHandleController Controller { get; } = controller;
-
-        public override void OnModeEnter() =>
-            mode.OnModeEnter();
-
-        public override void OnClicked() =>
-            mode.OnClicked();
-
-        public override void OnDragging()
-        {
-            mode.OnDragging();
-
-            Controller.UpdateCharacterTransform(transformType);
-        }
-
-        public override void OnReleased() =>
-            mode.OnReleased();
-
-        public override void OnDoubleClicked()
-        {
-            mode.OnDoubleClicked();
-
-            Controller.UpdateCharacterTransform(transformType);
-        }
     }
 }

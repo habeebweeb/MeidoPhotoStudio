@@ -5,7 +5,10 @@ using MeidoPhotoStudio.Plugin.Service;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
-public class CharacterService(CustomMaidSceneService customMaidSceneService, EditModeMaidService editModeMaidService)
+public class CharacterService(
+    CustomMaidSceneService customMaidSceneService,
+    EditModeMaidService editModeMaidService,
+    TransformWatcher transformWatcher)
     : IEnumerable<CharacterController>, IIndexableCollection<CharacterController>
 {
     private const int MaidCount = 12;
@@ -19,6 +22,9 @@ public class CharacterService(CustomMaidSceneService customMaidSceneService, Edi
 
     private readonly EditModeMaidService editModeMaidService = editModeMaidService
         ?? throw new ArgumentNullException(nameof(editModeMaidService));
+
+    private readonly TransformWatcher transformWatcher = transformWatcher
+        ? transformWatcher : throw new ArgumentNullException(nameof(transformWatcher));
 
     private bool calling;
 
@@ -92,7 +98,7 @@ public class CharacterService(CustomMaidSceneService customMaidSceneService, Edi
         CharacterController[] GetCharactersToCall(IEnumerable<CharacterModel> charactersToCall)
         {
             foreach (var character in charactersToCall.Where(character => !characterControllerCache.ContainsKey(character)))
-                characterControllerCache.Add(character, new(character));
+                characterControllerCache.Add(character, new(character, transformWatcher));
 
             return charactersToCall.Select(character => characterControllerCache[character]).ToArray();
         }

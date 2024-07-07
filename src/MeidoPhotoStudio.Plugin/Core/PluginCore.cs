@@ -58,6 +58,7 @@ public partial class PluginCore : MonoBehaviour
     private FogController fogController;
     private BlurController blurController;
     private SepiaToneController sepiaToneController;
+    private TransformWatcher transformWatcher;
 
     public bool UIActive
     {
@@ -148,6 +149,8 @@ public partial class PluginCore : MonoBehaviour
 
         initialized = true;
 
+        transformWatcher = gameObject.AddComponent<TransformWatcher>();
+
         screenshotService = gameObject.AddComponent<ScreenshotService>();
         screenshotService.PluginCore = this;
 
@@ -165,7 +168,7 @@ public partial class PluginCore : MonoBehaviour
         characterRepository = new();
 
         editModeMaidService = new EditModeMaidService(customMaidSceneService, characterRepository);
-        characterService = new CharacterService(customMaidSceneService, editModeMaidService);
+        characterService = new CharacterService(customMaidSceneService, editModeMaidService, transformWatcher);
 
         var characterSelectionController = new SelectionController<CharacterController>(characterService);
 
@@ -478,6 +481,7 @@ public partial class PluginCore : MonoBehaviour
             Initialize();
 
         dragHandleClickHandler.enabled = true;
+        transformWatcher.enabled = true;
 
         // TODO: Move all this activation/deactivation stuff.
         backgroundRepository.Refresh();
@@ -578,6 +582,7 @@ public partial class PluginCore : MonoBehaviour
             sysDialog.Close();
 
             dragHandleClickHandler.enabled = false;
+            transformWatcher.enabled = false;
 
             characterService.Deactivate();
             cameraController.Deactivate();

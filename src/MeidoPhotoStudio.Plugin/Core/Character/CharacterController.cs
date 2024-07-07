@@ -3,8 +3,11 @@ using MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
-public class CharacterController(CharacterModel characterModel)
+public class CharacterController(CharacterModel characterModel, TransformWatcher transformWatcher)
 {
+    private readonly TransformWatcher transformWatcher = transformWatcher
+        ? transformWatcher : throw new ArgumentNullException(nameof(transformWatcher));
+
     private IEnumerable<MPN> processingProps = [];
     private bool initialized;
     private bool subscribedToSequenceEvents;
@@ -153,6 +156,8 @@ public class CharacterController(CharacterModel characterModel)
 
             Clothing.CustomFloorHeight = false;
 
+            transformWatcher.Subscribe(GameObject.transform, RaiseTransformChanged);
+
             initialized = true;
         }
     }
@@ -162,6 +167,7 @@ public class CharacterController(CharacterModel characterModel)
         Maid.Visible = false;
         Slot = -1;
         Maid.ActiveSlotNo = -1;
+        transformWatcher.Unsubscribe(GameObject.transform);
     }
 
     internal void Deactivate(bool keepLoaded = false)
@@ -181,6 +187,8 @@ public class CharacterController(CharacterModel characterModel)
         Maid.SetPosOffset(Vector3.zero);
         Maid.transform.localScale = Vector3.one;
 
+        transformWatcher.Unsubscribe(GameObject.transform);
+
         if (keepLoaded)
             return;
 
@@ -188,7 +196,7 @@ public class CharacterController(CharacterModel characterModel)
         Maid.Uninit();
     }
 
-    internal void UpdateTransform(TransformChangeEventArgs.TransformType type) =>
+    private void RaiseTransformChanged(TransformChangeEventArgs.TransformType type) =>
         ChangedTransform?.Invoke(this, new(type));
 
     private void OnSequenceStarting(object sender, ProcStartEventArgs e)
