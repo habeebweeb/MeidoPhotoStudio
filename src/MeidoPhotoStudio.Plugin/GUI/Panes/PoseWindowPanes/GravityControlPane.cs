@@ -8,7 +8,7 @@ public class GravityControlPane : BasePane
     private readonly GravityDragHandleService gravityDragHandleService;
     private readonly GlobalGravityService globalGravityService;
     private readonly SelectionController<CharacterController> characterSelectionController;
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
     private readonly Toggle hairGravityEnabledToggle;
     private readonly Toggle hairGravityDragHandleEnabledToggle;
     private readonly Toggle clothingGravityEnabledToggle;
@@ -58,9 +58,8 @@ public class GravityControlPane : BasePane
         GUI.enabled = enabled;
 
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         GUILayout.BeginHorizontal();

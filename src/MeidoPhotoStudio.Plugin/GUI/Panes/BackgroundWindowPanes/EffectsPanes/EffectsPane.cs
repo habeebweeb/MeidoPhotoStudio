@@ -6,7 +6,7 @@ public class EffectsPane : BasePane, IEnumerable<KeyValuePair<EffectsPane.Effect
 {
     private readonly Dropdown2<EffectType> effectTypesDropdown;
     private readonly Dictionary<EffectType, BasePane> effectsPanes = new(EnumEqualityComparer<EffectType>.Instance);
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
 
     public EffectsPane()
     {
@@ -34,9 +34,8 @@ public class EffectsPane : BasePane, IEnumerable<KeyValuePair<EffectsPane.Effect
     public override void Draw()
     {
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         GUILayout.BeginHorizontal();

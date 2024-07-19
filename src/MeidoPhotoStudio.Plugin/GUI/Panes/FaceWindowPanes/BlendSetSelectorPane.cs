@@ -17,7 +17,7 @@ public class BlendSetSelectorPane : BasePane
     private readonly CustomBlendSetRepository customBlendSetRepository;
     private readonly FacialExpressionBuilder facialExpressionBuilder;
     private readonly SelectionController<CharacterController> characterSelectionController;
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
     private readonly SelectionGrid blendSetSourceGrid;
     private readonly Dropdown2<string> blendSetCategoryDropdown;
     private readonly Dropdown2<IBlendSetModel> blendSetDropdown;
@@ -88,9 +88,8 @@ public class BlendSetSelectorPane : BasePane
         GUI.enabled = enabled;
 
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         blendSetSourceGrid.Draw();

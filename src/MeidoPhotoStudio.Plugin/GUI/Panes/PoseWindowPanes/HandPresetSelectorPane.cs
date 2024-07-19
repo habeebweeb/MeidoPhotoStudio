@@ -11,7 +11,7 @@ public class HandPresetSelectorPane : BasePane
 {
     private readonly HandPresetRepository handPresetRepository;
     private readonly SelectionController<CharacterController> characterSelectionController;
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
     private readonly Dropdown2<string> presetCategoryDropdown;
     private readonly Dropdown2<HandPresetModel> presetDropdown;
     private readonly Button applyLeftHandButton;
@@ -82,9 +82,8 @@ public class HandPresetSelectorPane : BasePane
         GUI.enabled = enabled;
 
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         GUI.enabled = enabled;

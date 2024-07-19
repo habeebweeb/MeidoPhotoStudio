@@ -8,7 +8,7 @@ public class PropShapeKeyPane(SelectionController<PropController> propSelectionC
     private readonly SelectionController<PropController> propSelectionController = propSelectionController
         ?? throw new ArgumentNullException(nameof(propSelectionController));
 
-    private readonly Toggle paneHeader = new(Translation.Get("propShapeKeyPane", "header"), true);
+    private readonly PaneHeader paneHeader = new(Translation.Get("propShapeKeyPane", "header"), true);
 
     private ShapeKeyController CurrentShapeKeyController =>
         propSelectionController.Current?.ShapeKeyController;
@@ -21,9 +21,8 @@ public class PropShapeKeyPane(SelectionController<PropController> propSelectionC
             return;
 
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         var sliderWidth = GUILayout.Width(parent.WindowRect.width / 2 - 15f);

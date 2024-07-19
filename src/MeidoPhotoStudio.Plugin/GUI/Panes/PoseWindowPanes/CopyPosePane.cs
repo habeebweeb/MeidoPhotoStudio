@@ -5,7 +5,7 @@ namespace MeidoPhotoStudio.Plugin;
 
 public class CopyPosePane : BasePane
 {
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
     private readonly Dropdown otherCharacterDropdown;
     private readonly Button copyPoseButton;
     private readonly Button copyBothHandsButton;
@@ -63,9 +63,8 @@ public class CopyPosePane : BasePane
         GUI.enabled = CurrentCharacter is not null;
 
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         DrawDropdown(otherCharacterDropdown);

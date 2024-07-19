@@ -7,7 +7,7 @@ public class IKPane : BasePane
 {
     private readonly IKDragHandleService ikDragHandleService;
     private readonly SelectionController<CharacterController> characterSelectionController;
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
     private readonly Toggle ikEnabledToggle;
     private readonly Toggle boneModeEnabledToggle;
     private readonly Toggle limitLimbRotationsToggle;
@@ -63,9 +63,8 @@ public class IKPane : BasePane
         GUI.enabled = enabled;
 
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         DrawIK(enabled);

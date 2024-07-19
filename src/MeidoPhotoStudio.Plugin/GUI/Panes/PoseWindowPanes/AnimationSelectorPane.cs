@@ -19,7 +19,7 @@ public class AnimationSelectorPane : BasePane
     private readonly GameAnimationRepository gameAnimationRepository;
     private readonly CustomAnimationRepository customAnimationRepository;
     private readonly SelectionController<CharacterController> characterSelectionController;
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
     private readonly ComboBox animationCategoryComboBox;
     private readonly TextField animationNameTextField;
     private readonly Toggle saveAnimationToggle;
@@ -108,9 +108,8 @@ public class AnimationSelectorPane : BasePane
         GUI.enabled = enabled;
 
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         animationSourceGrid.Draw();

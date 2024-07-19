@@ -9,15 +9,14 @@ public class SceneManagementPane : BasePane
     private readonly Button manageScenesButton;
     private readonly Button quickSaveButton;
     private readonly Button quickLoadButton;
-
-    private string sceneManagementHeader;
+    private readonly PaneHeader paneHeader;
 
     public SceneManagementPane(SceneBrowserWindow sceneWindow, QuickSaveService quickSaveService)
     {
         this.sceneWindow = sceneWindow ?? throw new ArgumentNullException(nameof(sceneWindow));
         this.quickSaveService = quickSaveService ?? throw new ArgumentNullException(nameof(quickSaveService));
 
-        sceneManagementHeader = Translation.Get("sceneManagementPane", "sceneManagementHeader");
+        paneHeader = new(Translation.Get("sceneManagementPane", "sceneManagementHeader"));
 
         manageScenesButton = new(Translation.Get("sceneManagementPane", "manageScenesButton"));
         manageScenesButton.ControlEvent += OnManageScenesButtonPushed;
@@ -31,8 +30,10 @@ public class SceneManagementPane : BasePane
 
     public override void Draw()
     {
-        MpsGui.Header(sceneManagementHeader);
-        MpsGui.WhiteLine();
+        paneHeader.Draw();
+
+        if (!paneHeader.Enabled)
+            return;
 
         manageScenesButton.Draw();
         MpsGui.BlackLine();
@@ -47,7 +48,7 @@ public class SceneManagementPane : BasePane
 
     protected override void ReloadTranslation()
     {
-        sceneManagementHeader = Translation.Get("sceneManagementPane", "sceneManagementHeader");
+        paneHeader.Label = Translation.Get("sceneManagementPane", "sceneManagementHeader");
         manageScenesButton.Label = Translation.Get("backgroundWindow", "manageScenesButton");
         quickSaveButton.Label = Translation.Get("sceneManagementPane", "quickSaveButton");
         quickLoadButton.Label = Translation.Get("sceneManagementPane", "quickLoadButton");

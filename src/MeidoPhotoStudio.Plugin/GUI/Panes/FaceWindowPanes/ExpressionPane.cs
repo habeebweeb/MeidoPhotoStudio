@@ -35,7 +35,7 @@ public class ExpressionPane : BasePane
     private readonly SelectionGrid keySourceGrid;
     private readonly Toggle blinkToggle;
     private readonly Toggle editShapeKeysToggle;
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
     private readonly Dropdown addShapeKeyDropdown;
 
     private string[] shapeKeys;
@@ -96,9 +96,8 @@ public class ExpressionPane : BasePane
         GUI.enabled = guiEnabled;
 
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         blinkToggle.Draw();

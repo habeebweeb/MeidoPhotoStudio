@@ -6,7 +6,7 @@ namespace MeidoPhotoStudio.Plugin;
 public class FreeLookPane : BasePane
 {
     private readonly SelectionController<CharacterController> characterSelectionController;
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
     private readonly Toggle freeLookToggle;
     private readonly Slider offsetLookXSlider;
     private readonly Slider offsetLookYSlider;
@@ -59,9 +59,8 @@ public class FreeLookPane : BasePane
         GUI.enabled = enabled;
 
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         var eitherBindingEnabled = eyeToCameraToggle.Value || headToCameraToggle.Value;

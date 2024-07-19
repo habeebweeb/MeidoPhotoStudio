@@ -9,8 +9,7 @@ public class CameraPane : BasePane
     private readonly SelectionGrid cameraGrid;
     private readonly Slider zRotationSlider;
     private readonly Slider fovSlider;
-
-    private string header;
+    private readonly PaneHeader paneHeader;
 
     public CameraPane(CameraController cameraManager, CameraSaveSlotController cameraSaveSlotController)
     {
@@ -64,13 +63,16 @@ public class CameraPane : BasePane
             cameraSaveSlotController.CurrentCameraSlot = cameraGrid.SelectedItemIndex;
         };
 
-        header = Translation.Get("cameraPane", "header");
+        paneHeader = new(Translation.Get("cameraPane", "header"), true);
     }
 
     public override void Draw()
     {
-        MpsGui.Header(header);
-        MpsGui.WhiteLine();
+        paneHeader.Draw();
+
+        if (!paneHeader.Enabled)
+            return;
+
         cameraGrid.Draw();
         zRotationSlider.Draw();
         fovSlider.Draw();
@@ -94,6 +96,6 @@ public class CameraPane : BasePane
     {
         zRotationSlider.Label = Translation.Get("cameraPane", "zRotation");
         fovSlider.Label = Translation.Get("cameraPane", "fov");
-        header = Translation.Get("cameraPane", "header");
+        paneHeader.Label = Translation.Get("cameraPane", "header");
     }
 }

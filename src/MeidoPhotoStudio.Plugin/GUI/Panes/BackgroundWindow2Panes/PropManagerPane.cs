@@ -24,7 +24,7 @@ public class PropManagerPane : BasePane
     private readonly TransformControl rotationTransformControl;
     private readonly TransformControl scaleTransformControl;
     private readonly Button focusButton;
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
     private readonly Toggle toggleAllDragHandles;
     private readonly Toggle toggleAllGizmos;
 
@@ -124,9 +124,8 @@ public class PropManagerPane : BasePane
     public override void Draw()
     {
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         GUI.enabled = propService.Count > 0;

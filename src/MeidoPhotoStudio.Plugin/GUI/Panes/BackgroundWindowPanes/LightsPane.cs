@@ -26,8 +26,8 @@ public class LightsPane : BasePane
     private readonly Slider blueSlider;
     private readonly Button resetPositionButton;
     private readonly Button resetPropertiesButton;
+    private readonly PaneHeader paneHeader;
 
-    private string lightingHeader;
     private string resetHeader;
     private string noLights;
 
@@ -42,7 +42,7 @@ public class LightsPane : BasePane
         lightSelectionController.Selecting += OnSelectingLight;
         lightSelectionController.Selected += OnSelectedLight;
 
-        lightingHeader = Translation.Get("lightsPane", "header");
+        paneHeader = new(Translation.Get("lightsPane", "header"), true);
         resetHeader = Translation.Get("lightsPane", "resetLabel");
         noLights = Translation.Get("lightsPane", "noLights");
 
@@ -153,8 +153,10 @@ public class LightsPane : BasePane
 
     public override void Draw()
     {
-        MpsGui.Header(lightingHeader);
-        MpsGui.WhiteLine();
+        paneHeader.Draw();
+
+        if (!paneHeader.Enabled)
+            return;
 
         DrawTopBar();
 
@@ -284,7 +286,7 @@ public class LightsPane : BasePane
 
     protected override void ReloadTranslation()
     {
-        lightingHeader = Translation.Get("lightsPane", "header");
+        paneHeader.Label = Translation.Get("lightsPane", "header");
         resetHeader = Translation.Get("lightsPane", "resetLabel");
         noLights = Translation.Get("lightsPane", "noLights");
         lightTypeGrid.SetItemsWithoutNotify(Translation.GetArray("lightType", new[] { "normal", "spot", "point" }));

@@ -15,7 +15,7 @@ public class AttachedAccessoryPane : BasePane
 
     private readonly MenuPropRepository menuPropRepository;
     private readonly SelectionController<CharacterController> characterSelectionController;
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
     private readonly Dropdown accessoryDropdown;
     private readonly SelectionGrid accessoryCategoryGrid;
     private readonly Button detachAllAccessoriesButton;
@@ -76,9 +76,8 @@ public class AttachedAccessoryPane : BasePane
         GUI.enabled = !menuDatabaseBusy && characterSelectionController.Current is not null;
 
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         accessoryCategoryGrid.Draw();

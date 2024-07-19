@@ -5,7 +5,7 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
     private readonly Dropdown propTypeDropdown;
     private readonly Dictionary<PropCategory, BasePane> propPanes = new(EnumEqualityComparer<PropCategory>.Instance);
     private readonly List<PropCategory> propTypes = [];
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
 
     public PropsPane()
     {
@@ -35,9 +35,8 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
     public override void Draw()
     {
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         GUILayout.BeginHorizontal();

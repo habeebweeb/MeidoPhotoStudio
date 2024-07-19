@@ -20,7 +20,7 @@ public class AnimationPane : BasePane
     private readonly Button stepRightButton;
     private readonly NumericalTextField stepAmountField;
     private readonly SelectionController<CharacterController> characterSelectionController;
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
 
     public AnimationPane(SelectionController<CharacterController> characterSelectionController)
     {
@@ -70,9 +70,8 @@ public class AnimationPane : BasePane
         GUI.enabled = currentAnimation is not null;
 
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         if (currentAnimation is not null)

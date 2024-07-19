@@ -9,14 +9,14 @@ public class DragPointPane : BasePane
     private readonly Toggle maidCubeToggle;
     private readonly PropDragHandleService propDragHandleService;
     private readonly IKDragHandleService ikDragHandleService;
-    private string header;
+    private readonly PaneHeader paneHeader;
 
     public DragPointPane(PropDragHandleService propDragHandleService, IKDragHandleService ikDragHandleService)
     {
         this.propDragHandleService = propDragHandleService ?? throw new ArgumentNullException(nameof(propDragHandleService));
         this.ikDragHandleService = ikDragHandleService ?? throw new ArgumentNullException(nameof(ikDragHandleService));
 
-        header = Translation.Get("movementCube", "header");
+        paneHeader = new(Translation.Get("movementCube", "header"), true);
 
         smallCubeToggle = new(Translation.Get("movementCube", "small"), propDragHandleService.SmallHandle || ikDragHandleService.SmallHandle);
         smallCubeToggle.ControlEvent += OnSmallCubeToggleChanged;
@@ -27,8 +27,10 @@ public class DragPointPane : BasePane
 
     public override void Draw()
     {
-        MpsGui.Header(header);
-        MpsGui.WhiteLine();
+        paneHeader.Draw();
+
+        if (!paneHeader.Enabled)
+            return;
 
         GUILayout.BeginHorizontal();
         smallCubeToggle.Draw();
@@ -38,7 +40,7 @@ public class DragPointPane : BasePane
 
     protected override void ReloadTranslation()
     {
-        header = Translation.Get("movementCube", "header");
+        paneHeader.Label = Translation.Get("movementCube", "header");
         smallCubeToggle.Label = Translation.Get("movementCube", "small");
         maidCubeToggle.Label = Translation.Get("movementCube", "maid");
     }

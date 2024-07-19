@@ -18,10 +18,10 @@ public class BackgroundsPane : BasePane
     private readonly Slider redSlider;
     private readonly Slider greenSlider;
     private readonly Slider blueSlider;
+    private readonly PaneHeader paneHeader;
 
     private BackgroundCategory[] availableCategories;
     private bool updatingUI;
-    private string backgroundHeader;
 
     public BackgroundsPane(
         BackgroundService backgroundService,
@@ -32,7 +32,7 @@ public class BackgroundsPane : BasePane
         this.backgroundRepository = backgroundRepository ?? throw new ArgumentNullException(nameof(backgroundRepository));
         this.backgroundDragHandleService = backgroundDragHandleService ?? throw new ArgumentNullException(nameof(backgroundDragHandleService));
 
-        backgroundHeader = Translation.Get("backgroundsPane", "header");
+        paneHeader = new(Translation.Get("backgroundsPane", "header"));
 
         backgroundCategoryDropdown = new([string.Empty]);
         backgroundCategoryDropdown.SelectionChange += OnChangedCategory;
@@ -132,8 +132,10 @@ public class BackgroundsPane : BasePane
 
     public override void Draw()
     {
-        MpsGui.Header(backgroundHeader);
-        MpsGui.WhiteLine();
+        paneHeader.Draw();
+
+        if (!paneHeader.Enabled)
+            return;
 
         DrawDropdown(backgroundCategoryDropdown);
         DrawDropdown(backgroundDropdown);
@@ -193,7 +195,7 @@ public class BackgroundsPane : BasePane
     {
         base.ReloadTranslation();
 
-        backgroundHeader = Translation.Get("backgroundsPane", "header");
+        paneHeader.Label = Translation.Get("backgroundsPane", "header");
         dragHandleEnabledToggle.Label = Translation.Get("backgroundsPane", "dragHandleVisible");
         backgroundVisibleToggle.Label = Translation.Get("backgroundsPane", "backgroundVisible");
         colourModeToggle.Label = Translation.Get("backgroundsPane", "colour");

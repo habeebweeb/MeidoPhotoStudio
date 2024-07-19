@@ -50,7 +50,7 @@ public class AttachPropPane : BasePane
     private readonly Dropdown characterDropdown;
     private readonly Dictionary<AttachPoint, Toggle> attachPointToggles = new(EnumEqualityComparer<AttachPoint>.Instance);
     private readonly Toggle keepWorldPositionToggle;
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
 
     public AttachPropPane(
         CharacterService characterService,
@@ -95,9 +95,8 @@ public class AttachPropPane : BasePane
     public override void Draw()
     {
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         GUI.enabled = characterService.Count > 0 && CurrentProp is not null;

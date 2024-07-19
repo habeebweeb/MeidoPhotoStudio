@@ -59,7 +59,7 @@ public class DressingPane : BasePane
     private readonly Toggle curlingFrontToggle;
     private readonly Toggle curlingBackToggle;
     private readonly Toggle underwearShiftToggle;
-    private readonly Toggle paneHeader;
+    private readonly PaneHeader paneHeader;
 
     public DressingPane(SelectionController<CharacterController> characterSelectionController)
     {
@@ -112,9 +112,8 @@ public class DressingPane : BasePane
         GUI.enabled = enabled;
 
         paneHeader.Draw();
-        MpsGui.WhiteLine();
 
-        if (!paneHeader.Value)
+        if (!paneHeader.Enabled)
             return;
 
         detailedClothingToggle.Draw();
@@ -181,6 +180,7 @@ public class DressingPane : BasePane
 
     protected override void ReloadTranslation()
     {
+        paneHeader.Label = Translation.Get("dressingPane", "header");
         detailedClothingToggle.Label = Translation.Get("dressingPane", "detailedClothing");
         dressingGrid.SetItemsWithoutNotify(Translation.GetArray("dressingPane", DressingModeTranslationKeys));
 
