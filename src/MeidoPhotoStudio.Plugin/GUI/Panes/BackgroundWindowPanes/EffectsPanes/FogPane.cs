@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core.Effects;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -54,7 +56,7 @@ public class FogPane : EffectPane<FogController>
             HasReset = true,
         };
 
-        redSlider.ControlEvent += OnRedSliderChanged;
+        redSlider.ControlEvent += OnColourSliderChanged;
 
         greenSlider = new(Translation.Get("effectFog", "green"), 0f, 1f, Effect.FogColour.g, Effect.FogColour.g)
         {
@@ -62,7 +64,7 @@ public class FogPane : EffectPane<FogController>
             HasReset = true,
         };
 
-        greenSlider.ControlEvent += OnGreenSliderChanged;
+        greenSlider.ControlEvent += OnColourSliderChanged;
 
         blueSlider = new(Translation.Get("effectFog", "blue"), 0f, 1f, Effect.FogColour.b, Effect.FogColour.b)
         {
@@ -70,7 +72,7 @@ public class FogPane : EffectPane<FogController>
             HasReset = true,
         };
 
-        blueSlider.ControlEvent += OnBlueSliderChanged;
+        blueSlider.ControlEvent += OnColourSliderChanged;
     }
 
     public override void Draw()
@@ -101,6 +103,36 @@ public class FogPane : EffectPane<FogController>
         blueSlider.Label = Translation.Get("effectFog", "blue");
     }
 
+    protected override void OnEffectPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        base.OnEffectPropertyChanged(sender, e);
+
+        var fog = (FogController)sender;
+
+        if (e.PropertyName is nameof(FogController.Distance))
+        {
+            distanceSlider.SetValueWithoutNotify(fog.Distance);
+        }
+        else if (e.PropertyName is nameof(FogController.Density))
+        {
+            densitySlider.SetValueWithoutNotify(fog.Density);
+        }
+        else if (e.PropertyName is nameof(FogController.HeightScale))
+        {
+            heightScaleSlider.SetValueWithoutNotify(fog.HeightScale);
+        }
+        else if (e.PropertyName is nameof(FogController.Height))
+        {
+            heightSlider.SetValueWithoutNotify(fog.Height);
+        }
+        else if (e.PropertyName is nameof(FogController.FogColour))
+        {
+            redSlider.SetValueWithoutNotify(fog.FogColour.r);
+            greenSlider.SetValueWithoutNotify(fog.FogColour.g);
+            blueSlider.SetValueWithoutNotify(fog.FogColour.b);
+        }
+    }
+
     private void OnDistanceSliderChanged(object sender, EventArgs e) =>
         Effect.Distance = ((Slider)sender).Value;
 
@@ -113,12 +145,6 @@ public class FogPane : EffectPane<FogController>
     private void OnHeightSliderChanged(object sender, EventArgs e) =>
         Effect.Height = ((Slider)sender).Value;
 
-    private void OnRedSliderChanged(object sender, EventArgs e) =>
-        Effect.FogColour = Effect.FogColour with { r = ((Slider)sender).Value };
-
-    private void OnGreenSliderChanged(object sender, EventArgs e) =>
-        Effect.FogColour = Effect.FogColour with { g = ((Slider)sender).Value };
-
-    private void OnBlueSliderChanged(object sender, EventArgs e) =>
-        Effect.FogColour = Effect.FogColour with { b = ((Slider)sender).Value };
+    private void OnColourSliderChanged(object sender, EventArgs e) =>
+        Effect.FogColour = new(redSlider.Value, blueSlider.Value, greenSlider.Value);
 }

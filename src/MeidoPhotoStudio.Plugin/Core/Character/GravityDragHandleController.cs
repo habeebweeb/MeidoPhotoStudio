@@ -17,6 +17,7 @@ public class GravityDragHandleController : DragHandleControllerBase
         : base(dragHandle)
     {
         this.gravityController = gravityController ?? throw new ArgumentNullException(nameof(gravityController));
+        this.gravityController.EnabledChanged += OnEnabledChanged;
 
         transformBackup = new(gravityController.Transform, Space.Self);
 
@@ -32,6 +33,12 @@ public class GravityDragHandleController : DragHandleControllerBase
     public DragHandleMode Ignore =>
         ignore ??= new IgnoreMode(this);
 
+    protected override void OnDestroying() =>
+        gravityController.EnabledChanged -= OnEnabledChanged;
+
+    private void OnEnabledChanged(object sender, EventArgs e) =>
+        CurrentMode = MoveWorldXZ;
+
     private abstract class BaseMode(GravityDragHandleController controller) : DragHandleMode
     {
         protected readonly GravityDragHandleController controller = controller;
@@ -41,12 +48,6 @@ public class GravityDragHandleController : DragHandleControllerBase
 
         public override void OnDoubleClicked() =>
             controller.transformBackup.ApplyPosition(controller.gravityController.Transform);
-
-        public override void OnDragging()
-        {
-            if (controller.gravityController.Enabled)
-                controller.gravityController.OnControlMoved();
-        }
     }
 
     private class MoveWorldXZMode(GravityDragHandleController controller) : BaseMode(controller)
@@ -74,23 +75,16 @@ public class GravityDragHandleController : DragHandleControllerBase
     {
         private readonly GravityDragHandleController controller = controller;
 
-        private bool exiting;
-
         public override void OnModeEnter()
         {
-            if (exiting)
-                return;
-
-            controller.Enabled = false;
-            controller.GizmoEnabled = false;
+            controller.DragHandleActive = false;
+            controller.GizmoActive = false;
         }
 
         public override void OnModeExit()
         {
-            exiting = true;
-            controller.Enabled = true;
-            controller.GizmoEnabled = true;
-            exiting = false;
+            controller.DragHandleActive = true;
+            controller.GizmoActive = true;
         }
     }
 }

@@ -1,4 +1,7 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core;
+using MeidoPhotoStudio.Plugin.Core.Character;
 using MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -25,6 +28,7 @@ public class IKPane : BasePane
         this.ikDragHandleService = ikDragHandleService ?? throw new ArgumentNullException(nameof(ikDragHandleService));
         this.characterSelectionController = characterSelectionController ?? throw new ArgumentNullException(nameof(characterSelectionController));
 
+        this.characterSelectionController.Selecting += OnCharacterSelectionChanging;
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
         paneHeader = new(Translation.Get("maidPoseWindow", "header"), true);
@@ -150,19 +154,69 @@ public class IKPane : BasePane
         flipButton.Label = Translation.Get("maidPoseWindow", "flipPoseToggle");
     }
 
+    private void OnCharacterSelectionChanging(object sender, SelectionEventArgs<CharacterController> e)
+    {
+        if (e.Selected is null)
+            return;
+
+        var dragHandleController = ikDragHandleService[e.Selected];
+        var ik = e.Selected.IK;
+        var clothing = e.Selected.Clothing;
+
+        dragHandleController.PropertyChanged -= OnIKDragHandleControllerPropertyChanged;
+        ik.PropertyChanged -= OnIKControllerPropertyChanged;
+        clothing.PropertyChanged -= OnClothingPropertyChanged;
+    }
+
     private void OnCharacterSelectionChanged(object sender, SelectionEventArgs<CharacterController> e)
     {
         if (e.Selected is null)
             return;
 
         var dragHandleController = ikDragHandleService[e.Selected];
+        var ik = e.Selected.IK;
+        var clothing = e.Selected.Clothing;
+
+        dragHandleController.PropertyChanged += OnIKDragHandleControllerPropertyChanged;
+        ik.PropertyChanged += OnIKControllerPropertyChanged;
+        clothing.PropertyChanged += OnClothingPropertyChanged;
 
         ikEnabledToggle.SetEnabledWithoutNotify(dragHandleController.IKEnabled);
         boneModeEnabledToggle.SetEnabledWithoutNotify(dragHandleController.BoneMode);
-        limitLimbRotationsToggle.SetEnabledWithoutNotify(e.Selected.IK.LimitLimbRotations);
-        limitDigitRotationsToggle.SetEnabledWithoutNotify(e.Selected.IK.LimitDigitRotations);
-        customFloorHeightToggle.SetEnabledWithoutNotify(e.Selected.Clothing.CustomFloorHeight);
-        floorHeightTextfield.SetValueWithoutNotify(e.Selected.Clothing.FloorHeight);
+        limitLimbRotationsToggle.SetEnabledWithoutNotify(ik.LimitLimbRotations);
+        limitDigitRotationsToggle.SetEnabledWithoutNotify(ik.LimitDigitRotations);
+        customFloorHeightToggle.SetEnabledWithoutNotify(clothing.CustomFloorHeight);
+        floorHeightTextfield.SetValueWithoutNotify(clothing.FloorHeight);
+    }
+
+    private void OnIKDragHandleControllerPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        var dragHandleController = (IKDragHandleController)sender;
+
+        if (e.PropertyName is nameof(IKDragHandleController.IKEnabled))
+            ikEnabledToggle.SetEnabledWithoutNotify(dragHandleController.IKEnabled);
+        else if (e.PropertyName is nameof(IKDragHandleController.BoneMode))
+            boneModeEnabledToggle.SetEnabledWithoutNotify(dragHandleController.BoneMode);
+    }
+
+    private void OnIKControllerPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        var ikController = (IKController)sender;
+
+        if (e.PropertyName is nameof(IKController.LimitLimbRotations))
+            limitLimbRotationsToggle.SetEnabledWithoutNotify(ikController.LimitLimbRotations);
+        else if (e.PropertyName is nameof(IKController.LimitDigitRotations))
+            limitDigitRotationsToggle.SetEnabledWithoutNotify(ikController.LimitDigitRotations);
+    }
+
+    private void OnClothingPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        var clothingController = (ClothingController)sender;
+
+        if (e.PropertyName is nameof(ClothingController.CustomFloorHeight))
+            customFloorHeightToggle.SetEnabledWithoutNotify(clothingController.CustomFloorHeight);
+        else if (e.PropertyName is nameof(ClothingController.FloorHeight))
+            floorHeightTextfield.SetValueWithoutNotify(clothingController.FloorHeight);
     }
 
     private void OnIKEnabledChanged(object sender, EventArgs e)

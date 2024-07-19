@@ -39,25 +39,45 @@ public class BloomController(UnityEngine.Camera camera) : EffectControllerBase
     public int BloomValue
     {
         get => GameMain.Instance.CMSystem.BloomValue;
-        set => GameMain.Instance.CMSystem.BloomValue = value;
+        set
+        {
+            GameMain.Instance.CMSystem.BloomValue = value;
+
+            RaisePropertyChanged(nameof(BloomValue));
+        }
     }
 
     public int BlurIterations
     {
         get => Bloom.bloomBlurIterations;
-        set => Bloom.bloomBlurIterations = value;
+        set
+        {
+            Bloom.bloomBlurIterations = value;
+
+            RaisePropertyChanged(nameof(BlurIterations));
+        }
     }
 
     public Color BloomThresholdColour
     {
         get => Bloom.bloomThreshholdColor;
-        set => Bloom.bloomThreshholdColor = value;
+        set
+        {
+            Bloom.bloomThreshholdColor = value;
+
+            RaisePropertyChanged(nameof(BloomThresholdColour));
+        }
     }
 
     public bool HDR
     {
         get => Bloom.hdr is Bloom.HDRBloomMode.On;
-        set => Bloom.hdr = value ? Bloom.HDRBloomMode.On : Bloom.HDRBloomMode.Auto;
+        set
+        {
+            Bloom.hdr = value ? Bloom.HDRBloomMode.On : Bloom.HDRBloomMode.Auto;
+
+            RaisePropertyChanged(nameof(HDR));
+        }
     }
 
     private Bloom Bloom

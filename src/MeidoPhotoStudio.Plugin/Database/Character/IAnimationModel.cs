@@ -1,6 +1,6 @@
 namespace MeidoPhotoStudio.Database.Character;
 
-public interface IAnimationModel
+public interface IAnimationModel : IEquatable<IAnimationModel>
 {
     string Category { get; }
 

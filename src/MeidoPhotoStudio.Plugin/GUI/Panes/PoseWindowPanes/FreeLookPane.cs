@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Character;
 
@@ -19,6 +21,7 @@ public class FreeLookPane : BasePane
     {
         this.characterSelectionController = characterSelectionController ?? throw new ArgumentNullException(nameof(characterSelectionController));
 
+        this.characterSelectionController.Selecting += OnCharacterSelectionChanging;
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
         paneHeader = new(Translation.Get("freeLookPane", "header"), true);
@@ -31,14 +34,14 @@ public class FreeLookPane : BasePane
             HasReset = true,
         };
 
-        offsetLookXSlider.ControlEvent += OnEyeXSliderChanged;
+        offsetLookXSlider.ControlEvent += OnOffsetLookSlidersChanged;
 
         offsetLookYSlider = new(Translation.Get("freeLookPane", "ySlider"), 0.5f, -0.55f)
         {
             HasReset = true,
         };
 
-        offsetLookYSlider.ControlEvent += OnEyeYSliderChanged;
+        offsetLookYSlider.ControlEvent += OnOffsetLookSlidersChanged;
 
         eyeToCameraToggle = new(Translation.Get("freeLookPane", "eyeToCamToggle"), true);
         eyeToCameraToggle.ControlEvent += OnBindEyeToggleChanged;
@@ -103,16 +106,49 @@ public class FreeLookPane : BasePane
         bindLabel = Translation.Get("freeLookPane", "bindLabel");
     }
 
+    private void OnCharacterSelectionChanging(object sender, SelectionEventArgs<CharacterController> e)
+    {
+        if (e.Selected is null)
+            return;
+
+        e.Selected.Head.PropertyChanged -= OnHeadPropertyChanged;
+    }
+
     private void OnCharacterSelectionChanged(object sender, SelectionEventArgs<CharacterController> e)
     {
         if (e.Selected is null)
             return;
+
+        e.Selected.Head.PropertyChanged += OnHeadPropertyChanged;
 
         freeLookToggle.SetEnabledWithoutNotify(CurrentHead.FreeLook);
         offsetLookXSlider.SetValueWithoutNotify(CurrentHead.OffsetLookTarget.x);
         offsetLookYSlider.SetValueWithoutNotify(CurrentHead.OffsetLookTarget.y);
         eyeToCameraToggle.SetEnabledWithoutNotify(CurrentHead.EyeToCamera);
         headToCameraToggle.SetEnabledWithoutNotify(CurrentHead.HeadToCamera);
+    }
+
+    private void OnHeadPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        var head = (HeadController)sender;
+
+        if (e.PropertyName is nameof(HeadController.FreeLook))
+        {
+            freeLookToggle.SetEnabledWithoutNotify(head.FreeLook);
+        }
+        else if (e.PropertyName is nameof(HeadController.OffsetLookTarget))
+        {
+            offsetLookXSlider.SetValueWithoutNotify(head.OffsetLookTarget.x);
+            offsetLookYSlider.SetValueWithoutNotify(head.OffsetLookTarget.y);
+        }
+        else if (e.PropertyName is nameof(HeadController.EyeToCamera))
+        {
+            eyeToCameraToggle.SetEnabledWithoutNotify(head.EyeToCamera);
+        }
+        else if (e.PropertyName is nameof(HeadController.HeadToCamera))
+        {
+            headToCameraToggle.SetEnabledWithoutNotify(head.HeadToCamera);
+        }
     }
 
     private void OnFreeLookToggleChanged(object sender, EventArgs e)
@@ -123,15 +159,7 @@ public class FreeLookPane : BasePane
         CurrentHead.FreeLook = freeLookToggle.Value;
     }
 
-    private void OnEyeXSliderChanged(object sender, EventArgs e)
-    {
-        if (CurrentHead is null)
-            return;
-
-        CurrentHead.OffsetLookTarget = new(offsetLookXSlider.Value, offsetLookYSlider.Value);
-    }
-
-    private void OnEyeYSliderChanged(object sender, EventArgs e)
+    private void OnOffsetLookSlidersChanged(object sender, EventArgs e)
     {
         if (CurrentHead is null)
             return;

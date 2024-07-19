@@ -24,25 +24,45 @@ public class VignetteController(UnityEngine.Camera camera) : EffectControllerBas
     public float Intensity
     {
         get => Vignette.intensity;
-        set => Vignette.intensity = value;
+        set
+        {
+            Vignette.intensity = value;
+
+            RaisePropertyChanged(nameof(Intensity));
+        }
     }
 
     public float Blur
     {
         get => Vignette.blur;
-        set => Vignette.blur = value;
+        set
+        {
+            Vignette.blur = value;
+
+            RaisePropertyChanged(nameof(Blur));
+        }
     }
 
     public float BlurSpread
     {
         get => Vignette.blurSpread;
-        set => Vignette.blurSpread = value;
+        set
+        {
+            Vignette.blurSpread = value;
+
+            RaisePropertyChanged(nameof(BlurSpread));
+        }
     }
 
     public float ChromaticAberration
     {
         get => Vignette.chromaticAberration;
-        set => Vignette.chromaticAberration = value;
+        set
+        {
+            Vignette.chromaticAberration = value;
+
+            RaisePropertyChanged(nameof(ChromaticAberration));
+        }
     }
 
     private Vignetting Vignette

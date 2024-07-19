@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Character;
@@ -43,6 +45,7 @@ public class BlendSetSelectorPane : BasePane
 
         this.customBlendSetRepository.AddedBlendSet += OnBlendSetAdded;
         this.customBlendSetRepository.Refreshed += OnCustomBlendSetRepositoryRefreshed;
+        this.characterSelectionController.Selecting += OnCharacterSelectionChanging;
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
         var sourceIndex = GameBlendSet;
@@ -283,10 +286,20 @@ public class BlendSetSelectorPane : BasePane
             blendSetDropdown.SetItems(BlendSetList(blendSetSourceGrid.SelectedItemIndex is CustomBlendSet), 0);
     }
 
+    private void OnCharacterSelectionChanging(object sender, SelectionEventArgs<CharacterController> e)
+    {
+        if (e.Selected is null)
+            return;
+
+        e.Selected.Face.PropertyChanged -= OnFacePropertyChanged;
+    }
+
     private void OnCharacterSelectionChanged(object sender, SelectionEventArgs<CharacterController> e)
     {
         if (e.Selected is null)
             return;
+
+        e.Selected.Face.PropertyChanged += OnFacePropertyChanged;
 
         UpdatePanel(CurrentFace.BlendSet);
     }
@@ -388,6 +401,19 @@ public class BlendSetSelectorPane : BasePane
             return;
 
         CurrentFace?.ApplyBlendSet(e.Item);
+    }
+
+    private void OnFacePropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not nameof(FaceController.BlendSet))
+            return;
+
+        var controller = (FaceController)sender;
+
+        if (controller.BlendSet.Equals(blendSetDropdown.SelectedItem))
+            return;
+
+        UpdatePanel(controller.BlendSet);
     }
 
     private IEnumerable<string> BlendSetCategoryList(bool custom) =>

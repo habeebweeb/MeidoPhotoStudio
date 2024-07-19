@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Character;
@@ -41,6 +43,7 @@ public class AnimationSelectorPane : BasePane
 
         this.customAnimationRepository.AddedAnimation += OnAnimationAdded;
         this.customAnimationRepository.Refreshed += OnCustomAnimationRepositoryRefreshed;
+        this.characterSelectionController.Selecting += OnCharacterSelectionChanging;
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
         animationSourceGrid = new(Translation.GetArray("posePane", AnimationSourceTranslationKeys));
@@ -246,8 +249,6 @@ public class AnimationSelectorPane : BasePane
         }
 
         CurrentAnimation.Apply(e.Animation);
-
-        UpdatePanel(e.Animation);
     }
 
     private void OnCustomAnimationRepositoryRefreshed(object sender, EventArgs e)
@@ -314,10 +315,20 @@ public class AnimationSelectorPane : BasePane
             animationDropdown.SetItems(AnimationList(animationSourceGrid.SelectedItemIndex is CustomAnimation), 0);
     }
 
+    private void OnCharacterSelectionChanging(object sender, SelectionEventArgs<CharacterController> e)
+    {
+        if (e.Selected is null)
+            return;
+
+        e.Selected.Animation.PropertyChanged -= OnAnimationPropertyChanged;
+    }
+
     private void OnCharacterSelectionChanged(object sender, SelectionEventArgs<CharacterController> e)
     {
         if (e.Selected is null)
             return;
+
+        e.Selected.Animation.PropertyChanged += OnAnimationPropertyChanged;
 
         UpdatePanel(CurrentAnimation.Animation);
     }
@@ -426,6 +437,19 @@ public class AnimationSelectorPane : BasePane
             return;
 
         CurrentAnimation?.Apply(e.Item);
+    }
+
+    private void OnAnimationPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not nameof(AnimationController.Animation))
+            return;
+
+        var controller = (AnimationController)sender;
+
+        if (controller.Animation.Equals(animationDropdown.SelectedItem))
+            return;
+
+        UpdatePanel(controller.Animation);
     }
 
     private IEnumerable<string> AnimationCategoryList(bool custom) =>

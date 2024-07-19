@@ -44,6 +44,9 @@ public class NumericalTextField : BaseControl
 
     private void SetValue(float value, bool notify = true, bool updateTextField = true)
     {
+        if (this.value == value)
+            return;
+
         this.value = value;
 
         if (updateTextField)

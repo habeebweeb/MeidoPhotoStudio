@@ -1,11 +1,14 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
-public class AnimationController
+public class AnimationController : INotifyPropertyChanged
 {
     private readonly CharacterController character;
+    private IAnimationModel animation;
 
     public AnimationController(CharacterController character)
     {
@@ -16,7 +19,18 @@ public class AnimationController
 
     public event EventHandler ChangedAnimation;
 
-    public IAnimationModel Animation { get; private set; }
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public IAnimationModel Animation
+    {
+        get => animation;
+        private set
+        {
+            animation = value;
+
+            RaisePropertyChanged(nameof(Animation));
+        }
+    }
 
     public float Time
     {
@@ -27,14 +41,23 @@ public class AnimationController
             if (AnimationState is null)
                 return;
 
-            AnimationState.time = value % AnimationState.length;
+            var newTime = value % AnimationState.length;
 
-            if (Playing)
+            if (newTime == AnimationState.time)
                 return;
 
-            Playing = true;
-            Body.GetAnimation().Sample();
-            Playing = false;
+            AnimationState.time = newTime;
+
+            if (!AnimationState.enabled)
+            {
+                AnimationState.enabled = true;
+
+                Body.GetAnimation().Sample();
+
+                AnimationState.enabled = false;
+            }
+
+            RaisePropertyChanged(nameof(Time));
         }
     }
 
@@ -50,6 +73,8 @@ public class AnimationController
                 return;
 
             AnimationState.enabled = value;
+
+            RaisePropertyChanged(nameof(Playing));
         }
     }
 
@@ -61,9 +86,6 @@ public class AnimationController
 
     private AnimationState AnimationState =>
         Body.isLoadedBody ? Body.GetAnimation()[Body.LastAnimeFN] : null;
-
-    public void TogglePlayPause() =>
-        AnimationState.enabled = !AnimationState.enabled;
 
     public void Apply(IAnimationModel animation)
     {
@@ -146,5 +168,13 @@ public class AnimationController
             return;
 
         Apply(Animation);
+    }
+
+    private void RaisePropertyChanged(string propertyName)
+    {
+        if (string.IsNullOrEmpty(propertyName))
+            throw new ArgumentException($"'{nameof(propertyName)}' cannot be null or empty.", nameof(propertyName));
+
+        PropertyChanged?.Invoke(this, new(propertyName));
     }
 }

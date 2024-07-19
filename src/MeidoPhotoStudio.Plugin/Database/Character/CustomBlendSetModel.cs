@@ -26,4 +26,35 @@ public class CustomBlendSetModel : IBlendSetModel
 
     public bool Custom =>
         true;
+
+    public static bool operator ==(CustomBlendSetModel lhs, CustomBlendSetModel rhs) =>
+        lhs is null ? rhs is null : lhs.Equals(rhs);
+
+    public static bool operator !=(CustomBlendSetModel lhs, CustomBlendSetModel rhs) =>
+        !(lhs == rhs);
+
+    public override bool Equals(object other) =>
+        other is CustomBlendSetModel model && Equals(model);
+
+    public bool Equals(IBlendSetModel other) =>
+        other is CustomBlendSetModel model && Equals(model);
+
+    public bool Equals(CustomBlendSetModel other)
+    {
+        if (other is null)
+            return false;
+
+        if (ReferenceEquals(this, other))
+            return true;
+
+        if (GetType() != other.GetType())
+            return false;
+
+        return ID == other.ID
+            && string.Equals(Category, other.Category, StringComparison.Ordinal)
+            && string.Equals(BlendSetName, other.BlendSetName, StringComparison.Ordinal);
+    }
+
+    public override int GetHashCode() =>
+        (ID, Category, BlendSetName, Custom).GetHashCode();
 }

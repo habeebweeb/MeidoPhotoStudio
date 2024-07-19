@@ -24,19 +24,34 @@ public class BlurController(UnityEngine.Camera camera) : EffectControllerBase
     public float BlurSize
     {
         get => Blur.blurSize;
-        set => Blur.blurSize = value;
+        set
+        {
+            Blur.blurSize = value;
+
+            RaisePropertyChanged(nameof(BlurSize));
+        }
     }
 
     public int BlurIterations
     {
         get => Blur.blurIterations;
-        set => Blur.blurIterations = value;
+        set
+        {
+            Blur.blurIterations = value;
+
+            RaisePropertyChanged(nameof(BlurIterations));
+        }
     }
 
     public int Downsample
     {
         get => Blur.downsample;
-        set => Blur.downsample = value;
+        set
+        {
+            Blur.downsample = value;
+
+            RaisePropertyChanged(nameof(Downsample));
+        }
     }
 
     private Blur Blur

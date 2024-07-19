@@ -1,6 +1,8 @@
+using System.ComponentModel;
+
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
-public class HeadController
+public class HeadController : INotifyPropertyChanged
 {
     private readonly CharacterController character;
     private readonly Quaternion initialLeftEyeRotation;
@@ -9,20 +11,39 @@ public class HeadController
     public HeadController(CharacterController characterController)
     {
         character = characterController ?? throw new ArgumentNullException(nameof(characterController));
+
         initialLeftEyeRotation = character.Maid.body0.quaDefEyeL;
         initialRightEyeRotation = character.Maid.body0.quaDefEyeR;
     }
 
+    public event PropertyChangedEventHandler PropertyChanged;
+
     public bool FreeLook
     {
         get => Body.trsLookTarget == null;
-        set => Body.trsLookTarget = value ? null : GameMain.Instance.MainCamera.transform;
+        set
+        {
+            if (FreeLook == value)
+                return;
+
+            Body.trsLookTarget = value ? null : GameMain.Instance.MainCamera.transform;
+
+            RaisePropertyChanged(nameof(FreeLook));
+        }
     }
 
     public Vector2 OffsetLookTarget
     {
         get => new(Body.offsetLookTarget.z, Body.offsetLookTarget.x);
-        set => Body.offsetLookTarget = new(value.y, 1f, value.x);
+        set
+        {
+            if (OffsetLookTarget == value)
+                return;
+
+            Body.offsetLookTarget = new(value.y, 1f, value.x);
+
+            RaisePropertyChanged(nameof(OffsetLookTarget));
+        }
     }
 
     public bool HeadToCamera
@@ -30,12 +51,17 @@ public class HeadController
         get => Body.boHeadToCam;
         set
         {
+            if (HeadToCamera == value)
+                return;
+
             Body.HeadToCamPer = 0f;
             Body.HeadToCamFadeSpeed = 100f;
             Body.boHeadToCam = value;
 
             if (!HeadToCamera && !EyeToCamera)
                 FreeLook = false;
+
+            RaisePropertyChanged(nameof(HeadToCamera));
         }
     }
 
@@ -44,10 +70,15 @@ public class HeadController
         get => Body.boEyeToCam;
         set
         {
+            if (EyeToCamera == value)
+                return;
+
             Body.boEyeToCam = value;
 
             if (!HeadToCamera && !EyeToCamera)
                 FreeLook = false;
+
+            RaisePropertyChanged(nameof(EyeToCamera));
         }
     }
 
@@ -126,4 +157,12 @@ public class HeadController
 
     public void ResetRightEyeRotation() =>
         Body.quaDefEyeR = initialRightEyeRotation;
+
+    private void RaisePropertyChanged(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
+
+        PropertyChanged?.Invoke(this, new(name));
+    }
 }

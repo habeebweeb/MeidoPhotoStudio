@@ -9,4 +9,8 @@ public static class EnumExtensions
 
         return char.ToLower(enumString[0]) + enumString.Substring(1);
     }
+
+    public static bool HasFlag<T>(this T value, T flag)
+        where T : Enum =>
+        (Convert.ToUInt64(value) & Convert.ToUInt64(flag)) != 0;
 }

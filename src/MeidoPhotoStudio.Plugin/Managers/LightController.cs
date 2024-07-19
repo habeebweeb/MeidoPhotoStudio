@@ -1,26 +1,33 @@
 using System.ComponentModel;
 
+using MeidoPhotoStudio.Plugin.Framework;
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
+
 namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 
-public class LightController
+public class LightController : INotifyPropertyChanged
 {
     public static readonly Vector3 DefaultPosition = new(0f, 1.9f, 0.4f);
 
-    private readonly LightProperties[] lightProperties;
+    private readonly LightProperties[] lightProperties = [new(), new(), new()];
+    private readonly TransformWatcher transformWatcher;
 
     private int currentLightPropertiesIndex;
 
-    public LightController(Light light)
+    public LightController(Light light, TransformWatcher transformWatcher)
     {
         Light = light ? light : throw new ArgumentNullException(nameof(light));
-        lightProperties = [new(), new(), new()];
+        this.transformWatcher = transformWatcher ? transformWatcher : throw new ArgumentNullException(nameof(transformWatcher));
+        this.transformWatcher.Subscribe(Light.transform, RaiseTransformChanged);
 
         Type = LightType.Directional;
 
         Apply(CurrentLightProperties);
     }
 
-    public event EventHandler ChangedProperty;
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public event EventHandler<KeyedPropertyChangeEventArgs<LightType>> ChangedLightType;
 
     public Light Light { get; }
 
@@ -31,19 +38,14 @@ public class LightController
         {
             Light.enabled = value;
 
-            RaisePropertyChanged();
+            RaisePropertyChanged(nameof(Enabled));
         }
     }
 
     public Vector3 Position
     {
         get => Light.transform.position;
-        set
-        {
-            Light.transform.position = value;
-
-            RaisePropertyChanged();
-        }
+        set => Light.transform.position = value;
     }
 
     public Quaternion Rotation
@@ -53,8 +55,6 @@ public class LightController
         {
             Light.transform.rotation = value;
             CurrentLightProperties = CurrentLightProperties with { Rotation = value };
-
-            RaisePropertyChanged();
         }
     }
 
@@ -66,7 +66,7 @@ public class LightController
             Light.intensity = value;
             CurrentLightProperties = CurrentLightProperties with { Intensity = value };
 
-            RaisePropertyChanged();
+            RaisePropertyChanged(nameof(Intensity));
         }
     }
 
@@ -78,7 +78,7 @@ public class LightController
             Light.range = value;
             CurrentLightProperties = CurrentLightProperties with { Range = value };
 
-            RaisePropertyChanged();
+            RaisePropertyChanged(nameof(Range));
         }
     }
 
@@ -90,7 +90,7 @@ public class LightController
             Light.spotAngle = value;
             CurrentLightProperties = CurrentLightProperties with { SpotAngle = value };
 
-            RaisePropertyChanged();
+            RaisePropertyChanged(nameof(SpotAngle));
         }
     }
 
@@ -102,7 +102,7 @@ public class LightController
             Light.shadowStrength = value;
             CurrentLightProperties = CurrentLightProperties with { ShadowStrength = value };
 
-            RaisePropertyChanged();
+            RaisePropertyChanged(nameof(ShadowStrength));
         }
     }
 
@@ -114,7 +114,7 @@ public class LightController
             Light.color = value;
             CurrentLightProperties = CurrentLightProperties with { Colour = value };
 
-            RaisePropertyChanged();
+            RaisePropertyChanged(nameof(Colour));
         }
     }
 
@@ -126,24 +126,24 @@ public class LightController
             if (!ValidLightType(value))
                 throw new NotSupportedException($"{value} is not supported");
 
+            if (Light.type == value)
+                return;
+
             Light.type = value;
             currentLightPropertiesIndex = LightPropertiesIndex(value);
 
             Apply(CurrentLightProperties);
 
-            RaisePropertyChanged();
+            ChangedLightType?.Invoke(this, new(value));
+
+            RaisePropertyChanged(nameof(Type));
         }
     }
 
     private LightProperties CurrentLightProperties
     {
         get => lightProperties[currentLightPropertiesIndex];
-        set
-        {
-            lightProperties[currentLightPropertiesIndex] = value;
-
-            RaisePropertyChanged();
-        }
+        set => lightProperties[currentLightPropertiesIndex] = value;
     }
 
     public LightProperties this[LightType lightType]
@@ -160,19 +160,17 @@ public class LightController
 
             if (lightPropertiesIndex == currentLightPropertiesIndex)
                 Apply(lightProperties[lightPropertiesIndex]);
-
-            RaisePropertyChanged();
         }
     }
 
     public void Apply(LightProperties lightProperties)
     {
-        Light.transform.rotation = lightProperties.Rotation;
-        Light.intensity = lightProperties.Intensity;
-        Light.range = lightProperties.Range;
-        Light.spotAngle = lightProperties.SpotAngle;
-        Light.shadowStrength = lightProperties.ShadowStrength;
-        Light.color = lightProperties.Colour;
+        Rotation = lightProperties.Rotation;
+        Intensity = lightProperties.Intensity;
+        Range = lightProperties.Range;
+        SpotAngle = lightProperties.SpotAngle;
+        ShadowStrength = lightProperties.ShadowStrength;
+        Colour = lightProperties.Colour;
     }
 
     public void ResetCurrentLightProperties()
@@ -193,6 +191,9 @@ public class LightController
         }
     }
 
+    internal void Destroy() =>
+        transformWatcher.Unsubscribe(Light.transform);
+
     private static int LightPropertiesIndex(LightType lightType) =>
         lightType switch
         {
@@ -206,6 +207,19 @@ public class LightController
     private static bool ValidLightType(LightType lightType) =>
         lightType is LightType.Directional or LightType.Spot or LightType.Point;
 
-    private void RaisePropertyChanged() =>
-        ChangedProperty?.Invoke(this, EventArgs.Empty);
+    private void RaiseTransformChanged(TransformChangeEventArgs.TransformType type)
+    {
+        if (type.HasFlag(TransformChangeEventArgs.TransformType.Rotation))
+            RaisePropertyChanged(nameof(Rotation));
+        else if (type.HasFlag(TransformChangeEventArgs.TransformType.Position))
+            RaisePropertyChanged(nameof(Position));
+    }
+
+    private void RaisePropertyChanged(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
+
+        PropertyChanged?.Invoke(this, new(name));
+    }
 }

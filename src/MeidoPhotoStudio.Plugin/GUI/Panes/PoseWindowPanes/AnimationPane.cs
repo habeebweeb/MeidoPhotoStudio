@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Character;
 
@@ -141,7 +143,7 @@ public class AnimationPane : BasePane
         if (CurrentAnimation is null)
             return;
 
-        CurrentAnimation.ChangedAnimation -= OnAnimationChanged;
+        CurrentAnimation.PropertyChanged -= OnAnimationpropertyChanged;
     }
 
     private void OnCharacterSelectionChanged(object sender, SelectionEventArgs<CharacterController> e)
@@ -149,21 +151,32 @@ public class AnimationPane : BasePane
         if (CurrentAnimation is null)
             return;
 
-        CurrentAnimation.ChangedAnimation += OnAnimationChanged;
+        CurrentAnimation.PropertyChanged += OnAnimationpropertyChanged;
 
         UpdateSliderRange();
 
         UpdatePane();
     }
 
-    private void OnAnimationChanged(object sender, EventArgs e)
+    private void OnAnimationpropertyChanged(object sender, PropertyChangedEventArgs e)
     {
-        if (CurrentAnimation is null)
-            return;
+        var animation = (AnimationController)sender;
 
-        UpdateSliderRange();
+        if (e.PropertyName is nameof(AnimationController.Playing))
+        {
+            playPauseButton.SetEnabledWithoutNotify(animation.Playing);
 
-        UpdatePane();
+            UpdatePlayPauseButtonIcon();
+        }
+        else if (e.PropertyName is nameof(AnimationController.Time))
+        {
+            animationSlider.SetValueWithoutNotify(animation.Time);
+        }
+        else if (e.PropertyName is nameof(AnimationController.Animation))
+        {
+            UpdateSliderRange();
+            UpdatePane();
+        }
     }
 
     private void UpdateSliderRange() =>
@@ -177,8 +190,6 @@ public class AnimationPane : BasePane
         UpdatePlayPauseButtonIcon();
 
         CurrentAnimation.Playing = Playing;
-
-        UpdatePane();
     }
 
     private void OnAnimationSliderChange(object sender, EventArgs e)

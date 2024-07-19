@@ -1,6 +1,9 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Character;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
+using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -313,30 +316,51 @@ public class ExpressionPane : BasePane
 
     private void OnCharacterSelectionChanging(object sender, SelectionEventArgs<CharacterController> e)
     {
-        if (CurrentFace is null)
+        if (e.Selected is null)
             return;
 
-        CurrentFace.ChangedBlendSet -= OnBlendSetChanged;
+        var face = e.Selected.Face;
+
+        face.PropertyChanged -= OnFacePropertyChanged;
+        face.BlendValueChanged -= OnFaceBlendValueChanged;
     }
 
     private void OnCharacterSelectionChanged(object sender, SelectionEventArgs<CharacterController> e)
     {
-        if (CurrentFace is null)
+        if (e.Selected is null)
             return;
 
-        CurrentFace.ChangedBlendSet += OnBlendSetChanged;
+        var face = e.Selected.Face;
+
+        face.PropertyChanged += OnFacePropertyChanged;
+        face.BlendValueChanged += OnFaceBlendValueChanged;
 
         UpdateShapekeyList();
 
         UpdateControls();
     }
 
-    private void OnBlendSetChanged(object sender, EventArgs e)
+    private void OnFaceBlendValueChanged(object sender, KeyedPropertyChangeEventArgs<string> e)
     {
-        if (CurrentFace is null)
+        if (!controls.TryGetValue(e.Key, out var control))
             return;
 
-        UpdateControls();
+        var face = (FaceController)sender;
+
+        if (control is Slider slider)
+            slider.SetValueWithoutNotify(face[e.Key]);
+        else if (control is Toggle toggle)
+            toggle.SetEnabledWithoutNotify(Convert.ToBoolean(face[e.Key]));
+    }
+
+    private void OnFacePropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        var face = (FaceController)sender;
+
+        if (e.PropertyName is nameof(FaceController.Blink))
+            blinkToggle.SetEnabledWithoutNotify(face.Blink);
+        else if (e.PropertyName is nameof(FaceController.BlendSet))
+            UpdateControls();
     }
 
     private void UpdateShapekeyList()

@@ -1,9 +1,11 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
-public class IKDragHandleService
+public class IKDragHandleService : INotifyPropertyChanged
 {
     private readonly CharacterDragHandleInputService characterDragHandleInputService;
     private readonly CharacterService characterService;
@@ -29,6 +31,8 @@ public class IKDragHandleService
         this.characterService.Deactivating += OnDeactivating;
     }
 
+    public event PropertyChangedEventHandler PropertyChanged;
+
     public bool CubeEnabled
     {
         get => cubeEnabled;
@@ -41,6 +45,8 @@ public class IKDragHandleService
 
             foreach (var controller in controllers.Values)
                 controller.CubeEnabled = cubeEnabled;
+
+            RaisePropertyChanged(nameof(CubeEnabled));
         }
     }
 
@@ -56,6 +62,8 @@ public class IKDragHandleService
 
             foreach (var controller in controllers.Values)
                 controller.SmallHandle = smallHandle;
+
+            RaisePropertyChanged(nameof(SmallHandle));
         }
     }
 
@@ -635,5 +643,13 @@ public class IKDragHandleService
             dragHandle?.Destroy();
             characterDragHandleInputService.RemoveController(dragHandle);
         }
+    }
+
+    private void RaisePropertyChanged(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
+
+        PropertyChanged?.Invoke(this, new(name));
     }
 }

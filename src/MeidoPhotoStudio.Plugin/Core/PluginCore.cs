@@ -226,7 +226,7 @@ public partial class PluginCore : MonoBehaviour
         backgroundService = new BackgroundService(backgroundRepository);
         backgroundDragHandleService = new(generalDragHandleInputService, backgroundService);
 
-        lightRepository = new LightRepository();
+        lightRepository = new LightRepository(transformWatcher);
 
         var lightSelectionController = new SelectionController<LightController>(lightRepository);
 
@@ -250,7 +250,7 @@ public partial class PluginCore : MonoBehaviour
         blurController = new BlurController(GameMain.Instance.MainCamera.camera);
         sepiaToneController = new SepiaToneController(GameMain.Instance.MainCamera.camera);
 
-        propService = [];
+        propService = new(transformWatcher);
 
         var propAttachmentService = new PropAttachmentService(characterService, propService);
 

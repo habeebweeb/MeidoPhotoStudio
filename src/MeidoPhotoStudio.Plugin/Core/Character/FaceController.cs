@@ -1,15 +1,22 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
+using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
-public class FaceController
+public class FaceController : INotifyPropertyChanged
 {
+    private readonly Dictionary<string, KeyedPropertyChangeEventArgs<string>> blendValueChangeArgsCache =
+        new(StringComparer.Ordinal);
+
     private readonly CharacterController characterController;
 
     private string backupBlendSetName;
     private float[] backupBlendSetValues;
+    private IBlendSetModel blendSet;
 
     public FaceController(CharacterController characterController)
     {
@@ -18,9 +25,20 @@ public class FaceController
         BackupBlendSet();
     }
 
-    public event EventHandler ChangedBlendSet;
+    public event EventHandler<KeyedPropertyChangeEventArgs<string>> BlendValueChanged;
 
-    public IBlendSetModel BlendSet { get; private set; }
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public IBlendSetModel BlendSet
+    {
+        get => blendSet;
+        private set
+        {
+            blendSet = value;
+
+            RaisePropertyChanged(nameof(BlendSet));
+        }
+    }
 
     public IEnumerable<string> ExpressionKeys =>
         Face.BlendDatas.Where(blendData => blendData is not null).Select(blendData => blendData.name);
@@ -30,9 +48,14 @@ public class FaceController
         get => !Maid.MabatakiUpdateStop;
         set
         {
+            if (value == Maid.MabatakiUpdateStop)
+                return;
+
             Maid.MabatakiUpdateStop = !value;
             Maid.body0.Face.morph.EyeMabataki = 0f;
             Maid.MabatakiVal = 0f;
+
+            RaisePropertyChanged(nameof(Blink));
         }
     }
 
@@ -57,21 +80,8 @@ public class FaceController
             return Face.dicBlendSet[Maid.ActiveFace][index];
         }
 
-        set
-        {
-            if (string.IsNullOrEmpty(key))
-                throw new ArgumentException($"'{nameof(key)}' cannot be null or empty.", nameof(key));
-
-            if (!ContainsExpressionKey(key))
-                return;
-
-            var index = (int)Face.hash[Face.GP01FbFaceHashKey(key)];
-
-            Face.dicBlendSet[Maid.ActiveFace][index] = value;
-
-            if (key is "nosefook")
-                Maid.boNoseFook = Convert.ToBoolean(value);
-        }
+        set =>
+            SetBlendValue(key, value);
     }
 
     public void ApplyBlendSet(IBlendSetModel blendSet)
@@ -94,8 +104,6 @@ public class FaceController
 
         BlendSet = blendSet;
 
-        ChangedBlendSet?.Invoke(this, EventArgs.Empty);
-
         void ApplyGameBlendSet(IBlendSetModel blendSet)
         {
             ApplyBackupBlendSet();
@@ -113,8 +121,8 @@ public class FaceController
 
             ApplyBackupBlendSet();
 
-            foreach (var kvp in facialExpressionSet.Where(kvp => ContainsExpressionKey(kvp.Key)))
-                this[kvp.Key] = Mathf.Clamp(kvp.Value, 0f, 1f);
+            foreach (var (key, value) in facialExpressionSet.Where(kvp => ContainsExpressionKey(kvp.Key)))
+                SetBlendValue(key, Mathf.Clamp(value, 0f, 1f), false);
         }
     }
 
@@ -133,6 +141,28 @@ public class FaceController
             .ToDictionary(
                 expressionKey => expressionKey,
                 expressionKey => ContainsExpressionKey(expressionKey) ? this[expressionKey] : 0f));
+
+    private void SetBlendValue(string key, float value, bool notify = true)
+    {
+        if (string.IsNullOrEmpty(key))
+            throw new ArgumentException($"'{nameof(key)}' cannot be null or empty.", nameof(key));
+
+        if (!ContainsExpressionKey(key))
+            return;
+
+        var index = (int)Face.hash[Face.GP01FbFaceHashKey(key)];
+
+        if (value == Face.dicBlendSet[Maid.ActiveFace][index])
+            return;
+
+        Face.dicBlendSet[Maid.ActiveFace][index] = value;
+
+        if (key is "nosefook")
+            Maid.boNoseFook = Convert.ToBoolean(value);
+
+        if (notify)
+            OnBlendValueChanged(key);
+    }
 
     private void BackupBlendSet()
     {
@@ -153,5 +183,21 @@ public class FaceController
         var blendSet = Face.dicBlendSet[Maid.ActiveFace];
 
         backupBlendSetValues.CopyTo(blendSet, 0);
+    }
+
+    private void OnBlendValueChanged(string key)
+    {
+        if (!blendValueChangeArgsCache.TryGetValue(key, out var e))
+            e = blendValueChangeArgsCache[key] = new(key);
+
+        BlendValueChanged?.Invoke(this, e);
+    }
+
+    private void RaisePropertyChanged(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
+
+        PropertyChanged?.Invoke(this, new(name));
     }
 }

@@ -30,6 +30,9 @@ public class CustomAnimationModel : IEquatable<CustomAnimationModel>, IAnimation
     public override bool Equals(object obj) =>
         Equals(obj as CustomAnimationModel);
 
+    public bool Equals(IAnimationModel other) =>
+        other is CustomAnimationModel model && Equals(model);
+
     public bool Equals(CustomAnimationModel other)
     {
         if (other is null)

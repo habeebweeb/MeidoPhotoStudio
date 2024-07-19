@@ -1,6 +1,6 @@
 namespace MeidoPhotoStudio.Database.Character;
 
-public interface IBlendSetModel
+public interface IBlendSetModel : IEquatable<IBlendSetModel>
 {
     string Name { get; }
 

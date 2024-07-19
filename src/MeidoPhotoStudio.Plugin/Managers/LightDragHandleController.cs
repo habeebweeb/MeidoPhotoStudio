@@ -10,9 +10,6 @@ public class LightDragHandleController : GeneralDragHandleController
     private readonly SelectionController<LightController> lightSelectionController;
     private readonly TabSelectionController tabSelectionController;
 
-    private WrappedRotationMode rotateLocalXZMode;
-    private WrappedRotationMode rotateLocalYMode;
-    private WrappedRotationMode rotateWorldYMode;
     private LightScaleMode scale;
     private LightSelectMode select;
     private LightDeleteMode delete;
@@ -32,15 +29,6 @@ public class LightDragHandleController : GeneralDragHandleController
         isMainLight = LightController.Light == GameMain.Instance.MainLight.GetComponent<Light>();
     }
 
-    public override GeneralDragHandleMode<GeneralDragHandleController> RotateLocalXZ =>
-        rotateLocalXZMode ??= new WrappedRotationMode(this, base.RotateLocalXZ);
-
-    public override GeneralDragHandleMode<GeneralDragHandleController> RotateLocalY =>
-        rotateLocalYMode ??= new WrappedRotationMode(this, base.RotateLocalY);
-
-    public override GeneralDragHandleMode<GeneralDragHandleController> RotateWorldY =>
-        rotateWorldYMode ??= new WrappedRotationMode(this, base.RotateWorldY);
-
     public override GeneralDragHandleMode<GeneralDragHandleController> Scale =>
         scale ??= new LightScaleMode(this);
 
@@ -48,7 +36,7 @@ public class LightDragHandleController : GeneralDragHandleController
         select ??= new LightSelectMode(this);
 
     public override GeneralDragHandleMode<GeneralDragHandleController> Delete =>
-        delete ??= new LightDeleteMode(this);
+        isMainLight ? None : delete ??= new LightDeleteMode(this);
 
     private LightController LightController { get; }
 
@@ -56,9 +44,6 @@ public class LightDragHandleController : GeneralDragHandleController
         lightController is null
             ? throw new ArgumentNullException(nameof(lightController))
             : lightController.Light.transform;
-
-    private void UpdateControllerRotation() =>
-        LightController.Rotation = Target.rotation;
 
     private class LightSelectMode(LightDragHandleController controller) : SelectMode(controller)
     {
@@ -106,54 +91,7 @@ public class LightDragHandleController : GeneralDragHandleController
     {
         private new LightDragHandleController Controller { get; } = controller;
 
-        public override void OnModeEnter()
-        {
-            if (Controller.isMainLight)
-            {
-                DragHandle.gameObject.SetActive(false);
-                DragHandle.MovementType = DragHandle.MoveType.None;
-
-                if (Gizmo)
-                    Gizmo.gameObject.SetActive(false);
-            }
-            else
-            {
-                base.OnModeEnter();
-            }
-        }
-
-        public override void OnClicked()
-        {
-            if (Controller.isMainLight)
-                return;
-
+        public override void OnClicked() =>
             Controller.lightRepository.RemoveLight(Controller.LightController);
-        }
-    }
-
-    private abstract class LightDragHandleRotateMode(LightDragHandleController controller)
-        : GeneralDragHandleRotateMode(controller)
-    {
-        private new LightDragHandleController Controller { get; } = controller;
-
-        public override void OnDoubleClicked() =>
-            Controller.UpdateControllerRotation();
-    }
-
-    private class WrappedRotationMode(
-        LightDragHandleController controller, GeneralDragHandleMode<GeneralDragHandleController> rotateMode)
-        : LightDragHandleRotateMode(controller)
-    {
-        private readonly GeneralDragHandleMode<GeneralDragHandleController> rotateMode = rotateMode
-            ?? throw new ArgumentNullException(nameof(rotateMode));
-
-        private new LightDragHandleController Controller { get; } = controller;
-
-        public override void OnDragging()
-        {
-            rotateMode.OnDragging();
-
-            Controller.UpdateControllerRotation();
-        }
     }
 }

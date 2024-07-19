@@ -1,10 +1,12 @@
 namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 
-public class LightRepository : IEnumerable<LightController>, IIndexableCollection<LightController>
+public class LightRepository(TransformWatcher transformWatcher) : IEnumerable<LightController>, IIndexableCollection<LightController>
 {
     private static GameObject lightParent;
 
     private readonly List<LightController> lightControllers = [];
+    private readonly TransformWatcher transformWatcher =
+        transformWatcher ? transformWatcher : throw new ArgumentNullException(nameof(transformWatcher));
 
     public event EventHandler<LightRepositoryEventArgs> AddedLight;
 
@@ -48,7 +50,7 @@ public class LightRepository : IEnumerable<LightController>, IIndexableCollectio
 
     public void AddLight(Light light)
     {
-        var lightController = new LightController(light);
+        var lightController = new LightController(light, transformWatcher);
 
         light.transform.position = LightController.DefaultPosition;
 
@@ -81,7 +83,9 @@ public class LightRepository : IEnumerable<LightController>, IIndexableCollectio
 
         RemovedLight?.Invoke(this, new(lightController, index));
 
-        if (!IsMainLight(lightController))
+        lightController.Destroy();
+
+        if (!IsMainLight(lightController) && lightController.Light)
             Object.Destroy(lightController.Light.gameObject);
     }
 

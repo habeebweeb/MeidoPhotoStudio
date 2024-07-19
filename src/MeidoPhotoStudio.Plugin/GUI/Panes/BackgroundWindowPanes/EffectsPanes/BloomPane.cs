@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core.Effects;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -39,7 +41,7 @@ public class BloomPane : EffectPane<BloomController>
             HasReset = true,
         };
 
-        redSlider.ControlEvent += OnRedSliderChanged;
+        redSlider.ControlEvent += OnColourSliderChanged;
 
         greenSlider = new(
             Translation.Get("effectBloom", "green"), 1f, 0f, bloomThresholdColour.g, bloomThresholdColour.g)
@@ -48,7 +50,7 @@ public class BloomPane : EffectPane<BloomController>
             HasReset = true,
         };
 
-        greenSlider.ControlEvent += OnGreenSliderChanged;
+        greenSlider.ControlEvent += OnColourSliderChanged;
 
         blueSlider = new(
             Translation.Get("effectBloom", "blue"), 1f, 0f, bloomThresholdColour.b, bloomThresholdColour.b)
@@ -57,7 +59,7 @@ public class BloomPane : EffectPane<BloomController>
             HasReset = true,
         };
 
-        blueSlider.ControlEvent += OnBlueSliderChanged;
+        blueSlider.ControlEvent += OnColourSliderChanged;
 
         hdrToggle = new(Translation.Get("effectBloom", "hdrToggle"), Effect.HDR);
         hdrToggle.ControlEvent += OnHDRToggleChanged;
@@ -89,20 +91,40 @@ public class BloomPane : EffectPane<BloomController>
         hdrToggle.Label = Translation.Get("effectBloom", "hdrToggle");
     }
 
+    protected override void OnEffectPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        base.OnEffectPropertyChanged(sender, e);
+
+        var bloom = (BloomController)sender;
+
+        if (e.PropertyName is nameof(BloomController.BloomValue))
+        {
+            intensitySlider.SetValueWithoutNotify(bloom.BloomValue);
+        }
+        else if (e.PropertyName is nameof(BloomController.BlurIterations))
+        {
+            blurSlider.SetValueWithoutNotify(bloom.BlurIterations);
+        }
+        else if (e.PropertyName is nameof(BloomController.BloomThresholdColour))
+        {
+            redSlider.SetValueWithoutNotify(bloom.BloomThresholdColour.r);
+            greenSlider.SetValueWithoutNotify(bloom.BloomThresholdColour.g);
+            blueSlider.SetValueWithoutNotify(bloom.BloomThresholdColour.b);
+        }
+        else if (e.PropertyName is nameof(BloomController.HDR))
+        {
+            hdrToggle.SetEnabledWithoutNotify(bloom.HDR);
+        }
+    }
+
     private void OnItensitySliderChanged(object sender, EventArgs e) =>
         Effect.BloomValue = (int)((Slider)sender).Value;
 
     private void OnBlurSliderChanged(object sender, EventArgs e) =>
         Effect.BlurIterations = (int)((Slider)sender).Value;
 
-    private void OnRedSliderChanged(object sender, EventArgs e) =>
-        Effect.BloomThresholdColour = Effect.BloomThresholdColour with { r = ((Slider)sender).Value };
-
-    private void OnGreenSliderChanged(object sender, EventArgs e) =>
-        Effect.BloomThresholdColour = Effect.BloomThresholdColour with { g = ((Slider)sender).Value };
-
-    private void OnBlueSliderChanged(object sender, EventArgs e) =>
-        Effect.BloomThresholdColour = Effect.BloomThresholdColour with { b = ((Slider)sender).Value };
+    private void OnColourSliderChanged(object sender, EventArgs e) =>
+        Effect.BloomThresholdColour = new(redSlider.Value, blueSlider.Value, greenSlider.Value);
 
     private void OnHDRToggleChanged(object sender, EventArgs e) =>
         Effect.HDR = ((Toggle)sender).Value;

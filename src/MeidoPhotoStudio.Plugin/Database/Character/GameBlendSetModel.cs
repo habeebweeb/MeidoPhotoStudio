@@ -24,4 +24,33 @@ public class GameBlendSetModel(PhotoFaceData photoFaceData, string name = "") : 
 
     public bool Custom =>
         false;
+
+    public static bool operator ==(GameBlendSetModel lhs, GameBlendSetModel rhs) =>
+        lhs is null ? rhs is null : lhs.Equals(rhs);
+
+    public static bool operator !=(GameBlendSetModel lhs, GameBlendSetModel rhs) =>
+        !(lhs == rhs);
+
+    public override bool Equals(object other) =>
+        other is GameBlendSetModel model && Equals(model);
+
+    public bool Equals(IBlendSetModel other) =>
+        other is GameBlendSetModel model && Equals(model);
+
+    public bool Equals(GameBlendSetModel other)
+    {
+        if (other is null)
+            return false;
+
+        if (ReferenceEquals(this, other))
+            return true;
+
+        if (GetType() != other.GetType())
+            return false;
+
+        return ID == other.ID;
+    }
+
+    public override int GetHashCode() =>
+        (photoFaceData, ID, Name, Custom).GetHashCode();
 }

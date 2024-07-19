@@ -1,7 +1,8 @@
 namespace MeidoPhotoStudio.Plugin;
 
 public class TransformComponentChangeEventArgs(
-    TransformComponentChangeEventArgs.TransformComponent component, float value) : EventArgs
+    TransformComponentChangeEventArgs.TransformComponent component, float componentValue, Vector3 value)
+    : EventArgs
 {
     public enum TransformComponent
     {
@@ -12,11 +13,14 @@ public class TransformComponentChangeEventArgs(
 
     public TransformComponent Component { get; } = component;
 
-    public float Value { get; } = value;
+    public float ComponentValue { get; } = componentValue;
 
-    public void Deconstruct(out TransformComponent component, out float value)
+    public Vector3 Value { get; } = value;
+
+    public void Deconstruct(out TransformComponent component, out float componentValue, out Vector3 value)
     {
         component = Component;
+        componentValue = ComponentValue;
         value = Value;
     }
 }

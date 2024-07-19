@@ -10,12 +10,6 @@ public class PropDragHandleController : GeneralDragHandleController
     private readonly SelectionController<PropController> propSelectionController;
     private readonly TabSelectionController tabSelectionController;
 
-    private UpdateTransformMode moveWorldXZ;
-    private UpdateTransformMode moveWorldY;
-    private UpdateTransformMode rotateLocalXZ;
-    private UpdateTransformMode rotateWorldY;
-    private UpdateTransformMode rotateLocalY;
-    private UpdateTransformMode scale;
     private PropSelectMode select;
     private PropDeleteMode delete;
 
@@ -35,26 +29,7 @@ public class PropDragHandleController : GeneralDragHandleController
         this.tabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
 
         Gizmo.gameObject.SetActive(false);
-        Gizmo.GizmoDrag += OnGizmoDragged;
     }
-
-    public override GeneralDragHandleMode<GeneralDragHandleController> MoveWorldXZ =>
-        moveWorldXZ ??= new UpdateTransformMode(this, base.MoveWorldXZ);
-
-    public override GeneralDragHandleMode<GeneralDragHandleController> MoveWorldY =>
-        moveWorldY ??= new UpdateTransformMode(this, base.MoveWorldY);
-
-    public override GeneralDragHandleMode<GeneralDragHandleController> RotateLocalXZ =>
-        rotateLocalXZ ??= new UpdateTransformMode(this, base.RotateLocalXZ);
-
-    public override GeneralDragHandleMode<GeneralDragHandleController> RotateWorldY =>
-        rotateWorldY ??= new UpdateTransformMode(this, base.RotateWorldY);
-
-    public override GeneralDragHandleMode<GeneralDragHandleController> RotateLocalY =>
-        rotateLocalY ??= new UpdateTransformMode(this, base.RotateLocalY);
-
-    public override GeneralDragHandleMode<GeneralDragHandleController> Scale =>
-        scale ??= new UpdateTransformMode(this, base.Scale);
 
     public override GeneralDragHandleMode<GeneralDragHandleController> Select =>
         select ??= new PropSelectMode(this);
@@ -73,12 +48,6 @@ public class PropDragHandleController : GeneralDragHandleController
         get => Gizmo.offsetScale;
         set => Gizmo.offsetScale = value;
     }
-
-    private void UpdatePropTransform() =>
-        propController.UpdateTransform();
-
-    private void OnGizmoDragged(object sender, EventArgs e) =>
-        UpdatePropTransform();
 
     private class PropSelectMode(PropDragHandleController controller) : SelectMode(controller)
     {
@@ -100,38 +69,5 @@ public class PropDragHandleController : GeneralDragHandleController
 
         public override void OnClicked() =>
             Controller.propService.Remove(Controller.propController);
-    }
-
-    private class UpdateTransformMode(
-        PropDragHandleController controller, GeneralDragHandleMode<GeneralDragHandleController> mode)
-        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
-    {
-        private readonly GeneralDragHandleMode<GeneralDragHandleController> mode = mode
-            ?? throw new ArgumentNullException(nameof(mode));
-
-        private new PropDragHandleController Controller { get; } = controller;
-
-        public override void OnModeEnter() =>
-            mode.OnModeEnter();
-
-        public override void OnClicked() =>
-            mode.OnClicked();
-
-        public override void OnDragging()
-        {
-            mode.OnDragging();
-
-            Controller.UpdatePropTransform();
-        }
-
-        public override void OnReleased() =>
-            mode.OnReleased();
-
-        public override void OnDoubleClicked()
-        {
-            mode.OnDoubleClicked();
-
-            Controller.UpdatePropTransform();
-        }
     }
 }

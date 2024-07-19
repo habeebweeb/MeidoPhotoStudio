@@ -49,6 +49,10 @@ public class PropAttachmentService
         this.propService.RemovedProp += OnPropRemoved;
     }
 
+    public event EventHandler<PropAttachmentEventArgs> AttachedProp;
+
+    public event EventHandler<PropAttachmentEventArgs> DetachedProp;
+
     public AttachPointInfo this[PropController propController] =>
         propController is null
             ? throw new ArgumentNullException(nameof(propController))
@@ -73,13 +77,15 @@ public class PropAttachmentService
         AttachProp(prop, character, attachPoint, keepPosition);
 
         attachedProps[prop] = new(attachPoint, character);
+
+        AttachedProp?.Invoke(this, new(prop, character, attachPoint));
     }
 
     public void DetachProp(PropController prop)
     {
         _ = prop ?? throw new ArgumentNullException(nameof(prop));
 
-        if (!attachedProps.ContainsKey(prop))
+        if (!attachedProps.TryGetValue(prop, out var attachPointInfo))
             return;
 
         var propTransform = prop.GameObject.transform;
@@ -90,6 +96,13 @@ public class PropAttachmentService
         propTransform.localScale = originalScale;
 
         attachedProps.Remove(prop);
+
+        DetachedProp?.Invoke(
+            this,
+            new(
+                prop,
+                characterService.GetCharacterControllerByID(attachPointInfo.MaidGuid),
+                attachPointInfo.AttachPoint));
     }
 
     private void AttachProp(PropController prop, CharacterController character, AttachPoint attachPoint, bool keepPosition)

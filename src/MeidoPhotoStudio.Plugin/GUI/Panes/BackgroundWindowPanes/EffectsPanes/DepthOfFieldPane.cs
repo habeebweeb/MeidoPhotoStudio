@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core.Effects;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -72,6 +74,24 @@ public class DepthOfFieldPane : EffectPane<DepthOfFieldController>
         apertureSlider.Label = Translation.Get("effectDof", "aperture");
         blurSizeSlider.Label = Translation.Get("effectDof", "blur");
         visualizeFocusToggle.Label = Translation.Get("effectDof", "visualizeFocus");
+    }
+
+    protected override void OnEffectPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        base.OnEffectPropertyChanged(sender, e);
+
+        var depthOfField = (DepthOfFieldController)sender;
+
+        if (e.PropertyName is nameof(DepthOfFieldController.FocalLength))
+            focalLengthSlider.SetValueWithoutNotify(depthOfField.FocalLength);
+        else if (e.PropertyName is nameof(DepthOfFieldController.FocalSize))
+            focalSizeSlider.SetValueWithoutNotify(depthOfField.FocalSize);
+        else if (e.PropertyName is nameof(DepthOfFieldController.Aperture))
+            apertureSlider.SetValueWithoutNotify(depthOfField.Aperture);
+        else if (e.PropertyName is nameof(DepthOfFieldController.MaxBlurSize))
+            blurSizeSlider.SetValueWithoutNotify(depthOfField.MaxBlurSize);
+        else if (e.PropertyName is nameof(DepthOfFieldController.VisualizeFocus))
+            visualizeFocusToggle.SetEnabledWithoutNotify(depthOfField.VisualizeFocus);
     }
 
     private void OnFocalLengthSliderChanged(object sender, EventArgs e) =>

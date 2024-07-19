@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core.Effects;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -42,6 +44,20 @@ public class BlurPane : EffectPane<BlurController>
         downsampleSlider.Draw();
 
         GUI.enabled = true;
+    }
+
+    protected override void OnEffectPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        base.OnEffectPropertyChanged(sender, e);
+
+        var blur = (BlurController)sender;
+
+        if (e.PropertyName is nameof(BlurController.BlurSize))
+            blurSizeSlider.SetValueWithoutNotify(blur.BlurSize);
+        else if (e.PropertyName is nameof(BlurController.BlurIterations))
+            blurIterationsSlider.SetValueWithoutNotify(blur.BlurIterations);
+        else if (e.PropertyName is nameof(BlurController.Downsample))
+            downsampleSlider.SetValueWithoutNotify(blur.Downsample);
     }
 
     private void OnBlurSizeChanged(object sender, EventArgs e) =>

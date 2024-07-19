@@ -1,6 +1,8 @@
+using System.ComponentModel;
+
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
-public class GlobalGravityService
+public class GlobalGravityService : INotifyPropertyChanged
 {
     private readonly CharacterService characterService;
 
@@ -14,6 +16,8 @@ public class GlobalGravityService
         this.characterService.CalledCharacters += OnCharactersCalled;
     }
 
+    public event PropertyChangedEventHandler PropertyChanged;
+
     public bool Enabled
     {
         get => enabled;
@@ -22,6 +26,8 @@ public class GlobalGravityService
             enabled = value;
 
             UpdateCharacterGravity();
+
+            RaisePropertyChanged(nameof(Enabled));
         }
     }
 
@@ -44,6 +50,8 @@ public class GlobalGravityService
             foreach (var controller in characterService
                 .Select(character => character.Clothing.HairGravityController))
                 controller.SetPositionWithoutNotify(value);
+
+            RaisePropertyChanged(nameof(HairGravityPosition));
         }
     }
 
@@ -66,6 +74,8 @@ public class GlobalGravityService
             foreach (var controller in characterService
                 .Select(character => character.Clothing.ClothingGravityController))
                 controller.SetPositionWithoutNotify(value);
+
+            RaisePropertyChanged(nameof(ClothingGravityPosition));
         }
     }
 
@@ -73,11 +83,11 @@ public class GlobalGravityService
     {
         foreach (var clothing in characterService.Select(character => character.Clothing))
         {
-            clothing.HairGravityController.Moved -= OnHairControlMoved;
-            clothing.HairGravityController.EnabledChanged -= OnHairEnabledChanged;
+            clothing.HairGravityController.Moved -= OnGravityControlMoved;
+            clothing.HairGravityController.EnabledChanged -= OnGravityControlEnabledChanged;
 
-            clothing.ClothingGravityController.Moved -= OnClothingControlMoved;
-            clothing.ClothingGravityController.EnabledChanged -= OnClothingEnabledChanged;
+            clothing.ClothingGravityController.Moved -= OnGravityControlMoved;
+            clothing.ClothingGravityController.EnabledChanged -= OnGravityControlEnabledChanged;
         }
     }
 
@@ -85,15 +95,15 @@ public class GlobalGravityService
     {
         foreach (var clothing in e.LoadedCharacters.Select(character => character.Clothing))
         {
-            clothing.HairGravityController.Moved += OnHairControlMoved;
-            clothing.HairGravityController.EnabledChanged += OnHairEnabledChanged;
+            clothing.HairGravityController.Moved += OnGravityControlMoved;
+            clothing.HairGravityController.EnabledChanged += OnGravityControlEnabledChanged;
 
-            clothing.ClothingGravityController.Moved += OnClothingControlMoved;
-            clothing.ClothingGravityController.EnabledChanged += OnClothingEnabledChanged;
+            clothing.ClothingGravityController.Moved += OnGravityControlMoved;
+            clothing.ClothingGravityController.EnabledChanged += OnGravityControlEnabledChanged;
         }
     }
 
-    private void OnHairEnabledChanged(object sender, EventArgs e)
+    private void OnGravityControlMoved(object sender, EventArgs e)
     {
         if (!Enabled)
             return;
@@ -103,30 +113,11 @@ public class GlobalGravityService
         if (!gravityController.Enabled)
             return;
 
-        var firstEnabledController = characterService
-            .Select(character => character.Clothing.HairGravityController)
-            .Where(controller => gravityController != controller)
-            .FirstOrDefault(controller => controller.Enabled);
-
-        var position = firstEnabledController?.Position ?? gravityController.Position;
-
-        gravityController.SetPositionWithoutNotify(position);
-    }
-
-    private void OnHairControlMoved(object sender, EventArgs e)
-    {
-        if (!Enabled)
-            return;
-
-        var gravityController = (GravityController)sender;
-
-        foreach (var controller in characterService
-            .Select(character => character.Clothing.HairGravityController)
-            .Where(hairController => hairController != gravityController))
+        foreach (var controller in GetSameGravityControllers(gravityController))
             controller.SetPositionWithoutNotify(gravityController.Position);
     }
 
-    private void OnClothingEnabledChanged(object sender, EventArgs e)
+    private void OnGravityControlEnabledChanged(object sender, EventArgs e)
     {
         if (!Enabled)
             return;
@@ -136,9 +127,7 @@ public class GlobalGravityService
         if (!gravityController.Enabled)
             return;
 
-        var firstEnabledController = characterService
-            .Select(character => character.Clothing.ClothingGravityController)
-            .Where(controller => gravityController != controller)
+        var firstEnabledController = GetSameGravityControllers(gravityController)
             .FirstOrDefault(controller => controller.Enabled);
 
         var position = firstEnabledController?.Position ?? gravityController.Position;
@@ -146,17 +135,13 @@ public class GlobalGravityService
         gravityController.SetPositionWithoutNotify(position);
     }
 
-    private void OnClothingControlMoved(object sender, EventArgs e)
+    private IEnumerable<GravityController> GetSameGravityControllers(GravityController controller)
     {
-        if (!Enabled)
-            return;
+        var controllers = controller is HairGravityController
+            ? characterService.Select(character => character.Clothing.HairGravityController)
+            : characterService.Select(character => character.Clothing.ClothingGravityController);
 
-        var gravityController = (GravityController)sender;
-
-        foreach (var controller in characterService
-            .Select(character => character.Clothing.ClothingGravityController)
-            .Where(hairController => hairController != gravityController))
-            controller.SetPositionWithoutNotify(gravityController.Position);
+        return controllers.Where(otherController => controller != otherController);
     }
 
     private void UpdateCharacterGravity()
@@ -189,5 +174,13 @@ public class GlobalGravityService
             if (enabledClothingController != clothingController && clothingController.Enabled)
                 clothingController.SetPositionWithoutNotify(clothingPosition);
         }
+    }
+
+    private void RaisePropertyChanged(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
+
+        PropertyChanged?.Invoke(this, new(name));
     }
 }

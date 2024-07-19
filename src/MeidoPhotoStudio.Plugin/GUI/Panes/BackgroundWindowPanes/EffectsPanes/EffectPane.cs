@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core.Effects;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -17,6 +19,8 @@ public class EffectPane<T> : BasePane
 
         resetEffectButton = new(Translation.Get("effectsPane", "reset"));
         resetEffectButton.ControlEvent += OnResetEffectButtonPushed;
+
+        Effect.PropertyChanged += OnEffectPropertyChanged;
     }
 
     protected T Effect { get; }
@@ -34,6 +38,12 @@ public class EffectPane<T> : BasePane
         resetEffectButton.Draw();
 
         GUILayout.EndHorizontal();
+    }
+
+    protected virtual void OnEffectPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(EffectControllerBase.Active))
+            effectActiveToggle.SetEnabledWithoutNotify(((EffectControllerBase)sender).Active);
     }
 
     protected override void ReloadTranslation()

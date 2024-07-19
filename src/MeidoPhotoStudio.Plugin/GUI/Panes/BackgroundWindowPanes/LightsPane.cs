@@ -1,5 +1,8 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
+using MeidoPhotoStudio.Plugin.Framework;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -30,6 +33,7 @@ public class LightsPane : BasePane
 
     private string resetHeader;
     private string noLights;
+    private bool sliderChangedTransform;
 
     public LightsPane(LightRepository lightRepository, SelectionController<LightController> lightSelectionController)
     {
@@ -72,7 +76,7 @@ public class LightsPane : BasePane
             HasReset = true,
         };
 
-        xRotationSlider.ControlEvent += OnXRotationSliderChanged;
+        xRotationSlider.ControlEvent += OnRotationSlidersChanged;
 
         yRotationSlider = new Slider(Translation.Get("lights", "y"), 0f, 360f, defaultRotation.y, defaultRotation.y)
         {
@@ -80,7 +84,7 @@ public class LightsPane : BasePane
             HasReset = true,
         };
 
-        yRotationSlider.ControlEvent += OnYRotationSliderChanged;
+        yRotationSlider.ControlEvent += OnRotationSlidersChanged;
 
         intensitySlider = new Slider(Translation.Get("lights", "intensity"), 0f, 2f, 0.95f, 0.95f)
         {
@@ -120,7 +124,7 @@ public class LightsPane : BasePane
             HasReset = true,
         };
 
-        redSlider.ControlEvent += OnRedSliderChanged;
+        redSlider.ControlEvent += OnColourSliderChanged;
 
         greenSlider = new Slider(Translation.Get("lights", "green"), 0f, 1f, 1f, 1f)
         {
@@ -128,7 +132,7 @@ public class LightsPane : BasePane
             HasReset = true,
         };
 
-        greenSlider.ControlEvent += OnGreenSliderChanged;
+        greenSlider.ControlEvent += OnColourSliderChanged;
 
         blueSlider = new Slider(Translation.Get("lights", "blue"), 0f, 1f, 1f, 1f)
         {
@@ -136,7 +140,7 @@ public class LightsPane : BasePane
             HasReset = true,
         };
 
-        blueSlider.ControlEvent += OnBlueSliderChanged;
+        blueSlider.ControlEvent += OnColourSliderChanged;
 
         resetPropertiesButton = new Button(Translation.Get("lightsPane", "resetProperties"));
         resetPropertiesButton.ControlEvent += OnResetPropertiesButtonPressed;
@@ -266,7 +270,7 @@ public class LightsPane : BasePane
         void DrawReset()
         {
             MpsGui.Header(resetHeader);
-            MpsGui.WhiteLine();
+            MpsGui.BlackLine();
 
             GUILayout.BeginHorizontal();
 
@@ -275,13 +279,6 @@ public class LightsPane : BasePane
 
             GUILayout.EndHorizontal();
         }
-    }
-
-    public override void UpdatePane()
-    {
-        base.UpdatePane();
-
-        UpdateControls();
     }
 
     protected override void ReloadTranslation()
@@ -315,7 +312,8 @@ public class LightsPane : BasePane
         if (CurrentLightController is null)
             return;
 
-        CurrentLightController.ChangedProperty -= OnChangedLightProperties;
+        CurrentLightController.PropertyChanged -= OnChangedLightProperties;
+        CurrentLightController.ChangedLightType -= OnChangedLightType;
     }
 
     private void OnSelectedLight(object sender, SelectionEventArgs<LightController> e)
@@ -323,7 +321,8 @@ public class LightsPane : BasePane
         if (CurrentLightController is null)
             return;
 
-        CurrentLightController.ChangedProperty += OnChangedLightProperties;
+        CurrentLightController.PropertyChanged += OnChangedLightProperties;
+        CurrentLightController.ChangedLightType += OnChangedLightType;
 
         lightDropdown.SetIndexWithoutNotify(e.Index);
 
@@ -383,11 +382,51 @@ public class LightsPane : BasePane
         }
     }
 
-    private void OnChangedLightProperties(object sender, EventArgs e) =>
-        UpdateControls();
+    private void OnChangedLightProperties(object sender, PropertyChangedEventArgs e)
+    {
+        var light = (LightController)sender;
 
-    private Color SliderColours() =>
-        new(redSlider.Value, greenSlider.Value, blueSlider.Value);
+        if (e.PropertyName is nameof(LightController.Enabled))
+        {
+            lightOnToggle.SetEnabledWithoutNotify(light.Enabled);
+        }
+        else if (e.PropertyName is nameof(LightController.Rotation))
+        {
+            if (sliderChangedTransform)
+            {
+                sliderChangedTransform = false;
+
+                return;
+            }
+
+            var rotation = light.Rotation.eulerAngles;
+
+            xRotationSlider.SetValueWithoutNotify(rotation.x);
+            yRotationSlider.SetValueWithoutNotify(rotation.y);
+        }
+        else if (e.PropertyName is nameof(LightController.Intensity))
+        {
+            intensitySlider.SetValueWithoutNotify(light.Intensity);
+        }
+        else if (e.PropertyName is nameof(LightController.Range))
+        {
+            rangeSlider.SetValueWithoutNotify(light.Range);
+        }
+        else if (e.PropertyName is nameof(LightController.SpotAngle))
+        {
+            spotAngleSlider.SetValueWithoutNotify(light.SpotAngle);
+        }
+        else if (e.PropertyName is nameof(LightController.ShadowStrength))
+        {
+            shadowStrengthSlider.SetValueWithoutNotify(light.ShadowStrength);
+        }
+        else if (e.PropertyName is nameof(LightController.Colour))
+        {
+            redSlider.SetValueWithoutNotify(light.Colour.r);
+            greenSlider.SetValueWithoutNotify(light.Colour.g);
+            blueSlider.SetValueWithoutNotify(light.Colour.b);
+        }
+    }
 
     private void UpdateControls()
     {
@@ -399,20 +438,12 @@ public class LightsPane : BasePane
             LightType.Directional => 0,
             LightType.Spot => 1,
             LightType.Point => 2,
-            _ => 0,
+            LightType.Area or _ => 0,
         });
 
         lightOnToggle.SetEnabledWithoutNotify(CurrentLightController.Enabled);
 
-        UpdateSliders();
-    }
-
-    private void UpdateSliders()
-    {
-        if (CurrentLightController is null)
-            return;
-
-        var rotation = CurrentLightController.Light.transform.rotation.eulerAngles;
+        var rotation = CurrentLightController.Rotation.eulerAngles;
 
         xRotationSlider.SetValueWithoutNotify(rotation.x);
         yRotationSlider.SetValueWithoutNotify(rotation.y);
@@ -445,9 +476,16 @@ public class LightsPane : BasePane
             2 => LightType.Point,
             _ => LightType.Directional,
         };
-
-        UpdateSliders();
     }
+
+    private void OnChangedLightType(object sender, KeyedPropertyChangeEventArgs<LightType> e) =>
+        lightTypeGrid.SetValueWithoutNotify(e.Key switch
+        {
+            LightType.Directional => 0,
+            LightType.Spot => 1,
+            LightType.Point => 2,
+            LightType.Area or _ => 0,
+        });
 
     private void OnAddLightButtonPressed(object sender, EventArgs e) =>
         lightRepository.AddLight();
@@ -477,38 +515,17 @@ public class LightsPane : BasePane
         if (CurrentLightController is null)
             return;
 
-        // TODO: LOL
-        CurrentLightController.ChangedProperty -= OnChangedLightProperties;
         CurrentLightController.Enabled = lightOnToggle.Value;
-        CurrentLightController.ChangedProperty += OnChangedLightProperties;
     }
 
-    private void OnXRotationSliderChanged(object sender, EventArgs e)
+    private void OnRotationSlidersChanged(object sender, EventArgs e)
     {
         if (CurrentLightController is null)
             return;
 
-        var z = CurrentLightController.Rotation.eulerAngles.z;
+        sliderChangedTransform = true;
 
-        var newRotation = Quaternion.Euler(xRotationSlider.Value, yRotationSlider.Value, z);
-
-        CurrentLightController.ChangedProperty -= OnChangedLightProperties;
-        CurrentLightController.Rotation = newRotation;
-        CurrentLightController.ChangedProperty += OnChangedLightProperties;
-    }
-
-    private void OnYRotationSliderChanged(object sender, EventArgs e)
-    {
-        if (CurrentLightController is null)
-            return;
-
-        var z = CurrentLightController.Rotation.eulerAngles.z;
-
-        var newRotation = Quaternion.Euler(xRotationSlider.Value, yRotationSlider.Value, z);
-
-        CurrentLightController.ChangedProperty -= OnChangedLightProperties;
-        CurrentLightController.Rotation = newRotation;
-        CurrentLightController.ChangedProperty += OnChangedLightProperties;
+        CurrentLightController.Rotation = Quaternion.Euler(xRotationSlider.Value, yRotationSlider.Value, 0f);
     }
 
     private void OnIntensitySliderChanged(object sender, EventArgs e)
@@ -543,28 +560,12 @@ public class LightsPane : BasePane
         CurrentLightController.SpotAngle = spotAngleSlider.Value;
     }
 
-    private void OnRedSliderChanged(object sender, EventArgs e)
+    private void OnColourSliderChanged(object sender, EventArgs e)
     {
         if (CurrentLightController is null)
             return;
 
-        CurrentLightController.Colour = SliderColours();
-    }
-
-    private void OnGreenSliderChanged(object sender, EventArgs e)
-    {
-        if (CurrentLightController is null)
-            return;
-
-        CurrentLightController.Colour = SliderColours();
-    }
-
-    private void OnBlueSliderChanged(object sender, EventArgs e)
-    {
-        if (CurrentLightController is null)
-            return;
-
-        CurrentLightController.Colour = SliderColours();
+        CurrentLightController.Colour = new(redSlider.Value, greenSlider.Value, blueSlider.Value);
     }
 
     private void OnResetPositionButtonPressed(object sender, EventArgs e)

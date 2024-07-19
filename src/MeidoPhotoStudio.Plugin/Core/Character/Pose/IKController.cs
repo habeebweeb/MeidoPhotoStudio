@@ -8,7 +8,7 @@ using RootMotion.FinalIK;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
-public class IKController
+public class IKController : INotifyPropertyChanged
 {
     private static readonly Transform[] EmptyChain = [];
 
@@ -35,14 +35,17 @@ public class IKController
         this.character.ProcessingCharacterProps += OnCharacterProcessing;
     }
 
+    public event PropertyChangedEventHandler PropertyChanged;
+
     public bool LimitLimbRotations
     {
         get => limitLimbRotations;
         set
         {
+            limitLimbRotations = value;
+
             InitializeRotationLimits();
 
-            limitLimbRotations = value;
             Solver.useRotationLimits = limitLimbRotations || limitDigitRotations;
 
             foreach (var hinge in limbRotationLimits)
@@ -52,6 +55,8 @@ public class IKController
                 if (limitLimbRotations)
                     hinge.Apply();
             }
+
+            RaisePropertyChanged(nameof(LimitLimbRotations));
         }
     }
 
@@ -60,9 +65,10 @@ public class IKController
         get => limitDigitRotations;
         set
         {
+            limitDigitRotations = value;
+
             InitializeRotationLimits();
 
-            limitDigitRotations = value;
             Solver.useRotationLimits = limitLimbRotations || limitDigitRotations;
 
             foreach (var hinge in digitRotationLimits)
@@ -72,19 +78,37 @@ public class IKController
                 if (limitDigitRotations)
                     hinge.Apply();
             }
+
+            RaisePropertyChanged(nameof(LimitDigitRotations));
         }
     }
 
     public bool MuneLEnabled
     {
-        get => character.Maid.body0.GetMuneYureL() is 0f;
-        set => character.Maid.body0.SetMuneYureLWithEnable(value);
+        get => character.Maid.body0.GetMuneLEnabled();
+        set
+        {
+            if (value == MuneLEnabled)
+                return;
+
+            character.Maid.body0.SetMuneYureLWithEnable(value);
+
+            RaisePropertyChanged(nameof(MuneLEnabled));
+        }
     }
 
     public bool MuneREnabled
     {
-        get => character.Maid.body0.GetMuneYureR() is 0f;
-        set => character.Maid.body0.SetMuneYureRWithEnable(value);
+        get => character.Maid.body0.GetMuneREnabled();
+        set
+        {
+            if (value == MuneREnabled)
+                return;
+
+            character.Maid.body0.SetMuneYureRWithEnable(value);
+
+            RaisePropertyChanged(nameof(MuneREnabled));
+        }
     }
 
     private static GameObject IKSolverTargetParent =>
@@ -372,7 +396,7 @@ public class IKController
         CacheBoneData.GetAnmBinary(true, true);
 
     public byte[] GetAnimationFrameData() =>
-        CacheBoneData.GetFrameBinary(MuneLEnabled, MuneREnabled);
+        CacheBoneData.GetFrameBinary(!MuneLEnabled, !MuneREnabled);
 
     public HandOrFootPreset GetHandOrFootPreset(HandOrFootType type) =>
         GetControllerByType(this, type).GetPresetData();
@@ -489,4 +513,12 @@ public class IKController
 
     private void StopAnimation() =>
         character.Animation.Playing = false;
+
+    private void RaisePropertyChanged(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
+
+        PropertyChanged?.Invoke(this, new(name));
+    }
 }

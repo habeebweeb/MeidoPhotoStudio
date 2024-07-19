@@ -33,15 +33,15 @@ public class TransformControl : BaseControl
 
         xTextField.ControlEvent += (_, _) =>
             TextFieldChangedEventHandler(
-                this, new(TransformComponentChangeEventArgs.TransformComponent.X, xTextField.Value));
+                this, new(TransformComponentChangeEventArgs.TransformComponent.X, xTextField.Value, Value));
 
         yTextField.ControlEvent += (_, _) =>
             TextFieldChangedEventHandler(
-                this, new(TransformComponentChangeEventArgs.TransformComponent.Y, yTextField.Value));
+                this, new(TransformComponentChangeEventArgs.TransformComponent.Y, yTextField.Value, Value));
 
         zTextField.ControlEvent += (_, _) =>
             TextFieldChangedEventHandler(
-                this, new(TransformComponentChangeEventArgs.TransformComponent.Z, zTextField.Value));
+                this, new(TransformComponentChangeEventArgs.TransformComponent.Z, zTextField.Value, Value));
     }
 
     public new event EventHandler<TransformComponentChangeEventArgs> ControlEvent;

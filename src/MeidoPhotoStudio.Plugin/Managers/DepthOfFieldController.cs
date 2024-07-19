@@ -24,31 +24,56 @@ public class DepthOfFieldController(UnityEngine.Camera camera) : EffectControlle
     public float FocalLength
     {
         get => DepthOfField.focalLength;
-        set => DepthOfField.focalLength = value;
+        set
+        {
+            DepthOfField.focalLength = value;
+
+            RaisePropertyChanged(nameof(FocalLength));
+        }
     }
 
     public float FocalSize
     {
         get => DepthOfField.focalSize;
-        set => DepthOfField.focalSize = value;
+        set
+        {
+            DepthOfField.focalSize = value;
+
+            RaisePropertyChanged(nameof(FocalSize));
+        }
     }
 
     public float Aperture
     {
         get => DepthOfField.aperture;
-        set => DepthOfField.aperture = value;
+        set
+        {
+            DepthOfField.aperture = value;
+
+            RaisePropertyChanged(nameof(Aperture));
+        }
     }
 
     public float MaxBlurSize
     {
         get => DepthOfField.maxBlurSize;
-        set => DepthOfField.maxBlurSize = value;
+        set
+        {
+            DepthOfField.maxBlurSize = value;
+
+            RaisePropertyChanged(nameof(MaxBlurSize));
+        }
     }
 
     public bool VisualizeFocus
     {
         get => DepthOfField.visualizeFocus;
-        set => DepthOfField.visualizeFocus = value;
+        set
+        {
+            DepthOfField.visualizeFocus = value;
+
+            RaisePropertyChanged(nameof(VisualizeFocus));
+        }
     }
 
     private DepthOfFieldScatter DepthOfField

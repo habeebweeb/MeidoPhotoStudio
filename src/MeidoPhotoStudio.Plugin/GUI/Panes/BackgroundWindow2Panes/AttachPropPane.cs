@@ -63,6 +63,8 @@ public class AttachPropPane : BasePane
 
         this.characterService.CalledCharacters += OnCharactersCalled;
         this.propSelectionController.Selected += OnCharacterOrPropSelected;
+        this.propAttachmentService.AttachedProp += OnPropAttachedOrDetached;
+        this.propAttachmentService.DetachedProp += OnPropAttachedOrDetached;
 
         paneHeader = new(Translation.Get("attachPropPane", "header"), true);
 
@@ -227,4 +229,18 @@ public class AttachPropPane : BasePane
 
     private void OnCharacterOrPropSelected(object sender, EventArgs e) =>
         UpdateToggles();
+
+    private void OnPropAttachedOrDetached(object sender, PropAttachmentEventArgs e)
+    {
+        if (!attachPointToggles.TryGetValue(e.AttachPoint, out var toggle))
+            return;
+
+        if (e.Character != CurrentCharacter)
+            return;
+
+        if (e.Prop != CurrentProp)
+            return;
+
+        toggle.SetEnabledWithoutNotify(propAttachmentService.PropIsAttached(e.Prop));
+    }
 }

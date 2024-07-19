@@ -178,7 +178,7 @@ public class Dropdown2<T> : BaseControl, IEnumerable<T>
         itemSize = null;
         formattedItems = null;
 
-        label = SelectedItem is null ? string.Empty : Formatter(SelectedItem, selectedItemIndex);
+        label = items.Length is 0 ? string.Empty : Formatter(SelectedItem, selectedItemIndex);
     }
 
     private static int Wrap(int value, int min, int max) =>
@@ -201,7 +201,7 @@ public class Dropdown2<T> : BaseControl, IEnumerable<T>
 
         selectedItemIndex = Mathf.Clamp(index, 0, items.Length - 1);
 
-        label = SelectedItem is null ? string.Empty : Formatter(SelectedItem, selectedItemIndex);
+        label = items.Length is 0 ? string.Empty : Formatter(SelectedItem, selectedItemIndex);
 
         if (!notify)
             return;

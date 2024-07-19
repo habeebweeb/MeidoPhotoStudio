@@ -27,8 +27,17 @@ public class GameAnimationModel : IEquatable<GameAnimationModel>, IAnimationMode
     public bool Custom =>
         false;
 
+    public static bool operator ==(GameAnimationModel lhs, GameAnimationModel rhs) =>
+        lhs is null ? rhs is null : lhs.Equals(rhs);
+
+    public static bool operator !=(GameAnimationModel lhs, GameAnimationModel rhs) =>
+        !(lhs == rhs);
+
     public override bool Equals(object obj) =>
         Equals(obj as GameAnimationModel);
+
+    public bool Equals(IAnimationModel other) =>
+        other is GameAnimationModel model && Equals(model);
 
     public bool Equals(GameAnimationModel other)
     {

@@ -18,6 +18,12 @@ public static class MaidExtensions
             body.jbMuneR.enabled = enabled;
     }
 
+    public static bool GetMuneLEnabled(this TBody body) =>
+        body.jbMuneL && body.jbMuneL.enabled;
+
+    public static bool GetMuneREnabled(this TBody body) =>
+        body.jbMuneR && body.jbMuneR.enabled;
+
     public static string ID(this Maid maid) =>
         maid.status?.guid ?? string.Empty;
 

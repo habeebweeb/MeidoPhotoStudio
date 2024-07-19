@@ -1,21 +1,39 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Database.Props.Menu;
+using MeidoPhotoStudio.Plugin.Framework;
 
 using CostumeType = MaidExtension.MaidCostumeChangeController.CostumeType;
 using MaskMode = TBody.MaskMode;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
-public class ClothingController(CharacterController characterController)
+public class ClothingController(CharacterController characterController, TransformWatcher transformWatcher)
+    : INotifyPropertyChanged
 {
     private const float DefaultFloorHeight = -1000f;
 
     private readonly CharacterController characterController = characterController
         ?? throw new ArgumentNullException(nameof(characterController));
 
+    private readonly TransformWatcher transformWatcher = transformWatcher
+        ? transformWatcher : throw new ArgumentNullException(nameof(transformWatcher));
+
+    private readonly Dictionary<SlotID, KeyedPropertyChangeEventArgs<SlotID>> clothingChangeEventArgsCache =
+        new(EnumEqualityComparer<SlotID>.Instance);
+
     private bool customFloorHeight;
     private float floorHeight;
     private GravityController hairGravityController;
     private GravityController clothingGravityController;
+    private MenuFilePropModel attachedLowerAccessory;
+    private MenuFilePropModel attachedUpperAccessory;
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public event EventHandler<KeyedPropertyChangeEventArgs<SlotID>> ClothingChanged;
+
+    public event EventHandler<KeyedPropertyChangeEventArgs<Curling>> CurlingChanged;
 
     public enum Curling
     {
@@ -48,6 +66,8 @@ public class ClothingController(CharacterController characterController)
 
             Body.FixMaskFlag();
             Body.FixVisibleFlag(false);
+
+            RaisePropertyChanged(nameof(BodyVisible));
         }
     }
 
@@ -62,6 +82,8 @@ public class ClothingController(CharacterController characterController)
 
             if (bodyWasNotVisible)
                 BodyVisible = false;
+
+            RaisePropertyChanged(nameof(DressingMode));
         }
     }
 
@@ -73,6 +95,8 @@ public class ClothingController(CharacterController characterController)
             customFloorHeight = value;
 
             Body.BoneHitHeightY = customFloorHeight ? floorHeight : DefaultFloorHeight;
+
+            RaisePropertyChanged(nameof(CustomFloorHeight));
         }
     }
 
@@ -85,18 +109,38 @@ public class ClothingController(CharacterController characterController)
 
             if (CustomFloorHeight)
                 Body.BoneHitHeightY = floorHeight;
+
+            RaisePropertyChanged(nameof(FloorHeight));
         }
     }
 
-    public MenuFilePropModel AttachedLowerAccessory { get; private set; }
+    public MenuFilePropModel AttachedLowerAccessory
+    {
+        get => attachedLowerAccessory;
+        private set
+        {
+            attachedLowerAccessory = value;
 
-    public MenuFilePropModel AttachedUpperAccessory { get; private set; }
+            RaisePropertyChanged(nameof(AttachedLowerAccessory));
+        }
+    }
+
+    public MenuFilePropModel AttachedUpperAccessory
+    {
+        get => attachedUpperAccessory;
+        private set
+        {
+            attachedUpperAccessory = value;
+
+            RaisePropertyChanged(nameof(AttachedUpperAccessory));
+        }
+    }
 
     public GravityController HairGravityController =>
-        hairGravityController ??= new HairGravityController(characterController);
+        hairGravityController ??= new HairGravityController(characterController, transformWatcher);
 
     public GravityController ClothingGravityController =>
-        clothingGravityController ??= new ClothingGravityController(characterController);
+        clothingGravityController ??= new ClothingGravityController(characterController, transformWatcher);
 
     private Maid Maid =>
         characterController.Maid;
@@ -107,15 +151,24 @@ public class ClothingController(CharacterController characterController)
     public bool this[SlotID slot]
     {
         get => SlotLoaded(slot) && Body.GetMask(slot);
-        set => Body.SetMask(slot, value);
+        set
+        {
+            Body.SetMask(slot, value);
+
+            RaiseClothingChanged(slot);
+        }
     }
 
     public bool this[Curling curling]
     {
         get =>
             SupportsCurlingType(curling) && Maid.mekureController.IsEnabledCostumeType(CurlingToCostumeType(curling));
-        set =>
+        set
+        {
             Maid.mekureController.SetEnabledCostumeType(CurlingToCostumeType(curling), value);
+
+            CurlingChanged?.Invoke(this, new(curling));
+        }
     }
 
     public bool SupportsCurlingType(Curling curling) =>
@@ -173,4 +226,20 @@ public class ClothingController(CharacterController characterController)
             Curling.Shift => CostumeType.Zurasi,
             _ => throw new ArgumentOutOfRangeException(nameof(curling)),
         };
+
+    private void RaisePropertyChanged(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
+
+        PropertyChanged?.Invoke(this, new(name));
+    }
+
+    private void RaiseClothingChanged(SlotID slot)
+    {
+        if (!clothingChangeEventArgsCache.TryGetValue(slot, out var e))
+            e = clothingChangeEventArgsCache[slot] = new(slot);
+
+        ClothingChanged?.Invoke(this, e);
+    }
 }

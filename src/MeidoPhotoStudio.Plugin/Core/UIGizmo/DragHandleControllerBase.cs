@@ -1,8 +1,10 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.UIGizmo;
 
-public abstract class DragHandleControllerBase : IDragHandleController
+public abstract class DragHandleControllerBase : IDragHandleController, INotifyPropertyChanged
 {
     protected static readonly UnityEngine.Camera Camera = GameMain.Instance.MainCamera.camera;
 
@@ -23,6 +25,8 @@ public abstract class DragHandleControllerBase : IDragHandleController
         DragHandle = dragHandle ? dragHandle : throw new ArgumentNullException(nameof(dragHandle));
         Gizmo = gizmo ? gizmo : throw new ArgumentNullException(nameof(gizmo));
     }
+
+    public event PropertyChangedEventHandler PropertyChanged;
 
     // TODO: Rename to DragHandleEnabled or something
     public virtual bool Enabled
@@ -45,6 +49,8 @@ public abstract class DragHandleControllerBase : IDragHandleController
                 currentDragHandleMode.OnModeEnter();
             else
                 DragHandle.gameObject.SetActive(false);
+
+            RaisePropertyChanged(nameof(Enabled));
         }
     }
 
@@ -63,6 +69,8 @@ public abstract class DragHandleControllerBase : IDragHandleController
 
             if (value)
                 currentDragHandleMode.OnModeEnter();
+
+            RaisePropertyChanged(nameof(GizmoEnabled));
         }
     }
 
@@ -80,6 +88,8 @@ public abstract class DragHandleControllerBase : IDragHandleController
                 return;
 
             Gizmo.Mode = value;
+
+            RaisePropertyChanged(nameof(GizmoMode));
         }
     }
 
@@ -104,6 +114,8 @@ public abstract class DragHandleControllerBase : IDragHandleController
             currentDragHandleMode = newDragHandleMode;
 
             currentDragHandleMode.OnModeEnter();
+
+            RaisePropertyChanged(nameof(CurrentMode));
         }
     }
 
@@ -172,6 +184,14 @@ public abstract class DragHandleControllerBase : IDragHandleController
 
     protected virtual void OnDestroying()
     {
+    }
+
+    protected virtual void RaisePropertyChanged(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
+
+        PropertyChanged?.Invoke(this, new(name));
     }
 
     private void OnDragging() =>

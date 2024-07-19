@@ -1,5 +1,8 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Character;
+using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 using Curling = MeidoPhotoStudio.Plugin.Core.Character.ClothingController.Curling;
@@ -66,7 +69,8 @@ public class DressingPane : BasePane
         this.characterSelectionController = characterSelectionController
             ?? throw new ArgumentNullException(nameof(characterSelectionController));
 
-        characterSelectionController.Selected += OnCharacterSelectionChanged;
+        this.characterSelectionController.Selecting += OnCharacterSelectionChanging;
+        this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
         detailedClothingToggle = new(Translation.Get("dressingPane", "detailedClothing"));
         detailedClothingToggle.ControlEvent += OnDetailedClothingChanged;
@@ -198,32 +202,45 @@ public class DressingPane : BasePane
 
     private void UpdateControls()
     {
+        UpdateDressingGrid();
+        UpdateClothingToggles();
+        UpdateCurlingToggles();
+    }
+
+    private void UpdateClothingToggles()
+    {
         if (CurrentClothing is null)
             return;
 
         foreach (var slot in ClothingSlots)
-        {
-            var enabled = false;
-
-            if (slot is SlotID.wear)
-                enabled = WearSlots.Any(slot => CurrentClothing[slot]);
-            else if (slot is SlotID.megane)
-                enabled = CurrentClothing[SlotID.megane] || CurrentClothing[SlotID.accHead];
-            else if (!detailedClothingToggle.Value && slot is SlotID.headset)
-                enabled = HeadwearSlots.Any(slot => CurrentClothing[slot]);
-            else
-                enabled = CurrentClothing[slot];
-
-            clothingToggles[slot].SetEnabledWithoutNotify(enabled);
-        }
+            clothingToggles[slot].SetEnabledWithoutNotify(slot switch
+            {
+                SlotID.wear => WearSlots.Any(slot => CurrentClothing[slot]),
+                SlotID.megane => CurrentClothing[SlotID.megane] || CurrentClothing[SlotID.accHead],
+                SlotID.body => CurrentClothing.BodyVisible,
+                SlotID.headset when !detailedClothingToggle.Value => HeadwearSlots.Any(slot => CurrentClothing[slot]),
+                _ => CurrentClothing[slot],
+            });
 
         clothingToggles[SlotID.headset].Label = detailedClothingToggle.Value
             ? Translation.Get("clothing", "headset")
             : Translation.Get("clothing", "headwear");
+    }
+
+    private void UpdateCurlingToggles()
+    {
+        if (CurrentClothing is null)
+            return;
 
         curlingFrontToggle.SetEnabledWithoutNotify(CurrentClothing[Curling.Front]);
         curlingBackToggle.SetEnabledWithoutNotify(CurrentClothing[Curling.Back]);
         underwearShiftToggle.SetEnabledWithoutNotify(CurrentClothing[Curling.Shift]);
+    }
+
+    private void UpdateDressingGrid()
+    {
+        if (CurrentClothing is null)
+            return;
 
         var dressingIndex = Array.IndexOf(DressingModes, CurrentClothing.DressingMode);
 
@@ -242,13 +259,76 @@ public class DressingPane : BasePane
             };
     }
 
+    private void OnCharacterSelectionChanging(object sender, SelectionEventArgs<CharacterController> e)
+    {
+        if (e.Selected is null)
+            return;
+
+        e.Selected.Clothing.PropertyChanged -= OnClothingPropertyChanged;
+        e.Selected.Clothing.ClothingChanged -= OnClothingKeyChanged;
+        e.Selected.Clothing.CurlingChanged -= OnCurlingKeyChanged;
+    }
+
     private void OnCharacterSelectionChanged(object sender, SelectionEventArgs<CharacterController> e)
     {
         if (CurrentClothing is null)
             return;
 
+        e.Selected.Clothing.PropertyChanged += OnClothingPropertyChanged;
+        e.Selected.Clothing.ClothingChanged += OnClothingKeyChanged;
+        e.Selected.Clothing.CurlingChanged += OnCurlingKeyChanged;
+
         UpdateLoadedSlots();
         UpdateControls();
+    }
+
+    private void OnClothingPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        var clothing = (ClothingController)sender;
+
+        if (e.PropertyName is nameof(ClothingController.BodyVisible))
+        {
+            clothingToggles[SlotID.body].SetEnabledWithoutNotify(clothing.BodyVisible);
+        }
+        else if (e.PropertyName is nameof(ClothingController.DressingMode))
+        {
+            UpdateDressingGrid();
+            UpdateClothingToggles();
+        }
+    }
+
+    private void OnClothingKeyChanged(object sender, KeyedPropertyChangeEventArgs<SlotID> e)
+    {
+        var clothing = (ClothingController)sender;
+
+        if (WearSlots.Contains(e.Key))
+        {
+            clothingToggles[SlotID.wear].SetEnabledWithoutNotify(WearSlots.Any(slot => clothing[slot]));
+        }
+        else if (e.Key is SlotID.megane or SlotID.accHead)
+        {
+            clothingToggles[SlotID.megane].SetEnabledWithoutNotify(clothing[SlotID.megane] || clothing[SlotID.accHead]);
+        }
+        else if (!detailedClothingToggle.Value && HeadwearSlots.Contains(e.Key))
+        {
+            clothingToggles[SlotID.headset].SetEnabledWithoutNotify(HeadwearSlots.Any(slot => clothing[slot]));
+        }
+        else
+        {
+            clothingToggles[e.Key].SetEnabledWithoutNotify(clothing[e.Key]);
+        }
+    }
+
+    private void OnCurlingKeyChanged(object sender, KeyedPropertyChangeEventArgs<Curling> e)
+    {
+        var clothing = (ClothingController)sender;
+
+        if (e.Key is Curling.Front)
+            curlingFrontToggle.SetEnabledWithoutNotify(clothing[e.Key]);
+        else if (e.Key is Curling.Back)
+            curlingBackToggle.SetEnabledWithoutNotify(clothing[e.Key]);
+        else if (e.Key is Curling.Shift)
+            underwearShiftToggle.SetEnabledWithoutNotify(clothing[e.Key]);
     }
 
     private void OnDressingChanged(object sender, EventArgs e)
@@ -258,13 +338,13 @@ public class DressingPane : BasePane
 
         CurrentClothing.DressingMode = DressingModes[dressingGrid.SelectedItemIndex];
 
-        UpdateControls();
+        UpdateClothingToggles();
     }
 
     private void OnDetailedClothingChanged(object sender, EventArgs e)
     {
         UpdateLoadedSlots();
-        UpdateControls();
+        UpdateClothingToggles();
     }
 
     private void OnSlotToggleChanged(SlotID slot, bool value)

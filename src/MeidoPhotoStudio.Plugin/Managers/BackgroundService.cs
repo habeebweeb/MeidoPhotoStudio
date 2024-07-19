@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
 using HarmonyLib;
@@ -5,10 +6,12 @@ using MeidoPhotoStudio.Database.Background;
 
 namespace MeidoPhotoStudio.Plugin.Core.Background;
 
-public class BackgroundService
+public class BackgroundService : INotifyPropertyChanged
 {
     private static bool internalBackgroundChange;
     private readonly BackgroundRepository backgroundRepository;
+
+    private BackgroundModel currentBackground;
 
     public BackgroundService(BackgroundRepository backgroundRepository)
     {
@@ -22,6 +25,8 @@ public class BackgroundService
 
     public event EventHandler<BackgroundChangeEventArgs> ChangedBackground;
 
+    public event PropertyChangedEventHandler PropertyChanged;
+
     private static event EventHandler<ExternalBackgroundChangeEventArgs> ChangingBackgroundExternal;
 
     private static event EventHandler<ExternalBackgroundChangeEventArgs> ChangedBackgroundExternal;
@@ -31,7 +36,17 @@ public class BackgroundService
     public Transform BackgroundTransform =>
         BackgroundManager.BgObject ? BackgroundManager.BgObject.transform : null;
 
-    public BackgroundModel CurrentBackground { get; private set; }
+    public BackgroundModel CurrentBackground
+    {
+        get => currentBackground;
+        private set
+        {
+            currentBackground = value;
+
+            RaisePropertyChanged(nameof(CurrentBackground));
+            RaisePropertyChanged(nameof(BackgroundVisible));
+        }
+    }
 
     public bool BackgroundVisible
     {
@@ -50,13 +65,20 @@ public class BackgroundService
                 return;
 
             backgroundObject.SetActive(value);
+
+            RaisePropertyChanged(nameof(BackgroundVisible));
         }
     }
 
     public Color BackgroundColour
     {
         get => GameMain.Instance.MainCamera.camera.backgroundColor;
-        set => GameMain.Instance.MainCamera.camera.backgroundColor = value;
+        set
+        {
+            GameMain.Instance.MainCamera.camera.backgroundColor = value;
+
+            RaisePropertyChanged(nameof(BackgroundColour));
+        }
     }
 
     private static BgMgr BackgroundManager =>
@@ -150,6 +172,14 @@ public class BackgroundService
         CurrentBackground = model;
 
         ChangedBackground?.Invoke(this, new(model, BackgroundTransform));
+    }
+
+    private void RaisePropertyChanged(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
+
+        PropertyChanged?.Invoke(this, new(name));
     }
 
     private class ExternalBackgroundChangeEventArgs(string assetName) : EventArgs

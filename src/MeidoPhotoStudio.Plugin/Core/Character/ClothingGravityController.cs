@@ -1,6 +1,7 @@
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
-public class ClothingGravityController(CharacterController characterController) : GravityController(characterController)
+public class ClothingGravityController(CharacterController characterController, TransformWatcher transformWatcher)
+    : GravityController(characterController, transformWatcher)
 {
     protected override string TypeName =>
         "Clothing";

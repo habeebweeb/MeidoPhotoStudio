@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Character;
 
@@ -24,7 +26,9 @@ public class GravityControlPane : BasePane
         this.globalGravityService = globalGravityService ?? throw new ArgumentNullException(nameof(globalGravityService));
         this.characterSelectionController = characterSelectionController ?? throw new ArgumentNullException(nameof(characterSelectionController));
 
+        this.characterSelectionController.Selecting += OnCharacterSelectionChanging;
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
+        this.globalGravityService.PropertyChanged += OnGlobalGravityPropertyChanged;
 
         paneHeader = new(Translation.Get("gravityControlPane", "header"), true);
         hairGravityEnabledToggle = new(Translation.Get("gravityControlPane", "hairToggle"));
@@ -154,14 +158,85 @@ public class GravityControlPane : BasePane
         globalGravityService.Enabled = globalGravityEnabledToggle.Value;
     }
 
+    private void OnCharacterSelectionChanging(object sender, SelectionEventArgs<CharacterController> e)
+    {
+        if (e.Selected is null)
+            return;
+
+        var clothing = e.Selected.Clothing;
+
+        clothing.HairGravityController.PropertyChanged -= OnGravityPropertyChanged;
+        clothing.ClothingGravityController.PropertyChanged -= OnGravityPropertyChanged;
+
+        var dragHandles = gravityDragHandleService[e.Selected];
+
+        dragHandles.HairDragHandle.PropertyChanged -= OnHairDragHandlePropertyChanged;
+        dragHandles.ClothingDragHandle.PropertyChanged -= OnClothingDragHandlePropertyChanged;
+    }
+
     private void OnCharacterSelectionChanged(object sender, SelectionEventArgs<CharacterController> e)
     {
         if (e.Selected is null)
             return;
 
+        var clothing = e.Selected.Clothing;
+
+        clothing.HairGravityController.PropertyChanged += OnGravityPropertyChanged;
+        clothing.ClothingGravityController.PropertyChanged += OnGravityPropertyChanged;
+
+        var dragHandles = gravityDragHandleService[e.Selected];
+
+        dragHandles.HairDragHandle.PropertyChanged -= OnHairDragHandlePropertyChanged;
+        dragHandles.ClothingDragHandle.PropertyChanged -= OnClothingDragHandlePropertyChanged;
+
         hairGravityEnabledToggle.SetEnabledWithoutNotify(CurrentClothing.HairGravityController.Enabled);
         hairGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(CurrentDragHandleSet.HairDragHandle.Enabled);
         clothingGravityEnabledToggle.SetEnabledWithoutNotify(CurrentClothing.ClothingGravityController.Enabled);
         clothingGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(CurrentDragHandleSet.ClothingDragHandle.Enabled);
+    }
+
+    private void OnGravityPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not nameof(GravityController.Enabled))
+            return;
+
+        if (sender is HairGravityController hairController)
+        {
+            hairGravityEnabledToggle.SetEnabledWithoutNotify(hairController.Enabled);
+        }
+        else if (sender is ClothingGravityController clothingController)
+        {
+            clothingGravityEnabledToggle.SetEnabledWithoutNotify(clothingController.Enabled);
+        }
+    }
+
+    private void OnHairDragHandlePropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not nameof(GravityDragHandleController.Enabled))
+            return;
+
+        var controller = (GravityDragHandleController)sender;
+
+        hairGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(controller.Enabled);
+    }
+
+    private void OnClothingDragHandlePropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not nameof(GravityDragHandleController.Enabled))
+            return;
+
+        var controller = (GravityDragHandleController)sender;
+
+        clothingGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(controller.Enabled);
+    }
+
+    private void OnGlobalGravityPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not nameof(GlobalGravityService.Enabled))
+            return;
+
+        var service = (GlobalGravityService)sender;
+
+        globalGravityEnabledToggle.SetEnabledWithoutNotify(service.Enabled);
     }
 }

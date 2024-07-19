@@ -1,6 +1,8 @@
+using System.ComponentModel;
+
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
-public class IKDragHandleController : IEnumerable<ICharacterDragHandleController>
+public class IKDragHandleController : IEnumerable<ICharacterDragHandleController>, INotifyPropertyChanged
 {
     private readonly (float Small, float Normal) handleSize = (0.5f, 1f);
     private readonly (float Small, float Normal) gizmoSize = (0.225f, 0.45f);
@@ -8,6 +10,8 @@ public class IKDragHandleController : IEnumerable<ICharacterDragHandleController
     private bool smallHandle;
     private bool ikEnabled = true;
     private bool boneModeEnabled;
+
+    public event PropertyChangedEventHandler PropertyChanged;
 
     public bool SmallHandle
     {
@@ -21,13 +25,23 @@ public class IKDragHandleController : IEnumerable<ICharacterDragHandleController
 
             Cube.HandleSize = smallHandle ? handleSize.Small : handleSize.Normal;
             Cube.GizmoSize = smallHandle ? gizmoSize.Small : gizmoSize.Normal;
+
+            RaisePropertyChanged(nameof(SmallHandle));
         }
     }
 
     public bool CubeEnabled
     {
         get => Cube.Enabled;
-        set => Cube.Enabled = value;
+        set
+        {
+            if (value == Cube.Enabled)
+                return;
+
+            Cube.Enabled = value;
+
+            RaisePropertyChanged(nameof(CubeEnabled));
+        }
     }
 
     public bool IKEnabled
@@ -35,10 +49,15 @@ public class IKDragHandleController : IEnumerable<ICharacterDragHandleController
         get => ikEnabled;
         set
         {
+            if (value == ikEnabled)
+                return;
+
             ikEnabled = value;
 
             foreach (var controller in this.Except(new[] { Cube }))
                 controller.IKEnabled = ikEnabled;
+
+            RaisePropertyChanged(nameof(IKEnabled));
         }
     }
 
@@ -47,10 +66,15 @@ public class IKDragHandleController : IEnumerable<ICharacterDragHandleController
         get => boneModeEnabled;
         set
         {
+            if (value == boneModeEnabled)
+                return;
+
             boneModeEnabled = value;
 
             foreach (var controller in this)
                 controller.BoneMode = boneModeEnabled;
+
+            RaisePropertyChanged(nameof(BoneMode));
         }
     }
 
@@ -63,6 +87,14 @@ public class IKDragHandleController : IEnumerable<ICharacterDragHandleController
 
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();
+
+    private void RaisePropertyChanged(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
+
+        PropertyChanged?.Invoke(this, new(name));
+    }
 
     public class Builder
     {

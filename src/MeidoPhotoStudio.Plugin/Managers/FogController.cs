@@ -24,31 +24,56 @@ public class FogController(UnityEngine.Camera camera) : EffectControllerBase
     public float Distance
     {
         get => Fog.startDistance;
-        set => Fog.startDistance = value;
+        set
+        {
+            Fog.startDistance = value;
+
+            RaisePropertyChanged(nameof(Distance));
+        }
     }
 
     public float Density
     {
         get => Fog.globalDensity;
-        set => Fog.globalDensity = value;
+        set
+        {
+            Fog.globalDensity = value;
+
+            RaisePropertyChanged(nameof(Density));
+        }
     }
 
     public float HeightScale
     {
         get => Fog.heightScale;
-        set => Fog.heightScale = value;
+        set
+        {
+            Fog.heightScale = value;
+
+            RaisePropertyChanged(nameof(HeightScale));
+        }
     }
 
     public float Height
     {
         get => Fog.height;
-        set => Fog.height = value;
+        set
+        {
+            Fog.height = value;
+
+            RaisePropertyChanged(nameof(Height));
+        }
     }
 
     public Color FogColour
     {
         get => Fog.globalFogColor;
-        set => Fog.globalFogColor = value;
+        set
+        {
+            Fog.globalFogColor = value;
+
+            RaisePropertyChanged(nameof(FogColour));
+        }
     }
 
     private GlobalFog Fog

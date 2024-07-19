@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Database.Props;
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Props;
@@ -30,6 +32,7 @@ public class PropManagerPane : BasePane
 
     private string toggleAllHandlesHeader;
     private string gizmoSpaceLabel;
+    private bool transformControlChangedTransform;
 
     public PropManagerPane(
         PropService propService,
@@ -88,7 +91,7 @@ public class PropManagerPane : BasePane
             Clipboard = this.transformClipboard,
         };
 
-        positionTransformControl.ControlEvent += OnPositionTransformChanged;
+        positionTransformControl.ControlEvent += OnTransformControlChanged;
 
         rotationTransformControl = new(Translation.Get("propManagerPane", "rotationControl"), Vector3.zero)
         {
@@ -96,7 +99,7 @@ public class PropManagerPane : BasePane
             Clipboard = this.transformClipboard,
         };
 
-        rotationTransformControl.ControlEvent += OnRotationTransformChanged;
+        rotationTransformControl.ControlEvent += OnTransformControlChanged;
 
         scaleTransformControl = new(Translation.Get("propManagerPane", "scaleControl"), Vector3.one)
         {
@@ -104,7 +107,7 @@ public class PropManagerPane : BasePane
             Clipboard = this.transformClipboard,
         };
 
-        scaleTransformControl.ControlEvent += OnScaleTransformChanged;
+        scaleTransformControl.ControlEvent += OnTransformControlChanged;
 
         var copyButtonLabel = Translation.Get("transformControl", "copyButton");
         var pasteButtonLabel = Translation.Get("transformControl", "pasteButton");
@@ -188,7 +191,7 @@ public class PropManagerPane : BasePane
         GUILayout.EndHorizontal();
 
         MpsGui.Header(toggleAllHandlesHeader);
-        MpsGui.BlackLine();
+        MpsGui.WhiteLine();
 
         GUILayout.BeginHorizontal();
 
@@ -270,16 +273,12 @@ public class PropManagerPane : BasePane
     {
         foreach (var controller in propDragHandleService)
             controller.Enabled = toggleAllDragHandles.Value;
-
-        dragPointToggle.SetEnabledWithoutNotify(toggleAllDragHandles.Value);
     }
 
     private void OnToggleAllGizmosChanged(object sender, EventArgs e)
     {
         foreach (var controller in propDragHandleService)
             controller.GizmoEnabled = toggleAllGizmos.Value;
-
-        gizmoToggle.SetEnabledWithoutNotify(toggleAllGizmos.Value);
     }
 
     private void OnAddedProp(object sender, PropServiceEventArgs e)
@@ -339,8 +338,12 @@ public class PropManagerPane : BasePane
     {
         var prop = (PropController)sender;
 
-        if (prop != CurrentProp)
+        if (transformControlChangedTransform)
+        {
+            transformControlChangedTransform = false;
+
             return;
+        }
 
         var transform = prop.GameObject.transform;
 
@@ -351,22 +354,54 @@ public class PropManagerPane : BasePane
 
     private void OnSelectingProp(object sender, SelectionEventArgs<PropController> e)
     {
-        if (CurrentProp is null)
+        if (e.Selected is not PropController prop)
             return;
 
-        CurrentProp.TransformChanged -= OnPropTransformChanged;
+        prop.TransformChanged -= OnPropTransformChanged;
+        prop.PropertyChanged -= OnPropPropertyChanged;
+
+        var dragHandleController = propDragHandleService[prop];
+
+        dragHandleController.PropertyChanged -= OnDragHandlePropertyChanged;
     }
 
     private void OnSelectedProp(object sender, SelectionEventArgs<PropController> e)
     {
-        if (CurrentProp is null)
+        if (e.Selected is not PropController prop)
             return;
 
-        CurrentProp.TransformChanged += OnPropTransformChanged;
+        prop.TransformChanged += OnPropTransformChanged;
+        prop.PropertyChanged += OnPropPropertyChanged;
+
+        var dragHandleController = propDragHandleService[prop];
+
+        dragHandleController.PropertyChanged += OnDragHandlePropertyChanged;
 
         propDropdown.SetIndexWithoutNotify(e.Index);
 
         UpdateControls();
+    }
+
+    private void OnPropPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        var prop = (PropController)sender;
+
+        if (e.PropertyName is nameof(PropController.ShadowCasting))
+            shadowCastingToggle.SetEnabledWithoutNotify(prop.ShadowCasting);
+        else if (e.PropertyName is nameof(PropController.Visible))
+            visibleToggle.SetEnabledWithoutNotify(prop.Visible);
+    }
+
+    private void OnDragHandlePropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        var controller = (PropDragHandleController)sender;
+
+        if (e.PropertyName is nameof(PropDragHandleController.Enabled))
+            dragPointToggle.SetEnabledWithoutNotify(controller.Enabled);
+        else if (e.PropertyName is nameof(PropDragHandleController.GizmoMode))
+            gizmoMode.SetValueWithoutNotify((int)controller.GizmoMode);
+        else if (e.PropertyName is nameof(PropDragHandleController.GizmoEnabled))
+            gizmoToggle.SetEnabledWithoutNotify(controller.GizmoEnabled);
     }
 
     private void OnPropDropdownSelectionChange(object sender, EventArgs e)
@@ -441,49 +476,29 @@ public class PropManagerPane : BasePane
         CurrentProp.Focus();
     }
 
-    private void OnPositionTransformChanged(object sender, TransformComponentChangeEventArgs e)
+    private void OnTransformControlChanged(object sender, TransformComponentChangeEventArgs e)
     {
         if (CurrentProp is null)
             return;
 
-        var (component, value) = e;
-        var propTransform = CurrentProp.GameObject.transform;
-        var position = propTransform.position;
+        transformControlChangedTransform = true;
 
-        position[(int)component] = value;
+        var control = (TransformControl)sender;
 
-        propTransform.localPosition = position;
-    }
+        if (control.TransformType is TransformClipboard.TransformType.Position)
+        {
+            CurrentProp.GameObject.transform.position = e.Value;
+        }
+        else if (control.TransformType is TransformClipboard.TransformType.Rotation)
+        {
+            CurrentProp.GameObject.transform.eulerAngles = e.Value;
+        }
+        else if (control.TransformType is TransformClipboard.TransformType.Scale)
+        {
+            if (e.Value.x < 0f || e.Value.y < 0f || e.Value.z < 0f)
+                return;
 
-    private void OnRotationTransformChanged(object sender, TransformComponentChangeEventArgs e)
-    {
-        if (CurrentProp is null)
-            return;
-
-        var (component, value) = e;
-        var propTransform = CurrentProp.GameObject.transform;
-        var rotation = propTransform.eulerAngles;
-
-        rotation[(int)component] = value;
-
-        propTransform.eulerAngles = rotation;
-    }
-
-    private void OnScaleTransformChanged(object sender, TransformComponentChangeEventArgs e)
-    {
-        if (CurrentProp is null)
-            return;
-
-        var (component, value) = e;
-
-        if (value < 0f)
-            return;
-
-        var propTransform = CurrentProp.GameObject.transform;
-        var scale = propTransform.localScale;
-
-        scale[(int)component] = value;
-
-        propTransform.localScale = scale;
+            CurrentProp.GameObject.transform.localScale = e.Value;
+        }
     }
 }

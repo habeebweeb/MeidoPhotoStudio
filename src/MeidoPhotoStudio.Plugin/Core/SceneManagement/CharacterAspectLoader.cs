@@ -148,7 +148,7 @@ public class CharacterAspectLoader(
 
             if (!animation.Playing)
             {
-                var muneSetting = (Left: true, Right: true);
+                var muneSetting = (Left: false, Right: false);
 
                 if (schema.MMPose is not null)
                     ApplyMMPose(ik, schema.MMPose);

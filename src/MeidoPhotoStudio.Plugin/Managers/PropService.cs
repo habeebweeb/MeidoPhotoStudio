@@ -3,9 +3,11 @@ using MeidoPhotoStudio.Database.Props.Menu;
 
 namespace MeidoPhotoStudio.Plugin.Core.Props;
 
-public class PropService : IEnumerable<PropController>, IIndexableCollection<PropController>
+public class PropService(TransformWatcher transformWatcher) : IEnumerable<PropController>, IIndexableCollection<PropController>
 {
     private readonly List<PropController> propControllers = [];
+    private readonly TransformWatcher transformWatcher =
+        transformWatcher ? transformWatcher : throw new ArgumentNullException(nameof(transformWatcher));
 
     public event EventHandler<PropServiceEventArgs> AddedProp;
 
@@ -32,7 +34,7 @@ public class PropService : IEnumerable<PropController>, IIndexableCollection<Pro
         if (!propGameObject)
             return;
 
-        Add(new PropController(propModel, propGameObject, shapeKeyController));
+        Add(new PropController(propModel, propGameObject, transformWatcher, shapeKeyController));
     }
 
     public void Clone(int index)
@@ -51,7 +53,8 @@ public class PropService : IEnumerable<PropController>, IIndexableCollection<Pro
         if (!copiedPropGameObject)
             return;
 
-        var copiedProp = new PropController(originalProp.PropModel, copiedPropGameObject, shapeKeyController);
+        var copiedProp = new PropController(
+            originalProp.PropModel, copiedPropGameObject, transformWatcher, shapeKeyController);
 
         CopyProperties(originalProp, copiedProp);
 
@@ -103,7 +106,7 @@ public class PropService : IEnumerable<PropController>, IIndexableCollection<Pro
 
         RemovedProp?.Invoke(this, new(propController, index));
 
-        Object.Destroy(propController.GameObject);
+        propController.Destroy();
     }
 
     public void Remove(PropController propController)

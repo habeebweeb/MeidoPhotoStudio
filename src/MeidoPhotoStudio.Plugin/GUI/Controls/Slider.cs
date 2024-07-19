@@ -143,7 +143,12 @@ public class Slider : BaseControl
 
     private void SetValue(float value, bool notify = true)
     {
-        this.value = Utility.Bound(value, Left, Right);
+        var newValue = Utility.Bound(value, Left, Right);
+
+        if (this.value == newValue)
+            return;
+
+        this.value = newValue;
 
         textField?.SetValueWithoutNotify(this.value);
 
@@ -151,12 +156,6 @@ public class Slider : BaseControl
             OnControlEvent(EventArgs.Empty);
     }
 
-    private void TextFieldInputChangedHandler(object sender, EventArgs e)
-    {
-        var newValue = textField.Value;
-
-        value = Utility.Bound(newValue, Left, Right);
-
-        OnControlEvent(EventArgs.Empty);
-    }
+    private void TextFieldInputChangedHandler(object sender, EventArgs e) =>
+        SetValue(textField.Value);
 }

@@ -2,6 +2,7 @@ using System.ComponentModel;
 
 using MeidoPhotoStudio.Database.Background;
 using MeidoPhotoStudio.Plugin.Core.Background;
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -10,8 +11,8 @@ public class BackgroundsPane : BasePane
     private readonly BackgroundService backgroundService;
     private readonly BackgroundRepository backgroundRepository;
     private readonly BackgroundDragHandleService backgroundDragHandleService;
-    private readonly Dropdown backgroundCategoryDropdown;
-    private readonly Dropdown backgroundDropdown;
+    private readonly Dropdown2<BackgroundCategory> backgroundCategoryDropdown;
+    private readonly Dropdown2<BackgroundModel> backgroundDropdown;
     private readonly Toggle dragHandleEnabledToggle;
     private readonly Toggle backgroundVisibleToggle;
     private readonly Toggle colourModeToggle;
@@ -19,9 +20,6 @@ public class BackgroundsPane : BasePane
     private readonly Slider greenSlider;
     private readonly Slider blueSlider;
     private readonly PaneHeader paneHeader;
-
-    private BackgroundCategory[] availableCategories;
-    private bool updatingUI;
 
     public BackgroundsPane(
         BackgroundService backgroundService,
@@ -32,13 +30,15 @@ public class BackgroundsPane : BasePane
         this.backgroundRepository = backgroundRepository ?? throw new ArgumentNullException(nameof(backgroundRepository));
         this.backgroundDragHandleService = backgroundDragHandleService ?? throw new ArgumentNullException(nameof(backgroundDragHandleService));
 
+        this.backgroundService.PropertyChanged += OnBackgroundPropertyChanged;
+
         paneHeader = new(Translation.Get("backgroundsPane", "header"));
 
-        backgroundCategoryDropdown = new([string.Empty]);
-        backgroundCategoryDropdown.SelectionChange += OnChangedCategory;
+        backgroundCategoryDropdown = new(BackgroundCategoryFormatter);
+        backgroundCategoryDropdown.SelectionChanged += OnChangedCategory;
 
-        backgroundDropdown = new([string.Empty]);
-        backgroundDropdown.SelectionChange += OnChangedBackground;
+        backgroundDropdown = new((model, _) => model.Name);
+        backgroundDropdown.SelectionChanged += OnChangedBackground;
 
         dragHandleEnabledToggle = new(
             Translation.Get("backgroundsPane", "dragHandleVisible"), backgroundDragHandleService.Enabled);
@@ -60,7 +60,7 @@ public class BackgroundsPane : BasePane
             HasTextField = true,
         };
 
-        redSlider.ControlEvent += OnChangedRedSlider;
+        redSlider.ControlEvent += OnColourSliderChanged;
 
         greenSlider = new(Translation.Get("backgroundsPane", "green"), 0f, 1f, backgroundColour.g, backgroundColour.g)
         {
@@ -68,7 +68,7 @@ public class BackgroundsPane : BasePane
             HasTextField = true,
         };
 
-        greenSlider.ControlEvent += OnChangedGreenSlider;
+        greenSlider.ControlEvent += OnColourSliderChanged;
 
         blueSlider = new(Translation.Get("backgroundsPane", "blue"), 0f, 1f, backgroundColour.b, backgroundColour.b)
         {
@@ -76,57 +76,55 @@ public class BackgroundsPane : BasePane
             HasTextField = true,
         };
 
-        blueSlider.ControlEvent += OnChangedBlueSlider;
+        blueSlider.ControlEvent += OnColourSliderChanged;
+
+        static string BackgroundCategoryFormatter(BackgroundCategory category, int index)
+        {
+            var translationKey = category switch
+            {
+                BackgroundCategory.COM3D2 => "com3d2",
+                BackgroundCategory.CM3D2 => "cm3d2",
+                BackgroundCategory.MyRoomCustom => "myRoomCustom",
+                _ => throw new InvalidEnumArgumentException(nameof(category), (int)category, typeof(BackgroundCategory)),
+            };
+
+            return Translation.Get("backgroundSource", translationKey);
+        }
     }
-
-    private Color SliderColours =>
-        new(redSlider.Value, greenSlider.Value, blueSlider.Value);
-
-    private BackgroundCategory CurrentCategory =>
-        availableCategories[backgroundCategoryDropdown.SelectedItemIndex];
 
     public override void Activate()
     {
         base.Activate();
 
-        availableCategories = backgroundRepository.Categories.ToArray();
+        var background = backgroundService.CurrentBackground;
 
-        updatingUI = true;
+        InitializeCategoryDropdown(background);
+        InitializeBackgroundDropdown(background);
 
-        InitializeCategoryDropdown();
-        InitializeBackgroundDropdown();
-
-        updatingUI = false;
-
-        void InitializeCategoryDropdown()
+        void InitializeCategoryDropdown(BackgroundModel background)
         {
             var categoryIndex = 0;
+            var categories = backgroundRepository.Categories.ToArray();
 
-            if (backgroundService.CurrentBackground is var currentBackground)
-                categoryIndex = Array.IndexOf(availableCategories, currentBackground.Category);
+            categoryIndex = categories.IndexOf(category => category == background.Category);
 
             if (categoryIndex < 0)
                 categoryIndex = 0;
 
-            backgroundCategoryDropdown.SetDropdownItems(GetBackgroundCategories(availableCategories), categoryIndex);
+            backgroundCategoryDropdown.SetItemsWithoutNotify(categories, categoryIndex);
         }
 
-        void InitializeBackgroundDropdown()
+        void InitializeBackgroundDropdown(BackgroundModel background)
         {
-            var backgroundCategory = BackgroundCategory.COM3D2;
             var backgroundIndex = 0;
+            var backgrounds = backgroundRepository[background.Category].ToArray();
 
-            if (backgroundService.CurrentBackground is var currentBackground)
-            {
-                backgroundIndex = backgroundRepository[currentBackground.Category].IndexOf(currentBackground);
+            backgroundIndex = backgrounds.IndexOf(model => background == model);
 
-                if (backgroundIndex < 0)
-                    backgroundIndex = 0;
+            if (backgroundIndex < 0)
+                backgroundIndex = 0;
 
-                backgroundCategory = currentBackground.Category;
-            }
-
-            backgroundDropdown.SetDropdownItems(GetBackgrounds(backgroundCategory), backgroundIndex);
+            backgroundDropdown.SetItemsWithoutNotify(backgrounds, backgroundIndex);
         }
     }
 
@@ -142,9 +140,11 @@ public class BackgroundsPane : BasePane
 
         DrawToggles();
 
+        MpsGui.BlackLine();
+
         DrawColourSliders();
 
-        static void DrawDropdown(Dropdown dropdown)
+        static void DrawDropdown<T>(Dropdown2<T> dropdown)
         {
             var arrowLayoutOptions = GUILayout.ExpandWidth(false);
 
@@ -153,12 +153,12 @@ public class BackgroundsPane : BasePane
             GUILayout.BeginHorizontal();
 
             if (GUILayout.Button("<", arrowLayoutOptions))
-                dropdown.Step(-1);
+                dropdown.CyclePrevious();
 
             dropdown.Draw(GUILayout.Width(dropdownButtonWidth));
 
             if (GUILayout.Button(">", arrowLayoutOptions))
-                dropdown.Step(1);
+                dropdown.CycleNext();
 
             GUILayout.EndHorizontal();
         }
@@ -180,8 +180,6 @@ public class BackgroundsPane : BasePane
         {
             colourModeToggle.Draw();
 
-            MpsGui.BlackLine();
-
             if (!colourModeToggle.Value)
                 return;
 
@@ -202,34 +200,9 @@ public class BackgroundsPane : BasePane
         redSlider.Label = Translation.Get("backgroundsPane", "red");
         greenSlider.Label = Translation.Get("backgroundsPane", "green");
         blueSlider.Label = Translation.Get("backgroundsPane", "blue");
-
-        updatingUI = true;
-
-        backgroundCategoryDropdown.SetDropdownItems(GetBackgroundCategories(availableCategories));
-        backgroundDropdown.SetDropdownItems(GetBackgrounds(CurrentCategory));
-
-        updatingUI = false;
+        backgroundCategoryDropdown.Reformat();
+        backgroundDropdown.Reformat();
     }
-
-    private static string[] GetBackgroundCategories(BackgroundCategory[] categories)
-    {
-        return categories
-            .Select(CategoryToTranslationKey)
-            .Select(key => Translation.Get("backgroundSource", key))
-            .ToArray();
-
-        static string CategoryToTranslationKey(BackgroundCategory category) =>
-            category switch
-            {
-                BackgroundCategory.COM3D2 => "com3d2",
-                BackgroundCategory.CM3D2 => "cm3d2",
-                BackgroundCategory.MyRoomCustom => "myRoomCustom",
-                _ => throw new InvalidEnumArgumentException(nameof(category), (int)category, typeof(BackgroundCategory)),
-            };
-    }
-
-    private string[] GetBackgrounds(BackgroundCategory category) =>
-        backgroundRepository[category].Select(model => model.Name).ToArray();
 
     private void OnToggledDragHandleEnabled(object sender, EventArgs e) =>
         backgroundDragHandleService.Enabled = dragHandleEnabledToggle.Value;
@@ -237,30 +210,64 @@ public class BackgroundsPane : BasePane
     private void OnToggledBackgroundVisible(object sender, EventArgs e) =>
         backgroundService.BackgroundVisible = backgroundVisibleToggle.Value;
 
-    private void OnChangedBlueSlider(object sender, EventArgs e) =>
-        backgroundService.BackgroundColour = SliderColours;
+    private void OnColourSliderChanged(object sender, EventArgs e) =>
+        backgroundService.BackgroundColour = new(redSlider.Value, greenSlider.Value, blueSlider.Value);
 
-    private void OnChangedGreenSlider(object sender, EventArgs e) =>
-        backgroundService.BackgroundColour = SliderColours;
+    private void OnChangedCategory(object sender, EventArgs e) =>
+        backgroundDropdown.SetItems(backgroundRepository[backgroundCategoryDropdown.SelectedItem], 0);
 
-    private void OnChangedRedSlider(object sender, EventArgs e) =>
-        backgroundService.BackgroundColour = SliderColours;
-
-    private void OnChangedCategory(object sender, EventArgs e)
+    private void OnBackgroundPropertyChanged(object sender, PropertyChangedEventArgs e)
     {
-        if (updatingUI)
-            return;
+        var service = (BackgroundService)sender;
 
-        backgroundDropdown.SetDropdownItems(GetBackgrounds(CurrentCategory), 0);
+        if (e.PropertyName is nameof(BackgroundService.CurrentBackground))
+        {
+            UpdatePanel(service);
+        }
+        else if (e.PropertyName is nameof(BackgroundService.BackgroundVisible))
+        {
+            backgroundVisibleToggle.SetEnabledWithoutNotify(service.BackgroundVisible);
+        }
+        else if (e.PropertyName is nameof(BackgroundService.BackgroundColour))
+        {
+            redSlider.SetValueWithoutNotify(service.BackgroundColour.r);
+            greenSlider.SetValueWithoutNotify(service.BackgroundColour.g);
+            blueSlider.SetValueWithoutNotify(service.BackgroundColour.b);
+        }
+
+        void UpdatePanel(BackgroundService service)
+        {
+            if (service.CurrentBackground == backgroundDropdown.SelectedItem)
+                return;
+
+            var categoryIndex = GetCategoryIndex(service.CurrentBackground);
+            var oldCategoryIndex = backgroundCategoryDropdown.SelectedItemIndex;
+
+            backgroundCategoryDropdown.SetSelectedIndexWithoutNotify(categoryIndex);
+
+            if (categoryIndex != oldCategoryIndex)
+                backgroundDropdown.SetItemsWithoutNotify(backgroundRepository[service.CurrentBackground.Category]);
+
+            var backgroundIndex = GetBackgroundIndex(service.CurrentBackground);
+
+            backgroundDropdown.SetSelectedIndexWithoutNotify(backgroundIndex);
+
+            int GetCategoryIndex(BackgroundModel background)
+            {
+                var categoryIndex = backgroundCategoryDropdown.IndexOf(category => category == background.Category);
+
+                return categoryIndex < 0 ? 0 : categoryIndex;
+            }
+
+            int GetBackgroundIndex(BackgroundModel currentBackground)
+            {
+                var backgroundIndex = backgroundDropdown.IndexOf(background => currentBackground == background);
+
+                return backgroundIndex < 0 ? 0 : backgroundIndex;
+            }
+        }
     }
 
-    private void OnChangedBackground(object sender, EventArgs e)
-    {
-        if (updatingUI)
-            return;
-
-        var model = backgroundRepository[CurrentCategory][backgroundDropdown.SelectedItemIndex];
-
-        backgroundService.ChangeBackground(model);
-    }
+    private void OnChangedBackground(object sender, EventArgs e) =>
+        backgroundService.ChangeBackground(backgroundDropdown.SelectedItem);
 }

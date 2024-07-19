@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core.Effects;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -72,6 +74,22 @@ public class VignettePane : EffectPane<VignetteController>
         blurSlider.Label = Translation.Get("effectVignette", "blur");
         blurSpreadSlider.Label = Translation.Get("effectVignette", "blurSpread");
         chromaticAberrationSlider.Label = Translation.Get("effectVignette", "chromaticAberration");
+    }
+
+    protected override void OnEffectPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        base.OnEffectPropertyChanged(sender, e);
+
+        var vignette = (VignetteController)sender;
+
+        if (e.PropertyName is nameof(VignetteController.Intensity))
+            intensitySlider.SetValueWithoutNotify(vignette.Intensity);
+        else if (e.PropertyName is nameof(VignetteController.Blur))
+            blurSlider.SetValueWithoutNotify(vignette.Blur);
+        else if (e.PropertyName is nameof(VignetteController.BlurSpread))
+            blurSpreadSlider.SetValueWithoutNotify(vignette.BlurSpread);
+        else if (e.PropertyName is nameof(VignetteController.Intensity))
+            chromaticAberrationSlider.SetValueWithoutNotify(vignette.Intensity);
     }
 
     private void OnItensitySliderChanged(object sender, EventArgs e) =>
