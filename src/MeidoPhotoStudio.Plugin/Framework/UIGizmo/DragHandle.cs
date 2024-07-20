@@ -158,9 +158,6 @@ public partial class DragHandle : MonoBehaviour
     private bool Selected =>
         ClickHandler.SelectedDragHandleID == instanceId;
 
-    private static bool OnlyLeftClickPressed() =>
-        UInput.GetMouseButton(0) && !UInput.GetMouseButton(1) && !UInput.GetMouseButton(2);
-
     private void Awake()
     {
         mainCamera = GameMain.Instance.MainCamera.camera;
@@ -173,27 +170,7 @@ public partial class DragHandle : MonoBehaviour
     private void Update()
     {
         UpdateSize();
-
-        if (Selected && OnlyLeftClickPressed())
-        {
-            if (MoveWithMouse)
-            {
-                UpdateHandleMousePosition();
-                MoveToMouse();
-            }
-
-            Drag();
-        }
-
         UpdatePositionAndRotation();
-
-        void UpdateHandleMousePosition()
-        {
-            var mousePositionDelta = UInput.mousePosition - oldMousePosition;
-
-            oldMousePosition = UInput.mousePosition;
-            handleMousePosition += mousePositionDelta;
-        }
     }
 
     private void OnEnable()
@@ -209,8 +186,24 @@ public partial class DragHandle : MonoBehaviour
     private void Click() =>
         Clicked.Invoke();
 
-    private void Drag() =>
+    private void Drag()
+    {
+        if (MoveWithMouse)
+        {
+            UpdateHandleMousePosition();
+            MoveToMouse();
+        }
+
         Dragging.Invoke();
+
+        void UpdateHandleMousePosition()
+        {
+            var mousePositionDelta = UInput.mousePosition - oldMousePosition;
+
+            oldMousePosition = UInput.mousePosition;
+            handleMousePosition += mousePositionDelta;
+        }
+    }
 
     private void Release() =>
         Released.Invoke();

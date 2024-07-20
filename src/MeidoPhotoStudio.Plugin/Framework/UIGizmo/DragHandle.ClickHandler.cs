@@ -17,6 +17,7 @@ public partial class DragHandle
 
         private bool clicked;
         private float clickStartTime;
+        private Vector3 clickStartPosition;
         private Camera mainCamera;
         private DragHandle previousSelectedDragHandle;
         private DragHandle selectedDragHandle;
@@ -54,7 +55,7 @@ public partial class DragHandle
 
         private void Update()
         {
-            if (!clicked && UInput.GetMouseButtonDown(0) && GetClickInfo(out var info))
+            if (UInput.GetMouseButtonDown(0) && GetClickInfo(out var info))
             {
                 GizmoRender.global_control_lock = true;
                 GizmoRender.is_drag_ = false;
@@ -63,28 +64,32 @@ public partial class DragHandle
 
                 SelectedDragHandle = info.DragHandle;
 
-                SelectedDragHandle.Click();
+                if (IsDoubleClick())
+                    SelectedDragHandle.DoubleClick();
+                else
+                    SelectedDragHandle.Click();
+
                 SelectedDragHandle.Select(info.Hit);
+
+                UpdateDoubleClickInfo();
             }
-            else if (clicked && !OnlyLeftClickPressed())
+            else if (clicked && OnlyLeftClickPressed() && SelectedDragHandle)
+            {
+                SelectedDragHandle.Drag();
+            }
+            else if (clicked && !OnlyLeftClickPressed() && !ValidDoubleClick())
             {
                 if (SelectedDragHandle)
-                {
-                    if (IsDoubleClick())
-                        SelectedDragHandle.DoubleClick();
-
                     SelectedDragHandle.Release();
-                }
 
                 GizmoRender.global_control_lock = false;
-                previousSelectedDragHandle = SelectedDragHandle;
                 SelectedDragHandle = null;
                 clicked = false;
             }
 
             bool GetClickInfo(out (DragHandle DragHandle, RaycastHit Hit) info)
             {
-                info = (null, default);
+                info = default;
 
                 if (UICamera.Raycast(UInput.mousePosition))
                     return false;
@@ -113,15 +118,22 @@ public partial class DragHandle
                 return true;
             }
 
-            bool IsDoubleClick()
+            static bool OnlyLeftClickPressed() =>
+                UInput.GetMouseButton(0) && !UInput.GetMouseButton(1) && !UInput.GetMouseButton(2);
+
+            bool IsDoubleClick() =>
+                previousSelectedDragHandle == SelectedDragHandle && ValidDoubleClick();
+
+            void UpdateDoubleClickInfo()
             {
-                var newClickTime = Time.time;
-                var result = newClickTime - clickStartTime < DoubleClickSensitivity;
-
-                clickStartTime = newClickTime;
-
-                return previousSelectedDragHandle == SelectedDragHandle && result;
+                clickStartTime = Time.time;
+                clickStartPosition = UInput.mousePosition;
+                previousSelectedDragHandle = SelectedDragHandle;
             }
+
+            bool ValidDoubleClick() =>
+                Time.time - clickStartTime < DoubleClickSensitivity
+                && Vector2.Distance(clickStartPosition, UInput.mousePosition) <= 2f;
         }
     }
 }
