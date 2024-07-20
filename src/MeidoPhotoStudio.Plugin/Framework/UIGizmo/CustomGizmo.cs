@@ -1,4 +1,4 @@
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 /// <summary>Gizmo.</summary>
 public partial class CustomGizmo : GizmoRender

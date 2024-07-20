@@ -8,6 +8,7 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Light;
 using MeidoPhotoStudio.Plugin.Core.Schema.Message;
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
+using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 

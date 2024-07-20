@@ -1,3 +1,5 @@
+using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
+
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Props;
 
 public class LegacyPropSchema(short version = LegacyPropSchema.SchemaVersion)

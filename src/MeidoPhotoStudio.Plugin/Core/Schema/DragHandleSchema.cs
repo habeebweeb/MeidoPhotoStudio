@@ -1,3 +1,5 @@
+using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
+
 namespace MeidoPhotoStudio.Plugin.Core.Schema;
 
 public class DragHandleSchema(short version = DragHandleSchema.SchemaVersion)

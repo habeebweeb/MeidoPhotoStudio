@@ -3,6 +3,7 @@ using System.ComponentModel;
 using MeidoPhotoStudio.Database.Props;
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Props;
+using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin;
 
