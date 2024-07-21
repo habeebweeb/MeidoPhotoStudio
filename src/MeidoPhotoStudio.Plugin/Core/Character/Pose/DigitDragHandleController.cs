@@ -139,5 +139,16 @@ public class DigitDragHandleController : CharacterIKDragHandleController
             else
                 controller.Gizmo.SetVisibleRotateHandles(true, true, true);
         }
+
+        public override void OnGizmoClicked() =>
+            controller.AnimationController.Playing = false;
+
+        public override void OnGizmoDragging()
+        {
+            if (!controller.IKController.LimitDigitRotations)
+                return;
+
+            controller.LimitRotation();
+        }
     }
 }

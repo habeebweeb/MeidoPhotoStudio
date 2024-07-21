@@ -85,5 +85,16 @@ public class MiddleLimbDragHandleController(
             else
                 controller.Gizmo.SetVisibleRotateHandles(true, true, true);
         }
+
+        public override void OnGizmoClicked() =>
+            controller.AnimationController.Playing = false;
+
+        public override void OnGizmoDragging()
+        {
+            if (!controller.IKController.LimitLimbRotations)
+                return;
+
+            controller.LimitRotation();
+        }
     }
 }

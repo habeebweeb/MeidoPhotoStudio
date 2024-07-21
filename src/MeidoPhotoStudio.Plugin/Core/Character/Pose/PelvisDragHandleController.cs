@@ -1,5 +1,3 @@
-using System;
-
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
@@ -15,12 +13,8 @@ public class PelvisDragHandleController : CharacterDragHandleController
     private RotateAlternateMode rotateAlternate;
 
     public PelvisDragHandleController(DragHandle dragHandle, CustomGizmo gizmo, CharacterController characterController)
-        : base(dragHandle, gizmo, characterController)
-    {
+        : base(dragHandle, gizmo, characterController) =>
         pelvisBone = IKController.GetBone("Bip01 Pelvis");
-
-        Gizmo.GizmoDrag += OnGizmoDragging;
-    }
 
     public DragHandleMode None =>
         none ??= new NoneMode(this);
@@ -30,9 +24,6 @@ public class PelvisDragHandleController : CharacterDragHandleController
 
     public DragHandleMode RotateAlternate =>
         rotateAlternate ??= new RotateAlternateMode(this);
-
-    private void OnGizmoDragging(object sender, EventArgs e) =>
-        AnimationController.Playing = false;
 
     private class NoneMode(PelvisDragHandleController controller)
         : DragHandleMode
@@ -76,6 +67,9 @@ public class PelvisDragHandleController : CharacterDragHandleController
             controller.pelvisBone.Rotate(cameraForward, deltaX * 5f, Space.World);
             controller.pelvisBone.Rotate(cameraRight, deltaY * 5f, Space.World);
         }
+
+        public override void OnGizmoClicked() =>
+            controller.AnimationController.Playing = false;
     }
 
     private class RotateAlternateMode(PelvisDragHandleController controller)

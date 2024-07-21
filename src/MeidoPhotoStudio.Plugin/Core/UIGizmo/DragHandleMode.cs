@@ -23,4 +23,16 @@ public abstract class DragHandleMode
     public virtual void OnDoubleClicked()
     {
     }
+
+    public virtual void OnGizmoClicked()
+    {
+    }
+
+    public virtual void OnGizmoDragging()
+    {
+    }
+
+    public virtual void OnGizmoReleased()
+    {
+    }
 }

@@ -13,6 +13,7 @@ public abstract class DragHandleControllerBase : IDragHandleController, INotifyP
     private DragHandle dragHandle;
     private bool enabled = true;
     private DragHandleMode currentDragHandleMode = EmptyDragHandleMode;
+    private CustomGizmo gizmo;
 
     public DragHandleControllerBase(DragHandle dragHandle) =>
         DragHandle = dragHandle ? dragHandle : throw new ArgumentNullException(nameof(dragHandle));
@@ -134,7 +135,17 @@ public abstract class DragHandleControllerBase : IDragHandleController, INotifyP
         }
     }
 
-    protected CustomGizmo Gizmo { get; private init; }
+    protected CustomGizmo Gizmo
+    {
+        get => gizmo;
+        private init
+        {
+            gizmo = value;
+            gizmo.Clicked.AddListener(OnGizmoClicked);
+            gizmo.Dragging.AddListener(OnGizmoDragging);
+            gizmo.Released.AddListener(OnGizmoReleased);
+        }
+    }
 
     protected bool DragHandleActive
     {
@@ -205,4 +216,13 @@ public abstract class DragHandleControllerBase : IDragHandleController, INotifyP
 
     private void OnReleased() =>
         CurrentMode.OnReleased();
+
+    private void OnGizmoDragging() =>
+        CurrentMode.OnGizmoDragging();
+
+    private void OnGizmoClicked() =>
+        CurrentMode.OnGizmoClicked();
+
+    private void OnGizmoReleased() =>
+        CurrentMode.OnGizmoReleased();
 }

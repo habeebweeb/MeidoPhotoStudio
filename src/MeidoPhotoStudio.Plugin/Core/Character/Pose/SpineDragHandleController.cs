@@ -4,25 +4,16 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
-public class SpineDragHandleController : CharacterDragHandleController
+public class SpineDragHandleController(
+    DragHandle dragHandle, CustomGizmo gizmo, CharacterController characterController, Transform spineSegment)
+    : CharacterDragHandleController(dragHandle, gizmo, characterController)
 {
-    private readonly Transform spineSegment;
-    private readonly bool isHead;
+    private readonly Transform spineSegment = spineSegment ? spineSegment : throw new ArgumentNullException(nameof(spineSegment));
+    private readonly bool isHead = spineSegment.name.EndsWith("Head");
 
     private NoneMode none;
     private RotateMode rotate;
     private RotateAlternateMode rotateAlternate;
-
-    public SpineDragHandleController(
-        DragHandle dragHandle, CustomGizmo gizmo, CharacterController characterController, Transform spineSegment)
-        : base(dragHandle, gizmo, characterController)
-    {
-        this.spineSegment = spineSegment ? spineSegment : throw new ArgumentNullException(nameof(spineSegment));
-
-        isHead = spineSegment.name.EndsWith("Head");
-
-        Gizmo.GizmoDrag += OnGizmoDragging;
-    }
 
     public DragHandleMode None =>
         none ??= new NoneMode(this);
@@ -32,14 +23,6 @@ public class SpineDragHandleController : CharacterDragHandleController
 
     public DragHandleMode RotateAlternate =>
         rotateAlternate ??= new RotateAlternateMode(this);
-
-    private void OnGizmoDragging(object sender, EventArgs e)
-    {
-        AnimationController.Playing = false;
-
-        if (isHead)
-            HeadController.HeadToCamera = false;
-    }
 
     private class NoneMode(SpineDragHandleController controller)
         : DragHandleMode
@@ -117,6 +100,14 @@ public class SpineDragHandleController : CharacterDragHandleController
         {
             controller.DragHandleActive = false;
             controller.GizmoActive = controller.BoneMode;
+        }
+
+        public override void OnGizmoClicked()
+        {
+            controller.AnimationController.Playing = false;
+
+            if (controller.isHead)
+                controller.HeadController.HeadToCamera = false;
         }
     }
 }

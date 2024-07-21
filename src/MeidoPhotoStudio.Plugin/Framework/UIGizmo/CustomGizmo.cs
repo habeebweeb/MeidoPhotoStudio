@@ -1,3 +1,5 @@
+using UnityEngine.Events;
+
 namespace MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 /// <summary>Gizmo.</summary>
@@ -7,6 +9,7 @@ public partial class CustomGizmo : GizmoRender
 
     private static readonly Camera Camera = GameMain.Instance.MainCamera.camera;
 
+    private bool clicked;
     private GizmoType gizmoType;
     private Transform target;
     private bool hasAlternateTarget;
@@ -19,8 +22,6 @@ public partial class CustomGizmo : GizmoRender
     private Quaternion deltaLocalRotation = Quaternion.identity;
     private Vector3 deltaScale = Vector3.zero;
     private Vector3 scaleOld = Vector3.one;
-
-    public event EventHandler GizmoDrag;
 
     public enum GizmoType
     {
@@ -35,6 +36,12 @@ public partial class CustomGizmo : GizmoRender
         World,
         Global,
     }
+
+    public UnityEvent Dragging { get; } = new();
+
+    public UnityEvent Clicked { get; } = new();
+
+    public UnityEvent Released { get; } = new();
 
     public GizmoType CurrentGizmoType
     {
@@ -102,6 +109,33 @@ public partial class CustomGizmo : GizmoRender
         EndUpdate();
     }
 
+    public override void OnRenderObject()
+    {
+        if (GameMain.Instance.VRMode)
+            return;
+
+        if (global_control_lock)
+            return;
+
+        var startMoveType = beSelectedType;
+
+        base.OnRenderObject();
+
+        if (startMoveType == beSelectedType)
+            return;
+
+        if (startMoveType is MOVETYPE.NONE && NInput.GetMouseButton(0))
+        {
+            clicked = true;
+            Clicked.Invoke();
+        }
+        else if (beSelectedType is MOVETYPE.NONE)
+        {
+            clicked = false;
+            Released.Invoke();
+        }
+    }
+
     public void SetAlternateTarget(Transform trans)
     {
         if (trans == target || trans == positionTransform)
@@ -118,10 +152,22 @@ public partial class CustomGizmo : GizmoRender
         VisibleRotateZ = z;
     }
 
-    private void OnEnable()
+    private void OnDisable()
     {
+        if (!clicked)
+            return;
+
+        clicked = false;
+    }
+
+    private void OnEnable() =>
         is_drag_ = false;
-        ray_check_ = false;
+
+    private void OnDestroy()
+    {
+        Clicked.RemoveAllListeners();
+        Dragging.RemoveAllListeners();
+        Released.RemoveAllListeners();
     }
 
     private void BeginUpdate()
@@ -180,7 +226,7 @@ public partial class CustomGizmo : GizmoRender
         if (!dragged)
             return;
 
-        GizmoDrag?.Invoke(this, EventArgs.Empty);
+        Dragging.Invoke();
     }
 
     private void SetTransform()

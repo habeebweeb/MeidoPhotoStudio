@@ -4,22 +4,15 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
-public class HipDragHandleController : CharacterDragHandleController
+public class HipDragHandleController(
+    DragHandle dragHandle, CustomGizmo gizmo, CharacterController characterController, Transform spineSegment)
+    : CharacterDragHandleController(dragHandle, gizmo, characterController)
 {
-    private readonly Transform spineSegment;
+    private readonly Transform spineSegment = spineSegment ? spineSegment : throw new ArgumentNullException(nameof(spineSegment));
 
     private NoneMode none;
     private RotateMode rotate;
     private MoveYMode moveY;
-
-    public HipDragHandleController(
-        DragHandle dragHandle, CustomGizmo gizmo, CharacterController characterController, Transform spineSegment)
-        : base(dragHandle, gizmo, characterController)
-    {
-        this.spineSegment = spineSegment ? spineSegment : throw new ArgumentNullException(nameof(spineSegment));
-
-        Gizmo.GizmoDrag += OnGizmoDragging;
-    }
 
     public DragHandleMode None =>
         none ??= new NoneMode(this);
@@ -29,9 +22,6 @@ public class HipDragHandleController : CharacterDragHandleController
 
     public DragHandleMode MoveY =>
         moveY ??= new MoveYMode(this);
-
-    private void OnGizmoDragging(object sender, EventArgs e) =>
-        AnimationController.Playing = false;
 
     private class NoneMode(HipDragHandleController controller)
         : DragHandleMode
@@ -93,5 +83,8 @@ public class HipDragHandleController : CharacterDragHandleController
             controller.DragHandle.Visible = false;
             controller.GizmoActive = controller.BoneMode;
         }
+
+        public override void OnGizmoClicked() =>
+            controller.AnimationController.Playing = false;
     }
 }

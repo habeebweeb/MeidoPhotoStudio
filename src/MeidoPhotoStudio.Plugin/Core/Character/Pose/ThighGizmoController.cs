@@ -3,23 +3,17 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
-public class ThighGizmoController : CharacterDragHandleController
+public class ThighGizmoController(CustomGizmo gizmo, CharacterController characterController)
+    : CharacterDragHandleController(gizmo, characterController)
 {
     private NoneMode none;
     private RotateMode rotate;
-
-    public ThighGizmoController(CustomGizmo gizmo, CharacterController characterController)
-        : base(gizmo, characterController) =>
-        Gizmo.GizmoDrag += OnGizmoDragging;
 
     public DragHandleMode None =>
         none ??= new NoneMode(this);
 
     public DragHandleMode Rotate =>
         rotate ??= new RotateMode(this);
-
-    private void OnGizmoDragging(object sender, EventArgs e) =>
-        AnimationController.Playing = false;
 
     private class NoneMode(ThighGizmoController controller)
         : DragHandleMode
@@ -37,5 +31,8 @@ public class ThighGizmoController : CharacterDragHandleController
 
         public override void OnModeEnter() =>
             controller.GizmoActive = controller.BoneMode;
+
+        public override void OnGizmoClicked() =>
+            controller.AnimationController.Playing = false;
     }
 }

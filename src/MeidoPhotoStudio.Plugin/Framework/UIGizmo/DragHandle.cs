@@ -183,6 +183,14 @@ public partial class DragHandle : MonoBehaviour
         Reset();
     }
 
+    private void OnDestroy()
+    {
+        Clicked.RemoveAllListeners();
+        DoubleClicked.RemoveAllListeners();
+        Dragging.RemoveAllListeners();
+        Released.RemoveAllListeners();
+    }
+
     private void Click() =>
         Clicked.Invoke();
 

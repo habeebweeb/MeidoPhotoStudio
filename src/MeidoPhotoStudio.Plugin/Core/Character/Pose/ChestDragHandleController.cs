@@ -22,8 +22,6 @@ public class ChestDragHandleController : CharacterIKDragHandleController
         left = bone.name.StartsWith("Mune_L");
 
         Chain = [Bone.parent, Bone];
-
-        Gizmo.GizmoDrag += OnGizmoDragged;
     }
 
     public override DragHandleMode Drag =>
@@ -44,9 +42,6 @@ public class ChestDragHandleController : CharacterIKDragHandleController
         else
             IKController.MuneREnabled = enabled;
     }
-
-    private void OnGizmoDragged(object sender, EventArgs e) =>
-        SetMuneEnabled(false);
 
     private class NoneMode(ChestDragHandleController controller)
         : DragHandleMode
@@ -97,6 +92,12 @@ public class ChestDragHandleController : CharacterIKDragHandleController
         {
             controller.DragHandleActive = false;
             controller.GizmoActive = true;
+        }
+
+        public override void OnGizmoClicked()
+        {
+            controller.AnimationController.Playing = false;
+            controller.SetMuneEnabled(false);
         }
     }
 }

@@ -61,5 +61,8 @@ public class UpperLimbDragHandleController(
 
             parent.Rotate(Vector3.right, -deltaX * 7f);
         }
+
+        public override void OnGizmoClicked() =>
+            controller.AnimationController.Playing = false;
     }
 }

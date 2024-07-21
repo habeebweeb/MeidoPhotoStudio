@@ -3,20 +3,13 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
-public class ChestSubGizmoController : CharacterDragHandleController
+public class ChestSubGizmoController(CustomGizmo gizmo, CharacterController characterController, Transform bone)
+    : CharacterDragHandleController(gizmo, characterController)
 {
-    private readonly bool left;
+    private readonly bool left = bone.name.StartsWith("Mune_L");
 
     private NoneMode none;
     private RotateMode rotate;
-
-    public ChestSubGizmoController(CustomGizmo gizmo, CharacterController characterController, Transform bone)
-        : base(gizmo, characterController)
-    {
-        left = bone.name.StartsWith("Mune_L");
-
-        Gizmo.GizmoDrag += OnGizmoDragged;
-    }
 
     public DragHandleMode None =>
         none ??= new NoneMode(this);
@@ -31,9 +24,6 @@ public class ChestSubGizmoController : CharacterDragHandleController
         else
             IKController.MuneREnabled = enabled;
     }
-
-    private void OnGizmoDragged(object sender, EventArgs e) =>
-        SetMuneEnabled(false);
 
     private class NoneMode(ChestSubGizmoController controller)
         : DragHandleMode
@@ -51,5 +41,12 @@ public class ChestSubGizmoController : CharacterDragHandleController
 
         public override void OnModeEnter() =>
             controller.GizmoActive = true;
+
+        public override void OnGizmoClicked()
+        {
+            controller.AnimationController.Playing = false;
+
+            controller.SetMuneEnabled(false);
+        }
     }
 }

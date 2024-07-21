@@ -132,5 +132,8 @@ public class DigitBaseDragHandleController : CharacterIKDragHandleController
             controller.DragHandleActive = false;
             controller.GizmoActive = true;
         }
+
+        public override void OnGizmoClicked() =>
+            controller.AnimationController.Playing = false;
     }
 }

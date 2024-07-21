@@ -72,6 +72,9 @@ public class LowerLimbDragHandleController(
             controller.Bone.Rotate(Vector3.forward, invert * deltaY * 7f);
             controller.Bone.Rotate(Vector3.up, invert * deltaX * 7f);
         }
+
+        public override void OnGizmoClicked() =>
+            controller.AnimationController.Playing = false;
     }
 
     private class RotateAlternateMode(LowerLimbDragHandleController controller)

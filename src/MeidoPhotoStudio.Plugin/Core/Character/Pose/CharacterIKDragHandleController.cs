@@ -21,12 +21,7 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
         Bone = bone ? bone : throw new ArgumentNullException(nameof(bone));
         IKTarget = ikTarget ? ikTarget : throw new ArgumentNullException(nameof(ikTarget));
 
-        Gizmo.GizmoDrag += OnGizmoDragging;
-
         rotationLimit = IKController.GetRotationLimit(Bone.name);
-
-        if (rotationLimit)
-            Gizmo.GizmoDrag += LimitRotation;
     }
 
     protected CharacterIKDragHandleController(
@@ -57,11 +52,13 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
             Object.Destroy(IKTarget.gameObject);
     }
 
-    private void OnGizmoDragging(object sender, EventArgs e) =>
-        AnimationController.Playing = false;
+    protected void LimitRotation()
+    {
+        if (!rotationLimit)
+            return;
 
-    private void LimitRotation(object sender, EventArgs e) =>
         rotationLimit.Apply();
+    }
 
     protected class DragMode(CharacterIKDragHandleController controller, Transform[] chain)
         : DragHandleMode
