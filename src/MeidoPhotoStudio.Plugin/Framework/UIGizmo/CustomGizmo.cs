@@ -86,9 +86,10 @@ public partial class CustomGizmo : GizmoRender
 
     public override void Update()
     {
-        BeginUpdate();
+        if (GameMain.Instance.VRMode)
+            return;
 
-        base.Update();
+        BeginUpdate();
 
         if (Holding)
         {

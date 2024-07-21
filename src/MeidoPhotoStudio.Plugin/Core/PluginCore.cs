@@ -51,6 +51,7 @@ public partial class PluginCore : MonoBehaviour
     private CharacterService characterService;
     private EditModeMaidService editModeMaidService;
     private DragHandle.ClickHandler dragHandleClickHandler;
+    private CustomGizmo.ClickHandler gizmoClickHandler;
     private CharacterRepository characterRepository;
     private BloomController bloomController;
     private DepthOfFieldController depthOfFieldController;
@@ -111,6 +112,8 @@ public partial class PluginCore : MonoBehaviour
         inputPollingService.AddInputHandler(new InputHandler(this, inputConfiguration));
         dragHandleClickHandler = gameObject.AddComponent<DragHandle.ClickHandler>();
         dragHandleClickHandler.enabled = false;
+        gizmoClickHandler = gameObject.AddComponent<CustomGizmo.ClickHandler>();
+        gizmoClickHandler.enabled = false;
     }
 
     private void Update()
@@ -466,6 +469,7 @@ public partial class PluginCore : MonoBehaviour
         };
 
         dragHandleClickHandler.WindowManager = windowManager;
+        gizmoClickHandler.WindowManager = windowManager;
 
         void AddPluginActiveInputHandler<T>(T inputHandler)
             where T : IInputHandler =>
@@ -482,6 +486,7 @@ public partial class PluginCore : MonoBehaviour
 
         dragHandleClickHandler.enabled = true;
         transformWatcher.enabled = true;
+        gizmoClickHandler.enabled = true;
 
         // TODO: Move all this activation/deactivation stuff.
         backgroundRepository.Refresh();
@@ -583,6 +588,7 @@ public partial class PluginCore : MonoBehaviour
 
             dragHandleClickHandler.enabled = false;
             transformWatcher.enabled = false;
+            gizmoClickHandler.enabled = false;
 
             characterService.Deactivate();
             cameraController.Deactivate();
