@@ -27,8 +27,8 @@ public abstract partial class GeneralDragHandleController
             Controller.TransformBackup;
     }
 
-    public class NoneMode(GeneralDragHandleController controller)
-        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
+    public class NoneMode<T>(T controller) : GeneralDragHandleMode<T>(controller)
+        where T : GeneralDragHandleController
     {
         public override void OnModeEnter()
         {
@@ -38,8 +38,8 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class MoveWorldXZMode(GeneralDragHandleController controller)
-        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
+    public class MoveWorldXZMode<T>(T controller) : GeneralDragHandleMode<T>(controller)
+        where T : GeneralDragHandleController
     {
         public override void OnDoubleClicked() =>
             TransformBackup.ApplyPosition(Target);
@@ -57,8 +57,8 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class MoveWorldYMode(GeneralDragHandleController controller)
-        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
+    public class MoveWorldYMode<T>(T controller) : GeneralDragHandleMode<T>(controller)
+        where T : GeneralDragHandleController
     {
         public override void OnDoubleClicked() =>
             TransformBackup.ApplyPosition(Target);
@@ -76,8 +76,8 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public abstract class GeneralDragHandleRotateMode(GeneralDragHandleController controller)
-        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
+    public abstract class GeneralDragHandleRotateMode<T>(T controller) : GeneralDragHandleMode<T>(controller)
+        where T : GeneralDragHandleController
     {
         public override void OnDoubleClicked() =>
             TransformBackup.ApplyRotation(Target);
@@ -95,8 +95,8 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class RotateLocalXZMode(GeneralDragHandleController controller)
-        : GeneralDragHandleRotateMode(controller)
+    public class RotateLocalXZMode<T>(T controller) : GeneralDragHandleRotateMode<T>(controller)
+        where T : GeneralDragHandleController
     {
         public override void OnDragging()
         {
@@ -116,8 +116,8 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class RotateWorldYMode(GeneralDragHandleController controller)
-        : GeneralDragHandleRotateMode(controller)
+    public class RotateWorldYMode<T>(T controller) : GeneralDragHandleRotateMode<T>(controller)
+        where T : GeneralDragHandleController
     {
         public override void OnDragging()
         {
@@ -127,8 +127,8 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class RotateLocalYMode(GeneralDragHandleController controller)
-        : GeneralDragHandleRotateMode(controller)
+    public class RotateLocalYMode<T>(T controller) : GeneralDragHandleRotateMode<T>(controller)
+        where T : GeneralDragHandleController
     {
         public override void OnDragging()
         {
@@ -138,8 +138,8 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class ScaleMode(GeneralDragHandleController controller)
-        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
+    public class ScaleMode<T>(T controller) : GeneralDragHandleMode<T>(controller)
+        where T : GeneralDragHandleController
     {
         public override void OnDoubleClicked() =>
             TransformBackup.ApplyScale(Target);
@@ -170,8 +170,8 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class SelectMode(GeneralDragHandleController controller)
-        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
+    public class SelectMode<T>(T controller) : GeneralDragHandleMode<T>(controller)
+        where T : GeneralDragHandleController
     {
         public override void OnModeEnter()
         {
@@ -181,8 +181,8 @@ public abstract partial class GeneralDragHandleController
         }
     }
 
-    public class DeleteMode(GeneralDragHandleController controller)
-        : GeneralDragHandleMode<GeneralDragHandleController>(controller)
+    public class DeleteMode<T>(T controller) : GeneralDragHandleMode<T>(controller)
+        where T : GeneralDragHandleController
     {
         public override void OnModeEnter()
         {

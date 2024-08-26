@@ -14,15 +14,15 @@ public abstract partial class GeneralDragHandleController : DragHandleController
     protected static readonly Color SelectColour = new(0.9f, 0.5f, 1f, DragHandleAlpha);
     protected static readonly Color DeleteColour = new(1f, 0.1f, 0.1f, DragHandleAlpha);
 
-    private NoneMode none;
-    private MoveWorldXZMode moveWorldXZ;
-    private MoveWorldYMode moveWorldY;
-    private RotateLocalXZMode rotateLocalXZ;
-    private RotateWorldYMode rotateWorldY;
-    private RotateLocalYMode rotateLocalY;
-    private ScaleMode scale;
-    private SelectMode select;
-    private DeleteMode delete;
+    private DragHandleMode none;
+    private DragHandleMode moveWorldXZ;
+    private DragHandleMode moveWorldY;
+    private DragHandleMode rotateLocalXZ;
+    private DragHandleMode rotateWorldY;
+    private DragHandleMode rotateLocalY;
+    private DragHandleMode scale;
+    private DragHandleMode select;
+    private DragHandleMode delete;
 
     public GeneralDragHandleController(DragHandle dragHandle, Transform target)
         : base(dragHandle)
@@ -44,32 +44,32 @@ public abstract partial class GeneralDragHandleController : DragHandleController
         TransformBackup = new(Target);
     }
 
-    public virtual GeneralDragHandleMode<GeneralDragHandleController> None =>
-        none ??= new NoneMode(this);
+    public virtual DragHandleMode None =>
+        none ??= new NoneMode<GeneralDragHandleController>(this);
 
-    public virtual GeneralDragHandleMode<GeneralDragHandleController> MoveWorldXZ =>
-        moveWorldXZ ??= new MoveWorldXZMode(this);
+    public virtual DragHandleMode MoveWorldXZ =>
+        moveWorldXZ ??= new MoveWorldXZMode<GeneralDragHandleController>(this);
 
-    public virtual GeneralDragHandleMode<GeneralDragHandleController> MoveWorldY =>
-        moveWorldY ??= new MoveWorldYMode(this);
+    public virtual DragHandleMode MoveWorldY =>
+        moveWorldY ??= new MoveWorldYMode<GeneralDragHandleController>(this);
 
-    public virtual GeneralDragHandleMode<GeneralDragHandleController> RotateLocalXZ =>
-        rotateLocalXZ ??= new RotateLocalXZMode(this);
+    public virtual DragHandleMode RotateLocalXZ =>
+        rotateLocalXZ ??= new RotateLocalXZMode<GeneralDragHandleController>(this);
 
-    public virtual GeneralDragHandleMode<GeneralDragHandleController> RotateWorldY =>
-        rotateWorldY ??= new RotateWorldYMode(this);
+    public virtual DragHandleMode RotateWorldY =>
+        rotateWorldY ??= new RotateWorldYMode<GeneralDragHandleController>(this);
 
-    public virtual GeneralDragHandleMode<GeneralDragHandleController> RotateLocalY =>
-        rotateLocalY ??= new RotateLocalYMode(this);
+    public virtual DragHandleMode RotateLocalY =>
+        rotateLocalY ??= new RotateLocalYMode<GeneralDragHandleController>(this);
 
-    public virtual GeneralDragHandleMode<GeneralDragHandleController> Scale =>
-        scale ??= new ScaleMode(this);
+    public virtual DragHandleMode Scale =>
+        scale ??= new ScaleMode<GeneralDragHandleController>(this);
 
-    public virtual GeneralDragHandleMode<GeneralDragHandleController> Select =>
-        select ??= new SelectMode(this);
+    public virtual DragHandleMode Select =>
+        select ??= new SelectMode<GeneralDragHandleController>(this);
 
-    public virtual GeneralDragHandleMode<GeneralDragHandleController> Delete =>
-        delete ??= new DeleteMode(this);
+    public virtual DragHandleMode Delete =>
+        delete ??= new DeleteMode<GeneralDragHandleController>(this);
 
     protected TransformBackup TransformBackup { get; set; }
 

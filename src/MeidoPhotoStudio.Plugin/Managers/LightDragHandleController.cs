@@ -10,9 +10,9 @@ public class LightDragHandleController : GeneralDragHandleController
     private readonly SelectionController<LightController> lightSelectionController;
     private readonly TabSelectionController tabSelectionController;
 
-    private LightScaleMode scale;
-    private LightSelectMode select;
-    private LightDeleteMode delete;
+    private DragHandleMode scale;
+    private DragHandleMode select;
+    private DragHandleMode delete;
 
     public LightDragHandleController(
         DragHandle dragHandle,
@@ -29,13 +29,13 @@ public class LightDragHandleController : GeneralDragHandleController
         isMainLight = LightController.Light == GameMain.Instance.MainLight.GetComponent<Light>();
     }
 
-    public override GeneralDragHandleMode<GeneralDragHandleController> Scale =>
+    public override DragHandleMode Scale =>
         scale ??= new LightScaleMode(this);
 
-    public override GeneralDragHandleMode<GeneralDragHandleController> Select =>
+    public override DragHandleMode Select =>
         select ??= new LightSelectMode(this);
 
-    public override GeneralDragHandleMode<GeneralDragHandleController> Delete =>
+    public override DragHandleMode Delete =>
         isMainLight ? None : delete ??= new LightDeleteMode(this);
 
     private LightController LightController { get; }
@@ -45,10 +45,8 @@ public class LightDragHandleController : GeneralDragHandleController
             ? throw new ArgumentNullException(nameof(lightController))
             : lightController.Light.transform;
 
-    private class LightSelectMode(LightDragHandleController controller) : SelectMode(controller)
+    private class LightSelectMode(LightDragHandleController controller) : SelectMode<LightDragHandleController>(controller)
     {
-        private new LightDragHandleController Controller { get; } = controller;
-
         public override void OnClicked()
         {
             Controller.lightSelectionController.Select(Controller.LightController);
@@ -56,11 +54,8 @@ public class LightDragHandleController : GeneralDragHandleController
         }
     }
 
-    private class LightScaleMode(LightDragHandleController controller) : ScaleMode(controller)
+    private class LightScaleMode(LightDragHandleController controller) : ScaleMode<LightDragHandleController>(controller)
     {
-        // NOTE: No covariant returns and I don't want to cast every update tick.
-        private new LightDragHandleController Controller { get; } = controller;
-
         private LightController LightController =>
             Controller.LightController;
 
@@ -87,10 +82,8 @@ public class LightDragHandleController : GeneralDragHandleController
         }
     }
 
-    private class LightDeleteMode(LightDragHandleController controller) : DeleteMode(controller)
+    private class LightDeleteMode(LightDragHandleController controller) : DeleteMode<LightDragHandleController>(controller)
     {
-        private new LightDragHandleController Controller { get; } = controller;
-
         public override void OnClicked() =>
             Controller.lightRepository.RemoveLight(Controller.LightController);
     }

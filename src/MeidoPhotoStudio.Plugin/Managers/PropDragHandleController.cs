@@ -31,10 +31,10 @@ public class PropDragHandleController : GeneralDragHandleController
         Gizmo.gameObject.SetActive(false);
     }
 
-    public override GeneralDragHandleMode<GeneralDragHandleController> Select =>
+    public override DragHandleMode Select =>
         select ??= new PropSelectMode(this);
 
-    public override GeneralDragHandleMode<GeneralDragHandleController> Delete =>
+    public override DragHandleMode Delete =>
         delete ??= new PropDeleteMode(this);
 
     public float HandleSize
@@ -49,10 +49,8 @@ public class PropDragHandleController : GeneralDragHandleController
         set => Gizmo.offsetScale = value;
     }
 
-    private class PropSelectMode(PropDragHandleController controller) : SelectMode(controller)
+    private class PropSelectMode(PropDragHandleController controller) : SelectMode<PropDragHandleController>(controller)
     {
-        private new PropDragHandleController Controller { get; } = controller;
-
         public override void OnClicked()
         {
             Controller.propSelectionController.Select(Controller.propController);
@@ -63,10 +61,8 @@ public class PropDragHandleController : GeneralDragHandleController
             Controller.propController.Focus();
     }
 
-    private class PropDeleteMode(PropDragHandleController controller) : DeleteMode(controller)
+    private class PropDeleteMode(PropDragHandleController controller) : DeleteMode<PropDragHandleController>(controller)
     {
-        private new PropDragHandleController Controller { get; } = controller;
-
         public override void OnClicked() =>
             Controller.propService.Remove(Controller.propController);
     }

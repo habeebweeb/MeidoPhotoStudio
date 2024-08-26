@@ -95,10 +95,10 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
         }
     }
 
-    public override GeneralDragHandleMode<GeneralDragHandleController> Delete =>
+    public override DragHandleMode Delete =>
         None;
 
-    public override GeneralDragHandleMode<GeneralDragHandleController> Select =>
+    public override DragHandleMode Select =>
         IKEnabled ? select ??= new CharacterSelectMode(this) : None;
 
     protected override void OnDestroying() =>
@@ -116,10 +116,8 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
     }
 
     private class CharacterSelectMode(CharacterGeneralDragHandleController controller)
-        : SelectMode(controller)
+        : SelectMode<CharacterGeneralDragHandleController>(controller)
     {
-        private new CharacterGeneralDragHandleController Controller { get; } = controller;
-
         public override void OnClicked()
         {
             Controller.selectionController.Select(Controller.character);

@@ -4,9 +4,9 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 public class BackgroundDragHandleController(DragHandle dragHandle, Transform background)
     : GeneralDragHandleController(dragHandle, background)
 {
-    public override GeneralDragHandleMode<GeneralDragHandleController> Select =>
+    public override DragHandleMode Select =>
         None;
 
-    public override GeneralDragHandleMode<GeneralDragHandleController> Delete =>
+    public override DragHandleMode Delete =>
         None;
 }
