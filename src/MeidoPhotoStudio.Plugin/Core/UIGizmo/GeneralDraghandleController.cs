@@ -73,5 +73,7 @@ public abstract partial class GeneralDragHandleController : DragHandleController
 
     protected TransformBackup TransformBackup { get; set; }
 
+    protected TransformBackup StartingTransform { get; set; }
+
     protected Transform Target { get; }
 }

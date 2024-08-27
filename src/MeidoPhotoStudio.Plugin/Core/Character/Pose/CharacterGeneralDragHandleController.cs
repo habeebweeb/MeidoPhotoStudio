@@ -120,6 +120,8 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
     {
         public override void OnClicked()
         {
+            base.OnClicked();
+
             Controller.selectionController.Select(Controller.character);
             Controller.tabSelectionController.SelectTab(Constants.Window.Pose);
         }

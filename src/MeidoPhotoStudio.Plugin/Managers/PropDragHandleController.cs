@@ -53,6 +53,8 @@ public class PropDragHandleController : GeneralDragHandleController
     {
         public override void OnClicked()
         {
+            base.OnClicked();
+
             Controller.propSelectionController.Select(Controller.propController);
             Controller.tabSelectionController.SelectTab(Constants.Window.BG2);
         }

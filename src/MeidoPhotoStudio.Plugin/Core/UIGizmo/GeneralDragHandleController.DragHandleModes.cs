@@ -25,6 +25,24 @@ public abstract partial class GeneralDragHandleController
 
         protected TransformBackup TransformBackup =>
             Controller.TransformBackup;
+
+        protected TransformBackup StartingTransform
+        {
+            get => Controller.StartingTransform;
+            set => Controller.StartingTransform = value;
+        }
+
+        public override void OnClicked() =>
+            StartingTransform = new(Target);
+
+        public override void OnCancelled() =>
+            StartingTransform.Apply(Target);
+
+        public override void OnGizmoClicked() =>
+            StartingTransform = new(Target);
+
+        public override void OnGizmoCancelled() =>
+            StartingTransform.Apply(Target);
     }
 
     public class NoneMode<T>(T controller) : GeneralDragHandleMode<T>(controller)
@@ -35,6 +53,22 @@ public abstract partial class GeneralDragHandleController
             Controller.DragHandleActive = false;
             DragHandle.MovementType = DragHandle.MoveType.None;
             Controller.GizmoActive = false;
+        }
+
+        public override void OnClicked()
+        {
+        }
+
+        public override void OnCancelled()
+        {
+        }
+
+        public override void OnGizmoClicked()
+        {
+        }
+
+        public override void OnGizmoCancelled()
+        {
         }
     }
 
@@ -191,6 +225,10 @@ public abstract partial class GeneralDragHandleController
             DragHandle.Color = DeleteColour;
 
             Controller.GizmoActive = false;
+        }
+
+        public override void OnClicked()
+        {
         }
     }
 }
