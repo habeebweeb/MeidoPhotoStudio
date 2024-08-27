@@ -43,6 +43,8 @@ public partial class CustomGizmo : GizmoRender
 
     public UnityEvent Released { get; } = new();
 
+    public UnityEvent Cancelled { get; } = new();
+
     public GizmoType CurrentGizmoType
     {
         get => gizmoType;
@@ -100,8 +102,16 @@ public partial class CustomGizmo : GizmoRender
 
         if (Holding)
         {
-            SetTargetTransform();
-            CheckDragged();
+            if (NInput.GetMouseButtonDown(1))
+            {
+                is_drag_ = false;
+                Cancelled.Invoke();
+            }
+            else
+            {
+                SetTargetTransform();
+                CheckDragged();
+            }
         }
 
         SetTransform();
@@ -168,6 +178,7 @@ public partial class CustomGizmo : GizmoRender
         Clicked.RemoveAllListeners();
         Dragging.RemoveAllListeners();
         Released.RemoveAllListeners();
+        Cancelled.RemoveAllListeners();
     }
 
     private void BeginUpdate()

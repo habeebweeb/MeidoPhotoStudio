@@ -70,6 +70,17 @@ public partial class DragHandle
 
                 UpdateDoubleClickInfo();
             }
+            else if (clicked && UInput.GetMouseButtonDown(1))
+            {
+                if (SelectedDragHandle)
+                {
+                    SelectedDragHandle.Cancel();
+                    SelectedDragHandle.Release();
+                    SelectedDragHandle = null;
+                }
+
+                clicked = false;
+            }
             else if (clicked && OnlyLeftClickPressed() && SelectedDragHandle)
             {
                 SelectedDragHandle.Drag();
@@ -116,7 +127,7 @@ public partial class DragHandle
             }
 
             static bool OnlyLeftClickPressed() =>
-                UInput.GetMouseButton(0) && !UInput.GetMouseButton(1) && !UInput.GetMouseButton(2);
+                UInput.GetMouseButton(0) && !UInput.GetMouseButton(2);
 
             bool IsDoubleClick() =>
                 previousSelectedDragHandle == SelectedDragHandle && ValidDoubleClick();

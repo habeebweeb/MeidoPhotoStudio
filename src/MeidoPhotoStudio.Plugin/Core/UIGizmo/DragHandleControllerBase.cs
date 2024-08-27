@@ -132,6 +132,7 @@ public abstract class DragHandleControllerBase : IDragHandleController, INotifyP
             dragHandle.Dragging.AddListener(OnDragging);
             dragHandle.Released.AddListener(OnReleased);
             dragHandle.DoubleClicked.AddListener(OnDoubleClicked);
+            dragHandle.Cancelled.AddListener(OnCancelled);
         }
     }
 
@@ -144,6 +145,7 @@ public abstract class DragHandleControllerBase : IDragHandleController, INotifyP
             gizmo.Clicked.AddListener(OnGizmoClicked);
             gizmo.Dragging.AddListener(OnGizmoDragging);
             gizmo.Released.AddListener(OnGizmoReleased);
+            gizmo.Cancelled.AddListener(OnGizmoCancelled);
         }
     }
 
@@ -217,6 +219,9 @@ public abstract class DragHandleControllerBase : IDragHandleController, INotifyP
     private void OnReleased() =>
         CurrentMode.OnReleased();
 
+    private void OnCancelled() =>
+        CurrentMode.OnCancelled();
+
     private void OnGizmoDragging() =>
         CurrentMode.OnGizmoDragging();
 
@@ -225,4 +230,7 @@ public abstract class DragHandleControllerBase : IDragHandleController, INotifyP
 
     private void OnGizmoReleased() =>
         CurrentMode.OnGizmoReleased();
+
+    private void OnGizmoCancelled() =>
+        CurrentMode.OnGizmoCancelled();
 }

@@ -20,6 +20,10 @@ public abstract class DragHandleMode
     {
     }
 
+    public virtual void OnCancelled()
+    {
+    }
+
     public virtual void OnDoubleClicked()
     {
     }
@@ -33,6 +37,10 @@ public abstract class DragHandleMode
     }
 
     public virtual void OnGizmoReleased()
+    {
+    }
+
+    public virtual void OnGizmoCancelled()
     {
     }
 }

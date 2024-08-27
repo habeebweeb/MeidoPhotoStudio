@@ -70,6 +70,8 @@ public partial class DragHandle : MonoBehaviour
 
     public UnityEvent Released { get; } = new();
 
+    public UnityEvent Cancelled { get; } = new();
+
     public MoveType MovementType
     {
         get => movementType;
@@ -189,6 +191,7 @@ public partial class DragHandle : MonoBehaviour
         DoubleClicked.RemoveAllListeners();
         Dragging.RemoveAllListeners();
         Released.RemoveAllListeners();
+        Cancelled.RemoveAllListeners();
     }
 
     private void Click() =>
@@ -218,6 +221,9 @@ public partial class DragHandle : MonoBehaviour
 
     private void DoubleClick() =>
         DoubleClicked.Invoke();
+
+    private void Cancel() =>
+        Cancelled.Invoke();
 
     private void Select(RaycastHit clickRaycast)
     {
