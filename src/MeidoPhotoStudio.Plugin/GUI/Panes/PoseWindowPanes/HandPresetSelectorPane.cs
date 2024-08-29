@@ -10,6 +10,7 @@ namespace MeidoPhotoStudio.Plugin;
 public class HandPresetSelectorPane : BasePane
 {
     private readonly HandPresetRepository handPresetRepository;
+    private readonly CharacterUndoRedoService characterUndoRedoService;
     private readonly SelectionController<CharacterController> characterSelectionController;
     private readonly PaneHeader paneHeader;
     private readonly Dropdown2<string> presetCategoryDropdown;
@@ -33,9 +34,11 @@ public class HandPresetSelectorPane : BasePane
 
     public HandPresetSelectorPane(
         HandPresetRepository handPresetRepository,
+        CharacterUndoRedoService characterUndoRedoService,
         SelectionController<CharacterController> characterSelectionController)
     {
         this.handPresetRepository = handPresetRepository ?? throw new ArgumentNullException(nameof(handPresetRepository));
+        this.characterUndoRedoService = characterUndoRedoService ?? throw new ArgumentNullException(nameof(characterUndoRedoService));
         this.characterSelectionController = characterSelectionController ?? throw new ArgumentNullException(nameof(characterSelectionController));
 
         this.handPresetRepository.AddedHandPreset += OnHandPresetAdded;
@@ -76,6 +79,9 @@ public class HandPresetSelectorPane : BasePane
         noPresetsLabel = new(Translation.Get("handPane", "noPresetsMessage"));
         savedHandPresetLabel = new(Translation.Get("handPane", "savedHandPresetLabel"));
     }
+
+    private CharacterController Character =>
+        characterSelectionController.Current;
 
     private IKController IKController =>
         characterSelectionController.Current?.IK;
@@ -306,7 +312,9 @@ public class HandPresetSelectorPane : BasePane
         if (IKController is null)
             return;
 
+        characterUndoRedoService[Character].StartPoseChange();
         IKController.SwapHands();
+        characterUndoRedoService[Character].EndPoseChange();
     }
 
     private void OnPresetCategoryChanged(object sender, EventArgs e) =>
@@ -343,7 +351,9 @@ public class HandPresetSelectorPane : BasePane
         if (presetDropdown.SelectedItem is null)
             return;
 
+        characterUndoRedoService[Character].StartPoseChange();
         IKController.ApplyHandOrFootPreset(presetDropdown.SelectedItem, type);
+        characterUndoRedoService[Character].EndPoseChange();
     }
 
     private IEnumerable<string> PresetCategoryList() =>

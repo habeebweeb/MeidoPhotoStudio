@@ -6,10 +6,12 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
 using MeidoPhotoStudio.Plugin.Core.Schema.Light;
 using MeidoPhotoStudio.Plugin.Core.Schema.Message;
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;
+using MeidoPhotoStudio.Plugin.Core.UndoRedo;
 
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
 public class SceneLoader(
+    UndoRedoService undoRedoService,
     ISceneAspectLoader<CharactersSchema> characterAspectLoader,
     ISceneAspectLoader<MessageWindowSchema> messageAspectLoader,
     ISceneAspectLoader<CameraSchema> cameraAspectLoader,
@@ -18,6 +20,9 @@ public class SceneLoader(
     ISceneAspectLoader<BackgroundSchema> backgroundAspectLoader,
     ISceneAspectLoader<PropsSchema> propsAspectLoader)
 {
+    private readonly UndoRedoService undoRedoService = undoRedoService
+        ?? throw new ArgumentNullException(nameof(undoRedoService));
+
     private readonly ISceneAspectLoader<CharactersSchema> characterAspectLoader = characterAspectLoader
         ?? throw new ArgumentNullException(nameof(characterAspectLoader));
 
@@ -51,5 +56,7 @@ public class SceneLoader(
         backgroundAspectLoader.Load(sceneSchema.Background, loadOptions);
         lightingAspectLoader.Load(sceneSchema.Lights, loadOptions);
         propsAspectLoader.Load(sceneSchema.Props, loadOptions);
+
+        undoRedoService.Clear();
     }
 }

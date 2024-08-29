@@ -88,6 +88,10 @@ public class InputConfiguration
         // Gravity drag handles
         BindHotkey(Hotkey.MoveGravityWorldY, "Move Gravity World Y", new KeyboardHotkey(KeyCode.LeftControl));
 
+        // Undo/Redo
+        BindShortcut(Shortcut.Undo, "Undo", new KeyboardShortcut(KeyCode.U));
+        BindShortcut(Shortcut.Redo, "Redo", new KeyboardShortcut(KeyCode.R));
+
         KeyPool = BuildKeyPool();
 
         void BindShortcut(Shortcut shortcut, string key, KeyboardShortcut keyboardShortcut)

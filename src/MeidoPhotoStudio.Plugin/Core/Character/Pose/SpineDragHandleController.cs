@@ -5,8 +5,12 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
 public class SpineDragHandleController(
-    DragHandle dragHandle, CustomGizmo gizmo, CharacterController characterController, Transform spineSegment)
-    : CharacterDragHandleController(dragHandle, gizmo, characterController)
+    DragHandle dragHandle,
+    CustomGizmo gizmo,
+    CharacterController characterController,
+    CharacterUndoRedoController undoRedoController,
+    Transform spineSegment)
+    : CharacterDragHandleController(dragHandle, gizmo, characterController, undoRedoController)
 {
     private readonly Transform spineSegment = spineSegment ? spineSegment : throw new ArgumentNullException(nameof(spineSegment));
     private readonly bool isHead = spineSegment.name.EndsWith("Head");
@@ -25,10 +29,8 @@ public class SpineDragHandleController(
         rotateAlternate ??= new RotateAlternateMode(this);
 
     private class NoneMode(SpineDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly SpineDragHandleController controller = controller;
-
         private static Vector2 MouseDelta =>
             new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
 
@@ -41,6 +43,8 @@ public class SpineDragHandleController(
 
         public override void OnClicked()
         {
+            base.OnClicked();
+
             controller.AnimationController.Playing = false;
 
             if (controller.isHead)
@@ -61,10 +65,8 @@ public class SpineDragHandleController(
     }
 
     private class RotateMode(SpineDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly SpineDragHandleController controller = controller;
-
         private static Vector2 MouseDelta =>
             new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
 
@@ -77,7 +79,7 @@ public class SpineDragHandleController(
 
         public override void OnClicked()
         {
-            controller.AnimationController.Playing = false;
+            base.OnClicked();
 
             if (controller.isHead)
                 controller.HeadController.HeadToCamera = false;
@@ -92,10 +94,8 @@ public class SpineDragHandleController(
     }
 
     private class RotateAlternateMode(SpineDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly SpineDragHandleController controller = controller;
-
         public override void OnModeEnter()
         {
             controller.DragHandleActive = false;
@@ -104,6 +104,8 @@ public class SpineDragHandleController(
 
         public override void OnGizmoClicked()
         {
+            base.OnGizmoClicked();
+
             controller.AnimationController.Playing = false;
 
             if (controller.isHead)

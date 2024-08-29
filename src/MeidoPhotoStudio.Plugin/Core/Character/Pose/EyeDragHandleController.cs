@@ -4,8 +4,9 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
-public class EyeDragHandleController(DragHandle dragHandle, CharacterController characterController, bool left)
-    : CharacterDragHandleController(dragHandle, characterController)
+public class EyeDragHandleController(
+    DragHandle dragHandle, CharacterController characterController, CharacterUndoRedoController undoRedoController, bool left)
+    : CharacterDragHandleController(dragHandle, characterController, undoRedoController)
 {
     private readonly bool left = left;
 

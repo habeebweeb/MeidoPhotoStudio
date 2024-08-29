@@ -590,7 +590,9 @@
     "spineBoneRotation": "Spine Bone Rotation",
     "spineBoneGizmoRotation": "Spine Bone Gizmo Rotation",
     "hipBoneRotation": "Hip Bone Rotation",
-    "moveLocalY": "Move Local Y"
+    "moveLocalY": "Move Local Y",
+    "undo": "Undo",
+    "redo": "Redo"
   },
   "settingsLabels": {
     "settingsButton": "Settings",

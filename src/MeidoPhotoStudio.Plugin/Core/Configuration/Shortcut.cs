@@ -10,6 +10,8 @@ public enum Shortcut
     CycleMaidDressing,
     QuickSaveScene,
     QuickLoadScene,
+    Undo,
+    Redo,
     SaveCamera,
     LoadCamera,
     ResetCamera,

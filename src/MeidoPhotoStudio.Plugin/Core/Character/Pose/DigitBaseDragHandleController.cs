@@ -18,9 +18,10 @@ public class DigitBaseDragHandleController : CharacterIKDragHandleController
         DragHandle dragHandle,
         CustomGizmo gizmo,
         CharacterController characterController,
+        CharacterUndoRedoController undoRedoController,
         Transform bone,
         Transform ikTarget)
-        : base(dragHandle, gizmo, characterController, bone, ikTarget)
+        : base(dragHandle, gizmo, characterController, undoRedoController, bone, ikTarget)
     {
         var baseBone = Bone.parent;
 
@@ -74,10 +75,8 @@ public class DigitBaseDragHandleController : CharacterIKDragHandleController
         gizmoRotate ??= new GizmoRotateMode(this);
 
     private class NoneMode(DigitBaseDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly DigitBaseDragHandleController controller = controller;
-
         public override void OnModeEnter()
         {
             controller.DragHandleActive = false;
@@ -97,9 +96,8 @@ public class DigitBaseDragHandleController : CharacterIKDragHandleController
     }
 
     private class RotateMode(DigitBaseDragHandleController controller, Transform digitBase)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly DigitBaseDragHandleController controller = controller;
         private readonly Transform digitBase = digitBase;
 
         private static Vector2 MouseDelta =>
@@ -111,8 +109,12 @@ public class DigitBaseDragHandleController : CharacterIKDragHandleController
             controller.GizmoActive = false;
         }
 
-        public override void OnClicked() =>
+        public override void OnClicked()
+        {
+            base.OnClicked();
+
             controller.AnimationController.Playing = false;
+        }
 
         public override void OnDragging()
         {
@@ -123,17 +125,19 @@ public class DigitBaseDragHandleController : CharacterIKDragHandleController
     }
 
     private class GizmoRotateMode(DigitBaseDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly DigitBaseDragHandleController controller = controller;
-
         public override void OnModeEnter()
         {
             controller.DragHandleActive = false;
             controller.GizmoActive = true;
         }
 
-        public override void OnGizmoClicked() =>
+        public override void OnGizmoClicked()
+        {
+            base.OnGizmoClicked();
+
             controller.AnimationController.Playing = false;
+        }
     }
 }

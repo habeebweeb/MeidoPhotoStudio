@@ -146,6 +146,9 @@ public class CharacterAspectLoader(
         {
             ApplyAnimation(animation, schema.Animation);
 
+            ik.LimitLimbRotations = schema.LimbsLimited;
+            ik.LimitDigitRotations = schema.DigitsLimited;
+
             if (!animation.Playing)
             {
                 var muneSetting = (Left: false, Right: false);
@@ -166,9 +169,6 @@ public class CharacterAspectLoader(
                         ik.GetBone("Mune_R_sub").localRotation = schema.MuneSubR;
                 }
             }
-
-            ik.LimitLimbRotations = schema.LimbsLimited;
-            ik.LimitDigitRotations = schema.DigitsLimited;
 
             static void ApplyMMPose(IKController ik, MMPoseSchema mmPose)
             {

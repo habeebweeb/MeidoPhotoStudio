@@ -9,6 +9,7 @@ namespace MeidoPhotoStudio.Plugin;
 public class IKPane : BasePane
 {
     private readonly IKDragHandleService ikDragHandleService;
+    private readonly CharacterUndoRedoService characterUndoRedoService;
     private readonly SelectionController<CharacterController> characterSelectionController;
     private readonly PaneHeader paneHeader;
     private readonly Toggle ikEnabledToggle;
@@ -23,9 +24,11 @@ public class IKPane : BasePane
 
     public IKPane(
         IKDragHandleService ikDragHandleService,
+        CharacterUndoRedoService characterUndoRedoService,
         SelectionController<CharacterController> characterSelectionController)
     {
         this.ikDragHandleService = ikDragHandleService ?? throw new ArgumentNullException(nameof(ikDragHandleService));
+        this.characterUndoRedoService = characterUndoRedoService ?? throw new ArgumentNullException(nameof(characterUndoRedoService));
         this.characterSelectionController = characterSelectionController ?? throw new ArgumentNullException(nameof(characterSelectionController));
 
         this.characterSelectionController.Selecting += OnCharacterSelectionChanging;
@@ -56,6 +59,9 @@ public class IKPane : BasePane
         flipButton = new(Translation.Get("maidPoseWindow", "flipPoseToggle"));
         flipButton.ControlEvent += OnFlipButtonPushed;
     }
+
+    private CharacterUndoRedoController CharacterUndoRedo =>
+        CurrentCharacter is null ? null : characterUndoRedoService[CurrentCharacter];
 
     private CharacterController CurrentCharacter =>
         characterSelectionController.Current;
@@ -241,18 +247,36 @@ public class IKPane : BasePane
 
     private void OnLimitLimbRotationsChanged(object sender, EventArgs e)
     {
-        if (CurrentCharacter is null)
+        if (CurrentCharacter is not CharacterController character)
             return;
 
-        CurrentCharacter.IK.LimitLimbRotations = limitLimbRotationsToggle.Value;
+        if (character.IK.Dirty)
+        {
+            CharacterUndoRedo.StartPoseChange();
+            character.IK.LimitLimbRotations = limitLimbRotationsToggle.Value;
+            CharacterUndoRedo.EndPoseChange();
+        }
+        else
+        {
+            character.IK.LimitLimbRotations = limitLimbRotationsToggle.Value;
+        }
     }
 
     private void OnLimitDigitRotationsChanged(object sender, EventArgs e)
     {
-        if (CurrentCharacter is null)
+        if (CurrentCharacter is not CharacterController character)
             return;
 
-        CurrentCharacter.IK.LimitDigitRotations = limitDigitRotationsToggle.Value;
+        if (character.IK.Dirty)
+        {
+            CharacterUndoRedo.StartPoseChange();
+            character.IK.LimitDigitRotations = limitDigitRotationsToggle.Value;
+            CharacterUndoRedo.EndPoseChange();
+        }
+        else
+        {
+            character.IK.LimitDigitRotations = limitDigitRotationsToggle.Value;
+        }
     }
 
     private void OnCustomFloorHeightToggleChanged(object sender, EventArgs e)
@@ -276,6 +300,8 @@ public class IKPane : BasePane
         if (CurrentCharacter is null)
             return;
 
+        characterUndoRedoService[CurrentCharacter].StartPoseChange();
         CurrentCharacter.IK.Flip();
+        characterUndoRedoService[CurrentCharacter].EndPoseChange();
     }
 }

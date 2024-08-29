@@ -14,13 +14,18 @@ public class CopyPosePane : BasePane
     private readonly Button copyRightHandToLeftButton;
     private readonly Button copyRightHandToRightButton;
     private readonly CharacterService characterService;
+    private readonly CharacterUndoRedoService characterUndoRedoService;
     private readonly SelectionController<CharacterController> characterSelectionController;
 
     private string copyHandHeader = string.Empty;
 
-    public CopyPosePane(CharacterService characterService, SelectionController<CharacterController> characterSelectionController)
+    public CopyPosePane(
+        CharacterService characterService,
+        CharacterUndoRedoService characterUndoRedoService,
+        SelectionController<CharacterController> characterSelectionController)
     {
         this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
+        this.characterUndoRedoService = characterUndoRedoService ?? throw new ArgumentNullException(nameof(characterUndoRedoService));
         this.characterSelectionController = characterSelectionController ?? throw new ArgumentNullException(nameof(characterSelectionController));
 
         this.characterService.CalledCharacters += OnCharactersCalled;
@@ -167,7 +172,9 @@ public class CopyPosePane : BasePane
         if (CurrentCharacter is null || OtherCharacter is null)
             return;
 
+        characterUndoRedoService[CurrentCharacter].StartPoseChange();
         CurrentCharacter.IK.CopyPoseFrom(OtherCharacter);
+        characterUndoRedoService[CurrentCharacter].EndPoseChange();
     }
 
     private void OnCopyBothHandsButtonPushed(object sender, EventArgs e)
@@ -175,39 +182,31 @@ public class CopyPosePane : BasePane
         if (CurrentCharacter is null || OtherCharacter is null)
             return;
 
+        characterUndoRedoService[CurrentCharacter].StartPoseChange();
         CurrentCharacter.IK.CopyHandOrFootFrom(OtherCharacter, HandOrFootType.HandRight, HandOrFootType.HandRight);
         CurrentCharacter.IK.CopyHandOrFootFrom(OtherCharacter, HandOrFootType.HandLeft, HandOrFootType.HandLeft);
+        characterUndoRedoService[CurrentCharacter].EndPoseChange();
     }
 
-    private void OnCopyRightHandToRightButtonPushed(object sender, EventArgs e)
+    private void OnCopyRightHandToRightButtonPushed(object sender, EventArgs e) =>
+        CopyHands(HandOrFootType.HandRight, HandOrFootType.HandRight);
+
+    private void OnCopyRightHandToLeftButtonPushed(object sender, EventArgs e) =>
+        CopyHands(HandOrFootType.HandRight, HandOrFootType.HandLeft);
+
+    private void OnCopyLefHandToLeftButtonPushed(object sender, EventArgs e) =>
+        CopyHands(HandOrFootType.HandLeft, HandOrFootType.HandLeft);
+
+    private void OnCopyLefHandToRightButtonPushed(object sender, EventArgs e) =>
+        CopyHands(HandOrFootType.HandLeft, HandOrFootType.HandRight);
+
+    private void CopyHands(HandOrFootType copyFrom, HandOrFootType copyTo)
     {
         if (CurrentCharacter is null || OtherCharacter is null)
             return;
 
-        CurrentCharacter.IK.CopyHandOrFootFrom(OtherCharacter, HandOrFootType.HandRight, HandOrFootType.HandRight);
-    }
-
-    private void OnCopyRightHandToLeftButtonPushed(object sender, EventArgs e)
-    {
-        if (CurrentCharacter is null || OtherCharacter is null)
-            return;
-
-        CurrentCharacter.IK.CopyHandOrFootFrom(OtherCharacter, HandOrFootType.HandRight, HandOrFootType.HandLeft);
-    }
-
-    private void OnCopyLefHandToLeftButtonPushed(object sender, EventArgs e)
-    {
-        if (CurrentCharacter is null || OtherCharacter is null)
-            return;
-
-        CurrentCharacter.IK.CopyHandOrFootFrom(OtherCharacter, HandOrFootType.HandLeft, HandOrFootType.HandLeft);
-    }
-
-    private void OnCopyLefHandToRightButtonPushed(object sender, EventArgs e)
-    {
-        if (CurrentCharacter is null || OtherCharacter is null)
-            return;
-
-        CurrentCharacter.IK.CopyHandOrFootFrom(OtherCharacter, HandOrFootType.HandLeft, HandOrFootType.HandRight);
+        characterUndoRedoService[CurrentCharacter].StartPoseChange();
+        CurrentCharacter.IK.CopyHandOrFootFrom(OtherCharacter, copyFrom, copyTo);
+        characterUndoRedoService[CurrentCharacter].EndPoseChange();
     }
 }

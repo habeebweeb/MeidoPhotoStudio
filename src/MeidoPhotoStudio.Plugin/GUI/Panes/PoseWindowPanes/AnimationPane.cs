@@ -22,11 +22,15 @@ public class AnimationPane : BasePane
     private readonly Button stepRightButton;
     private readonly NumericalTextField stepAmountField;
     private readonly SelectionController<CharacterController> characterSelectionController;
+    private readonly CharacterUndoRedoService characterUndoRedoService;
     private readonly PaneHeader paneHeader;
 
-    public AnimationPane(SelectionController<CharacterController> characterSelectionController)
+    public AnimationPane(
+        CharacterUndoRedoService characterUndoRedoService,
+        SelectionController<CharacterController> characterSelectionController)
     {
         this.characterSelectionController = characterSelectionController ?? throw new ArgumentNullException(nameof(characterSelectionController));
+        this.characterUndoRedoService = characterUndoRedoService ?? throw new ArgumentNullException(nameof(characterUndoRedoService));
 
         this.characterSelectionController.Selecting += OnCharacterSelectionChanging;
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
@@ -37,6 +41,8 @@ public class AnimationPane : BasePane
         };
 
         animationSlider.ControlEvent += OnAnimationSliderChange;
+        animationSlider.StartedInteraction += OnAnimationSliderInteractionStarted;
+        animationSlider.EndedInteraction += OnAnimationSliderInteractionEnded;
 
         playPauseButton = new(PauseIcon, true);
         playPauseButton.ControlEvent += OnPlayPauseButtonPushed;
@@ -59,6 +65,12 @@ public class AnimationPane : BasePane
     private static Texture2D PauseIcon =>
         pauseIcon ? pauseIcon : pauseIcon = LoadIconFromBase64(PauseIconBase64);
 
+    private CharacterUndoRedoController CharacterUndoRedo =>
+        Character is null ? null : characterUndoRedoService[Character];
+
+    private CharacterController Character =>
+        characterSelectionController.Current;
+
     private AnimationController CurrentAnimation =>
         characterSelectionController.Current?.Animation;
 
@@ -68,8 +80,9 @@ public class AnimationPane : BasePane
     public override void Draw()
     {
         var currentAnimation = CurrentAnimation;
+        var guiEnabled = currentAnimation is not null;
 
-        GUI.enabled = currentAnimation is not null;
+        GUI.enabled = guiEnabled;
 
         paneHeader.Draw();
 
@@ -88,17 +101,27 @@ public class AnimationPane : BasePane
                 {
                     playPauseButton.SetEnabledWithoutNotify(false);
                     UpdatePlayPauseButtonIcon();
+                    animationSlider.SetValueWithoutNotify(currentAnimation.Time);
                 }
             }
         }
 
+        var animationStopped = !currentAnimation?.Playing ?? false;
+
+        GUI.enabled = guiEnabled && animationStopped;
+
         animationSlider.Draw();
+
+        GUI.enabled = guiEnabled;
 
         GUILayout.BeginHorizontal();
 
         var noExpandWidth = GUILayout.ExpandWidth(false);
 
         playPauseButton.Draw(new GUIStyle(GUI.skin.button), GUILayout.Width(45f));
+
+        GUI.enabled = guiEnabled && animationStopped;
+
         stepLeftButton.Draw(noExpandWidth);
         stepRightButton.Draw(noExpandWidth);
 
@@ -107,6 +130,8 @@ public class AnimationPane : BasePane
         stepAmountField.Draw(GUILayout.Width(60f));
 
         GUILayout.EndHorizontal();
+
+        GUI.enabled = guiEnabled;
     }
 
     public override void UpdatePane()
@@ -189,7 +214,30 @@ public class AnimationPane : BasePane
 
         UpdatePlayPauseButtonIcon();
 
-        CurrentAnimation.Playing = Playing;
+        if (Character is CharacterController character)
+        {
+            if (character.IK.Dirty && !character.Animation.Playing)
+            {
+                CharacterUndoRedo.StartPoseChange();
+                character.Animation.Playing = Playing;
+                CharacterUndoRedo.EndPoseChange();
+            }
+            else
+            {
+                character.Animation.Playing = Playing;
+            }
+        }
+
+        UpdatePane();
+    }
+
+    private void OnAnimationSliderInteractionStarted(object sender, EventArgs e)
+    {
+        if (CurrentAnimation is null)
+            return;
+
+        if (Character.IK.Dirty)
+            CharacterUndoRedo.StartPoseChange();
     }
 
     private void OnAnimationSliderChange(object sender, EventArgs e)
@@ -198,6 +246,14 @@ public class AnimationPane : BasePane
             return;
 
         CurrentAnimation.Time = animationSlider.Value;
+    }
+
+    private void OnAnimationSliderInteractionEnded(object sender, EventArgs e)
+    {
+        if (CurrentAnimation is null)
+            return;
+
+        CharacterUndoRedo.EndPoseChange();
     }
 
     private void OnStepRightButtonPushed(object sender, EventArgs e) =>

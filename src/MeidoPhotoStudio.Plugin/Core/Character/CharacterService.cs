@@ -1,4 +1,5 @@
 using MeidoPhotoStudio.Database.Character;
+using MeidoPhotoStudio.Plugin.Core.UndoRedo;
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Service;
@@ -8,7 +9,8 @@ namespace MeidoPhotoStudio.Plugin.Core.Character;
 public class CharacterService(
     CustomMaidSceneService customMaidSceneService,
     EditModeMaidService editModeMaidService,
-    TransformWatcher transformWatcher)
+    TransformWatcher transformWatcher,
+    UndoRedoService undoRedoService)
     : IEnumerable<CharacterController>, IIndexableCollection<CharacterController>
 {
     private const int MaidCount = 12;
@@ -25,6 +27,9 @@ public class CharacterService(
 
     private readonly TransformWatcher transformWatcher = transformWatcher
         ? transformWatcher : throw new ArgumentNullException(nameof(transformWatcher));
+
+    private readonly UndoRedoService undoRedoService = undoRedoService
+        ?? throw new ArgumentNullException(nameof(undoRedoService));
 
     private bool calling;
 
@@ -89,6 +94,8 @@ public class CharacterService(
 
         CallingCharacters?.Invoke(this, new(charactersToCall));
 
+        ResetUndoRedo(charactersToCall);
+
         UnloadActiveCharacters(charactersToCall);
 
         UpdateActiveCharacters(charactersToCall);
@@ -101,6 +108,26 @@ public class CharacterService(
                 characterControllerCache.Add(character, new(character, transformWatcher));
 
             return charactersToCall.Select(character => characterControllerCache[character]).ToArray();
+        }
+
+        void ResetUndoRedo(CharacterController[] callingCharacters)
+        {
+            if (activeCharacters.Count != callingCharacters.Length)
+            {
+                undoRedoService.Clear();
+
+                return;
+            }
+
+            foreach (var character in activeCharacters)
+            {
+                if (callingCharacters.Contains(character))
+                    continue;
+
+                undoRedoService.Clear();
+
+                break;
+            }
         }
 
         void UnloadActiveCharacters(IEnumerable<CharacterController> charactersToCall)

@@ -8,9 +8,10 @@ public class LowerLimbDragHandleController(
     DragHandle dragHandle,
     CustomGizmo gizmo,
     CharacterController characterController,
+    CharacterUndoRedoController undoRedoController,
     Transform bone,
     Transform ikTarget)
-    : CharacterIKDragHandleController(dragHandle, gizmo, characterController, bone, ikTarget)
+    : CharacterIKDragHandleController(dragHandle, gizmo, characterController, undoRedoController, bone, ikTarget)
 {
     private DragHandleMode drag;
     private RotateMode rotate;
@@ -43,10 +44,8 @@ public class LowerLimbDragHandleController(
     }
 
     private class RotateMode(LowerLimbDragHandleController controller, bool inverse)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly LowerLimbDragHandleController controller = controller;
-
         private readonly float invert = inverse ? -1f : 1f;
 
         private static Vector2 MouseDelta =>
@@ -58,12 +57,17 @@ public class LowerLimbDragHandleController(
             controller.DragHandle.MovementType = DragHandle.MoveType.None;
             controller.DragHandle.Visible = controller.BoneMode;
             controller.GizmoActive = controller.BoneMode;
+            controller.GizmoMode = CustomGizmo.GizmoMode.Local;
             controller.Gizmo.CurrentGizmoType = CustomGizmo.GizmoType.Rotate;
             controller.IKController.LockSolver();
         }
 
-        public override void OnClicked() =>
+        public override void OnClicked()
+        {
+            base.OnClicked();
+
             controller.AnimationController.Playing = false;
+        }
 
         public override void OnDragging()
         {
@@ -73,15 +77,17 @@ public class LowerLimbDragHandleController(
             controller.Bone.Rotate(Vector3.up, invert * deltaX * 7f);
         }
 
-        public override void OnGizmoClicked() =>
+        public override void OnGizmoClicked()
+        {
+            base.OnGizmoClicked();
+
             controller.AnimationController.Playing = false;
+        }
     }
 
     private class RotateAlternateMode(LowerLimbDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly LowerLimbDragHandleController controller = controller;
-
         private static Vector2 MouseDelta =>
             new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
 
@@ -93,8 +99,12 @@ public class LowerLimbDragHandleController(
             controller.GizmoActive = false;
         }
 
-        public override void OnClicked() =>
+        public override void OnClicked()
+        {
+            base.OnClicked();
+
             controller.AnimationController.Playing = false;
+        }
 
         public override void OnDragging()
         {

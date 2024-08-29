@@ -8,9 +8,10 @@ public class MiddleLimbDragHandleController(
     DragHandle dragHandle,
     CustomGizmo gizmo,
     CharacterController characterController,
+    CharacterUndoRedoController undoRedoController,
     Transform middleBone,
     Transform ikTarget)
-    : CharacterIKDragHandleController(dragHandle, gizmo, characterController, middleBone, ikTarget)
+    : CharacterIKDragHandleController(dragHandle, gizmo, characterController, undoRedoController, middleBone, ikTarget)
 {
     private DragHandleMode drag;
     private RotateMode rotate;
@@ -39,10 +40,8 @@ public class MiddleLimbDragHandleController(
     }
 
     private class RotateMode(MiddleLimbDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly MiddleLimbDragHandleController controller = controller;
-
         private static Vector2 MouseDelta =>
             new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
 
@@ -54,8 +53,12 @@ public class MiddleLimbDragHandleController(
             controller.GizmoActive = false;
         }
 
-        public override void OnClicked() =>
+        public override void OnClicked()
+        {
+            base.OnClicked();
+
             controller.AnimationController.Playing = false;
+        }
 
         public override void OnDragging()
         {
@@ -67,10 +70,8 @@ public class MiddleLimbDragHandleController(
     }
 
     private class RotateBoneMode(MiddleLimbDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly MiddleLimbDragHandleController controller = controller;
-
         public override void OnModeEnter()
         {
             controller.DragHandleActive = false;
@@ -78,6 +79,7 @@ public class MiddleLimbDragHandleController(
             controller.DragHandle.Visible = controller.BoneMode;
 
             controller.GizmoActive = controller.BoneMode;
+            controller.GizmoMode = CustomGizmo.GizmoMode.Local;
             controller.Gizmo.CurrentGizmoType = CustomGizmo.GizmoType.Rotate;
 
             if (controller.IKController.LimitLimbRotations)
@@ -86,8 +88,12 @@ public class MiddleLimbDragHandleController(
                 controller.Gizmo.SetVisibleRotateHandles(true, true, true);
         }
 
-        public override void OnGizmoClicked() =>
+        public override void OnGizmoClicked()
+        {
+            base.OnGizmoClicked();
+
             controller.AnimationController.Playing = false;
+        }
 
         public override void OnGizmoDragging()
         {

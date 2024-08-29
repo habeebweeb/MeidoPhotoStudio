@@ -7,16 +7,16 @@ namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 public abstract class CharacterIKDragHandleController : CharacterDragHandleController
 {
     private readonly RotationLimit rotationLimit;
-
     private DragMode drag;
 
     protected CharacterIKDragHandleController(
         DragHandle dragHandle,
         CustomGizmo gizmo,
         CharacterController characterController,
+        CharacterUndoRedoController characterUndoRedoController,
         Transform bone,
         Transform ikTarget)
-        : base(dragHandle, gizmo, characterController)
+        : base(dragHandle, gizmo, characterController, characterUndoRedoController)
     {
         Bone = bone ? bone : throw new ArgumentNullException(nameof(bone));
         IKTarget = ikTarget ? ikTarget : throw new ArgumentNullException(nameof(ikTarget));
@@ -27,9 +27,10 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
     protected CharacterIKDragHandleController(
         DragHandle dragHandle,
         CharacterController characterController,
+        CharacterUndoRedoController characterUndoRedoController,
         Transform bone,
         Transform ikTarget)
-        : base(dragHandle, characterController)
+        : base(dragHandle, characterController, characterUndoRedoController)
     {
         Bone = bone ? bone : throw new ArgumentNullException(nameof(bone));
         IKTarget = ikTarget ? ikTarget : throw new ArgumentNullException(nameof(ikTarget));
@@ -61,11 +62,8 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
     }
 
     protected class DragMode(CharacterIKDragHandleController controller, Transform[] chain)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly CharacterIKDragHandleController controller = controller
-            ?? throw new ArgumentNullException(nameof(controller));
-
         private readonly Transform[] chain = chain;
 
         private bool clicked = false;
@@ -86,9 +84,38 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
             controller.IKController.LockSolver();
             controller.IKTarget.position = controller.Bone.position;
             controller.DragHandle.MovementType = DragHandle.MoveType.None;
+            controller.GizmoActive = false;
         }
 
         public override void OnClicked()
+        {
+            base.OnClicked();
+
+            UpdateIKController();
+        }
+
+        public override void OnDragging()
+        {
+            if (!clicked)
+                UpdateIKController();
+
+            controller.IKController.FixLocalPositions();
+        }
+
+        public override void OnReleased()
+        {
+            base.OnReleased();
+
+            clicked = false;
+            controller.IKTarget.position = controller.Bone.position;
+            controller.IKController.FixLocalPositions();
+            controller.IKController.LockSolver();
+        }
+
+        public override void OnDoubleClicked() =>
+            UpdateIKController();
+
+        private void UpdateIKController()
         {
             clicked = true;
             controller.AnimationController.Playing = false;
@@ -96,22 +123,6 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
             controller.IKController.SetSolverTarget(controller.IKTarget);
             controller.IKController.SetChain(chain);
             controller.IKController.UnlockSolver();
-        }
-
-        public override void OnDragging()
-        {
-            if (!clicked)
-                OnClicked();
-
-            controller.IKController.FixLocalPositions();
-        }
-
-        public override void OnReleased()
-        {
-            clicked = false;
-            controller.IKController.LockSolver();
-            controller.IKTarget.position = controller.Bone.position;
-            controller.IKController.FixLocalPositions();
         }
     }
 }

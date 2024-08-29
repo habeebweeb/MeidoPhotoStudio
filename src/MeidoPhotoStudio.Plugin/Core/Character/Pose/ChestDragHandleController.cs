@@ -15,9 +15,10 @@ public class ChestDragHandleController : CharacterIKDragHandleController
         DragHandle dragHandle,
         CustomGizmo gizmo,
         CharacterController characterController,
+        CharacterUndoRedoController undoRedoController,
         Transform bone,
         Transform ikTarget)
-        : base(dragHandle, gizmo, characterController, bone, ikTarget)
+        : base(dragHandle, gizmo, characterController, undoRedoController, bone, ikTarget)
     {
         left = bone.name.StartsWith("Mune_L");
 
@@ -44,11 +45,8 @@ public class ChestDragHandleController : CharacterIKDragHandleController
     }
 
     private class NoneMode(ChestDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly ChestDragHandleController controller = controller
-            ?? throw new ArgumentNullException(nameof(controller));
-
         public override void OnModeEnter()
         {
             controller.DragHandleActive = false;
@@ -59,8 +57,6 @@ public class ChestDragHandleController : CharacterIKDragHandleController
     private new class DragMode(ChestDragHandleController controller, Transform[] chain)
         : CharacterIKDragHandleController.DragMode(controller, chain)
     {
-        private readonly ChestDragHandleController controller = controller;
-
         public override void OnModeEnter()
         {
             base.OnModeEnter();
@@ -70,24 +66,22 @@ public class ChestDragHandleController : CharacterIKDragHandleController
 
         public override void OnClicked()
         {
-            controller.SetMuneEnabled(false);
-
             base.OnClicked();
+
+            controller.SetMuneEnabled(false);
         }
 
         public override void OnDoubleClicked()
         {
-            controller.SetMuneEnabled(true);
-
             base.OnDoubleClicked();
+
+            controller.SetMuneEnabled(true);
         }
     }
 
     private class GizmoRotateMode(ChestDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly ChestDragHandleController controller = controller;
-
         public override void OnModeEnter()
         {
             controller.DragHandleActive = false;
@@ -96,7 +90,10 @@ public class ChestDragHandleController : CharacterIKDragHandleController
 
         public override void OnGizmoClicked()
         {
+            base.OnGizmoClicked();
+
             controller.AnimationController.Playing = false;
+
             controller.SetMuneEnabled(false);
         }
     }

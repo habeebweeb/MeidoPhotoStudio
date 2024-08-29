@@ -15,8 +15,11 @@ public class TorsoDragHandleController : CharacterDragHandleController
     private RotateMode rotate;
     private RotateAlternateMode rotateAlternate;
 
-    public TorsoDragHandleController(DragHandle dragHandle, CharacterController characterController)
-        : base(dragHandle, characterController)
+    public TorsoDragHandleController(
+        DragHandle dragHandle,
+        CharacterController characterController,
+        CharacterUndoRedoController undoRedoController)
+        : base(dragHandle, characterController, undoRedoController)
     {
         var baseSpine = IKController.GetBone("Bip01 Spine1a");
         var spineSegment = baseSpine;
@@ -39,10 +42,8 @@ public class TorsoDragHandleController : CharacterDragHandleController
         BoneMode ? None : rotateAlternate ??= new RotateAlternateMode(this);
 
     private class NoneMode(TorsoDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly TorsoDragHandleController controller = controller;
-
         public override void OnModeEnter()
         {
             controller.DragHandleActive = false;
@@ -52,10 +53,8 @@ public class TorsoDragHandleController : CharacterDragHandleController
     }
 
     private class RotateMode(TorsoDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly TorsoDragHandleController controller = controller;
-
         private static Vector2 MouseDelta =>
             new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
 
@@ -72,8 +71,12 @@ public class TorsoDragHandleController : CharacterDragHandleController
             DragHandleActive = true;
         }
 
-        public override void OnClicked() =>
+        public override void OnClicked()
+        {
+            base.OnClicked();
+
             controller.AnimationController.Playing = false;
+        }
 
         public override void OnDragging()
         {
@@ -92,10 +95,8 @@ public class TorsoDragHandleController : CharacterDragHandleController
     }
 
     private class RotateAlternateMode(TorsoDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly TorsoDragHandleController controller = controller;
-
         private static Vector2 MouseDelta =>
             new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
 
@@ -111,8 +112,12 @@ public class TorsoDragHandleController : CharacterDragHandleController
             controller.DragHandleActive = true;
         }
 
-        public override void OnClicked() =>
+        public override void OnClicked()
+        {
+            base.OnClicked();
+
             controller.AnimationController.Playing = false;
+        }
 
         public override void OnDragging()
         {

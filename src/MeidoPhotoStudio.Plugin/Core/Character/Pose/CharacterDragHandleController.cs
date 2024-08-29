@@ -6,25 +6,40 @@ namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 public abstract class CharacterDragHandleController : DragHandleControllerBase, ICharacterDragHandleController
 {
     private readonly CharacterController characterController;
-
     private bool boneMode;
     private DragHandleMode ignore;
     private bool iKEnabled = true;
 
     public CharacterDragHandleController(
-        CustomGizmo gizmo, CharacterController characterController)
-        : base(gizmo) =>
+        CustomGizmo gizmo,
+        CharacterController characterController,
+        CharacterUndoRedoController characterUndoRedoController)
+        : base(gizmo)
+    {
         CharacterController = characterController ?? throw new ArgumentNullException(nameof(characterController));
+        UndoRedoController = characterUndoRedoController ?? throw new ArgumentNullException(nameof(characterUndoRedoController));
+    }
 
     public CharacterDragHandleController(
-        DragHandle dragHandle, CharacterController characterController)
-        : base(dragHandle) =>
+        DragHandle dragHandle,
+        CharacterController characterController,
+        CharacterUndoRedoController characterUndoRedoController)
+        : base(dragHandle)
+    {
         CharacterController = characterController ?? throw new ArgumentNullException(nameof(characterController));
+        UndoRedoController = characterUndoRedoController ?? throw new ArgumentNullException(nameof(characterUndoRedoController));
+    }
 
     public CharacterDragHandleController(
-        DragHandle dragHandle, CustomGizmo gizmo, CharacterController characterController)
-        : base(dragHandle, gizmo) =>
+        DragHandle dragHandle,
+        CustomGizmo gizmo,
+        CharacterController characterController,
+        CharacterUndoRedoController characterUndoRedoController)
+        : base(dragHandle, gizmo)
+    {
         CharacterController = characterController ?? throw new ArgumentNullException(nameof(characterController));
+        UndoRedoController = characterUndoRedoController ?? throw new ArgumentNullException(nameof(characterUndoRedoController));
+    }
 
     public bool BoneMode
     {
@@ -92,6 +107,8 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
     protected HeadController HeadController =>
         CharacterController.Head;
 
+    protected CharacterUndoRedoController UndoRedoController { get; }
+
     protected override void OnDestroying() =>
         characterController.ChangedTransform -= ResizeDragHandle;
 
@@ -103,8 +120,29 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
         DragHandle.Size = CharacterController.GameObject.transform.localScale.x;
     }
 
-    private class IgnoreMode(CharacterDragHandleController controller)
+    protected abstract class PoseableMode(CharacterDragHandleController controller)
         : DragHandleMode
+    {
+        private readonly CharacterDragHandleController controller = controller;
+
+        public override void OnClicked()
+        {
+            controller.UndoRedoController.StartPoseChange();
+            controller.IKController.Dirty = true;
+        }
+
+        public override void OnReleased() =>
+            controller.UndoRedoController.EndPoseChange();
+
+        public override void OnGizmoClicked() =>
+            controller.UndoRedoController.StartPoseChange();
+
+        public override void OnGizmoReleased() =>
+            controller.UndoRedoController.EndPoseChange();
+    }
+
+    protected class IgnoreMode(CharacterDragHandleController controller)
+        : PoseableMode(controller)
     {
         private readonly CharacterDragHandleController controller = controller;
 

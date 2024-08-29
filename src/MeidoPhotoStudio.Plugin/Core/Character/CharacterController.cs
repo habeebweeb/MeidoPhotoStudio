@@ -6,7 +6,8 @@ namespace MeidoPhotoStudio.Plugin.Core.Character;
 public class CharacterController(CharacterModel characterModel, TransformWatcher transformWatcher)
 {
     private readonly TransformWatcher transformWatcher = transformWatcher
-        ? transformWatcher : throw new ArgumentNullException(nameof(transformWatcher));
+        ? transformWatcher
+        : throw new ArgumentNullException(nameof(transformWatcher));
 
     private IEnumerable<MPN> processingProps = [];
     private bool initialized;
@@ -89,7 +90,7 @@ public class CharacterController(CharacterModel characterModel, TransformWatcher
     }
 
     public override string ToString() =>
-        characterModel.ToString();
+        CharacterModel.ToString();
 
     internal void Load(int slot)
     {
@@ -132,17 +133,12 @@ public class CharacterController(CharacterModel characterModel, TransformWatcher
 
         void PostLoad()
         {
-            if (Animation is null)
-            {
-                Animation = new(this);
-                Animation.Apply(new GameAnimationModel("normal", "maid_stand01"));
-            }
+            var initializeAnimation = Animation is null;
+            var initialzeFace = Face is null;
 
-            if (Face is null)
-            {
-                Face = new(this);
-                Face.ApplyBlendSet(new GameBlendSetModel(PhotoFaceData.data[0]));
-            }
+            Animation ??= new(this);
+
+            Face ??= new(this);
 
             IK ??= new(this);
             Head ??= new(this);
@@ -157,6 +153,12 @@ public class CharacterController(CharacterModel characterModel, TransformWatcher
             Clothing.CustomFloorHeight = false;
 
             transformWatcher.Subscribe(GameObject.transform, RaiseTransformChanged);
+
+            if (initializeAnimation)
+                Animation.Apply(new GameAnimationModel("normal", "maid_stand01"));
+
+            if (initialzeFace)
+                Face.ApplyBlendSet(new GameBlendSetModel(PhotoFaceData.data[0]));
 
             initialized = true;
         }

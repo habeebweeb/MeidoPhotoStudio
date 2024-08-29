@@ -7,10 +7,11 @@ namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 public class HeadDragHandleController(
     DragHandle dragHandle,
     CharacterController characterController,
+    CharacterUndoRedoController undoRedoController,
     Transform neckBone,
     SelectionController<CharacterController> selectionController,
     TabSelectionController tabSelectionController)
-    : CharacterDragHandleController(dragHandle, characterController)
+    : CharacterDragHandleController(dragHandle, characterController, undoRedoController)
 {
     private readonly SelectionController<CharacterController> selectionController = selectionController
         ?? throw new ArgumentNullException(nameof(selectionController));
@@ -42,10 +43,8 @@ public class HeadDragHandleController(
         rotateEyes ??= new RotateEyesMode(this);
 
     private class NoneMode(HeadDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly HeadDragHandleController controller = controller;
-
         public override void OnModeEnter()
         {
             controller.DragHandleActive = false;
@@ -54,10 +53,8 @@ public class HeadDragHandleController(
     }
 
     private class SelectMode(HeadDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly HeadDragHandleController controller = controller;
-
         public override void OnModeEnter() =>
             controller.DragHandleActive = true;
 
@@ -72,15 +69,19 @@ public class HeadDragHandleController(
     }
 
     private abstract class RotateHeadMode(HeadDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
         protected readonly HeadDragHandleController controller = controller;
 
         public override void OnModeEnter() =>
             controller.DragHandleActive = true;
 
-        public override void OnClicked() =>
+        public override void OnClicked()
+        {
+            base.OnClicked();
+
             controller.AnimationController.Playing = false;
+        }
 
         public override void OnDoubleClicked() =>
             controller.HeadController.FreeLook = !controller.HeadController.FreeLook;
@@ -120,10 +121,8 @@ public class HeadDragHandleController(
     }
 
     private class RotateEyesMode(HeadDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly HeadDragHandleController controller = controller;
-
         private static Vector2 MouseDelta =>
             new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
 

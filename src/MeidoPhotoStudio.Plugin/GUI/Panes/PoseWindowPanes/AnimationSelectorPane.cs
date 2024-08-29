@@ -20,6 +20,7 @@ public class AnimationSelectorPane : BasePane
     private readonly Dropdown2<IAnimationModel> animationDropdown;
     private readonly GameAnimationRepository gameAnimationRepository;
     private readonly CustomAnimationRepository customAnimationRepository;
+    private readonly CharacterUndoRedoService characterUndoRedoService;
     private readonly SelectionController<CharacterController> characterSelectionController;
     private readonly PaneHeader paneHeader;
     private readonly ComboBox animationCategoryComboBox;
@@ -39,10 +40,12 @@ public class AnimationSelectorPane : BasePane
     public AnimationSelectorPane(
         GameAnimationRepository gameAnimationRepository,
         CustomAnimationRepository customAnimationRepository,
+        CharacterUndoRedoService characterUndoRedoService,
         SelectionController<CharacterController> characterSelectionController)
     {
         this.gameAnimationRepository = gameAnimationRepository ?? throw new ArgumentNullException(nameof(gameAnimationRepository));
         this.customAnimationRepository = customAnimationRepository ?? throw new ArgumentNullException(nameof(customAnimationRepository));
+        this.characterUndoRedoService = characterUndoRedoService ?? throw new ArgumentNullException(nameof(characterUndoRedoService));
         this.characterSelectionController = characterSelectionController ?? throw new ArgumentNullException(nameof(characterSelectionController));
 
         this.customAnimationRepository.AddedAnimation += OnAnimationAdded;
@@ -106,6 +109,9 @@ public class AnimationSelectorPane : BasePane
             animationDropdown.SetItemsWithoutNotify(AnimationList(custom: false), 0);
         }
     }
+
+    private CharacterController Character =>
+        characterSelectionController.Current;
 
     private AnimationController CurrentAnimation =>
         characterSelectionController.Current?.Animation;
@@ -465,7 +471,7 @@ public class AnimationSelectorPane : BasePane
 
     private void OnAnimationChanged(object sender, DropdownEventArgs<IAnimationModel> e)
     {
-        if (characterSelectionController.Current is null)
+        if (characterSelectionController.Current is not CharacterController character)
             return;
 
         if (animationSourceGrid.SelectedItemIndex is GameAnimation && gameAnimationRepository.Busy)
@@ -474,7 +480,16 @@ public class AnimationSelectorPane : BasePane
         if (e.Item is null)
             return;
 
-        CurrentAnimation?.Apply(e.Item);
+        if (Character.IK.Dirty)
+        {
+            characterUndoRedoService[Character].StartPoseChange();
+            character.Animation.Apply(e.Item);
+            characterUndoRedoService[Character].EndPoseChange();
+        }
+        else
+        {
+            character.Animation.Apply(e.Item);
+        }
     }
 
     private void OnAnimationPropertyChanged(object sender, PropertyChangedEventArgs e)

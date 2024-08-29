@@ -16,6 +16,7 @@ using MeidoPhotoStudio.Plugin.Core.SceneManagement;
 using MeidoPhotoStudio.Plugin.Core.Scenes;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
+using MeidoPhotoStudio.Plugin.Core.UndoRedo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.Menu;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
@@ -60,6 +61,7 @@ public partial class PluginCore : MonoBehaviour
     private BlurController blurController;
     private SepiaToneController sepiaToneController;
     private TransformWatcher transformWatcher;
+    private UndoRedoService undoRedoService;
 
     public bool UIActive
     {
@@ -162,6 +164,10 @@ public partial class PluginCore : MonoBehaviour
 
         AddPluginActiveInputHandler(new ScreenshotService.InputHandler(screenshotService, inputConfiguration));
 
+        undoRedoService = new();
+
+        AddPluginActiveInputHandler(new UndoRedoInputHandler(undoRedoService, inputConfiguration));
+
         var generalDragHandleInputService = new GeneralDragHandleInputHandler(inputConfiguration);
 
         AddPluginActiveInputHandler(generalDragHandleInputService);
@@ -171,7 +177,7 @@ public partial class PluginCore : MonoBehaviour
         characterRepository = new();
 
         editModeMaidService = new EditModeMaidService(customMaidSceneService, characterRepository);
-        characterService = new CharacterService(customMaidSceneService, editModeMaidService, transformWatcher);
+        characterService = new CharacterService(customMaidSceneService, editModeMaidService, transformWatcher, undoRedoService);
 
         var characterSelectionController = new SelectionController<CharacterController>(characterService);
 
@@ -204,9 +210,12 @@ public partial class PluginCore : MonoBehaviour
 
         AddPluginActiveInputHandler(characterDragHandleInputService);
 
+        var characterUndoRedoService = new CharacterUndoRedoService(characterService, undoRedoService);
+
         var ikDragHandleService = new IKDragHandleService(
             characterDragHandleInputService,
             characterService,
+            characterUndoRedoService,
             characterSelectionController,
             tabSelectionController);
 
@@ -325,6 +334,7 @@ public partial class PluginCore : MonoBehaviour
                 new AttachPointSchemaBuilder()));
 
         var sceneLoader = new SceneLoader(
+            undoRedoService,
             new CharacterAspectLoader(
                 characterService,
                 characterRepository,
@@ -386,15 +396,15 @@ public partial class PluginCore : MonoBehaviour
         {
             [CharacterWindowPane.CharacterWindowTab.Pose] =
             [
-                new AnimationSelectorPane(gameAnimationRepository, customAnimationRepository, characterSelectionController),
-                new IKPane(ikDragHandleService, characterSelectionController),
-                new AnimationPane(characterSelectionController),
+                new AnimationSelectorPane(gameAnimationRepository, customAnimationRepository, characterUndoRedoService, characterSelectionController),
+                new IKPane(ikDragHandleService, characterUndoRedoService,  characterSelectionController),
+                new AnimationPane(characterUndoRedoService, characterSelectionController),
                 new FreeLookPane(characterSelectionController),
                 new DressingPane(characterSelectionController),
                 new GravityControlPane(gravityDragHandleService, globalGravityService, characterSelectionController),
                 new AttachedAccessoryPane(menuPropRepository, characterSelectionController),
-                new HandPresetSelectorPane(new(customHandPresetPath), characterSelectionController),
-                new CopyPosePane(characterService, characterSelectionController),
+                new HandPresetSelectorPane(new(customHandPresetPath), characterUndoRedoService, characterSelectionController),
+                new CopyPosePane(characterService, characterUndoRedoService, characterSelectionController),
             ],
             [CharacterWindowPane.CharacterWindowTab.Face] =
             [
@@ -629,6 +639,7 @@ public partial class PluginCore : MonoBehaviour
 
             lightRepository.RemoveAllLights();
             propService.Clear();
+            undoRedoService.Clear();
 
             Modal.Close();
 

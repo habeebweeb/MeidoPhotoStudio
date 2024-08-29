@@ -27,6 +27,7 @@ public class IKController : INotifyPropertyChanged
     private HandController rightFoot;
     private bool limitLimbRotations = true;
     private bool limitDigitRotations = true;
+    private bool dirty = false;
 
     public IKController(CharacterController character)
     {
@@ -37,50 +38,28 @@ public class IKController : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler PropertyChanged;
 
+    public bool Dirty
+    {
+        get => dirty;
+        internal set
+        {
+            if (dirty == value)
+                return;
+
+            dirty = value;
+        }
+    }
+
     public bool LimitLimbRotations
     {
         get => limitLimbRotations;
-        set
-        {
-            limitLimbRotations = value;
-
-            InitializeRotationLimits();
-
-            Solver.useRotationLimits = limitLimbRotations || limitDigitRotations;
-
-            foreach (var hinge in limbRotationLimits)
-            {
-                hinge.Limited = limitLimbRotations;
-
-                if (limitLimbRotations)
-                    hinge.Apply();
-            }
-
-            RaisePropertyChanged(nameof(LimitLimbRotations));
-        }
+        set => SetLimits(value, digits: false);
     }
 
     public bool LimitDigitRotations
     {
         get => limitDigitRotations;
-        set
-        {
-            limitDigitRotations = value;
-
-            InitializeRotationLimits();
-
-            Solver.useRotationLimits = limitLimbRotations || limitDigitRotations;
-
-            foreach (var hinge in digitRotationLimits)
-            {
-                hinge.Limited = limitDigitRotations;
-
-                if (limitDigitRotations)
-                    hinge.Apply();
-            }
-
-            RaisePropertyChanged(nameof(LimitDigitRotations));
-        }
+        set => SetLimits(value, digits: true);
     }
 
     public bool MuneLEnabled
@@ -258,6 +237,10 @@ public class IKController : INotifyPropertyChanged
 
         handOrFoot.ApplyPreset(preset);
 
+        ApplyLimits();
+
+        Dirty = true;
+
         static HandOrFootPreset DeserializeHandOrFootPreset(HandPresetModel presetModel)
         {
             try
@@ -286,6 +269,10 @@ public class IKController : INotifyPropertyChanged
         MirrorSpine(spineBonesAndRotations);
         MirrorLimbs(bonePairsAndRotations);
         MirrorHandsAndFeet();
+
+        ApplyLimits();
+
+        Dirty = true;
 
         static Quaternion MirrorRotation(Vector3 rotation) =>
             Quaternion.Euler(360f - rotation.x, 360f - (rotation.y + 90f) - 90f, rotation.z);
@@ -357,6 +344,10 @@ public class IKController : INotifyPropertyChanged
         StopAnimation();
 
         ApplyAnimationFrameBinary(other.IK.GetAnimationFrameData());
+
+        ApplyLimits();
+
+        Dirty = true;
     }
 
     public void CopyHandOrFootFrom(CharacterController copyTarget, HandOrFootType copyWhat, HandOrFootType copyTo)
@@ -369,7 +360,13 @@ public class IKController : INotifyPropertyChanged
         var copyHandOrFoot = GetControllerByType(copyTarget.IK, copyWhat);
         var targetHandOrFoot = GetControllerByType(this, copyTo);
 
+        StopAnimation();
+
         targetHandOrFoot.ApplyPreset(copyHandOrFoot.GetPresetData());
+
+        ApplyLimits();
+
+        Dirty = true;
     }
 
     public void SwapHands()
@@ -381,13 +378,23 @@ public class IKController : INotifyPropertyChanged
 
         LeftHand.ApplyPreset(rightPreset);
         RightHand.ApplyPreset(leftPreset);
+
+        ApplyLimits();
+
+        Dirty = true;
     }
 
     public (bool MuneL, bool MuneR) ApplyAnimationFrameBinary(byte[] data)
     {
         _ = data ?? throw new ArgumentNullException(nameof(data));
 
+        StopAnimation();
+
         var (muneL, muneR) = CacheBoneData.SetFrameBinary(data);
+
+        ApplyLimits();
+
+        Dirty = true;
 
         return (muneL, muneR);
     }
@@ -509,6 +516,57 @@ public class IKController : INotifyPropertyChanged
                 return rotationLimit;
             }
         }
+    }
+
+    private bool ApplyLimits()
+    {
+        if (!LimitDigitRotations || !LimitDigitRotations)
+            return false;
+
+        InitializeRotationLimits();
+
+        var changed = false;
+
+        if (LimitLimbRotations)
+            foreach (var hinge in limbRotationLimits)
+                changed |= hinge.Apply();
+
+        if (LimitDigitRotations)
+            foreach (var hinge in digitRotationLimits)
+                changed |= hinge.Apply();
+
+        return changed;
+    }
+
+    private bool SetLimits(bool value, bool digits)
+    {
+        if (digits && limitDigitRotations == value || limitLimbRotations == value)
+            return false;
+
+        if (digits)
+            limitDigitRotations = value;
+        else
+            limitLimbRotations = value;
+
+        InitializeRotationLimits();
+
+        Solver.useRotationLimits = limitLimbRotations || limitDigitRotations;
+
+        var change = false;
+
+        foreach (var hinge in digits ? digitRotationLimits : limbRotationLimits)
+        {
+            hinge.Limited = value;
+
+            if (value)
+                change |= hinge.Apply();
+        }
+
+        Dirty = false;
+
+        RaisePropertyChanged(digits ? nameof(LimitDigitRotations) : nameof(LimitLimbRotations));
+
+        return change && !character.Animation.Playing;
     }
 
     private void StopAnimation() =>

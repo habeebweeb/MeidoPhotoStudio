@@ -8,9 +8,10 @@ public class UpperLimbDragHandleController(
     DragHandle dragHandle,
     CustomGizmo gizmo,
     CharacterController characterController,
+    CharacterUndoRedoController undoRedoController,
     Transform bone,
     Transform ikTarget)
-    : CharacterIKDragHandleController(dragHandle, gizmo, characterController, bone, ikTarget)
+    : CharacterIKDragHandleController(dragHandle, gizmo, characterController, undoRedoController, bone, ikTarget)
 {
     private DragHandleMode drag;
     private RotateMode rotate;
@@ -35,10 +36,8 @@ public class UpperLimbDragHandleController(
     }
 
     private class RotateMode(UpperLimbDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly UpperLimbDragHandleController controller = controller;
-
         private static Vector2 MouseDelta =>
             new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
 
@@ -51,8 +50,12 @@ public class UpperLimbDragHandleController(
             controller.Gizmo.CurrentGizmoType = CustomGizmo.GizmoType.Rotate;
         }
 
-        public override void OnClicked() =>
+        public override void OnClicked()
+        {
+            base.OnClicked();
+
             controller.AnimationController.Playing = false;
+        }
 
         public override void OnDragging()
         {
@@ -62,7 +65,11 @@ public class UpperLimbDragHandleController(
             parent.Rotate(Vector3.right, -deltaX * 7f);
         }
 
-        public override void OnGizmoClicked() =>
+        public override void OnGizmoClicked()
+        {
+            base.OnGizmoClicked();
+
             controller.AnimationController.Playing = false;
+        }
     }
 }

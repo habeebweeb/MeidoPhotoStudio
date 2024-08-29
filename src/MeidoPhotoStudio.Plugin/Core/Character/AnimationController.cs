@@ -58,6 +58,9 @@ public class AnimationController : INotifyPropertyChanged
             }
 
             RaisePropertyChanged(nameof(Time));
+
+            if (!AnimationState.enabled)
+                character.IK.Dirty = false;
         }
     }
 
@@ -72,9 +75,15 @@ public class AnimationController : INotifyPropertyChanged
             if (AnimationState is null)
                 return;
 
+            if (value == AnimationState.enabled)
+                return;
+
             AnimationState.enabled = value;
 
             RaisePropertyChanged(nameof(Playing));
+
+            if (value)
+                character.IK.Dirty = false;
         }
     }
 
@@ -106,6 +115,8 @@ public class AnimationController : INotifyPropertyChanged
         }
 
         Animation = animation;
+
+        character.IK.Dirty = false;
 
         ChangedAnimation?.Invoke(this, EventArgs.Empty);
 

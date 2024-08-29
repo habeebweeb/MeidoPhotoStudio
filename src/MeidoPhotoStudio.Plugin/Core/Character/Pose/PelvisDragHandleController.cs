@@ -12,8 +12,12 @@ public class PelvisDragHandleController : CharacterDragHandleController
     private RotateMode rotate;
     private RotateAlternateMode rotateAlternate;
 
-    public PelvisDragHandleController(DragHandle dragHandle, CustomGizmo gizmo, CharacterController characterController)
-        : base(dragHandle, gizmo, characterController) =>
+    public PelvisDragHandleController(
+        DragHandle dragHandle,
+        CustomGizmo gizmo,
+        CharacterController characterController,
+        CharacterUndoRedoController undoRedoController)
+        : base(dragHandle, gizmo, characterController, undoRedoController) =>
         pelvisBone = IKController.GetBone("Bip01 Pelvis");
 
     public DragHandleMode None =>
@@ -26,10 +30,8 @@ public class PelvisDragHandleController : CharacterDragHandleController
         rotateAlternate ??= new RotateAlternateMode(this);
 
     private class NoneMode(PelvisDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly PelvisDragHandleController controller = controller;
-
         public override void OnModeEnter()
         {
             controller.GizmoActive = false;
@@ -40,10 +42,8 @@ public class PelvisDragHandleController : CharacterDragHandleController
     }
 
     private class RotateMode(PelvisDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly PelvisDragHandleController controller = controller;
-
         private static Vector2 MouseDelta =>
             new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
 
@@ -53,8 +53,12 @@ public class PelvisDragHandleController : CharacterDragHandleController
             controller.GizmoActive = controller.BoneMode;
         }
 
-        public override void OnClicked() =>
+        public override void OnClicked()
+        {
+            base.OnClicked();
+
             controller.AnimationController.Playing = false;
+        }
 
         public override void OnDragging()
         {
@@ -68,15 +72,17 @@ public class PelvisDragHandleController : CharacterDragHandleController
             controller.pelvisBone.Rotate(cameraRight, deltaY * 5f, Space.World);
         }
 
-        public override void OnGizmoClicked() =>
+        public override void OnGizmoClicked()
+        {
+            base.OnGizmoClicked();
+
             controller.AnimationController.Playing = false;
+        }
     }
 
     private class RotateAlternateMode(PelvisDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly PelvisDragHandleController controller = controller;
-
         private static Vector2 MouseDelta =>
             new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
 
@@ -86,8 +92,12 @@ public class PelvisDragHandleController : CharacterDragHandleController
             controller.GizmoActive = false;
         }
 
-        public override void OnClicked() =>
+        public override void OnClicked()
+        {
+            base.OnClicked();
+
             controller.AnimationController.Playing = false;
+        }
 
         public override void OnDragging()
         {

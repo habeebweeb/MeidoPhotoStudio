@@ -102,7 +102,7 @@ public class SettingsWindowPane : BaseMainWindowPane
         {
             DrawHeader(SettingHeader.GeneralControls);
 
-            for (var shortcut = Shortcut.ActivatePlugin; shortcut <= Shortcut.QuickLoadScene; shortcut++)
+            for (var shortcut = Shortcut.ActivatePlugin; shortcut <= Shortcut.Redo; shortcut++)
                 DrawControl(shortcut);
         }
 

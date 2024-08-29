@@ -18,9 +18,10 @@ public class DigitDragHandleController : CharacterIKDragHandleController
         DragHandle dragHandle,
         CustomGizmo gizmo,
         CharacterController characterController,
+        CharacterUndoRedoController undoRedoController,
         Transform digit,
         Transform ikTarget)
-        : base(dragHandle, gizmo, characterController, digit, ikTarget)
+        : base(dragHandle, gizmo, characterController, undoRedoController, digit, ikTarget)
     {
         var digitNumberIndex = digit.name.EndsWith("Nub") ? 4 : 2;
 
@@ -73,11 +74,9 @@ public class DigitDragHandleController : CharacterIKDragHandleController
     private DragHandleMode GizmoRotate =>
         gizmoRotate ??= new GizmoRotateMode(this);
 
-    private new class DragMode(DigitDragHandleController controller, Transform[] chain) : CharacterIKDragHandleController.DragMode(controller, chain)
+    private new class DragMode(DigitDragHandleController controller, Transform[] chain)
+        : CharacterIKDragHandleController.DragMode(controller, chain)
     {
-        private readonly DigitDragHandleController controller = controller
-            ?? throw new ArgumentNullException(nameof(controller));
-
         public override void OnModeEnter()
         {
             base.OnModeEnter();
@@ -87,10 +86,8 @@ public class DigitDragHandleController : CharacterIKDragHandleController
     }
 
     private class NoneMode(DigitDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly DigitDragHandleController controller = controller;
-
         public override void OnModeEnter()
         {
             controller.DragHandleActive = false;
@@ -99,9 +96,8 @@ public class DigitDragHandleController : CharacterIKDragHandleController
     }
 
     private class RotateMode(DigitDragHandleController controller, Transform digitBase)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly DigitDragHandleController controller = controller;
         private readonly Transform digitBase = digitBase;
 
         private static Vector2 MouseDelta =>
@@ -113,8 +109,12 @@ public class DigitDragHandleController : CharacterIKDragHandleController
             controller.GizmoActive = false;
         }
 
-        public override void OnClicked() =>
+        public override void OnClicked()
+        {
+            base.OnClicked();
+
             controller.AnimationController.Playing = false;
+        }
 
         public override void OnDragging()
         {
@@ -125,10 +125,8 @@ public class DigitDragHandleController : CharacterIKDragHandleController
     }
 
     private class GizmoRotateMode(DigitDragHandleController controller)
-        : DragHandleMode
+        : PoseableMode(controller)
     {
-        private readonly DigitDragHandleController controller = controller;
-
         public override void OnModeEnter()
         {
             controller.DragHandleActive = false;
@@ -140,8 +138,12 @@ public class DigitDragHandleController : CharacterIKDragHandleController
                 controller.Gizmo.SetVisibleRotateHandles(true, true, true);
         }
 
-        public override void OnGizmoClicked() =>
+        public override void OnGizmoClicked()
+        {
+            base.OnGizmoClicked();
+
             controller.AnimationController.Playing = false;
+        }
 
         public override void OnGizmoDragging()
         {
