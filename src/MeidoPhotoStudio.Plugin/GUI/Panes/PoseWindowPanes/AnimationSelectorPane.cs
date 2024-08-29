@@ -31,6 +31,10 @@ public class AnimationSelectorPane : BasePane
     private readonly Header animationDirectoryHeader;
     private readonly Header animationFilenameHeader;
     private readonly Button refreshButton;
+    private readonly Label savedAnimationLabel;
+
+    private bool showSavedAnimationLabel;
+    private float saveTime;
 
     public AnimationSelectorPane(
         GameAnimationRepository gameAnimationRepository,
@@ -76,6 +80,8 @@ public class AnimationSelectorPane : BasePane
 
         initializingLabel = new(Translation.Get("systemMessage", "initializing"));
         noAnimationsLabel = new(Translation.Get("posePane", "noAnimations"));
+
+        savedAnimationLabel = new(Translation.Get("posePane", "savedAnimationLabel"));
 
         if (gameAnimationRepository.Busy)
             gameAnimationRepository.InitializedAnimations += OnGameAnimationsRepositoryReady;
@@ -178,6 +184,18 @@ public class AnimationSelectorPane : BasePane
             savePoseButton.Draw(GUILayout.ExpandWidth(false));
 
             GUILayout.EndHorizontal();
+
+            if (!showSavedAnimationLabel)
+                return;
+
+            if (Time.time - saveTime >= 2.5f)
+            {
+                showSavedAnimationLabel = false;
+
+                return;
+            }
+
+            savedAnimationLabel.Draw();
         }
 
         static void DrawDropdown<T>(Dropdown2<T> dropdown)
@@ -219,6 +237,7 @@ public class AnimationSelectorPane : BasePane
         animationFilenameHeader.Text = Translation.Get("posePane", "nameHeader");
         initializingLabel.Text = Translation.Get("systemMessage", "initializing");
         noAnimationsLabel.Text = Translation.Get("posePane", "noAnimations");
+        savedAnimationLabel.Text = Translation.Get("posePane", "savedAnimationLabel");
     }
 
     private static Func<string, int, string> GetAnimationCategoryFormatter(bool custom)
@@ -237,18 +256,33 @@ public class AnimationSelectorPane : BasePane
         if (characterSelectionController.Current is null)
             return;
 
-        if (animationSourceGrid.SelectedItemIndex is CustomAnimation)
-        {
-            if (!animationCategoryDropdown.Contains(e.Animation.Category))
-            {
-                animationCategoryDropdown.SetItemsWithoutNotify(AnimationCategoryList(e.Animation.Custom));
-                animationCategoryComboBox.BaseDropDown.SetDropdownItemsWithoutNotify([.. customAnimationRepository.Categories], 0);
-            }
+        if (animationSourceGrid.SelectedItemIndex is not CustomAnimation)
+            return;
 
-            animationDropdown.SetItemsWithoutNotify(AnimationList(e.Animation.Custom));
+        var currentCategory = animationCategoryDropdown.SelectedItem;
+
+        if (!animationCategoryDropdown.Contains(e.Animation.Category))
+        {
+            animationCategoryDropdown.SetItemsWithoutNotify(AnimationCategoryList(e.Animation.Custom));
+            animationCategoryComboBox.BaseDropDown.SetDropdownItemsWithoutNotify([.. customAnimationRepository.Categories], 0);
         }
 
-        CurrentAnimation.Apply(e.Animation);
+        var currentCategoryIndex = animationCategoryDropdown
+            .IndexOf(category => string.Equals(category, currentCategory, StringComparison.Ordinal));
+
+        animationCategoryDropdown.SetSelectedIndexWithoutNotify(currentCategoryIndex);
+
+        if (!string.Equals(e.Animation.Category, currentCategory, StringComparison.Ordinal))
+            return;
+
+        var currentAnimation = animationDropdown.SelectedItem;
+
+        animationDropdown.SetItemsWithoutNotify(AnimationList(e.Animation.Custom));
+
+        var currentAnimationIndex = animationDropdown
+            .IndexOf(animation => animation.Equals(currentAnimation));
+
+        animationDropdown.SetSelectedIndexWithoutNotify(currentAnimationIndex);
     }
 
     private void OnCustomAnimationRepositoryRefreshed(object sender, EventArgs e)
@@ -354,6 +388,9 @@ public class AnimationSelectorPane : BasePane
         customAnimationRepository.Add(pose, category, name);
 
         animationNameTextField.Value = string.Empty;
+
+        showSavedAnimationLabel = true;
+        saveTime = Time.time;
     }
 
     private void UpdatePanel(IAnimationModel animation)
@@ -373,9 +410,10 @@ public class AnimationSelectorPane : BasePane
             animationCategoryDropdown.SetItemsWithoutNotify(AnimationCategoryList(animation.Custom), categoryIndex);
             animationCategoryDropdown.Formatter = GetAnimationCategoryFormatter(custom);
 
-            var animationIndex = GetAnimationIndex(animation);
+            var newAnimationList = AnimationList(animation.Custom);
+            var animationIndex = GetAnimationIndex(newAnimationList, animation);
 
-            animationDropdown.SetItemsWithoutNotify(AnimationList(animation.Custom), animationIndex);
+            animationDropdown.SetItemsWithoutNotify(newAnimationList, animationIndex);
         }
         else
         {
@@ -387,7 +425,7 @@ public class AnimationSelectorPane : BasePane
             if (categoryIndex != oldCategoryIndex)
                 animationDropdown.SetItemsWithoutNotify(AnimationList(animation.Custom));
 
-            var animationIndex = GetAnimationIndex(animation);
+            var animationIndex = GetAnimationIndex(animationDropdown, animation);
 
             animationDropdown.SetSelectedIndexWithoutNotify(animationIndex);
         }
@@ -400,14 +438,14 @@ public class AnimationSelectorPane : BasePane
             return categoryIndex < 0 ? 0 : categoryIndex;
         }
 
-        int GetAnimationIndex(IAnimationModel currentAnimation)
+        int GetAnimationIndex(IEnumerable<IAnimationModel> animationList, IAnimationModel currentAnimation)
         {
             if (currentAnimation.Custom)
             {
                 var customAnimation = (CustomAnimationModel)currentAnimation;
 
                 return customAnimationRepository.ContainsCategory(currentAnimation.Category)
-                    ? animationDropdown
+                    ? animationList
                         .Cast<CustomAnimationModel>()
                         .IndexOf(animation => animation.ID == customAnimation.ID)
                     : 0;
@@ -417,7 +455,7 @@ public class AnimationSelectorPane : BasePane
                 var gameAnimation = (GameAnimationModel)currentAnimation;
 
                 return gameAnimationRepository.ContainsCategory(currentAnimation.Category)
-                    ? animationDropdown
+                    ? animationList
                         .Cast<GameAnimationModel>()
                         .IndexOf(animation => string.Equals(animation.ID, gameAnimation.ID, StringComparison.OrdinalIgnoreCase))
                     : 0;

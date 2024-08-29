@@ -80,7 +80,8 @@
     "saveButton": "Add",
     "deleteButton": "D",
     "baseTab": "Base",
-    "customTab": "Custom"
+    "customTab": "Custom",
+    "savedAnimationLabel": "Saved animation!"
   },
   "freeLookPane": {
     "header": "Free Look",
@@ -171,7 +172,8 @@
     "rightHand": "Right",
     "leftHand": "Left",
     "swapHands": "Swap",
-    "noPresetsMessage": "No Hand Presets"
+    "noPresetsMessage": "No Hand Presets",
+    "savedHandPresetLabel": "Saved hand preset!"
   },
   "copyPosePane": {
     "header": "Copy Pose",
@@ -192,7 +194,8 @@
     "baseTab": "Base",
     "customTab": "Custom",
     "directoryHeader": "Category",
-    "filenameHeader": "Name"
+    "filenameHeader": "Name",
+    "savedBlendSetLabel": "Saved blendset!"
   },
   "expressionPane": {
     "header": "Facial Expression",

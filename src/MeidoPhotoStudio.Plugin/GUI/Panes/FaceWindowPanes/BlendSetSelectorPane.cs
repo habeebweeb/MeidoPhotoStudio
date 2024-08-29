@@ -31,6 +31,10 @@ public class BlendSetSelectorPane : BasePane
     private readonly Header blendSetDirectoryHeader;
     private readonly Header blendSetFilenameHeader;
     private readonly Button refreshButton;
+    private readonly Label savedBlendSetLabel;
+
+    private bool showSaveBlendSetLabel;
+    private float saveTime;
 
     public BlendSetSelectorPane(
         GameBlendSetRepository gameBlendSetRepository,
@@ -79,6 +83,8 @@ public class BlendSetSelectorPane : BasePane
         noBlendSetsLabel = new(Translation.Get("maidFaceWindow", "noBlendSets"));
         blendSetDirectoryHeader = new(Translation.Get("maidFaceWindow", "directoryHeader"));
         blendSetFilenameHeader = new(Translation.Get("maidFaceWindow", "filenameHeader"));
+
+        savedBlendSetLabel = new(Translation.Get("maidFaceWindow", "savedBlendSetLabel"));
     }
 
     private FaceController CurrentFace =>
@@ -149,6 +155,18 @@ public class BlendSetSelectorPane : BasePane
             saveBlendSetButton.Draw(GUILayout.ExpandWidth(false));
 
             GUILayout.EndHorizontal();
+
+            if (!showSaveBlendSetLabel)
+                return;
+
+            if (Time.time - saveTime >= 2.5f)
+            {
+                showSaveBlendSetLabel = false;
+
+                return;
+            }
+
+            savedBlendSetLabel.Draw();
         }
 
         static void DrawDropdown<T>(Dropdown2<T> dropdown)
@@ -188,6 +206,7 @@ public class BlendSetSelectorPane : BasePane
         noBlendSetsLabel.Text = Translation.Get("maidFaceWindow", "noBlendSets");
         blendSetDirectoryHeader.Text = Translation.Get("maidFaceWindow", "directoryHeader");
         blendSetFilenameHeader.Text = Translation.Get("maidFaceWindow", "filenameHeader");
+        savedBlendSetLabel.Text = Translation.Get("maidFaceWindow", "savedBlendSetLabel");
     }
 
     private static Func<string, int, string> GetBlendSetCategoryFormatter(bool custom)
@@ -206,20 +225,33 @@ public class BlendSetSelectorPane : BasePane
         if (characterSelectionController.Current is null)
             return;
 
-        if (blendSetSourceGrid.SelectedItemIndex is CustomBlendSet)
-        {
-            if (!blendSetCategoryDropdown.Contains(e.BlendSet.Category))
-            {
-                blendSetCategoryDropdown.SetItemsWithoutNotify(BlendSetCategoryList(e.BlendSet.Custom));
-                blendSetCategoryComboBox.BaseDropDown.SetDropdownItemsWithoutNotify([.. customBlendSetRepository.Categories], 0);
-            }
+        if (blendSetSourceGrid.SelectedItemIndex is not CustomBlendSet)
+            return;
 
-            blendSetDropdown.SetItemsWithoutNotify(BlendSetList(e.BlendSet.Custom));
+        var currentCategory = blendSetCategoryDropdown.SelectedItem;
+
+        if (!blendSetCategoryDropdown.Contains(e.BlendSet.Category))
+        {
+            blendSetCategoryDropdown.SetItemsWithoutNotify(BlendSetCategoryList(e.BlendSet.Custom));
+            blendSetCategoryComboBox.BaseDropDown.SetDropdownItemsWithoutNotify([.. customBlendSetRepository.Categories], 0);
         }
 
-        CurrentFace.ApplyBlendSet(e.BlendSet);
+        var currentCategoryIndex = blendSetCategoryDropdown
+            .IndexOf(category => string.Equals(category, currentCategory, StringComparison.Ordinal));
 
-        UpdatePanel(e.BlendSet);
+        blendSetCategoryDropdown.SetSelectedIndexWithoutNotify(currentCategoryIndex);
+
+        if (!string.Equals(e.BlendSet.Category, currentCategory, StringComparison.Ordinal))
+            return;
+
+        var currentBlendSet = blendSetDropdown.SelectedItem;
+
+        blendSetDropdown.SetItemsWithoutNotify(BlendSetList(e.BlendSet.Custom));
+
+        var currentBlendSetIndex = blendSetDropdown
+            .IndexOf(blendSet => blendSet.Equals(currentBlendSet));
+
+        blendSetDropdown.SetSelectedIndexWithoutNotify(currentBlendSetIndex);
     }
 
     private void OnCustomBlendSetRepositoryRefreshed(object sender, EventArgs e)
@@ -321,6 +353,9 @@ public class BlendSetSelectorPane : BasePane
         customBlendSetRepository.Add(facialExpressionBuilder.Build(CurrentFace), category, name);
 
         blendSetNameTextField.Value = string.Empty;
+
+        showSaveBlendSetLabel = true;
+        saveTime = Time.time;
     }
 
     private void OnRefreshButtonPushed(object sender, EventArgs e) =>
@@ -340,9 +375,10 @@ public class BlendSetSelectorPane : BasePane
             blendSetCategoryDropdown.SetItemsWithoutNotify(BlendSetCategoryList(blendSet.Custom), categoryIndex);
             blendSetCategoryDropdown.Formatter = GetBlendSetCategoryFormatter(custom);
 
-            var blendSetIndex = GetBlendSetIndex(blendSet);
+            var newBlendSets = BlendSetList(blendSet.Custom);
+            var blendSetIndex = GetBlendSetIndex(newBlendSets, blendSet);
 
-            blendSetDropdown.SetItemsWithoutNotify(BlendSetList(blendSet.Custom), blendSetIndex);
+            blendSetDropdown.SetItemsWithoutNotify(newBlendSets, blendSetIndex);
         }
         else
         {
@@ -354,7 +390,7 @@ public class BlendSetSelectorPane : BasePane
             if (categoryIndex != oldCategoryIndex)
                 blendSetDropdown.SetItemsWithoutNotify(BlendSetList(blendSet.Custom));
 
-            var blendSetIndex = GetBlendSetIndex(blendSet);
+            var blendSetIndex = GetBlendSetIndex(blendSetDropdown, blendSet);
 
             blendSetDropdown.SetSelectedIndexWithoutNotify(blendSetIndex);
         }
@@ -367,14 +403,14 @@ public class BlendSetSelectorPane : BasePane
             return categoryIndex < 0 ? 0 : categoryIndex;
         }
 
-        int GetBlendSetIndex(IBlendSetModel blendSetToFind)
+        int GetBlendSetIndex(IEnumerable<IBlendSetModel> blendSetList, IBlendSetModel blendSetToFind)
         {
             if (blendSetToFind.Custom)
             {
                 var customBlendSet = (CustomBlendSetModel)blendSetToFind;
 
                 return customBlendSetRepository.ContainsCategory(blendSetToFind.Category)
-                    ? blendSetDropdown
+                    ? blendSetList
                         .Cast<CustomBlendSetModel>()
                         .IndexOf(blendSet => blendSet.ID == customBlendSet.ID)
                     : 0;
@@ -384,7 +420,7 @@ public class BlendSetSelectorPane : BasePane
                 var gameBlendSet = (GameBlendSetModel)blendSetToFind;
 
                 return gameBlendSetRepository.ContainsCategory(blendSetToFind.Category)
-                    ? gameBlendSetRepository
+                    ? blendSetList
                         .Cast<GameBlendSetModel>()
                         .IndexOf(blendSet => blendSet.ID == gameBlendSet.ID)
                     : 0;

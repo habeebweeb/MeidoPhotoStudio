@@ -26,6 +26,10 @@ public class HandPresetSelectorPane : BasePane
     private readonly Header handPresetFilenameHeader;
     private readonly Label noPresetsLabel;
     private readonly Button refreshButton;
+    private readonly Label savedHandPresetLabel;
+
+    private bool showSaveHandPresetLabel;
+    private float saveTime;
 
     public HandPresetSelectorPane(
         HandPresetRepository handPresetRepository,
@@ -70,6 +74,7 @@ public class HandPresetSelectorPane : BasePane
         handPresetFilenameHeader = new(Translation.Get("handPane", "nameHeader"));
 
         noPresetsLabel = new(Translation.Get("handPane", "noPresetsMessage"));
+        savedHandPresetLabel = new(Translation.Get("handPane", "savedHandPresetLabel"));
     }
 
     private IKController IKController =>
@@ -106,6 +111,20 @@ public class HandPresetSelectorPane : BasePane
 
         MpsGui.BlackLine();
 
+        GUI.enabled = enabled && presetDropdown.Any();
+        GUILayout.BeginHorizontal();
+
+        applyRightHandButton.Draw();
+        applyLeftHandButton.Draw();
+
+        GUILayout.EndHorizontal();
+
+        GUI.enabled = enabled;
+
+        swapHandsButton.Draw();
+
+        MpsGui.BlackLine();
+
         GUILayout.BeginHorizontal();
 
         savePresetToggle.Draw();
@@ -118,20 +137,6 @@ public class HandPresetSelectorPane : BasePane
 
         if (savePresetToggle.Value)
             DrawAddHandPreset();
-
-        MpsGui.BlackLine();
-
-        GUI.enabled = enabled && presetDropdown.Any();
-        GUILayout.BeginHorizontal();
-
-        applyRightHandButton.Draw();
-        applyLeftHandButton.Draw();
-
-        GUILayout.EndHorizontal();
-
-        GUI.enabled = enabled;
-
-        swapHandsButton.Draw();
 
         void DrawAddHandPreset()
         {
@@ -150,6 +155,18 @@ public class HandPresetSelectorPane : BasePane
             saveLeftPresetButton.Draw();
 
             GUILayout.EndHorizontal();
+
+            if (!showSaveHandPresetLabel)
+                return;
+
+            if (Time.time - saveTime >= 2.5f)
+            {
+                showSaveHandPresetLabel = false;
+
+                return;
+            }
+
+            savedHandPresetLabel.Draw();
         }
 
         static void DrawDropdown<T>(Dropdown2<T> dropdown)
@@ -189,21 +206,35 @@ public class HandPresetSelectorPane : BasePane
         handPresetDirectoryHeader.Text = Translation.Get("handPane", "categoryHeader");
         handPresetFilenameHeader.Text = Translation.Get("handPane", "nameHeader");
         noPresetsLabel.Text = Translation.Get("handPane", "noPresetsMessage");
+        savedHandPresetLabel.Text = Translation.Get("handPane", "savedHandPresetLabel");
     }
 
     private void OnHandPresetAdded(object sender, AddedHandPresetEventArgs e)
     {
+        var currentCategory = presetCategoryDropdown.SelectedItem;
+
         if (!presetCategoryDropdown.Contains(e.HandPreset.Category))
         {
             presetCategoryDropdown.SetItemsWithoutNotify(PresetCategoryList());
             handPresetCategoryComboBox.BaseDropDown.SetDropdownItemsWithoutNotify([.. handPresetRepository.Categories], 0);
         }
 
-        if (!string.Equals(presetCategoryDropdown.SelectedItem, e.HandPreset.Category, StringComparison.Ordinal))
-            presetCategoryDropdown.SelectedItemIndex = presetCategoryDropdown
-                .IndexOf(category => string.Equals(category, e.HandPreset.Category, StringComparison.Ordinal));
+        var currentCategoryIndex = presetCategoryDropdown
+            .IndexOf(category => string.Equals(category, currentCategory, StringComparison.Ordinal));
 
-        presetDropdown.SetSelectedIndexWithoutNotify(presetDropdown.IndexOf(preset => e.HandPreset.ID == preset.ID));
+        presetCategoryDropdown.SetSelectedIndexWithoutNotify(currentCategoryIndex);
+
+        if (!string.Equals(currentCategory, e.HandPreset.Category, StringComparison.Ordinal))
+            return;
+
+        var currentPreset = presetDropdown.SelectedItem;
+
+        presetDropdown.SetItemsWithoutNotify(PresetList());
+
+        var currentpresetIndex = presetDropdown
+            .IndexOf(preset => preset.Equals(currentPreset));
+
+        presetDropdown.SetSelectedIndexWithoutNotify(currentpresetIndex);
     }
 
     private void OnHandPresetRepositoryRefreshed(object sender, EventArgs e)
@@ -299,6 +330,9 @@ public class HandPresetSelectorPane : BasePane
         handPresetRepository.Add(presetData, category, name);
 
         handPresetNameTextField.Value = string.Empty;
+
+        showSaveHandPresetLabel = true;
+        saveTime = Time.time;
     }
 
     private void ApplyPreset(HandOrFootType type)
