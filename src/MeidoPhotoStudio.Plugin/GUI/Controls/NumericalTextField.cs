@@ -2,6 +2,10 @@ namespace MeidoPhotoStudio.Plugin;
 
 public class NumericalTextField : BaseControl
 {
+    private static int textFieldID = 961;
+
+    private readonly string controlName = $"numericalTextField{ID}";
+
     private float value;
     private string textFieldValue;
 
@@ -11,18 +15,43 @@ public class NumericalTextField : BaseControl
         textFieldValue = FormatValue(value);
     }
 
+    public event EventHandler GainedFocus;
+
+    public event EventHandler LostFocus;
+
     public float Value
     {
         get => value;
         set => SetValue(value);
     }
 
+    public bool HasFocus { get; private set; }
+
+    private static int ID =>
+        ++textFieldID;
+
     public override void Draw(params GUILayoutOption[] layoutOptions) =>
         Draw(new(GUI.skin.textField), layoutOptions);
 
     public void Draw(GUIStyle style, params GUILayoutOption[] layoutOptions)
     {
+        GUI.SetNextControlName(controlName);
+
         var newText = GUILayout.TextField(textFieldValue, style, layoutOptions);
+        var focusedControl = GUI.GetNameOfFocusedControl();
+
+        if (!HasFocus && string.Equals(focusedControl, controlName, StringComparison.Ordinal))
+        {
+            HasFocus = true;
+
+            GainedFocus?.Invoke(this, EventArgs.Empty);
+        }
+        else if (HasFocus && !string.Equals(focusedControl, controlName, StringComparison.Ordinal))
+        {
+            HasFocus = false;
+
+            LostFocus?.Invoke(this, EventArgs.Empty);
+        }
 
         if (string.Equals(newText, textFieldValue))
             return;
@@ -49,7 +78,7 @@ public class NumericalTextField : BaseControl
 
         this.value = value;
 
-        if (updateTextField)
+        if (!HasFocus && updateTextField)
             textFieldValue = FormatValue(this.value);
 
         if (notify)
