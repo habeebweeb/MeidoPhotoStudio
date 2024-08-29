@@ -164,10 +164,15 @@ public partial class CustomGizmo : GizmoRender
 
     private void OnDisable()
     {
-        if (!clicked)
-            return;
+        if (beSelectedType is not MOVETYPE.NONE && local_control_lock_)
+            local_control_lock_ = false;
 
-        clicked = false;
+        if (clicked)
+        {
+            clicked = false;
+
+            Released.Invoke();
+        }
     }
 
     private void OnEnable() =>
@@ -179,6 +184,12 @@ public partial class CustomGizmo : GizmoRender
         Dragging.RemoveAllListeners();
         Released.RemoveAllListeners();
         Cancelled.RemoveAllListeners();
+
+        if (beSelectedType is not MOVETYPE.NONE && local_control_lock_)
+            local_control_lock_ = false;
+
+        if (clicked)
+            Released.Invoke();
     }
 
     private void BeginUpdate()
