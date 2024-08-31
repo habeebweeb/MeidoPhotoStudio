@@ -16,7 +16,7 @@ public class Label(string text) : BaseControl
     }
 
     public override void Draw(params GUILayoutOption[] layoutOptions) =>
-        GUILayout.Label(content);
+        GUILayout.Label(content, layoutOptions);
 
     public virtual void Draw(GUIStyle labelStyle, params GUILayoutOption[] layoutOptions) =>
         GUILayout.Label(content, labelStyle, layoutOptions);
