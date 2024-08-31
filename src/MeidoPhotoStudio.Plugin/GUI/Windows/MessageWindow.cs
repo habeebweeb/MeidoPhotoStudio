@@ -9,8 +9,6 @@ public partial class MessageWindow : BaseWindow
     private readonly TextArea messageTextArea;
     private readonly Button okButton;
 
-    private int fontSize = 25;
-
     public MessageWindow(MessageWindowManager messageWindowManager)
     {
         this.messageWindowManager = messageWindowManager;
@@ -50,7 +48,7 @@ public partial class MessageWindow : BaseWindow
 
         GUILayout.Label("Font Size", GUILayout.ExpandWidth(false));
         fontSizeSlider.Draw(GUILayout.Width(120), GUILayout.ExpandWidth(false));
-        GUILayout.Label($"{fontSize}pt");
+        GUILayout.Label($"{(int)fontSizeSlider.Value}pt");
         GUILayout.EndHorizontal();
 
         messageTextArea.Draw(GUILayout.MinHeight(90));
@@ -75,15 +73,8 @@ public partial class MessageWindow : BaseWindow
             Visible = !Visible;
     }
 
-    private void ChangeFontSize(object sender, EventArgs args)
-    {
-        fontSize = (int)fontSizeSlider.Value;
-
-        if (updating)
-            return;
-
-        messageWindowManager.FontSize = fontSize;
-    }
+    private void ChangeFontSize(object sender, EventArgs args) =>
+        messageWindowManager.FontSize = (int)fontSizeSlider.Value;
 
     private void ShowMessage(object sender, EventArgs args)
     {
@@ -93,12 +84,8 @@ public partial class MessageWindow : BaseWindow
 
     private void ResetUI()
     {
-        updating = true;
-
-        fontSizeSlider.Value = MessageWindowManager.FontBounds.Left;
+        fontSizeSlider.SetValueWithoutNotify(MessageWindowManager.FontBounds.Left);
         nameTextField.Value = string.Empty;
         messageTextArea.Value = string.Empty;
-
-        updating = false;
     }
 }

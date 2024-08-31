@@ -10,7 +10,6 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
     public PropsPane()
     {
         propTypeDropdown = new(["PROP TYPES"]);
-        propTypeDropdown.ControlEvent += OnPropTypeSelectionChanged;
 
         paneHeader = new(Translation.Get("propsPane", "header"), true);
     }
@@ -76,16 +75,12 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
 
         propTypes.Add(key);
 
-        updating = true;
-
-        propTypeDropdown.SetDropdownItems(
+        propTypeDropdown.SetDropdownItemsWithoutNotify(
             propTypes
                 .Select(EnumToLower)
                 .Select(key => Translation.Get("propTypes", key))
                 .ToArray(),
             0);
-
-        updating = false;
     }
 
     protected override void ReloadTranslation()
@@ -107,11 +102,5 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
         var enumString = enumValue.ToString();
 
         return char.ToLower(enumString[0]) + enumString.Substring(1);
-    }
-
-    private void OnPropTypeSelectionChanged(object sender, EventArgs e)
-    {
-        if (updating)
-            return;
     }
 }

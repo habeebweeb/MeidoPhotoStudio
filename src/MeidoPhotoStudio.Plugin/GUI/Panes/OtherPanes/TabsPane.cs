@@ -50,18 +50,12 @@ public class TabsPane : BasePane
         MpsGui.BlackLine();
     }
 
-    protected override void ReloadTranslation()
-    {
-        updating = true;
-        tabs.SetItems(Translation.GetArray("tabs", Tabs.Select(tab => tab.ToLower())), tabs.SelectedItemIndex);
-        updating = false;
-    }
+    protected override void ReloadTranslation() =>
+        tabs.SetItemsWithoutNotify(
+            Translation.GetArray("tabs", Tabs.Select(tab => tab.ToLower())), tabs.SelectedItemIndex);
 
     private void OnChangeTab()
     {
-        if (updating)
-            return;
-
         selectedTab = Tabs[tabs.SelectedItemIndex];
         TabChange?.Invoke(null, EventArgs.Empty);
     }

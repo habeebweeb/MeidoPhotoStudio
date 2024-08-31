@@ -4,39 +4,33 @@ namespace MeidoPhotoStudio.Plugin;
 
 public class CameraPane : BasePane
 {
-    private readonly CameraController cameraManager;
+    private readonly CameraController cameraController;
     private readonly CameraSaveSlotController cameraSaveSlotController;
-    private readonly SelectionGrid cameraGrid;
+    private readonly SelectionGrid cameraSlotSelectionGrid;
     private readonly Slider zRotationSlider;
     private readonly Slider fovSlider;
     private readonly PaneHeader paneHeader;
 
-    public CameraPane(CameraController cameraManager, CameraSaveSlotController cameraSaveSlotController)
+    public CameraPane(CameraController cameraController, CameraSaveSlotController cameraSaveSlotController)
     {
-        this.cameraManager = cameraManager;
-        this.cameraSaveSlotController = cameraSaveSlotController;
-        this.cameraManager.CameraChange += (_, _) =>
-            UpdatePane();
+        this.cameraController = cameraController
+            ?? throw new ArgumentNullException(nameof(cameraController));
+
+        this.cameraSaveSlotController = cameraSaveSlotController
+            ?? throw new ArgumentNullException(nameof(cameraSaveSlotController));
+
+        this.cameraController.CameraChange += OnCameraChanged;
 
         var camera = GameMain.Instance.MainCamera.camera;
-        var eulerAngles = camera.transform.eulerAngles;
+        var cameraRotation = camera.transform.eulerAngles;
 
-        zRotationSlider = new(Translation.Get("cameraPane", "zRotation"), 0f, 360f, eulerAngles.z)
+        zRotationSlider = new(Translation.Get("cameraPane", "zRotation"), 0f, 360f, cameraRotation.z)
         {
             HasReset = true,
             HasTextField = true,
         };
 
-        zRotationSlider.ControlEvent += (_, _) =>
-        {
-            if (updating)
-                return;
-
-            var newRotation = camera.transform.eulerAngles;
-
-            newRotation.z = zRotationSlider.Value;
-            camera.transform.rotation = Quaternion.Euler(newRotation);
-        };
+        zRotationSlider.ControlEvent += OnZRotationChanged;
 
         var fieldOfView = camera.fieldOfView;
 
@@ -46,22 +40,10 @@ public class CameraPane : BasePane
             HasTextField = true,
         };
 
-        fovSlider.ControlEvent += (_, _) =>
-        {
-            if (updating)
-                return;
+        fovSlider.ControlEvent += OnFieldOfViewSliderChanged;
 
-            camera.fieldOfView = fovSlider.Value;
-        };
-
-        cameraGrid = new(Enumerable.Range(1, cameraSaveSlotController.SaveSlotCount).Select(x => x.ToString()).ToArray());
-        cameraGrid.ControlEvent += (_, _) =>
-        {
-            if (updating)
-                return;
-
-            cameraSaveSlotController.CurrentCameraSlot = cameraGrid.SelectedItemIndex;
-        };
+        cameraSlotSelectionGrid = new(Enumerable.Range(1, cameraSaveSlotController.SaveSlotCount).Select(x => x.ToString()).ToArray());
+        cameraSlotSelectionGrid.ControlEvent += OnCameraSlotChanged;
 
         paneHeader = new(Translation.Get("cameraPane", "header"), true);
     }
@@ -73,23 +55,18 @@ public class CameraPane : BasePane
         if (!paneHeader.Enabled)
             return;
 
-        cameraGrid.Draw();
+        cameraSlotSelectionGrid.Draw();
         zRotationSlider.Draw();
         fovSlider.Draw();
     }
 
     public override void UpdatePane()
     {
-        updating = true;
-
         var camera = GameMain.Instance.MainCamera.camera;
 
-        zRotationSlider.Value = camera.transform.eulerAngles.z;
-        fovSlider.Value = camera.fieldOfView;
-
-        cameraGrid.SelectedItemIndex = cameraSaveSlotController.CurrentCameraSlot;
-
-        updating = false;
+        zRotationSlider.SetValueWithoutNotify(camera.transform.eulerAngles.z);
+        fovSlider.SetValueWithoutNotify(camera.fieldOfView);
+        cameraSlotSelectionGrid.SetValueWithoutNotify(cameraSaveSlotController.CurrentCameraSlot);
     }
 
     protected override void ReloadTranslation()
@@ -98,4 +75,22 @@ public class CameraPane : BasePane
         fovSlider.Label = Translation.Get("cameraPane", "fov");
         paneHeader.Label = Translation.Get("cameraPane", "header");
     }
+
+    private void OnZRotationChanged(object sender, EventArgs e)
+    {
+        var camera = GameMain.Instance.MainCamera.camera;
+        var newRotation = camera.transform.eulerAngles;
+
+        newRotation.z = zRotationSlider.Value;
+        camera.transform.rotation = Quaternion.Euler(newRotation);
+    }
+
+    private void OnFieldOfViewSliderChanged(object sender, EventArgs e) =>
+        GameMain.Instance.MainCamera.camera.fieldOfView = fovSlider.Value;
+
+    private void OnCameraSlotChanged(object sender, EventArgs e) =>
+        cameraSaveSlotController.CurrentCameraSlot = cameraSlotSelectionGrid.SelectedItemIndex;
+
+    private void OnCameraChanged(object sender, EventArgs e) =>
+        UpdatePane();
 }

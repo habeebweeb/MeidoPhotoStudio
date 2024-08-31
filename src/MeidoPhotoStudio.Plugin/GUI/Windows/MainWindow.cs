@@ -97,9 +97,7 @@ public partial class MainWindow : BaseWindow
     {
         base.Activate();
 
-        updating = true;
         tabsPane.SelectedTab = Constants.Window.Call;
-        updating = false;
         Visible = true;
     }
 
