@@ -4,33 +4,24 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
-public class TorsoDragHandleController : CharacterDragHandleController
+public class TorsoDragHandleController(
+    DragHandle dragHandle,
+    CharacterController characterController,
+    CharacterUndoRedoController undoRedoController,
+    Transform spine1a,
+    Transform spine1,
+    Transform spine0a,
+    Transform spine)
+    : CharacterDragHandleController(dragHandle, characterController, undoRedoController)
 {
     private static readonly float[] XZRotationSensitivity = [0.03f, 0.1f, 0.09f, 0.07f];
     private static readonly float[] YRotationSensitivity = [0.08f, 0.08f, 0.15f, 0.15f];
 
-    private readonly Transform[] spineColumn = new Transform[4];
+    private readonly Transform[] spineColumn = [spine1a, spine1, spine0a, spine];
 
     private NoneMode none;
     private RotateMode rotate;
     private RotateAlternateMode rotateAlternate;
-
-    public TorsoDragHandleController(
-        DragHandle dragHandle,
-        CharacterController characterController,
-        CharacterUndoRedoController undoRedoController)
-        : base(dragHandle, characterController, undoRedoController)
-    {
-        var baseSpine = IKController.GetBone("Bip01 Spine1a");
-        var spineSegment = baseSpine;
-
-        for (var i = 0; i < 4; i++)
-        {
-            spineColumn[i] = spineSegment;
-
-            spineSegment = spineSegment.parent;
-        }
-    }
 
     public DragHandleMode None =>
         none ??= new NoneMode(this);
@@ -40,6 +31,8 @@ public class TorsoDragHandleController : CharacterDragHandleController
 
     public DragHandleMode RotateAlternate =>
         BoneMode ? None : rotateAlternate ??= new RotateAlternateMode(this);
+
+    protected override Transform[] Transforms { get; } = [spine1a, spine1, spine0a, spine];
 
     private class NoneMode(TorsoDragHandleController controller)
         : PoseableMode(controller)

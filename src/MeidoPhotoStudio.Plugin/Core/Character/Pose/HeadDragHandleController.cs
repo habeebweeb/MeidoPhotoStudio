@@ -21,6 +21,7 @@ public class HeadDragHandleController(
 
     private readonly Transform neckBone = neckBone;
 
+    private (Quaternion LeftEyeRotation, Quaternion RightEyeRotation) backupRotations;
     private NoneMode none;
     private SelectMode select;
     private RotateAlternateMode rotateAlternate;
@@ -42,6 +43,17 @@ public class HeadDragHandleController(
     public DragHandleMode RotateEyes =>
         rotateEyes ??= new RotateEyesMode(this);
 
+    protected override Transform[] Transforms { get; } = [neckBone];
+
+    private void BackupEyeRotations() =>
+        backupRotations = (HeadController.LeftEyeRotation, HeadController.RightEyeRotation);
+
+    private void ApplyBackupEyeRotations()
+    {
+        HeadController.LeftEyeRotation = backupRotations.LeftEyeRotation;
+        HeadController.RightEyeRotation = backupRotations.RightEyeRotation;
+    }
+
     private class NoneMode(HeadDragHandleController controller)
         : PoseableMode(controller)
     {
@@ -49,6 +61,13 @@ public class HeadDragHandleController(
         {
             controller.DragHandleActive = false;
             controller.DragHandle.Visible = false;
+        }
+
+        public override void OnCancelled()
+        {
+            base.OnCancelled();
+
+            controller.ApplyBackupEyeRotations();
         }
     }
 
@@ -60,18 +79,30 @@ public class HeadDragHandleController(
 
         public override void OnClicked()
         {
+            base.OnClicked();
+
+            controller.BackupEyeRotations();
             controller.selectionController.Select(controller.CharacterController);
             controller.tabSelectionController.SelectTab(Constants.Window.Face);
         }
 
         public override void OnDoubleClicked() =>
             controller.CharacterController.FocusOnFace();
+
+        public override void OnCancelled()
+        {
+            base.OnCancelled();
+
+            controller.ApplyBackupEyeRotations();
+        }
     }
 
     private abstract class RotateHeadMode(HeadDragHandleController controller)
         : PoseableMode(controller)
     {
         protected readonly HeadDragHandleController controller = controller;
+
+        private bool clicked;
 
         public override void OnModeEnter() =>
             controller.DragHandleActive = true;
@@ -80,11 +111,36 @@ public class HeadDragHandleController(
         {
             base.OnClicked();
 
+            controller.BackupEyeRotations();
             controller.AnimationController.Playing = false;
         }
 
+        public override void OnDragging()
+        {
+            if (!clicked)
+            {
+                clicked = true;
+
+                OnClicked();
+            }
+
+            Drag();
+        }
+
+        public override void OnReleased() =>
+            clicked = false;
+
         public override void OnDoubleClicked() =>
             controller.HeadController.FreeLook = !controller.HeadController.FreeLook;
+
+        public override void OnCancelled()
+        {
+            base.OnCancelled();
+
+            controller.ApplyBackupEyeRotations();
+        }
+
+        protected abstract void Drag();
     }
 
     private class RotateMode(HeadDragHandleController controller)
@@ -93,7 +149,7 @@ public class HeadDragHandleController(
         private static Vector2 MouseDelta =>
             new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
 
-        public override void OnDragging()
+        protected override void Drag()
         {
             var (deltaX, deltaY) = MouseDelta;
 
@@ -112,7 +168,7 @@ public class HeadDragHandleController(
         private static Vector2 MouseDelta =>
             new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
 
-        public override void OnDragging()
+        protected override void Drag()
         {
             var (deltaX, _) = MouseDelta;
 
@@ -129,6 +185,13 @@ public class HeadDragHandleController(
         public override void OnModeEnter() =>
             controller.DragHandleActive = true;
 
+        public override void OnClicked()
+        {
+            base.OnClicked();
+
+            controller.BackupEyeRotations();
+        }
+
         public override void OnDragging()
         {
             var (deltaX, deltaY) = MouseDelta * 1.5f;
@@ -136,7 +199,17 @@ public class HeadDragHandleController(
             controller.HeadController.RotateBothEyes(deltaX, deltaY);
         }
 
-        public override void OnDoubleClicked() =>
+        public override void OnDoubleClicked()
+        {
+            controller.BackupEyeRotations();
             controller.HeadController.ResetBothEyeRotations();
+        }
+
+        public override void OnCancelled()
+        {
+            base.OnCancelled();
+
+            controller.ApplyBackupEyeRotations();
+        }
     }
 }

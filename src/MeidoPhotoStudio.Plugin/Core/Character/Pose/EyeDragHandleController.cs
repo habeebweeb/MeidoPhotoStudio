@@ -10,6 +10,7 @@ public class EyeDragHandleController(
 {
     private readonly bool left = left;
 
+    private Quaternion backupRotation;
     private NoneMode none;
     private RotateEyeMode rotateEye;
 
@@ -18,6 +19,8 @@ public class EyeDragHandleController(
 
     public DragHandleMode RotateEye =>
         rotateEye ??= new RotateEyeMode(this);
+
+    protected override Transform[] Transforms { get; } = [];
 
     private void RotateCharacterEye(float x, float y)
     {
@@ -35,6 +38,17 @@ public class EyeDragHandleController(
             HeadController.ResetRightEyeRotation();
     }
 
+    private void BackupRotation() =>
+        backupRotation = left ? HeadController.LeftEyeRotation : HeadController.RightEyeRotation;
+
+    private void ApplyBackupRotation()
+    {
+        if (left)
+            HeadController.LeftEyeRotation = backupRotation;
+        else
+            HeadController.RightEyeRotation = backupRotation;
+    }
+
     private class NoneMode(EyeDragHandleController controller)
         : DragHandleMode
     {
@@ -44,6 +58,13 @@ public class EyeDragHandleController(
         {
             controller.DragHandleActive = false;
             controller.DragHandle.Visible = false;
+        }
+
+        public override void OnCancelled()
+        {
+            base.OnCancelled();
+
+            controller.ApplyBackupRotation();
         }
     }
 
@@ -61,8 +82,14 @@ public class EyeDragHandleController(
             controller.DragHandle.Visible = false;
         }
 
-        public override void OnDoubleClicked() =>
+        public override void OnClicked() =>
+            controller.BackupRotation();
+
+        public override void OnDoubleClicked()
+        {
+            controller.BackupRotation();
             controller.ResetEye();
+        }
 
         public override void OnDragging()
         {
@@ -70,5 +97,8 @@ public class EyeDragHandleController(
 
             controller.RotateCharacterEye(deltaX, deltaY);
         }
+
+        public override void OnCancelled() =>
+            controller.ApplyBackupRotation();
     }
 }

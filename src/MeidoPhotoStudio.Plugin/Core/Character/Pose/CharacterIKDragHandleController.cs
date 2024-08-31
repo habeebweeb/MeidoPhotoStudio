@@ -43,6 +43,9 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
 
     protected abstract Transform[] Chain { get; }
 
+    protected override Transform[] Transforms =>
+        Chain;
+
     protected Transform Bone { get; }
 
     protected Transform IKTarget { get; }

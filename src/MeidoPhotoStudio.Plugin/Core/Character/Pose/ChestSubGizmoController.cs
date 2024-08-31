@@ -18,6 +18,8 @@ public class ChestSubGizmoController(
     public DragHandleMode Rotate =>
         rotate ??= new RotateMode(this);
 
+    protected override Transform[] Transforms { get; } = [bone];
+
     private void SetMuneEnabled(bool enabled)
     {
         if (left)

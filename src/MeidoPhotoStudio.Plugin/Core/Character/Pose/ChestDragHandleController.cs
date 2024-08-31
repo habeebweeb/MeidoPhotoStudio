@@ -20,7 +20,7 @@ public class ChestDragHandleController : CharacterIKDragHandleController
         Transform ikTarget)
         : base(dragHandle, gizmo, characterController, undoRedoController, bone, ikTarget)
     {
-        left = bone.name.StartsWith("Mune_L");
+        left = Bone.name.StartsWith("Mune_L");
 
         Chain = [Bone.parent, Bone];
     }

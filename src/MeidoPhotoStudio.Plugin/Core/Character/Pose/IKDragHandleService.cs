@@ -296,8 +296,10 @@ public class IKDragHandleService : INotifyPropertyChanged
         static TorsoDragHandleController MakeTorso(
             CharacterController character, CharacterUndoRedoController undoRedoController)
         {
-            var spine1 = character.IK.GetBone("Bip01 Spine1");
             var spine1a = character.IK.GetBone("Bip01 Spine1a");
+            var spine1 = spine1a.parent;
+            var spine0a = spine1.parent;
+            var spine = spine0a.parent;
 
             var dragHandle = new DragHandle.Builder()
             {
@@ -308,7 +310,7 @@ public class IKDragHandleService : INotifyPropertyChanged
                 RotationDelegate = AxisRotation(spine1, 90f, Vector3.forward),
             }.Build();
 
-            return new(dragHandle, character, undoRedoController);
+            return new(dragHandle, character, undoRedoController, spine1a, spine1, spine0a, spine);
         }
 
         static HeadDragHandleController MakeHead(
@@ -356,7 +358,7 @@ public class IKDragHandleService : INotifyPropertyChanged
                 Mode = CustomGizmo.GizmoMode.Local,
             }.Build();
 
-            return new(dragHandle, gizmo, character, undoRedoController);
+            return new(dragHandle, gizmo, character, undoRedoController, pelvis);
         }
 
         static SpineDragHandleController[] MakeSpine(
@@ -441,7 +443,7 @@ public class IKDragHandleService : INotifyPropertyChanged
                 PositionTarget = positionBone,
             }.Build();
 
-            return new(gizmo, character, undoRedoController);
+            return new(gizmo, character, undoRedoController, bone);
         }
 
         static ChestDragHandleController MakeChest(

@@ -1,4 +1,5 @@
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
@@ -6,6 +7,8 @@ namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 public abstract class CharacterDragHandleController : DragHandleControllerBase, ICharacterDragHandleController
 {
     private readonly CharacterController characterController;
+
+    private Quaternion[] boneBackup;
     private bool boneMode;
     private DragHandleMode ignore;
     private bool iKEnabled = true;
@@ -86,6 +89,8 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
     public virtual DragHandleMode Ignore =>
         ignore ??= new IgnoreMode(this);
 
+    protected abstract Transform[] Transforms { get; }
+
     protected CharacterController CharacterController
     {
         get => characterController;
@@ -120,6 +125,20 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
         DragHandle.Size = CharacterController.GameObject.transform.localScale.x;
     }
 
+    private void BackupBoneRotations()
+    {
+        boneBackup ??= new Quaternion[Transforms.Length];
+
+        for (var i = 0; i < Transforms.Length; i++)
+            boneBackup[i] = Transforms[i].localRotation;
+    }
+
+    private void ApplyBackupBoneRotations()
+    {
+        foreach (var (bone, backup) in Transforms.Zip(boneBackup))
+            bone.localRotation = backup;
+    }
+
     protected abstract class PoseableMode(CharacterDragHandleController controller)
         : DragHandleMode
     {
@@ -129,16 +148,27 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
         {
             controller.UndoRedoController.StartPoseChange();
             controller.IKController.Dirty = true;
+
+            controller.BackupBoneRotations();
         }
 
         public override void OnReleased() =>
             controller.UndoRedoController.EndPoseChange();
 
-        public override void OnGizmoClicked() =>
+        public override void OnGizmoClicked()
+        {
             controller.UndoRedoController.StartPoseChange();
+            controller.BackupBoneRotations();
+        }
 
         public override void OnGizmoReleased() =>
             controller.UndoRedoController.EndPoseChange();
+
+        public override void OnCancelled() =>
+            controller.ApplyBackupBoneRotations();
+
+        public override void OnGizmoCancelled() =>
+            controller.ApplyBackupBoneRotations();
     }
 
     protected class IgnoreMode(CharacterDragHandleController controller)

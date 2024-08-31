@@ -4,7 +4,7 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
 public class ThighGizmoController(
-    CustomGizmo gizmo, CharacterController characterController, CharacterUndoRedoController undoRedoController)
+    CustomGizmo gizmo, CharacterController characterController, CharacterUndoRedoController undoRedoController, Transform thighBone)
     : CharacterDragHandleController(gizmo, characterController, undoRedoController)
 {
     private NoneMode none;
@@ -15,6 +15,8 @@ public class ThighGizmoController(
 
     public DragHandleMode Rotate =>
         rotate ??= new RotateMode(this);
+
+    protected override Transform[] Transforms { get; } = [thighBone];
 
     private class NoneMode(ThighGizmoController controller)
         : PoseableMode(controller)

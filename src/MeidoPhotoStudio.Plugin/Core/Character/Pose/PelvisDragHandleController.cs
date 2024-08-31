@@ -4,21 +4,19 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
-public class PelvisDragHandleController : CharacterDragHandleController
+public class PelvisDragHandleController(
+    DragHandle dragHandle,
+    CustomGizmo gizmo,
+    CharacterController characterController,
+    CharacterUndoRedoController undoRedoController,
+    Transform pelvisBone)
+    : CharacterDragHandleController(dragHandle, gizmo, characterController, undoRedoController)
 {
-    private readonly Transform pelvisBone;
+    private readonly Transform pelvisBone = pelvisBone;
 
     private NoneMode none;
     private RotateMode rotate;
     private RotateAlternateMode rotateAlternate;
-
-    public PelvisDragHandleController(
-        DragHandle dragHandle,
-        CustomGizmo gizmo,
-        CharacterController characterController,
-        CharacterUndoRedoController undoRedoController)
-        : base(dragHandle, gizmo, characterController, undoRedoController) =>
-        pelvisBone = IKController.GetBone("Bip01 Pelvis");
 
     public DragHandleMode None =>
         none ??= new NoneMode(this);
@@ -28,6 +26,8 @@ public class PelvisDragHandleController : CharacterDragHandleController
 
     public DragHandleMode RotateAlternate =>
         rotateAlternate ??= new RotateAlternateMode(this);
+
+    protected override Transform[] Transforms { get; } = [pelvisBone];
 
     private class NoneMode(PelvisDragHandleController controller)
         : PoseableMode(controller)

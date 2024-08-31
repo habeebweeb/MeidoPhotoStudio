@@ -28,6 +28,8 @@ public class SpineDragHandleController(
     public DragHandleMode RotateAlternate =>
         rotateAlternate ??= new RotateAlternateMode(this);
 
+    protected override Transform[] Transforms { get; } = [spineSegment];
+
     private class NoneMode(SpineDragHandleController controller)
         : PoseableMode(controller)
     {

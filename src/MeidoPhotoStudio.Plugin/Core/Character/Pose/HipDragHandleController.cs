@@ -14,6 +14,7 @@ public class HipDragHandleController(
 {
     private readonly Transform spineSegment = spineSegment ? spineSegment : throw new ArgumentNullException(nameof(spineSegment));
 
+    private Vector3 hipPositionBackup;
     private NoneMode none;
     private RotateMode rotate;
     private MoveYMode moveY;
@@ -26,6 +27,14 @@ public class HipDragHandleController(
 
     public DragHandleMode MoveY =>
         moveY ??= new MoveYMode(this);
+
+    protected override Transform[] Transforms { get; } = [spineSegment];
+
+    private void BackupHipPosition() =>
+        hipPositionBackup = spineSegment.localPosition;
+
+    private void ApplyBackupHipPosition() =>
+        spineSegment.localPosition = hipPositionBackup;
 
     private class NoneMode(HipDragHandleController controller)
         : PoseableMode(controller)
@@ -45,6 +54,7 @@ public class HipDragHandleController(
         {
             base.OnClicked();
 
+            controller.BackupHipPosition();
             controller.AnimationController.Playing = false;
         }
 
@@ -58,6 +68,13 @@ public class HipDragHandleController(
 
             controller.spineSegment.Rotate(cameraForward, -deltaX * 5f, Space.World);
             controller.spineSegment.Rotate(cameraRight, deltaY * 5f, Space.World);
+        }
+
+        public override void OnCancelled()
+        {
+            base.OnCancelled();
+
+            controller.ApplyBackupHipPosition();
         }
     }
 
@@ -76,7 +93,16 @@ public class HipDragHandleController(
         {
             base.OnClicked();
 
+            controller.BackupHipPosition();
+
             controller.AnimationController.Playing = false;
+        }
+
+        public override void OnCancelled()
+        {
+            base.OnCancelled();
+
+            controller.ApplyBackupHipPosition();
         }
     }
 
@@ -94,7 +120,15 @@ public class HipDragHandleController(
         {
             base.OnGizmoClicked();
 
+            controller.BackupHipPosition();
             controller.AnimationController.Playing = false;
+        }
+
+        public override void OnGizmoCancelled()
+        {
+            base.OnGizmoCancelled();
+
+            controller.ApplyBackupHipPosition();
         }
     }
 }
