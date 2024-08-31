@@ -8,6 +8,8 @@ public partial class MessageWindow : BaseWindow
     private readonly Slider fontSizeSlider;
     private readonly TextArea messageTextArea;
     private readonly Button okButton;
+    private readonly Label nameLabel;
+    private readonly Label fontSizeLabel;
 
     public MessageWindow(MessageWindowManager messageWindowManager)
     {
@@ -24,8 +26,11 @@ public partial class MessageWindow : BaseWindow
 
         messageTextArea = new();
 
-        okButton = new("OK");
+        okButton = new(Translation.Get("messageWindow", "okButton"));
         okButton.ControlEvent += ShowMessage;
+
+        nameLabel = new(Translation.Get("messageWindow", "name"));
+        fontSizeLabel = new(Translation.Get("messageWindow", "fontSize"));
     }
 
     public override Rect WindowRect
@@ -41,13 +46,15 @@ public partial class MessageWindow : BaseWindow
     public override void Draw()
     {
         GUILayout.BeginHorizontal();
-        GUILayout.Label("Name", GUILayout.ExpandWidth(false));
+
+        nameLabel.Draw(GUILayout.ExpandWidth(false));
         nameTextField.Draw(GUILayout.Width(120));
 
         GUILayout.Space(30);
 
-        GUILayout.Label("Font Size", GUILayout.ExpandWidth(false));
+        fontSizeLabel.Draw(GUILayout.ExpandWidth(false));
         fontSizeSlider.Draw(GUILayout.Width(120), GUILayout.ExpandWidth(false));
+
         GUILayout.Label($"{(int)fontSizeSlider.Value}pt");
         GUILayout.EndHorizontal();
 
@@ -64,6 +71,13 @@ public partial class MessageWindow : BaseWindow
 
     public override void Activate() =>
         ResetUI();
+
+    protected override void ReloadTranslation()
+    {
+        okButton.Label = Translation.Get("messageWindow", "okButton");
+        nameLabel.Text = Translation.Get("messageWindow", "name");
+        fontSizeLabel.Text = Translation.Get("messageWindow", "fontSize");
+    }
 
     private void ToggleVisibility()
     {
