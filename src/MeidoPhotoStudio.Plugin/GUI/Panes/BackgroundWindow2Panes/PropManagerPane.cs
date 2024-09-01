@@ -30,9 +30,9 @@ public class PropManagerPane : BasePane
     private readonly PaneHeader paneHeader;
     private readonly Toggle toggleAllDragHandles;
     private readonly Toggle toggleAllGizmos;
+    private readonly Label gizmoSpaceLabel;
+    private readonly Header toggleAllHandlesHeader;
 
-    private string toggleAllHandlesHeader;
-    private string gizmoSpaceLabel;
     private bool transformControlChangedTransform;
 
     public PropManagerPane(
@@ -84,7 +84,7 @@ public class PropManagerPane : BasePane
         toggleAllGizmos = new(Translation.Get("propManagerPane", "allGizmoToggle"), true);
         toggleAllGizmos.ControlEvent += OnToggleAllGizmosChanged;
 
-        gizmoSpaceLabel = Translation.Get("propManagerPane", "gizmoSpaceToggle");
+        gizmoSpaceLabel = new(Translation.Get("propManagerPane", "gizmoSpaceToggle"));
 
         positionTransformControl = new(Translation.Get("propManagerPane", "positionControl"), Vector3.zero)
         {
@@ -118,7 +118,7 @@ public class PropManagerPane : BasePane
         rotationTransformControl.SetButtonLabels(copyButtonLabel, pasteButtonLabel, resetButtonLabel);
         scaleTransformControl.SetButtonLabels(copyButtonLabel, pasteButtonLabel, resetButtonLabel);
 
-        toggleAllHandlesHeader = Translation.Get("propManagerPane", "toggleAllHandlesHeader");
+        toggleAllHandlesHeader = new(Translation.Get("propManagerPane", "toggleAllHandlesHeader"));
         paneHeader = new(Translation.Get("propManagerPane", "header"), true);
     }
 
@@ -172,7 +172,7 @@ public class PropManagerPane : BasePane
 
         GUI.enabled = guiEnabled && gizmoToggle.Value;
 
-        GUILayout.Label(gizmoSpaceLabel);
+        gizmoSpaceLabel.Draw();
         gizmoMode.Draw();
 
         GUI.enabled = guiEnabled;
@@ -191,7 +191,7 @@ public class PropManagerPane : BasePane
 
         GUILayout.EndHorizontal();
 
-        MpsGui.Header(toggleAllHandlesHeader);
+        toggleAllHandlesHeader.Draw();
         MpsGui.WhiteLine();
 
         GUILayout.BeginHorizontal();
@@ -225,7 +225,7 @@ public class PropManagerPane : BasePane
         focusButton.Label = Translation.Get("propManagerPane", "focusPropButton");
         toggleAllDragHandles.Label = Translation.Get("propManagerPane", "allDragHandleToggle");
         toggleAllGizmos.Label = Translation.Get("propManagerPane", "allGizmoToggle");
-        gizmoSpaceLabel = Translation.Get("propManagerPane", "gizmoSpaceToggle");
+        gizmoSpaceLabel.Text = Translation.Get("propManagerPane", "gizmoSpaceToggle");
 
         var copyButtonLabel = Translation.Get("transformControl", "copyButton");
         var pasteButtonLabel = Translation.Get("transformControl", "pasteButton");
@@ -240,7 +240,7 @@ public class PropManagerPane : BasePane
         scaleTransformControl.Header = Translation.Get("propManagerPane", "scaleControl");
         scaleTransformControl.SetButtonLabels(copyButtonLabel, pasteButtonLabel, resetButtonLabel);
 
-        toggleAllHandlesHeader = Translation.Get("propManagerPane", "toggleAllHandlesHeader");
+        toggleAllHandlesHeader.Text = Translation.Get("propManagerPane", "toggleAllHandlesHeader");
         paneHeader.Label = Translation.Get("propManagerPane", "header");
     }
 

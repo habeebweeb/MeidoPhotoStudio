@@ -9,8 +9,8 @@ public class HandItemPropsPane : BasePane
     private readonly MenuPropRepository menuPropRepository;
     private readonly Dropdown propDropdown;
     private readonly Button addPropButton;
+    private readonly Label initializingLabel;
 
-    private string initializingMessage;
     private bool menuDatabaseBusy = false;
 
     public HandItemPropsPane(
@@ -27,7 +27,7 @@ public class HandItemPropsPane : BasePane
         addPropButton = new(Translation.Get("propsPane", "addProp"));
         addPropButton.ControlEvent += OnAddPropButtonPressed;
 
-        initializingMessage = Translation.Get("systemMessage", "initializing");
+        initializingLabel = new(Translation.Get("systemMessage", "initializing"));
 
         if (menuPropRepository.Busy)
         {
@@ -48,7 +48,7 @@ public class HandItemPropsPane : BasePane
     {
         if (menuDatabaseBusy)
         {
-            GUILayout.Label(initializingMessage);
+            initializingLabel.Draw();
 
             return;
         }
@@ -85,7 +85,7 @@ public class HandItemPropsPane : BasePane
 
     protected override void ReloadTranslation()
     {
-        initializingMessage = Translation.Get("systemMessage", "initializing");
+        initializingLabel.Text = Translation.Get("systemMessage", "initializing");
         propDropdown.SetDropdownItemsWithoutNotify(PropList(), propDropdown.SelectedItemIndex);
 
         addPropButton.Label = Translation.Get("propsPane", "addProp");

@@ -15,12 +15,12 @@ public class MenuPropsPane : BasePane
     private readonly Dropdown propCategoryDropdown;
     private readonly Toggle modFilterToggle;
     private readonly Toggle baseFilterToggle;
+    private readonly Label initializingLabel;
 
     private MPN[] categories;
     private Vector2 scrollPosition;
     private IEnumerable<MenuFilePropModel> currentPropList;
     private bool menuDatabaseBusy = false;
-    private string initializingMessage;
 
     public MenuPropsPane(
         PropService propService,
@@ -42,7 +42,7 @@ public class MenuPropsPane : BasePane
         baseFilterToggle = new(Translation.Get("background2Window", "baseToggle"));
         baseFilterToggle.ControlEvent += OnBaseFilterChanged;
 
-        initializingMessage = Translation.Get("systemMessage", "initializing");
+        initializingLabel = new(Translation.Get("systemMessage", "initializing"));
 
         if (menuPropRepository.Busy)
         {
@@ -90,7 +90,7 @@ public class MenuPropsPane : BasePane
     {
         if (menuDatabaseBusy)
         {
-            GUILayout.Label(initializingMessage);
+            initializingLabel.Draw();
 
             return;
         }
@@ -203,7 +203,7 @@ public class MenuPropsPane : BasePane
         modFilterToggle.Label = Translation.Get("background2Window", "modsToggle");
         baseFilterToggle.Label = Translation.Get("background2Window", "baseToggle");
 
-        initializingMessage = Translation.Get("systemMessage", "initializing");
+        initializingLabel.Text = Translation.Get("systemMessage", "initializing");
     }
 
     private void UpdateCurrentPropList()

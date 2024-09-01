@@ -16,8 +16,7 @@ public class CopyPosePane : BasePane
     private readonly CharacterService characterService;
     private readonly CharacterUndoRedoService characterUndoRedoService;
     private readonly SelectionController<CharacterController> characterSelectionController;
-
-    private string copyHandHeader = string.Empty;
+    private readonly Header copyHandHeader;
 
     public CopyPosePane(
         CharacterService characterService,
@@ -52,7 +51,7 @@ public class CopyPosePane : BasePane
         copyRightHandToRightButton = new(Translation.Get("copyPosePane", "copyRightHandToRight"));
         copyRightHandToRightButton.ControlEvent += OnCopyRightHandToRightButtonPushed;
 
-        copyHandHeader = Translation.Get("copyPosePane", "copyHandHeader");
+        copyHandHeader = new(Translation.Get("copyPosePane", "copyHandHeader"));
     }
 
     private CharacterController OtherCharacter =>
@@ -81,7 +80,7 @@ public class CopyPosePane : BasePane
             copyPoseButton.Draw();
         }
 
-        GUILayout.Label(copyHandHeader);
+        copyHandHeader.Draw();
         MpsGui.BlackLine();
 
         if (CurrentCharacter != OtherCharacter)
@@ -145,7 +144,7 @@ public class CopyPosePane : BasePane
         copyLeftHandToRightButton.Label = Translation.Get("copyPosePane", "copyLeftHandToRight");
         copyRightHandToLeftButton.Label = Translation.Get("copyPosePane", "copyRightHandToLeft");
         copyRightHandToRightButton.Label = Translation.Get("copyPosePane", "copyRightHandToRight");
-        copyHandHeader = Translation.Get("copyPosePane", "copyHandHeader");
+        copyHandHeader.Text = Translation.Get("copyPosePane", "copyHandHeader");
     }
 
     private void OnCharactersCalled(object sender, EventArgs e)

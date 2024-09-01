@@ -8,9 +8,7 @@ public class PropShapeKeyPane : BasePane
 {
     private readonly SelectionController<PropController> propSelectionController;
     private readonly Dictionary<string, EventHandler> sliderChangeEvents = [];
-
     private readonly PaneHeader paneHeader = new(Translation.Get("propShapeKeyPane", "header"), true);
-
     private readonly Dictionary<string, Slider> sliders = new(StringComparer.Ordinal);
 
     public PropShapeKeyPane(SelectionController<PropController> propSelectionController)

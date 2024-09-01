@@ -30,8 +30,9 @@ public class LightsPane : BasePane
     private readonly Button resetPositionButton;
     private readonly Button resetPropertiesButton;
     private readonly PaneHeader paneHeader;
+    private readonly Header resetHeader;
+    private readonly Label noLightsLabel;
 
-    private string resetHeader;
     private string noLights;
     private bool sliderChangedTransform;
 
@@ -47,8 +48,8 @@ public class LightsPane : BasePane
         lightSelectionController.Selected += OnSelectedLight;
 
         paneHeader = new(Translation.Get("lightsPane", "header"), true);
-        resetHeader = Translation.Get("lightsPane", "resetLabel");
-        noLights = Translation.Get("lightsPane", "noLights");
+        resetHeader = new(Translation.Get("lightsPane", "resetLabel"));
+        noLightsLabel = new(Translation.Get("lightsPane", "noLights"));
 
         lightDropdown = new([noLights]);
         lightDropdown.SelectionChange += LightDropdownSelectionChanged;
@@ -166,7 +167,7 @@ public class LightsPane : BasePane
 
         if (CurrentLightController == null)
         {
-            GUILayout.Label(noLights, GUILayout.ExpandWidth(true));
+            noLightsLabel.Draw();
         }
         else
         {
@@ -269,7 +270,7 @@ public class LightsPane : BasePane
 
         void DrawReset()
         {
-            MpsGui.Header(resetHeader);
+            resetHeader.Draw();
             MpsGui.BlackLine();
 
             GUILayout.BeginHorizontal();
@@ -284,8 +285,9 @@ public class LightsPane : BasePane
     protected override void ReloadTranslation()
     {
         paneHeader.Label = Translation.Get("lightsPane", "header");
-        resetHeader = Translation.Get("lightsPane", "resetLabel");
+        resetHeader.Text = Translation.Get("lightsPane", "resetLabel");
         noLights = Translation.Get("lightsPane", "noLights");
+        noLightsLabel.Text = noLights;
         lightTypeGrid.SetItemsWithoutNotify(Translation.GetArray("lightType", new[] { "normal", "spot", "point" }));
         addLightButton.Label = Translation.Get("lightsPane", "add");
         deleteLightButton.Label = Translation.Get("lightsPane", "delete");

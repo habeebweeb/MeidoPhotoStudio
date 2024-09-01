@@ -14,8 +14,7 @@ public class FreeLookPane : BasePane
     private readonly Slider offsetLookYSlider;
     private readonly Toggle eyeToCameraToggle;
     private readonly Toggle headToCameraToggle;
-
-    private string bindLabel = string.Empty;
+    private readonly Label bindLabel;
 
     public FreeLookPane(SelectionController<CharacterController> characterSelectionController)
     {
@@ -49,7 +48,7 @@ public class FreeLookPane : BasePane
         headToCameraToggle = new(Translation.Get("freeLookPane", "headToCamToggle"), true);
         headToCameraToggle.ControlEvent += OnBindHeadToggleChanged;
 
-        bindLabel = Translation.Get("freeLookPane", "bindLabel");
+        bindLabel = new(Translation.Get("freeLookPane", "bindLabel"));
     }
 
     private HeadController CurrentHead =>
@@ -87,7 +86,7 @@ public class FreeLookPane : BasePane
 
         GUILayout.BeginHorizontal();
 
-        GUILayout.Label(bindLabel, GUILayout.ExpandWidth(false));
+        bindLabel.Draw(GUILayout.ExpandWidth(false));
 
         eyeToCameraToggle.Draw();
         headToCameraToggle.Draw();
@@ -103,7 +102,7 @@ public class FreeLookPane : BasePane
         offsetLookYSlider.Label = Translation.Get("freeLookPane", "ySlider");
         eyeToCameraToggle.Label = Translation.Get("freeLookPane", "eyeToCamToggle");
         headToCameraToggle.Label = Translation.Get("freeLookPane", "headToCamToggle");
-        bindLabel = Translation.Get("freeLookPane", "bindLabel");
+        bindLabel.Text = Translation.Get("freeLookPane", "bindLabel");
     }
 
     private void OnCharacterSelectionChanging(object sender, SelectionEventArgs<CharacterController> e)

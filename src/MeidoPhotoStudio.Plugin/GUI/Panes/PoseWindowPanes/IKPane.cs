@@ -19,8 +19,7 @@ public class IKPane : BasePane
     private readonly Toggle customFloorHeightToggle;
     private readonly NumericalTextField floorHeightTextfield;
     private readonly Button flipButton;
-
-    private string customFloorHeightHeader;
+    private readonly Header customFloorHeightHeader;
 
     public IKPane(
         IKDragHandleService ikDragHandleService,
@@ -48,7 +47,7 @@ public class IKPane : BasePane
         limitDigitRotationsToggle = new(Translation.Get("maidPoseWindow", "limitDigitsToggle"));
         limitDigitRotationsToggle.ControlEvent += OnLimitDigitRotationsChanged;
 
-        customFloorHeightHeader = Translation.Get("maidPoseWindow", "customFloorHeightHeader");
+        customFloorHeightHeader = new(Translation.Get("maidPoseWindow", "customFloorHeightHeader"));
 
         customFloorHeightToggle = new(Translation.Get("maidPoseWindow", "customFloorHeightEnabledToggle"), false);
         customFloorHeightToggle.ControlEvent += OnCustomFloorHeightToggleChanged;
@@ -114,7 +113,7 @@ public class IKPane : BasePane
         {
             GUI.enabled = enabled;
 
-            GUILayout.Label(customFloorHeightHeader);
+            customFloorHeightHeader.Draw();
 
             MpsGui.BlackLine();
 
@@ -155,7 +154,7 @@ public class IKPane : BasePane
         boneModeEnabledToggle.Label = Translation.Get("maidPoseWindow", "boneToggle");
         limitLimbRotationsToggle.Label = Translation.Get("maidPoseWindow", "limitJointsToggle");
         limitDigitRotationsToggle.Label = Translation.Get("maidPoseWindow", "limitDigitsToggle");
-        customFloorHeightHeader = Translation.Get("maidPoseWindow", "customFloorHeightHeader");
+        customFloorHeightHeader.Text = Translation.Get("maidPoseWindow", "customFloorHeightHeader");
         customFloorHeightToggle.Label = Translation.Get("maidPoseWindow", "customFloorHeightEnabledToggle");
         flipButton.Label = Translation.Get("maidPoseWindow", "flipPoseToggle");
     }
