@@ -16,8 +16,8 @@ public class AnimationSelectorPane : BasePane
     private static readonly string[] AnimationSourceTranslationKeys = ["baseTab", "customTab"];
 
     private readonly SelectionGrid animationSourceGrid;
-    private readonly Dropdown2<string> animationCategoryDropdown;
-    private readonly Dropdown2<IAnimationModel> animationDropdown;
+    private readonly Dropdown<string> animationCategoryDropdown;
+    private readonly Dropdown<IAnimationModel> animationDropdown;
     private readonly GameAnimationRepository gameAnimationRepository;
     private readonly CustomAnimationRepository customAnimationRepository;
     private readonly CharacterUndoRedoService characterUndoRedoService;
@@ -70,7 +70,7 @@ public class AnimationSelectorPane : BasePane
         paneHeader = new(Translation.Get("posePane", "header"), true);
 
         saveAnimationToggle = new(Translation.Get("posePane", "saveToggle"), false);
-        animationCategoryComboBox = new([.. this.customAnimationRepository.Categories]);
+        animationCategoryComboBox = new(this.customAnimationRepository.Categories);
         animationNameTextField = new();
         savePoseButton = new(Translation.Get("posePane", "saveButton"));
         savePoseButton.ControlEvent += OnSavePoseButtonPushed;
@@ -204,7 +204,7 @@ public class AnimationSelectorPane : BasePane
             savedAnimationLabel.Draw();
         }
 
-        static void DrawDropdown<T>(Dropdown2<T> dropdown)
+        static void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             GUILayout.BeginHorizontal();
 
@@ -270,7 +270,7 @@ public class AnimationSelectorPane : BasePane
         if (!animationCategoryDropdown.Contains(e.Animation.Category))
         {
             animationCategoryDropdown.SetItemsWithoutNotify(AnimationCategoryList(e.Animation.Custom));
-            animationCategoryComboBox.BaseDropDown.SetDropdownItemsWithoutNotify([.. customAnimationRepository.Categories], 0);
+            animationCategoryComboBox.SetItems(customAnimationRepository.Categories);
         }
 
         var currentCategoryIndex = animationCategoryDropdown
@@ -301,7 +301,7 @@ public class AnimationSelectorPane : BasePane
             var currentCategory = animationCategoryDropdown.SelectedItem;
             var newCategories = AnimationCategoryList(custom: true).ToArray();
 
-            animationCategoryComboBox.SetDropdownItems(newCategories);
+            animationCategoryComboBox.SetItems(newCategories);
 
             var categoryIndex = newCategories.IndexOf(category => string.Equals(currentCategory, category, StringComparison.Ordinal));
 
@@ -330,7 +330,7 @@ public class AnimationSelectorPane : BasePane
             var newCategories = AnimationCategoryList(custom: true).ToArray();
 
             animationCategoryDropdown.SetItems(newCategories, 0);
-            animationCategoryComboBox.BaseDropDown.SetDropdownItemsWithoutNotify(newCategories);
+            animationCategoryComboBox.SetItems(newCategories);
         }
     }
 

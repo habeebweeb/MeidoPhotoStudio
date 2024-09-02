@@ -2,16 +2,19 @@ namespace MeidoPhotoStudio.Plugin;
 
 public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCategory, BasePane>>
 {
-    private readonly Dropdown propTypeDropdown;
+    private readonly Dropdown<PropCategory> propTypeDropdown;
     private readonly Dictionary<PropCategory, BasePane> propPanes = new(EnumEqualityComparer<PropCategory>.Instance);
     private readonly List<PropCategory> propTypes = [];
     private readonly PaneHeader paneHeader;
 
     public PropsPane()
     {
-        propTypeDropdown = new(["PROP TYPES"]);
+        propTypeDropdown = new(formatter: CategoryFormatter);
 
         paneHeader = new(Translation.Get("propsPane", "header"), true);
+
+        static string CategoryFormatter(PropCategory category, int index) =>
+            Translation.Get("propTypes", EnumToLower(category));
     }
 
     public enum PropCategory
@@ -49,10 +52,10 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
         };
 
         if (GUILayout.Button("<", arrowLayoutOptions))
-            propTypeDropdown.Step(-1);
+            propTypeDropdown.CyclePrevious();
 
         if (GUILayout.Button(">", arrowLayoutOptions))
-            propTypeDropdown.Step(1);
+            propTypeDropdown.CycleNext();
 
         GUILayout.EndHorizontal();
 
@@ -75,23 +78,14 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
 
         propTypes.Add(key);
 
-        propTypeDropdown.SetDropdownItemsWithoutNotify(
-            propTypes
-                .Select(EnumToLower)
-                .Select(key => Translation.Get("propTypes", key))
-                .ToArray(),
-            0);
+        propTypeDropdown.SetItemsWithoutNotify(propTypes, 0);
     }
 
     protected override void ReloadTranslation()
     {
         base.ReloadTranslation();
 
-        propTypeDropdown.SetDropdownItemsWithoutNotify(
-            propTypes
-            .Select(EnumToLower)
-            .Select(key => Translation.Get("propTypes", key))
-            .ToArray());
+        propTypeDropdown.Reformat();
 
         paneHeader.Label = Translation.Get("propsPane", "header");
     }

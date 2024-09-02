@@ -4,7 +4,7 @@ namespace MeidoPhotoStudio.Plugin;
 
 public class EffectsPane : BasePane, IEnumerable<KeyValuePair<EffectsPane.EffectType, BasePane>>
 {
-    private readonly Dropdown2<EffectType> effectTypesDropdown;
+    private readonly Dropdown<EffectType> effectTypesDropdown;
     private readonly Dictionary<EffectType, BasePane> effectsPanes = new(EnumEqualityComparer<EffectType>.Instance);
     private readonly PaneHeader paneHeader;
 

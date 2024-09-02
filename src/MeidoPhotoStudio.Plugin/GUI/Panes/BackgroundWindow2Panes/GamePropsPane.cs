@@ -7,36 +7,45 @@ public class GamePropsPane : BasePane
 {
     private readonly PropService propService;
     private readonly PhotoBgPropRepository gamePropRepository;
-    private readonly Dropdown propCategoryDropdown;
-    private readonly Dropdown propDropdown;
+    private readonly Dropdown<string> propCategoryDropdown;
+    private readonly Dropdown<PhotoBgPropModel> propDropdown;
     private readonly Button addPropButton;
-    private readonly string[] categories;
-
-    private bool hasProps;
+    private readonly Label noPropsLabel;
 
     public GamePropsPane(PropService propService, PhotoBgPropRepository gamePropRepository)
     {
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
         this.gamePropRepository = gamePropRepository ?? throw new ArgumentNullException(nameof(gamePropRepository));
 
-        categories = gamePropRepository.Categories.Where(category => gamePropRepository[category].Any()).ToArray();
+        var categories = this.gamePropRepository.Categories.Where(category => gamePropRepository[category].Any()).ToArray();
 
-        propCategoryDropdown = new(Translation.GetArray("gamePropCategories", categories));
-        propCategoryDropdown.SelectionChange += OnPropCategoryDropdownChanged;
+        propCategoryDropdown = new(categories, formatter: CategoryFormatter);
+        propCategoryDropdown.SelectionChanged += OnPropCategoryDropdownChanged;
 
-        propDropdown = new(PropList(0));
+        propDropdown = new(this.gamePropRepository[propCategoryDropdown.SelectedItem], formatter: PropFormatter);
 
         addPropButton = new(Translation.Get("propsPane", "addProp"));
         addPropButton.ControlEvent += OnAddPropButtonPressed;
+
+        noPropsLabel = new(Translation.Get("propsPane", "noProps"));
+
+        static string CategoryFormatter(string category, int index) =>
+            Translation.Get("gamePropCategories", category);
+
+        static string PropFormatter(PhotoBgPropModel prop, int index) =>
+            prop.Name;
     }
 
     public override void Draw()
     {
         DrawDropdown(propCategoryDropdown);
 
-        var guiEnabled = GUI.enabled;
+        if (gamePropRepository[propCategoryDropdown.SelectedItem].Count is 0)
+        {
+            noPropsLabel.Draw();
 
-        GUI.enabled = hasProps;
+            return;
+        }
 
         DrawDropdown(propDropdown);
 
@@ -44,9 +53,7 @@ public class GamePropsPane : BasePane
 
         addPropButton.Draw();
 
-        GUI.enabled = guiEnabled;
-
-        static void DrawDropdown(Dropdown dropdown)
+        static void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             var arrowLayoutOptions = new[]
             {
@@ -65,10 +72,10 @@ public class GamePropsPane : BasePane
             dropdown.Draw(dropdownLayoutOptions);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
-                dropdown.Step(-1);
+                dropdown.CyclePrevious();
 
             if (GUILayout.Button(">", arrowLayoutOptions))
-                dropdown.Step(1);
+                dropdown.CycleNext();
 
             GUILayout.EndHorizontal();
         }
@@ -78,30 +85,16 @@ public class GamePropsPane : BasePane
     {
         base.ReloadTranslation();
 
-        propCategoryDropdown.SetDropdownItemsWithoutNotify(
-            Translation.GetArray("gamePropCategories", categories));
-        propDropdown.SetDropdownItemsWithoutNotify(PropList(propCategoryDropdown.SelectedItemIndex));
+        propCategoryDropdown.Reformat();
+        propDropdown.Reformat();
 
         addPropButton.Label = Translation.Get("propsPane", "addProp");
+        noPropsLabel.Text = Translation.Get("propsPane", "noProps");
     }
 
     private void OnPropCategoryDropdownChanged(object sender, EventArgs e) =>
-        propDropdown.SetDropdownItems(PropList(propCategoryDropdown.SelectedItemIndex), 0);
+        propDropdown.SetItems(gamePropRepository[propCategoryDropdown.SelectedItem], 0);
 
     private void OnAddPropButtonPressed(object sender, EventArgs e) =>
-        propService.Add(gamePropRepository[categories[propCategoryDropdown.SelectedItemIndex]][propDropdown.SelectedItemIndex]);
-
-    private string[] PropList(int category)
-    {
-        var propList = gamePropRepository[categories[category]]
-            .Select(prop => prop.Name)
-            .ToArray();
-
-        hasProps = propList.Length is not 0;
-
-        if (propList.Length is 0)
-            propList = [Translation.Get("systemMessage", "noProps")];
-
-        return propList;
-    }
+        propService.Add(propDropdown.SelectedItem);
 }

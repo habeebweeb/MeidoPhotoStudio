@@ -6,25 +6,24 @@ namespace MeidoPhotoStudio.Plugin;
 public class CharacterPlacementPane : BasePane
 {
     private readonly PlacementService characterPlacementController;
-    private readonly Dropdown placementDropdown;
+    private readonly Dropdown<PlacementService.Placement> placementDropdown;
     private readonly Button applyPlacementButton;
-    private readonly PlacementService.Placement[] placementTypes;
 
     public CharacterPlacementPane(PlacementService characterPlacementController)
     {
         this.characterPlacementController = characterPlacementController ?? throw new ArgumentNullException(nameof(characterPlacementController));
 
-        placementTypes = Enum.GetValues(typeof(PlacementService.Placement))
-            .Cast<PlacementService.Placement>()
-            .ToArray();
-
-        placementDropdown = new(placementTypes
-            .Select(placement => placement.ToLower())
-            .Select(placement => Translation.Get("placementDropdown", placement))
-            .ToArray());
+        placementDropdown = new(
+            Enum.GetValues(typeof(PlacementService.Placement))
+                .Cast<PlacementService.Placement>()
+                .ToArray(),
+            formatter: PlacementTypeFormatter);
 
         applyPlacementButton = new(Translation.Get("maidCallWindow", "okButton"));
         applyPlacementButton.ControlEvent += OnPlacementButtonPushed;
+
+        static string PlacementTypeFormatter(PlacementService.Placement placement, int index) =>
+            Translation.Get("placementDropdown", placement.ToLower());
     }
 
     public override void Draw()
@@ -37,14 +36,11 @@ public class CharacterPlacementPane : BasePane
 
     protected override void ReloadTranslation()
     {
-        placementDropdown.SetDropdownItemsWithoutNotify(placementTypes
-            .Select(placement => placement.ToLower())
-            .Select(placement => Translation.Get("placementDropdown", placement))
-            .ToArray());
+        placementDropdown.Reformat();
 
         applyPlacementButton.Label = Translation.Get("maidCallWindow", "okButton");
     }
 
     private void OnPlacementButtonPushed(object sender, EventArgs e) =>
-        characterPlacementController.ApplyPlacement(placementTypes[placementDropdown.SelectedItemIndex]);
+        characterPlacementController.ApplyPlacement(placementDropdown.SelectedItem);
 }

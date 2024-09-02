@@ -13,8 +13,8 @@ public class HandPresetSelectorPane : BasePane
     private readonly CharacterUndoRedoService characterUndoRedoService;
     private readonly SelectionController<CharacterController> characterSelectionController;
     private readonly PaneHeader paneHeader;
-    private readonly Dropdown2<string> presetCategoryDropdown;
-    private readonly Dropdown2<HandPresetModel> presetDropdown;
+    private readonly Dropdown<string> presetCategoryDropdown;
+    private readonly Dropdown<HandPresetModel> presetDropdown;
     private readonly Button applyLeftHandButton;
     private readonly Button applyRightHandButton;
     private readonly Button swapHandsButton;
@@ -61,7 +61,7 @@ public class HandPresetSelectorPane : BasePane
         swapHandsButton.ControlEvent += OnSwapButtonPushed;
 
         savePresetToggle = new(Translation.Get("handPane", "saveToggle"));
-        handPresetCategoryComboBox = new(this.handPresetRepository.Categories.ToArray());
+        handPresetCategoryComboBox = new(this.handPresetRepository.Categories);
         handPresetNameTextField = new();
 
         saveLeftPresetButton = new(Translation.Get("handPane", "saveLeftButton"));
@@ -175,7 +175,7 @@ public class HandPresetSelectorPane : BasePane
             savedHandPresetLabel.Draw();
         }
 
-        static void DrawDropdown<T>(Dropdown2<T> dropdown)
+        static void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             GUILayout.BeginHorizontal();
 
@@ -222,7 +222,7 @@ public class HandPresetSelectorPane : BasePane
         if (!presetCategoryDropdown.Contains(e.HandPreset.Category))
         {
             presetCategoryDropdown.SetItemsWithoutNotify(PresetCategoryList());
-            handPresetCategoryComboBox.BaseDropDown.SetDropdownItemsWithoutNotify([.. handPresetRepository.Categories], 0);
+            handPresetCategoryComboBox.SetItems(handPresetRepository.Categories);
         }
 
         var currentCategoryIndex = presetCategoryDropdown
@@ -250,7 +250,7 @@ public class HandPresetSelectorPane : BasePane
             var currentCategory = presetCategoryDropdown.SelectedItem;
             var newCategories = PresetCategoryList().ToArray();
 
-            handPresetCategoryComboBox.SetDropdownItems(newCategories);
+            handPresetCategoryComboBox.SetItems(newCategories);
 
             var categoryIndex = newCategories.IndexOf(category => string.Equals(currentCategory, category, StringComparison.Ordinal));
 
@@ -278,7 +278,7 @@ public class HandPresetSelectorPane : BasePane
             var newCategories = PresetCategoryList().ToArray();
 
             presetCategoryDropdown.SetItemsWithoutNotify(newCategories, 0);
-            handPresetCategoryComboBox.BaseDropDown.SetDropdownItemsWithoutNotify(newCategories);
+            handPresetCategoryComboBox.SetItems(newCategories);
         }
     }
 

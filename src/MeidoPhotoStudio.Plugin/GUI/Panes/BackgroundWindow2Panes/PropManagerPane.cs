@@ -15,7 +15,8 @@ public class PropManagerPane : BasePane
     private readonly PropDragHandleService propDragHandleService;
     private readonly SelectionController<PropController> propSelectionController;
     private readonly TransformClipboard transformClipboard;
-    private readonly Dropdown propDropdown;
+    private readonly Dropdown<PropController> propDropdown;
+    private readonly Dictionary<PropController, string> propNames = [];
     private readonly Toggle dragPointToggle;
     private readonly Toggle gizmoToggle;
     private readonly Toggle shadowCastingToggle;
@@ -32,6 +33,7 @@ public class PropManagerPane : BasePane
     private readonly Toggle toggleAllGizmos;
     private readonly Label gizmoSpaceLabel;
     private readonly Header toggleAllHandlesHeader;
+    private readonly Label noPropsLabel;
 
     private bool transformControlChangedTransform;
 
@@ -51,8 +53,8 @@ public class PropManagerPane : BasePane
         this.propSelectionController.Selecting += OnSelectingProp;
         this.propSelectionController.Selected += OnSelectedProp;
 
-        propDropdown = new([Translation.Get("propManagerPane", "noProps")]);
-        propDropdown.SelectionChange += OnPropDropdownSelectionChange;
+        propDropdown = new(formatter: PropNameFormatter);
+        propDropdown.SelectionChanged += OnPropDropdownSelectionChange;
 
         dragPointToggle = new(Translation.Get("propManagerPane", "dragPointToggle"));
         dragPointToggle.ControlEvent += OnDragPointToggleChanged;
@@ -120,6 +122,11 @@ public class PropManagerPane : BasePane
 
         toggleAllHandlesHeader = new(Translation.Get("propManagerPane", "toggleAllHandlesHeader"));
         paneHeader = new(Translation.Get("propManagerPane", "header"), true);
+
+        noPropsLabel = new(Translation.Get("propManagerPane", "noProps"));
+
+        string PropNameFormatter(PropController prop, int index) =>
+            propNames[prop];
     }
 
     private PropController CurrentProp =>
@@ -132,7 +139,12 @@ public class PropManagerPane : BasePane
         if (!paneHeader.Enabled)
             return;
 
-        GUI.enabled = propService.Count > 0;
+        if (propService.Count is 0)
+        {
+            noPropsLabel.Draw();
+
+            return;
+        }
 
         GUILayout.BeginHorizontal();
 
@@ -145,10 +157,10 @@ public class PropManagerPane : BasePane
         };
 
         if (GUILayout.Button("<", arrowLayoutOptions))
-            propDropdown.Step(-1);
+            propDropdown.CyclePrevious();
 
         if (GUILayout.Button(">", arrowLayoutOptions))
-            propDropdown.Step(1);
+            propDropdown.CycleNext();
 
         GUILayout.EndHorizontal();
 
@@ -212,9 +224,6 @@ public class PropManagerPane : BasePane
 
     protected override void ReloadTranslation()
     {
-        if (propService.Count is 0)
-            propDropdown.SetDropdownItem(0, Translation.Get("propManagerPane", "noProps"));
-
         dragPointToggle.Label = Translation.Get("propManagerPane", "dragPointToggle");
         gizmoToggle.Label = Translation.Get("propManagerPane", "gizmoToggle");
         shadowCastingToggle.Label = Translation.Get("propManagerPane", "shadowCastingToggle");
@@ -242,6 +251,7 @@ public class PropManagerPane : BasePane
 
         toggleAllHandlesHeader.Text = Translation.Get("propManagerPane", "toggleAllHandlesHeader");
         paneHeader.Label = Translation.Get("propManagerPane", "header");
+        noPropsLabel.Text = Translation.Get("propManagerPane", "noProps");
     }
 
     private void UpdateControls()
@@ -284,18 +294,8 @@ public class PropManagerPane : BasePane
 
     private void OnAddedProp(object sender, PropServiceEventArgs e)
     {
-        if (propService.Count is 1)
-        {
-            propDropdown.SetDropdownItems([PropName(e.PropController.PropModel)], 0);
-
-            return;
-        }
-
-        var currentNames = new HashSet<string>(propDropdown.DropdownList, StringComparer.InvariantCultureIgnoreCase);
-        var propNameList = new List<string>(propDropdown.DropdownList);
-
-        propNameList.Insert(e.PropIndex, UniquePropName(currentNames, e.PropController.PropModel));
-        propDropdown.SetDropdownItems([.. propNameList], propService.Count - 1);
+        propNames[e.PropController] = UniquePropName(new(propNames.Values), e.PropController.PropModel);
+        propDropdown.SetItems(propService, propService.Count - 1);
 
         static string UniquePropName(HashSet<string> currentNames, IPropModel propModel)
         {
@@ -320,7 +320,8 @@ public class PropManagerPane : BasePane
     {
         if (propService.Count is 0)
         {
-            propDropdown.SetDropdownItems([Translation.Get("propManagerPane", "noProps")], 0);
+            propDropdown.Clear();
+            propNames.Clear();
 
             return;
         }
@@ -329,10 +330,8 @@ public class PropManagerPane : BasePane
             ? propService.Count - 1
             : propDropdown.SelectedItemIndex;
 
-        var propNameList = new List<string>(propDropdown.DropdownList);
-
-        propNameList.RemoveAt(e.PropIndex);
-        propDropdown.SetDropdownItems([.. propNameList], propIndex);
+        propNames.Remove(e.PropController);
+        propDropdown.SetItems(propService, propIndex);
     }
 
     private void OnPropTransformChanged(object sender, EventArgs e)
@@ -378,7 +377,7 @@ public class PropManagerPane : BasePane
 
         dragHandleController.PropertyChanged += OnDragHandlePropertyChanged;
 
-        propDropdown.SetIndexWithoutNotify(e.Index);
+        propDropdown.SetSelectedIndexWithoutNotify(e.Index);
 
         UpdateControls();
     }
@@ -410,7 +409,7 @@ public class PropManagerPane : BasePane
         if (propService.Count is 0)
             return;
 
-        propSelectionController.Select(propDropdown.SelectedItemIndex);
+        propSelectionController.Select(propDropdown.SelectedItem);
     }
 
     private void OnDragPointToggleChanged(object sender, EventArgs e)

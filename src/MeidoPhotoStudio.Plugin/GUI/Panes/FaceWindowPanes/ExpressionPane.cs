@@ -39,7 +39,7 @@ public class ExpressionPane : BasePane
     private readonly Toggle blinkToggle;
     private readonly Toggle editShapeKeysToggle;
     private readonly PaneHeader paneHeader;
-    private readonly Dropdown addShapeKeyDropdown;
+    private readonly Dropdown<string> addShapeKeyDropdown;
 
     private string[] shapeKeys;
     private bool hasShapeKeys;
@@ -59,7 +59,7 @@ public class ExpressionPane : BasePane
 
         editShapeKeysToggle = new(Translation.Get("expressionPane", "editShapeKeysToggle"));
 
-        addShapeKeyDropdown = new([Translation.Get("expressionPane", "noShapeKeys")]);
+        addShapeKeyDropdown = new();
 
         shapeKeys = [.. this.faceShapeKeyConfiguration.CustomShapeKeys];
 
@@ -236,9 +236,6 @@ public class ExpressionPane : BasePane
     {
         editShapeKeysToggle.Label = Translation.Get("expressionPane", "editShapeKeysToggle");
 
-        if (!hasShapeKeys)
-            addShapeKeyDropdown.SetDropdownItemsWithoutNotify([Translation.Get("expressionPane", "noShapeKeys")]);
-
         foreach (var (hashKey, control) in EyeHashes.Concat(MouthHashes).Concat(FaceHashes).Select(hashKey => (hashKey, controls[hashKey])))
         {
             var translation = Translation.Get("faceBlendValues", hashKey);
@@ -372,10 +369,7 @@ public class ExpressionPane : BasePane
 
         hasShapeKeys = shapeKeyList.Length is not 0;
 
-        if (shapeKeyList.Length is 0)
-            shapeKeyList = [Translation.Get("expressionPane", "noShapeKeys")];
-
-        addShapeKeyDropdown.SetDropdownItems(shapeKeyList);
+        addShapeKeyDropdown.SetItems(shapeKeyList);
     }
 
     private void UpdateControls()

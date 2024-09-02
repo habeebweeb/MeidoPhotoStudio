@@ -7,25 +7,30 @@ public class OtherPropsPane : BasePane
 {
     private readonly PropService propService;
     private readonly OtherPropRepository otherPropRepository;
-    private readonly Dropdown propCategoryDropdown;
-    private readonly Dropdown propDropdown;
+    private readonly Dropdown<string> propCategoryDropdown;
+    private readonly Dropdown<OtherPropModel> propDropdown;
     private readonly Button addPropButton;
-    private readonly string[] categories;
 
     public OtherPropsPane(PropService propService, OtherPropRepository otherPropRepository)
     {
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
         this.otherPropRepository = otherPropRepository ?? throw new ArgumentNullException(nameof(otherPropRepository));
 
-        categories = otherPropRepository.Categories.ToArray();
+        var categories = otherPropRepository.Categories.ToArray();
 
-        propCategoryDropdown = new(Translation.GetArray("otherPropCategories", categories));
-        propCategoryDropdown.SelectionChange += OnPropCategoryDropdownChanged;
+        propCategoryDropdown = new(categories, formatter: CategoryFormatter);
+        propCategoryDropdown.SelectionChanged += OnPropCategoryDropdownChanged;
 
-        propDropdown = new(PropList(0));
+        propDropdown = new(this.otherPropRepository[propCategoryDropdown.SelectedItem], formatter: PropFormatter);
 
         addPropButton = new(Translation.Get("propsPane", "addProp"));
         addPropButton.ControlEvent += OnAddPropButtonPressed;
+
+        static string CategoryFormatter(string category, int index) =>
+            Translation.Get("otherPropCategories", category);
+
+        static string PropFormatter(OtherPropModel prop, int index) =>
+            prop.Name;
     }
 
     public override void Draw()
@@ -37,7 +42,7 @@ public class OtherPropsPane : BasePane
 
         addPropButton.Draw();
 
-        static void DrawDropdown(Dropdown dropdown)
+        static void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             var arrowLayoutOptions = new[]
             {
@@ -56,10 +61,10 @@ public class OtherPropsPane : BasePane
             dropdown.Draw(dropdownLayoutOptions);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
-                dropdown.Step(-1);
+                dropdown.CyclePrevious();
 
             if (GUILayout.Button(">", arrowLayoutOptions))
-                dropdown.Step(1);
+                dropdown.CycleNext();
 
             GUILayout.EndHorizontal();
         }
@@ -67,19 +72,14 @@ public class OtherPropsPane : BasePane
 
     protected override void ReloadTranslation()
     {
-        propCategoryDropdown.SetDropdownItemsWithoutNotify(Translation.GetArray("otherPropCategories", categories));
-        propDropdown.SetDropdownItemsWithoutNotify(PropList(propCategoryDropdown.SelectedItemIndex));
+        propCategoryDropdown.Reformat();
+        propDropdown.Reformat();
         addPropButton.Label = Translation.Get("propsPane", "addProp");
     }
 
     private void OnPropCategoryDropdownChanged(object sender, EventArgs e) =>
-        propDropdown.SetDropdownItems(PropList(propCategoryDropdown.SelectedItemIndex), 0);
+        propDropdown.SetItems(otherPropRepository[propCategoryDropdown.SelectedItem]);
 
     private void OnAddPropButtonPressed(object sender, EventArgs e) =>
-        propService.Add(otherPropRepository[categories[propCategoryDropdown.SelectedItemIndex]][propDropdown.SelectedItemIndex]);
-
-    private string[] PropList(int category) =>
-        otherPropRepository[categories[category]]
-            .Select(prop => prop.Name)
-            .ToArray();
+        propService.Add(propDropdown.SelectedItem);
 }

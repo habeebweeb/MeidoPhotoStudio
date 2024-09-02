@@ -1,10 +1,11 @@
 namespace MeidoPhotoStudio.Plugin;
 
-// TODO: Migrate other dropdowns to this dropdown
-public class Dropdown2<T> : BaseControl, IEnumerable<T>
+public class Dropdown<T> : BaseControl, IEnumerable<T>
 {
     private static readonly Func<T, int, string> DefaultItemFormatter = (T item, int index) =>
         item?.ToString() ?? string.Empty;
+
+    private readonly int id = DropdownHelper.DropdownID;
 
     private T[] items = [];
     private string[] formattedItems;
@@ -16,10 +17,10 @@ public class Dropdown2<T> : BaseControl, IEnumerable<T>
     private bool clickedWhileOpen;
     private bool buttonClicked;
 
-    public Dropdown2(Func<T, int, string> formatter = null) =>
+    public Dropdown(Func<T, int, string> formatter = null) =>
         Formatter = formatter;
 
-    public Dropdown2(IEnumerable<T> items, int selectedItemIndex = 0, Func<T, int, string> formatter = null)
+    public Dropdown(IEnumerable<T> items, int selectedItemIndex = 0, Func<T, int, string> formatter = null)
         : this(formatter)
     {
         _ = items ?? throw new ArgumentNullException(nameof(items));
@@ -55,11 +56,10 @@ public class Dropdown2<T> : BaseControl, IEnumerable<T>
         }
     }
 
-    internal int ID { get; } = DropdownHelper.DropdownID;
-
     public T this[int index] =>
-        (uint)index >= items.Length ? throw new ArgumentOutOfRangeException(nameof(index)) :
-        items[index];
+        (uint)index >= items.Length
+            ? throw new ArgumentOutOfRangeException(nameof(index))
+            : items[index];
 
     public IEnumerator<T> GetEnumerator() =>
         ((IEnumerable<T>)items).GetEnumerator();
@@ -114,7 +114,7 @@ public class Dropdown2<T> : BaseControl, IEnumerable<T>
             DropdownHelper.DropdownClose += OnDropdownClosed;
 
             DropdownHelper.OpenDropdown(
-                this,
+                id,
                 scrollPosition,
                 formattedItems,
                 SelectedItemIndex,
@@ -124,7 +124,7 @@ public class Dropdown2<T> : BaseControl, IEnumerable<T>
 
             void OnSelectionChanged(object sender, DropdownHelper.DropdownSelectArgs e)
             {
-                if (e.DropdownID != ID)
+                if (e.DropdownID != id)
                     return;
 
                 DropdownHelper.SelectionChange -= OnSelectionChanged;
@@ -134,7 +134,7 @@ public class Dropdown2<T> : BaseControl, IEnumerable<T>
 
             void OnDropdownClosed(object sender, DropdownHelper.DropdownCloseArgs e)
             {
-                if (e.DropdownID != ID)
+                if (e.DropdownID != id)
                     return;
 
                 DropdownHelper.DropdownClose -= OnDropdownClosed;
@@ -149,6 +149,9 @@ public class Dropdown2<T> : BaseControl, IEnumerable<T>
             }
         }
     }
+
+    public void Clear() =>
+        SetItems([], 0);
 
     public void SetItems(IEnumerable<T> items, int? newIndex = null)
     {
@@ -186,8 +189,7 @@ public class Dropdown2<T> : BaseControl, IEnumerable<T>
         value >= max ? min :
         value;
 
-    private void SetItems(
-        IEnumerable<T> items, int? newIndex = null, bool notify = true)
+    private void SetItems(IEnumerable<T> items, int? newIndex = null, bool notify = true)
     {
         this.items = [.. items];
 

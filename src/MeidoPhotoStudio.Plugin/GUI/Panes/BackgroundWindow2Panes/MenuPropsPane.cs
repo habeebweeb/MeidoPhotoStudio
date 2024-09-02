@@ -12,7 +12,7 @@ public class MenuPropsPane : BasePane
     private readonly MenuPropRepository menuPropRepository;
     private readonly MenuPropsConfiguration menuPropsConfiguration;
     private readonly IconCache iconCache;
-    private readonly Dropdown propCategoryDropdown;
+    private readonly Dropdown<MPN> propCategoryDropdown;
     private readonly Toggle modFilterToggle;
     private readonly Toggle baseFilterToggle;
     private readonly Label initializingLabel;
@@ -33,8 +33,8 @@ public class MenuPropsPane : BasePane
         this.menuPropsConfiguration = menuPropsConfiguration;
         this.iconCache = iconCache ?? throw new ArgumentNullException(nameof(iconCache));
 
-        propCategoryDropdown = new([":)"]);
-        propCategoryDropdown.SelectionChange += OnPropCategoryDropdownChanged;
+        propCategoryDropdown = new(formatter: CategoryFormatter);
+        propCategoryDropdown.SelectionChanged += OnPropCategoryDropdownChanged;
 
         modFilterToggle = new(Translation.Get("background2Window", "modsToggle"));
         modFilterToggle.ControlEvent += OnModFilterChanged;
@@ -55,6 +55,9 @@ public class MenuPropsPane : BasePane
             Initialize();
         }
 
+        static string CategoryFormatter(MPN category, int index) =>
+            Translation.Get("clothing", category.ToString());
+
         void OnMenuDatabaseReady(object sender, EventArgs e)
         {
             menuDatabaseBusy = false;
@@ -73,9 +76,7 @@ public class MenuPropsPane : BasePane
                     .OrderBy(mpn => mpn),
             ];
 
-            propCategoryDropdown.SetDropdownItems(categories
-                .Select(mpn => Translation.Get("clothing", mpn.ToString()))
-                .ToArray());
+            propCategoryDropdown.SetItems(categories);
         }
     }
 
@@ -108,7 +109,7 @@ public class MenuPropsPane : BasePane
 
         DrawPropList();
 
-        static void DrawDropdown(Dropdown dropdown)
+        static void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             var arrowLayoutOptions = new[]
             {
@@ -128,10 +129,10 @@ public class MenuPropsPane : BasePane
             dropdown.Draw(dropdownLayoutOptions);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
-                dropdown.Step(-1);
+                dropdown.CyclePrevious();
 
             if (GUILayout.Button(">", arrowLayoutOptions))
-                dropdown.Step(1);
+                dropdown.CycleNext();
 
             GUILayout.EndHorizontal();
         }
@@ -197,8 +198,7 @@ public class MenuPropsPane : BasePane
         if (menuPropRepository.Busy)
             return;
 
-        propCategoryDropdown.SetDropdownItemsWithoutNotify(
-            categories.Select(mpn => Translation.Get("clothing", mpn.ToString())).ToArray());
+        propCategoryDropdown.Reformat();
 
         modFilterToggle.Label = Translation.Get("background2Window", "modsToggle");
         baseFilterToggle.Label = Translation.Get("background2Window", "baseToggle");

@@ -18,7 +18,7 @@ public class AttachedAccessoryPane : BasePane
     private readonly MenuPropRepository menuPropRepository;
     private readonly SelectionController<CharacterController> characterSelectionController;
     private readonly PaneHeader paneHeader;
-    private readonly Dropdown2<MenuFilePropModel> accessoryDropdown;
+    private readonly Dropdown<MenuFilePropModel> accessoryDropdown;
     private readonly SelectionGrid accessoryCategoryGrid;
     private readonly Button detachAllAccessoriesButton;
     private readonly Label initializingLabel;
@@ -107,7 +107,7 @@ public class AttachedAccessoryPane : BasePane
             detachAllAccessoriesButton.Draw();
         }
 
-        static void DrawDropdown<T>(Dropdown2<T> dropdown)
+        static void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             GUILayout.BeginHorizontal();
 

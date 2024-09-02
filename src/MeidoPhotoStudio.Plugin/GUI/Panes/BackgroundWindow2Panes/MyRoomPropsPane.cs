@@ -10,8 +10,7 @@ public class MyRoomPropsPane : BasePane
     private readonly PropService propService;
     private readonly MyRoomPropRepository myRoomPropRepository;
     private readonly IconCache iconCache;
-    private readonly Dropdown propCategoryDropdown;
-    private readonly int[] categories;
+    private readonly Dropdown<int> propCategoryDropdown;
 
     private Vector2 scrollPosition;
     private IEnumerable<MyRoomPropModel> currentPropList;
@@ -23,15 +22,15 @@ public class MyRoomPropsPane : BasePane
         this.myRoomPropRepository = myRoomPropRepository ?? throw new ArgumentNullException(nameof(myRoomPropRepository));
         this.iconCache = iconCache ?? throw new ArgumentNullException(nameof(iconCache));
 
-        categories = [-1, .. myRoomPropRepository.CategoryIDs.OrderBy(id => id)];
+        int[] categories = [-1, .. myRoomPropRepository.CategoryIDs.OrderBy(id => id)];
 
-        propCategoryDropdown = new(categories
-            .Select(id => Translation.Get("myRoomPropCategories", id.ToString()))
-            .ToArray());
-
-        propCategoryDropdown.SelectionChange += OnPropCategoryDropdownChanged;
+        propCategoryDropdown = new(categories, formatter: CategoryFormatter);
+        propCategoryDropdown.SelectionChanged += OnPropCategoryDropdownChanged;
 
         UpdateCurrentPropList();
+
+        static string CategoryFormatter(int category, int index) =>
+            Translation.Get("myRoomPropCategories", category.ToString());
     }
 
     public override void Draw()
@@ -42,7 +41,7 @@ public class MyRoomPropsPane : BasePane
 
         DrawPropList();
 
-        static void DrawDropdown(Dropdown dropdown)
+        static void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             var arrowLayoutOptions = new[]
             {
@@ -62,10 +61,10 @@ public class MyRoomPropsPane : BasePane
             dropdown.Draw(dropdownLayoutOptions);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
-                dropdown.Step(-1);
+                dropdown.CyclePrevious();
 
             if (GUILayout.Button(">", arrowLayoutOptions))
-                dropdown.Step(1);
+                dropdown.CycleNext();
 
             GUILayout.EndHorizontal();
         }
@@ -102,17 +101,12 @@ public class MyRoomPropsPane : BasePane
         }
     }
 
-    protected override void ReloadTranslation()
-    {
-        base.ReloadTranslation();
-
-        propCategoryDropdown.SetDropdownItemsWithoutNotify(
-            categories.Select(id => Translation.Get("myRoomPropCategories", id.ToString())).ToArray());
-    }
+    protected override void ReloadTranslation() =>
+        propCategoryDropdown.Reformat();
 
     private void UpdateCurrentPropList()
     {
-        var currentCategory = categories[propCategoryDropdown.SelectedItemIndex];
+        var currentCategory = propCategoryDropdown.SelectedItem;
 
         if (currentCategory is -1)
         {

@@ -7,39 +7,47 @@ public class DeskPropsPane : BasePane
 {
     private readonly PropService propService;
     private readonly DeskPropRepository deskPropRepository;
-    private readonly Dropdown propCategoryDropdown;
-    private readonly Dropdown propDropdown;
+    private readonly Dropdown<int> propCategoryDropdown;
+    private readonly Dropdown<DeskPropModel> propDropdown;
     private readonly Button addPropButton;
-    private readonly int[] categories;
-
-    private bool hasProps;
+    private readonly Label noPropsLabel;
 
     public DeskPropsPane(PropService propService, DeskPropRepository deskPropRepository)
     {
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
         this.deskPropRepository = deskPropRepository ?? throw new ArgumentNullException(nameof(deskPropRepository));
 
-        categories = [.. deskPropRepository.CategoryIDs.OrderBy(id => id)];
+        var categories = this.deskPropRepository.CategoryIDs.OrderBy(id => id).ToArray();
 
-        propCategoryDropdown = new(categories
-            .Select(id => Translation.Get("deskpropCategories", id.ToString()))
-            .ToArray());
+        propCategoryDropdown = new(categories, formatter: CategoryFormatter);
+        propCategoryDropdown.SelectionChanged += OnPropCategoryDropdownChanged;
 
-        propCategoryDropdown.SelectionChange += OnPropCategoryDropdownChanged;
-
-        propDropdown = new(PropList(0));
+        propDropdown = new(
+            this.deskPropRepository[propCategoryDropdown.SelectedItem],
+            formatter: PropFormatter);
 
         addPropButton = new(Translation.Get("propsPane", "addProp"));
         addPropButton.ControlEvent += OnAddPropButtonPressed;
+
+        noPropsLabel = new(Translation.Get("propsPane", "noProps"));
+
+        static string CategoryFormatter(int id, int index) =>
+            Translation.Get("deskpropCategories", id.ToString());
+
+        static string PropFormatter(DeskPropModel prop, int index) =>
+            prop.Name;
     }
 
     public override void Draw()
     {
         DrawDropdown(propCategoryDropdown);
 
-        var guiEnabled = GUI.enabled;
+        if (deskPropRepository[propCategoryDropdown.SelectedItem].Count is 0)
+        {
+            noPropsLabel.Draw();
 
-        GUI.enabled = hasProps;
+            return;
+        }
 
         DrawDropdown(propDropdown);
 
@@ -47,9 +55,7 @@ public class DeskPropsPane : BasePane
 
         addPropButton.Draw();
 
-        GUI.enabled = guiEnabled;
-
-        static void DrawDropdown(Dropdown dropdown)
+        static void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             var arrowLayoutOptions = new[]
             {
@@ -68,10 +74,10 @@ public class DeskPropsPane : BasePane
             dropdown.Draw(dropdownLayoutOptions);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
-                dropdown.Step(-1);
+                dropdown.CyclePrevious();
 
             if (GUILayout.Button(">", arrowLayoutOptions))
-                dropdown.Step(1);
+                dropdown.CycleNext();
 
             GUILayout.EndHorizontal();
         }
@@ -79,32 +85,16 @@ public class DeskPropsPane : BasePane
 
     protected override void ReloadTranslation()
     {
-        base.ReloadTranslation();
-
-        propCategoryDropdown.SetDropdownItemsWithoutNotify(
-            categories.Select(id => Translation.Get("deskPropCategories", id.ToString())).ToArray());
-        propDropdown.SetDropdownItemsWithoutNotify(PropList(propCategoryDropdown.SelectedItemIndex));
+        propCategoryDropdown.Reformat();
+        propDropdown.Reformat();
 
         addPropButton.Label = Translation.Get("propsPane", "addProp");
+        noPropsLabel.Text = Translation.Get("propsPane", "noProps");
     }
 
     private void OnPropCategoryDropdownChanged(object sender, EventArgs e) =>
-        propDropdown.SetDropdownItems(PropList(propCategoryDropdown.SelectedItemIndex), 0);
+        propDropdown.SetItems(deskPropRepository[propCategoryDropdown.SelectedItem]);
 
     private void OnAddPropButtonPressed(object sender, EventArgs e) =>
-        propService.Add(deskPropRepository[categories[propCategoryDropdown.SelectedItemIndex]][propDropdown.SelectedItemIndex]);
-
-    private string[] PropList(int category)
-    {
-        var propList = deskPropRepository[categories[category]]
-            .Select(prop => prop.Name)
-            .ToArray();
-
-        hasProps = propList.Length is not 0;
-
-        if (propList.Length is 0)
-            propList = [Translation.Get("systemMessage", "noProps")];
-
-        return propList;
-    }
+        propService.Add(propDropdown.SelectedItem);
 }

@@ -281,7 +281,8 @@
   },
   "propsPane": {
     "addProp": "Add Prop",
-    "header": "Props"
+    "header": "Props",
+    "noProps": "No props"
   },
   "propsPaneTabs": {
     "props": "Props",
@@ -456,7 +457,8 @@
   },
   "attachPropPane": {
     "keepWorldPosition": "Keep current position",
-    "header": "Attach Point",
+    "header": "Prop Attachment",
+    "noCharactersOrPropsLabel": "No characters or props",
     "head": "Head",
     "neck": "Neck",
     "upperArmL": "Shoulder L",

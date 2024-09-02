@@ -8,30 +8,42 @@ public class BackgroundPropsPane : BasePane
 {
     private readonly PropService propService;
     private readonly BackgroundPropRepository backgroundPropRepository;
-    private readonly Dropdown propCategoryDropdown;
-    private readonly Dropdown propDropdown;
+    private readonly Dropdown<BackgroundCategory> propCategoryDropdown;
+    private readonly Dropdown<BackgroundPropModel> propDropdown;
     private readonly Button addPropButton;
-    private readonly BackgroundCategory[] categories;
 
     public BackgroundPropsPane(PropService propService, BackgroundPropRepository backgroundPropRepository)
     {
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
         this.backgroundPropRepository = backgroundPropRepository ?? throw new ArgumentNullException(nameof(backgroundPropRepository));
 
-        categories = [.. backgroundPropRepository.Categories.OrderBy(category => category)];
+        var categories = backgroundPropRepository.Categories.OrderBy(category => category).ToArray();
 
-        propCategoryDropdown = new(
-            categories
-                .Select(category => Translation.Get("backgroundSource", category.ToString()))
-                .ToArray(),
-            Array.IndexOf(categories, BackgroundCategory.COM3D2));
+        propCategoryDropdown = new(categories, Array.IndexOf(categories, BackgroundCategory.COM3D2), CategoryFormatter);
+        propCategoryDropdown.SelectionChanged += OnPropCategoryDropdownChanged;
 
-        propCategoryDropdown.SelectionChange += OnPropCategoryDropdownChanged;
-
-        propDropdown = new(PropList(categories[propCategoryDropdown.SelectedItemIndex]));
+        propDropdown = new(
+            this.backgroundPropRepository[propCategoryDropdown.SelectedItem],
+            formatter: PropFormatter);
 
         addPropButton = new(Translation.Get("propsPane", "addProp"));
         addPropButton.ControlEvent += OnAddPropButtonPressed;
+
+        static string CategoryFormatter(BackgroundCategory category, int index)
+        {
+            var translationKey = category switch
+            {
+                BackgroundCategory.CM3D2 => "cm3d2",
+                BackgroundCategory.COM3D2 => "com3d2",
+                BackgroundCategory.MyRoomCustom => "myRoomCustom",
+                _ => throw new NotSupportedException($"{nameof(category)} is not supported"),
+            };
+
+            return Translation.Get("backgroundSource", translationKey);
+        }
+
+        static string PropFormatter(BackgroundPropModel prop, int index) =>
+            prop.Name;
     }
 
     public override void Draw()
@@ -43,7 +55,7 @@ public class BackgroundPropsPane : BasePane
 
         addPropButton.Draw();
 
-        static void DrawDropdown(Dropdown dropdown)
+        static void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             var arrowLayoutOptions = new[]
             {
@@ -62,10 +74,10 @@ public class BackgroundPropsPane : BasePane
             dropdown.Draw(dropdownLayoutOptions);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
-                dropdown.Step(-1);
+                dropdown.CyclePrevious();
 
             if (GUILayout.Button(">", arrowLayoutOptions))
-                dropdown.Step(1);
+                dropdown.CycleNext();
 
             GUILayout.EndHorizontal();
         }
@@ -73,18 +85,14 @@ public class BackgroundPropsPane : BasePane
 
     protected override void ReloadTranslation()
     {
-        propCategoryDropdown.SetDropdownItemsWithoutNotify(
-            categories.Select(category => Translation.Get("backgroundSource", category.ToString())).ToArray());
-        propDropdown.SetDropdownItemsWithoutNotify(PropList(categories[propCategoryDropdown.SelectedItemIndex]));
+        propCategoryDropdown.Reformat();
+        propDropdown.Reformat();
         addPropButton.Label = Translation.Get("propsPane", "addProp");
     }
 
     private void OnPropCategoryDropdownChanged(object sender, EventArgs e) =>
-        propDropdown.SetDropdownItems(PropList(categories[propCategoryDropdown.SelectedItemIndex]), 0);
+        propDropdown.SetItems(backgroundPropRepository[propCategoryDropdown.SelectedItem], 0);
 
     private void OnAddPropButtonPressed(object sender, EventArgs e) =>
-        propService.Add(backgroundPropRepository[categories[propCategoryDropdown.SelectedItemIndex]][propDropdown.SelectedItemIndex]);
-
-    private string[] PropList(BackgroundCategory category) =>
-        backgroundPropRepository[category].Select(prop => prop.Name).ToArray();
+        propService.Add(propDropdown.SelectedItem);
 }

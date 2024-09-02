@@ -12,7 +12,8 @@ public class LightsPane : BasePane
 
     private readonly LightRepository lightRepository;
     private readonly SelectionController<LightController> lightSelectionController;
-    private readonly Dropdown lightDropdown;
+    private readonly Dropdown<LightController> lightDropdown;
+    private readonly Dictionary<LightController, string> lightNames = [];
     private readonly SelectionGrid lightTypeGrid;
     private readonly Toggle lightOnToggle;
     private readonly Button addLightButton;
@@ -51,8 +52,8 @@ public class LightsPane : BasePane
         resetHeader = new(Translation.Get("lightsPane", "resetLabel"));
         noLightsLabel = new(Translation.Get("lightsPane", "noLights"));
 
-        lightDropdown = new([noLights]);
-        lightDropdown.SelectionChange += LightDropdownSelectionChanged;
+        lightDropdown = new(formatter: LightNameFormatter);
+        lightDropdown.SelectionChanged += LightDropdownSelectionChanged;
 
         lightTypeGrid = new SelectionGrid(Translation.GetArray("lightType", new[] { "normal", "spot", "point" }));
         lightTypeGrid.ControlEvent += OnLightTypeChanged;
@@ -148,6 +149,9 @@ public class LightsPane : BasePane
 
         resetPositionButton = new Button(Translation.Get("lightsPane", "resetPosition"));
         resetPositionButton.ControlEvent += OnResetPositionButtonPressed;
+
+        string LightNameFormatter(LightController light, int index) =>
+            lightNames[light];
     }
 
     public static Light MainLight =>
@@ -168,30 +172,30 @@ public class LightsPane : BasePane
         if (CurrentLightController == null)
         {
             noLightsLabel.Draw();
+
+            return;
         }
+
+        DrawLightType();
+
+        var enabled = GUI.enabled;
+
+        GUI.enabled = lightOnToggle.Value;
+
+        if (CurrentLightController.Type is LightType.Directional)
+            DrawDirectionalLightControls();
+        else if (CurrentLightController.Type is LightType.Spot)
+            DrawSpotLightControls();
         else
-        {
-            DrawLightType();
+            DrawPointLightControls();
 
-            var enabled = GUI.enabled;
+        MpsGui.BlackLine();
 
-            GUI.enabled = lightOnToggle.Value;
+        DrawColourControls();
 
-            if (CurrentLightController.Type is LightType.Directional)
-                DrawDirectionalLightControls();
-            else if (CurrentLightController.Type is LightType.Spot)
-                DrawSpotLightControls();
-            else
-                DrawPointLightControls();
+        DrawReset();
 
-            MpsGui.BlackLine();
-
-            DrawColourControls();
-
-            DrawReset();
-
-            GUI.enabled = enabled;
-        }
+        GUI.enabled = enabled;
 
         void DrawTopBar()
         {
@@ -306,9 +310,6 @@ public class LightsPane : BasePane
         resetPositionButton.Label = Translation.Get("lightsPane", "resetPosition");
     }
 
-    private string LightName(Light light) =>
-        light == MainLight ? Translation.Get("lightType", "main") : Translation.Get("lightType", "light");
-
     private void OnSelectingLight(object sender, SelectionEventArgs<LightController> e)
     {
         if (CurrentLightController is null)
@@ -326,7 +327,7 @@ public class LightsPane : BasePane
         CurrentLightController.PropertyChanged += OnChangedLightProperties;
         CurrentLightController.ChangedLightType += OnChangedLightType;
 
-        lightDropdown.SetIndexWithoutNotify(e.Index);
+        lightDropdown.SetSelectedIndexWithoutNotify(e.Index);
 
         UpdateControls();
     }
@@ -335,7 +336,8 @@ public class LightsPane : BasePane
     {
         if (lightRepository.Count is 0)
         {
-            lightDropdown.SetDropdownItems([noLights], 0);
+            lightDropdown.Clear();
+            lightNames.Clear();
 
             return;
         }
@@ -344,33 +346,20 @@ public class LightsPane : BasePane
             ? lightRepository.Count - 1
             : lightDropdown.SelectedItemIndex;
 
-        var lightNameList = new List<string>(lightDropdown.DropdownList);
-
-        lightNameList.RemoveAt(e.LightIndex);
-
-        lightDropdown.SetDropdownItems([.. lightNameList], lightIndex);
+        lightNames.Remove(e.LightController);
+        lightDropdown.SetItems(lightRepository, lightIndex);
     }
 
     private void OnAddedLight(object sender, LightRepositoryEventArgs e)
     {
-        if (lightRepository.Count is 1)
+        lightNames[e.LightController] = GetNewLightName(e.LightController);
+        lightDropdown.SetItems(lightRepository, lightRepository.Count - 1);
+
+        string GetNewLightName(LightController lightController)
         {
-            lightDropdown.SetDropdownItems([LightName(e.LightController.Light)], 0);
+            var nameSet = new HashSet<string>(lightNames.Values);
 
-            return;
-        }
-
-        var lightNameList = new List<string>(lightDropdown.DropdownList);
-
-        lightNameList.Insert(e.LightIndex, GetNewLightName());
-
-        lightDropdown.SetDropdownItems([.. lightNameList], lightRepository.Count - 1);
-
-        string GetNewLightName()
-        {
-            var nameSet = new HashSet<string>(lightDropdown.DropdownList);
-
-            var lightName = LightName(e.LightController.Light);
+            var lightName = LightName(lightController.Light);
             var newLightName = lightName;
             var index = 1;
 
@@ -381,6 +370,9 @@ public class LightsPane : BasePane
             }
 
             return newLightName;
+
+            static string LightName(Light light) =>
+                light == MainLight ? Translation.Get("lightType", "main") : Translation.Get("lightType", "light");
         }
     }
 
@@ -463,7 +455,7 @@ public class LightsPane : BasePane
         if (lightRepository.Count is 0)
             return;
 
-        lightSelectionController.Select(lightDropdown.SelectedItemIndex);
+        lightSelectionController.Select(lightDropdown.SelectedItem);
     }
 
     private void OnLightTypeChanged(object sender, EventArgs e)

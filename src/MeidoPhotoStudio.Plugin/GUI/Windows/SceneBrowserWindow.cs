@@ -25,7 +25,7 @@ public class SceneBrowserWindow : BaseWindow
     private readonly Button refreshScenesButton;
     private readonly Button addCategoryButton;
     private readonly Button saveSceneButton;
-    private readonly Dropdown2<SortingMode> sortingModesDropdown;
+    private readonly Dropdown<SortingMode> sortingModesDropdown;
     private readonly Toggle descendingToggle;
 
     private bool resizing;

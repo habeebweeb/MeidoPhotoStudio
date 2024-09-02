@@ -21,8 +21,8 @@ public class BlendSetSelectorPane : BasePane
     private readonly SelectionController<CharacterController> characterSelectionController;
     private readonly PaneHeader paneHeader;
     private readonly SelectionGrid blendSetSourceGrid;
-    private readonly Dropdown2<string> blendSetCategoryDropdown;
-    private readonly Dropdown2<IBlendSetModel> blendSetDropdown;
+    private readonly Dropdown<string> blendSetCategoryDropdown;
+    private readonly Dropdown<IBlendSetModel> blendSetDropdown;
     private readonly Toggle saveBlendSetToggle;
     private readonly ComboBox blendSetCategoryComboBox;
     private readonly TextField blendSetNameTextField;
@@ -72,7 +72,7 @@ public class BlendSetSelectorPane : BasePane
         paneHeader = new(Translation.Get("maidFaceWindow", "header"), true);
 
         saveBlendSetToggle = new(Translation.Get("maidFaceWindow", "savePaneToggle"), false);
-        blendSetCategoryComboBox = new(this.customBlendSetRepository.Categories.ToArray());
+        blendSetCategoryComboBox = new(this.customBlendSetRepository.Categories);
         blendSetNameTextField = new();
         saveBlendSetButton = new(Translation.Get("maidFaceWindow", "saveButton"));
         saveBlendSetButton.ControlEvent += OnSaveBlendSetButtonPushed;
@@ -169,7 +169,7 @@ public class BlendSetSelectorPane : BasePane
             savedBlendSetLabel.Draw();
         }
 
-        static void DrawDropdown<T>(Dropdown2<T> dropdown)
+        static void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             GUILayout.BeginHorizontal();
 
@@ -233,7 +233,7 @@ public class BlendSetSelectorPane : BasePane
         if (!blendSetCategoryDropdown.Contains(e.BlendSet.Category))
         {
             blendSetCategoryDropdown.SetItemsWithoutNotify(BlendSetCategoryList(e.BlendSet.Custom));
-            blendSetCategoryComboBox.BaseDropDown.SetDropdownItemsWithoutNotify([.. customBlendSetRepository.Categories], 0);
+            blendSetCategoryComboBox.SetItems(customBlendSetRepository.Categories);
         }
 
         var currentCategoryIndex = blendSetCategoryDropdown
@@ -264,7 +264,7 @@ public class BlendSetSelectorPane : BasePane
             var currentCategory = blendSetCategoryDropdown.SelectedItem;
             var newCategories = BlendSetCategoryList(custom: true).ToArray();
 
-            blendSetCategoryComboBox.SetDropdownItems(newCategories);
+            blendSetCategoryComboBox.SetItems(newCategories);
 
             var categoryIndex = newCategories.IndexOf(category => string.Equals(currentCategory, category, StringComparison.Ordinal));
 
@@ -293,7 +293,7 @@ public class BlendSetSelectorPane : BasePane
             var newCategories = BlendSetCategoryList(custom: true).ToArray();
 
             blendSetCategoryDropdown.SetItems(newCategories, 0);
-            blendSetCategoryComboBox.BaseDropDown.SetDropdownItemsWithoutNotify(newCategories);
+            blendSetCategoryComboBox.SetItems(newCategories);
         }
     }
 

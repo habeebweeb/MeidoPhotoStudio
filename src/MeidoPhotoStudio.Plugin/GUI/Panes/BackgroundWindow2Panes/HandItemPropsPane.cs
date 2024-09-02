@@ -7,7 +7,7 @@ public class HandItemPropsPane : BasePane
 {
     private readonly PropService propService;
     private readonly MenuPropRepository menuPropRepository;
-    private readonly Dropdown propDropdown;
+    private readonly Dropdown<MenuFilePropModel> propDropdown;
     private readonly Button addPropButton;
     private readonly Label initializingLabel;
 
@@ -20,9 +20,7 @@ public class HandItemPropsPane : BasePane
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
         this.menuPropRepository = menuPropRepository ?? throw new ArgumentNullException(nameof(menuPropRepository));
 
-        var items = PropList();
-
-        propDropdown = new(items);
+        propDropdown = new(formatter: PropFormatter);
 
         addPropButton = new(Translation.Get("propsPane", "addProp"));
         addPropButton.ControlEvent += OnAddPropButtonPressed;
@@ -34,10 +32,17 @@ public class HandItemPropsPane : BasePane
             menuDatabaseBusy = true;
             menuPropRepository.InitializedProps += OnMenuDatabaseIndexed;
         }
+        else
+        {
+            propDropdown.SetItems(menuPropRepository[MPN.handitem]);
+        }
+
+        static string PropFormatter(MenuFilePropModel prop, int index) =>
+            prop.Name;
 
         void OnMenuDatabaseIndexed(object sender, EventArgs e)
         {
-            propDropdown.SetDropdownItems(PropList());
+            propDropdown.SetItems(menuPropRepository[MPN.handitem]);
 
             menuDatabaseBusy = false;
             menuPropRepository.InitializedProps -= OnMenuDatabaseIndexed;
@@ -71,10 +76,10 @@ public class HandItemPropsPane : BasePane
         propDropdown.Draw(dropdownLayoutOptions);
 
         if (GUILayout.Button("<", arrowLayoutOptions))
-            propDropdown.Step(-1);
+            propDropdown.CyclePrevious();
 
         if (GUILayout.Button(">", arrowLayoutOptions))
-            propDropdown.Step(1);
+            propDropdown.CycleNext();
 
         GUILayout.EndHorizontal();
 
@@ -86,18 +91,11 @@ public class HandItemPropsPane : BasePane
     protected override void ReloadTranslation()
     {
         initializingLabel.Text = Translation.Get("systemMessage", "initializing");
-        propDropdown.SetDropdownItemsWithoutNotify(PropList(), propDropdown.SelectedItemIndex);
+        propDropdown.Reformat();
 
         addPropButton.Label = Translation.Get("propsPane", "addProp");
     }
 
     private void OnAddPropButtonPressed(object sender, EventArgs e) =>
-        propService.Add(menuPropRepository[MPN.handitem][propDropdown.SelectedItemIndex]);
-
-    private string[] PropList() =>
-        menuPropRepository.Busy
-            ? [Translation.Get("systemMessage", "initializing")]
-            : menuPropRepository[MPN.handitem]
-                .Select(prop => prop.Name)
-                .ToArray();
+        propService.Add(propDropdown.SelectedItem);
 }

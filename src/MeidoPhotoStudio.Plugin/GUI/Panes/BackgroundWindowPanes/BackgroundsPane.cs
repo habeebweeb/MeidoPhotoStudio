@@ -11,8 +11,8 @@ public class BackgroundsPane : BasePane
     private readonly BackgroundService backgroundService;
     private readonly BackgroundRepository backgroundRepository;
     private readonly BackgroundDragHandleService backgroundDragHandleService;
-    private readonly Dropdown2<BackgroundCategory> backgroundCategoryDropdown;
-    private readonly Dropdown2<BackgroundModel> backgroundDropdown;
+    private readonly Dropdown<BackgroundCategory> backgroundCategoryDropdown;
+    private readonly Dropdown<BackgroundModel> backgroundDropdown;
     private readonly Toggle dragHandleEnabledToggle;
     private readonly Toggle backgroundVisibleToggle;
     private readonly Toggle colourModeToggle;
@@ -144,7 +144,7 @@ public class BackgroundsPane : BasePane
 
         DrawColourSliders();
 
-        static void DrawDropdown<T>(Dropdown2<T> dropdown)
+        static void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             var arrowLayoutOptions = GUILayout.ExpandWidth(false);
 

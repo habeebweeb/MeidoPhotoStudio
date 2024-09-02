@@ -6,7 +6,7 @@ namespace MeidoPhotoStudio.Plugin;
 public class CopyPosePane : BasePane
 {
     private readonly PaneHeader paneHeader;
-    private readonly Dropdown otherCharacterDropdown;
+    private readonly Dropdown<CharacterController> otherCharacterDropdown;
     private readonly Button copyPoseButton;
     private readonly Button copyBothHandsButton;
     private readonly Button copyLeftHandToLeftButton;
@@ -31,7 +31,7 @@ public class CopyPosePane : BasePane
 
         paneHeader = new(Translation.Get("copyPosePane", "header"), true);
 
-        otherCharacterDropdown = new([Translation.Get("systemMessage", "noMaids")]);
+        otherCharacterDropdown = new(formatter: OtherCharacterFormatter);
 
         copyPoseButton = new(Translation.Get("copyPosePane", "copyButton"));
         copyPoseButton.ControlEvent += OnCopyPoseButtonPushed;
@@ -52,6 +52,9 @@ public class CopyPosePane : BasePane
         copyRightHandToRightButton.ControlEvent += OnCopyRightHandToRightButtonPushed;
 
         copyHandHeader = new(Translation.Get("copyPosePane", "copyHandHeader"));
+
+        static string OtherCharacterFormatter(CharacterController character, int index) =>
+            $"{character.Slot + 1}: {character.CharacterModel.FullName()}";
     }
 
     private CharacterController OtherCharacter =>
@@ -111,7 +114,7 @@ public class CopyPosePane : BasePane
             GUILayout.EndHorizontal();
         }
 
-        static void DrawDropdown(Dropdown dropdown)
+        static void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             GUILayout.BeginHorizontal();
 
@@ -126,10 +129,10 @@ public class CopyPosePane : BasePane
             };
 
             if (GUILayout.Button("<", arrowLayoutOptions))
-                dropdown.Step(-1);
+                dropdown.CyclePrevious();
 
             if (GUILayout.Button(">", arrowLayoutOptions))
-                dropdown.Step(1);
+                dropdown.CycleNext();
 
             GUILayout.EndHorizontal();
         }
@@ -147,24 +150,8 @@ public class CopyPosePane : BasePane
         copyHandHeader.Text = Translation.Get("copyPosePane", "copyHandHeader");
     }
 
-    private void OnCharactersCalled(object sender, EventArgs e)
-    {
-        if (characterService.Count is 0)
-        {
-            otherCharacterDropdown.SetDropdownItemsWithoutNotify([Translation.Get("systemMessage", "noMaids")]);
-
-            return;
-        }
-
-        otherCharacterDropdown.SetDropdownItemsWithoutNotify(
-            characterService
-                .Select(character => $"{character.Slot + 1}: {CharacterName(character)}")
-                .ToArray(),
-            0);
-
-        static string CharacterName(CharacterController character) =>
-            character.CharacterModel.FullName();
-    }
+    private void OnCharactersCalled(object sender, EventArgs e) =>
+        otherCharacterDropdown.SetItemsWithoutNotify(characterService, 0);
 
     private void OnCopyPoseButtonPushed(object sender, EventArgs e)
     {

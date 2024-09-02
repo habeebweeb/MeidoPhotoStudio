@@ -95,44 +95,6 @@ internal static class DropdownHelper
         });
     }
 
-    public static void Set(Dropdown dropdown, GUIStyle style = null)
-    {
-        dropdownItemStyle = style ?? DefaultDropdownStyle;
-        currentDropdownID = dropdown.DropdownID;
-        items = dropdown.DropdownList;
-        scrollPos = dropdown.ScrollPos;
-        selectedItemIndex = dropdown.SelectedItemIndex;
-        scrollPos = dropdown.ScrollPos;
-        buttonRect = dropdown.ButtonRect;
-
-        var calculatedSize = dropdown.ElementSize;
-        var calculatedListHeight = calculatedSize.y * items.Length;
-        var heightAbove = buttonRect.y;
-        var heightBelow = Screen.height - heightAbove - buttonRect.height;
-        var rectWidth = Mathf.Max(calculatedSize.x + 5, buttonRect.width);
-        var rectHeight = Mathf.Min(calculatedListHeight, Mathf.Max(heightAbove, heightBelow));
-
-        if (calculatedListHeight > heightBelow && heightAbove > heightBelow)
-        {
-            DropdownWindow = new(buttonRect.x, buttonRect.y - rectHeight, rectWidth + 18, rectHeight);
-        }
-        else
-        {
-            if (calculatedListHeight > heightBelow)
-                rectHeight -= calculatedSize.y;
-
-            DropdownWindow = new(buttonRect.x, buttonRect.y + buttonRect.height, rectWidth + 18, rectHeight);
-        }
-
-        DropdownWindow.x = Mathf.Clamp(DropdownWindow.x, 0, Screen.width - rectWidth - 18);
-
-        dropdownScrollRect = new(0, 0, DropdownWindow.width, DropdownWindow.height);
-        dropdownRect = new(0, 0, DropdownWindow.width - 18, calculatedListHeight);
-
-        DropdownOpen = true;
-        Visible = true;
-    }
-
     public static void HandleDropdown()
     {
         DropdownWindow = GUI.Window(Constants.DropdownWindowID, DropdownWindow, GUIFunc, string.Empty, WindowStyle);
@@ -141,8 +103,8 @@ internal static class DropdownHelper
             UnityEngine.Input.ResetInputAxes();
     }
 
-    public static void OpenDropdown<T>(
-        Dropdown2<T> dropdown,
+    public static void OpenDropdown(
+        int id,
         Vector2 scrollPosition,
         string[] items,
         int selectedItemIndex,
@@ -150,7 +112,7 @@ internal static class DropdownHelper
         Vector2? itemSize = null,
         GUIStyle style = null)
     {
-        currentDropdownID = dropdown.ID;
+        currentDropdownID = id;
         scrollPos = scrollPosition;
         DropdownHelper.items = items;
         DropdownHelper.selectedItemIndex = selectedItemIndex;

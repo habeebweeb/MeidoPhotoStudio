@@ -47,10 +47,11 @@ public class AttachPropPane : BasePane
     private readonly CharacterService characterService;
     private readonly PropAttachmentService propAttachmentService;
     private readonly SelectionController<PropController> propSelectionController;
-    private readonly Dropdown characterDropdown;
+    private readonly Dropdown<CharacterController> characterDropdown;
     private readonly Dictionary<AttachPoint, Toggle> attachPointToggles = new(EnumEqualityComparer<AttachPoint>.Instance);
     private readonly Toggle keepWorldPositionToggle;
     private readonly PaneHeader paneHeader;
+    private readonly Label noCharactersOrPropsLabel;
 
     public AttachPropPane(
         CharacterService characterService,
@@ -68,8 +69,8 @@ public class AttachPropPane : BasePane
 
         paneHeader = new(Translation.Get("attachPropPane", "header"), true);
 
-        characterDropdown = new([Translation.Get("systemMessage", "noMaids")]);
-        characterDropdown.SelectionChange += OnCharacterOrPropSelected;
+        characterDropdown = new(formatter: CharacterFormatter);
+        characterDropdown.SelectionChanged += OnCharacterOrPropSelected;
 
         keepWorldPositionToggle = new(Translation.Get("attachPropPane", "keepWorldPosition"));
 
@@ -84,15 +85,18 @@ public class AttachPropPane : BasePane
 
             attachPointToggles[attachPoint] = toggle;
         }
+
+        noCharactersOrPropsLabel = new(Translation.Get("attachPropPane", "noCharactersOrPropsLabel"));
+
+        static string CharacterFormatter(CharacterController character, int index) =>
+            $"{character.Slot + 1}: {character.CharacterModel.FullName()}";
     }
 
     private PropController CurrentProp =>
         propSelectionController.Current;
 
     private CharacterController CurrentCharacter =>
-        characterService.Count > 0
-            ? characterService[characterDropdown.SelectedItemIndex]
-            : null;
+        characterDropdown.SelectedItem;
 
     public override void Draw()
     {
@@ -101,7 +105,12 @@ public class AttachPropPane : BasePane
         if (!paneHeader.Enabled)
             return;
 
-        GUI.enabled = characterService.Count > 0 && CurrentProp is not null;
+        if (characterService.Busy || characterService.Count is 0 || CurrentProp is null)
+        {
+            noCharactersOrPropsLabel.Draw();
+
+            return;
+        }
 
         DrawCharacterDropdown();
 
@@ -114,11 +123,10 @@ public class AttachPropPane : BasePane
         foreach (var attachPointGroup in AttachPointGroups)
             DrawToggleGroup(attachPointGroup);
 
-        GUI.enabled = true;
-
         void DrawCharacterDropdown()
         {
             GUILayout.BeginHorizontal();
+
             characterDropdown.Draw(GUILayout.Width(185f));
 
             var arrowLayoutOptions = new[]
@@ -128,10 +136,10 @@ public class AttachPropPane : BasePane
             };
 
             if (GUILayout.Button("<", arrowLayoutOptions))
-                characterDropdown.Step(-1);
+                characterDropdown.CyclePrevious();
 
             if (GUILayout.Button(">", arrowLayoutOptions))
-                characterDropdown.Step(1);
+                characterDropdown.CycleNext();
 
             GUILayout.EndHorizontal();
         }
@@ -154,6 +162,7 @@ public class AttachPropPane : BasePane
     protected override void ReloadTranslation()
     {
         paneHeader.Label = Translation.Get("attachPropPane", "header");
+        noCharactersOrPropsLabel.Text = Translation.Get("attachPropPane", "noCharactersOrPropsLabel");
         keepWorldPositionToggle.Label = Translation.Get("attachPropPane", "keepWorldPosition");
 
         foreach (var attachPoint in Enum.GetValues(typeof(AttachPoint)).Cast<AttachPoint>())
@@ -215,17 +224,8 @@ public class AttachPropPane : BasePane
         }
     }
 
-    private void OnCharactersCalled(object sender, CharacterServiceEventArgs e)
-    {
-        var dropdownList = characterService
-            .Select(character => $"{character.Slot + 1}: {character.CharacterModel.FullName()}")
-            .ToArray();
-
-        if (!dropdownList.Any())
-            dropdownList = [Translation.Get("systemMessage", "noMaids")];
-
-        characterDropdown.SetDropdownItems(dropdownList, 0);
-    }
+    private void OnCharactersCalled(object sender, CharacterServiceEventArgs e) =>
+        characterDropdown.SetItems(characterService, 0);
 
     private void OnCharacterOrPropSelected(object sender, EventArgs e) =>
         UpdateToggles();
