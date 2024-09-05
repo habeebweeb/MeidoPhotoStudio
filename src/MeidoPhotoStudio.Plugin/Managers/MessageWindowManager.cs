@@ -1,8 +1,10 @@
+using System.ComponentModel;
+
 using Alignment = NGUIText.Alignment;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class MessageWindowManager : IManager
+public class MessageWindowManager : IManager, INotifyPropertyChanged
 {
     public const string Header = "TEXTBOX";
 
@@ -32,40 +34,81 @@ public class MessageWindowManager : IManager
         messageLabel = UTY.GetChildObject(msgParent, "Message").GetComponent<UILabel>();
     }
 
+    public event PropertyChangedEventHandler PropertyChanged;
+
     public bool ShowingMessage
     {
         get => messageWindowMgr.IsVisibleMessageViewer;
         private set
         {
+            if (value == ShowingMessage)
+                return;
+
             if (value)
                 messageWindowMgr.OpenMessageWindowPanel();
             else
                 messageWindowMgr.CloseMessageWindowPanel();
+
+            RaisePropertyChanged(nameof(ShowingMessage));
         }
     }
 
     public string MessageName
     {
         get => speakerLabel.text;
-        private set => speakerLabel.text = value;
+        private set
+        {
+            if (string.Equals(MessageName, value, StringComparison.CurrentCulture))
+                return;
+
+            speakerLabel.text = value;
+
+            RaisePropertyChanged(nameof(MessageName));
+        }
     }
 
     public string MessageText
     {
         get => messageLabel.text;
-        private set => messageLabel.text = value;
+        private set
+        {
+            if (string.Equals(MessageText, value, StringComparison.CurrentCulture))
+                return;
+
+            messageLabel.text = value;
+
+            RaisePropertyChanged(nameof(MessageText));
+        }
     }
 
     public int FontSize
     {
         get => messageLabel.fontSize;
-        set => messageLabel.fontSize = (int)Mathf.Clamp(value, FontBounds.Left, FontBounds.Right);
+        set
+        {
+            var newFontSize = (int)Mathf.Clamp(value, FontBounds.Left, FontBounds.Right);
+
+            if (newFontSize == FontSize)
+                return;
+
+            messageLabel.fontSize = newFontSize;
+
+            RaisePropertyChanged(nameof(FontSize));
+        }
     }
 
     public Alignment MessageAlignment
     {
         get => messageLabel.alignment;
-        set => messageLabel.alignment = value;
+        set
+        {
+            if (MessageAlignment == value)
+                return;
+
+            messageLabel.alignment = value;
+
+            RaisePropertyChanged(nameof(MessageAlignment));
+        }
     }
 
     public void Update()
@@ -136,5 +179,13 @@ public class MessageWindowManager : IManager
         MessageAlignment = Alignment.Left;
         MessageName = string.Empty;
         MessageText = string.Empty;
+    }
+
+    private void RaisePropertyChanged(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
+
+        PropertyChanged?.Invoke(this, new(name));
     }
 }

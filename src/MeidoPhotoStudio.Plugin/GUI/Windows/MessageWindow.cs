@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UI;
 
@@ -24,6 +26,7 @@ public partial class MessageWindow : BaseWindow
     public MessageWindow(MessageWindowManager messageWindowManager)
     {
         this.messageWindowManager = messageWindowManager;
+        this.messageWindowManager.PropertyChanged += OnMessageWindowPropertyChanged;
 
         WindowRect = WindowRect;
         windowRect.x = MiddlePosition.x;
@@ -111,11 +114,7 @@ public partial class MessageWindow : BaseWindow
     {
         messageWindowManager.CloseMessagePanel();
         Visible = false;
-        ResetUI();
     }
-
-    public override void Activate() =>
-        ResetUI();
 
     public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
     {
@@ -160,6 +159,31 @@ public partial class MessageWindow : BaseWindow
             Visible = !Visible;
     }
 
+    private void OnMessageWindowPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(MessageWindowManager.MessageName) && !nameTextField.HasFocus)
+        {
+            nameTextField.Value = messageWindowManager.MessageName;
+        }
+        else if (e.PropertyName is nameof(MessageWindowManager.MessageText) && !messageTextArea.HasFocus)
+        {
+            messageTextArea.Value = messageWindowManager.MessageText;
+        }
+        else if (e.PropertyName is nameof(MessageWindowManager.FontSize))
+        {
+            fontSizeSlider.SetValueWithoutNotify(messageWindowManager.FontSize);
+            textAreaStyle.FontSize = messageWindowManager.FontSize;
+            fontPointLabel.Text = $"{messageWindowManager.FontSize}pt";
+        }
+        else if (e.PropertyName is nameof(MessageWindowManager.MessageAlignment))
+        {
+            alignmentDropdown.SetSelectedIndexWithoutNotify(
+                alignmentDropdown.IndexOf(alignment => alignment == messageWindowManager.MessageAlignment));
+
+            textAreaStyle.TrySet(style => style.alignment = NGUIAlignmentToTextAnchor(messageWindowManager.MessageAlignment));
+        }
+    }
+
     private void ChangeFontSize(object sender, EventArgs args)
     {
         messageWindowManager.FontSize = (int)fontSizeSlider.Value;
@@ -180,16 +204,5 @@ public partial class MessageWindow : BaseWindow
     {
         messageWindowManager.MessageAlignment = e.Item;
         textAreaStyle.TrySet(style => style.alignment = NGUIAlignmentToTextAnchor(e.Item));
-    }
-
-    private void ResetUI()
-    {
-        fontSizeSlider.SetValueWithoutNotify(MessageWindowManager.FontBounds.Left);
-        fontPointLabel.Text = $"{(int)fontSizeSlider.Value}pt";
-        alignmentDropdown.SetSelectedIndexWithoutNotify(0);
-        textAreaStyle.TrySet(style => style.alignment = TextAnchor.UpperLeft);
-        textAreaStyle.FontSize = (int)MessageWindowManager.FontBounds.Left;
-        nameTextField.Value = string.Empty;
-        messageTextArea.Value = string.Empty;
     }
 }
