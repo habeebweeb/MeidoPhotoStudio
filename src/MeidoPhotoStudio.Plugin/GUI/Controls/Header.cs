@@ -1,11 +1,19 @@
+using MeidoPhotoStudio.Plugin.Framework.UI;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class Header(string text) : BaseControl
 {
-    private static GUIStyle headerLabelStyle;
-
     private string text = text;
     private GUIContent content = new(text);
+
+    public static LazyStyle Style { get; } = new(
+        14,
+        () => new(GUI.skin.label)
+        {
+            padding = new(7, 0, 0, -5),
+            normal = { textColor = Color.white },
+        });
 
     public string Text
     {
@@ -17,14 +25,9 @@ public class Header(string text) : BaseControl
         }
     }
 
-    private static GUIStyle HeaderLabelStyle =>
-        headerLabelStyle ??= new(GUI.skin.label)
-        {
-            padding = new(7, 0, 0, -5),
-            normal = { textColor = Color.white },
-            fontSize = 14,
-        };
-
     public override void Draw(params GUILayoutOption[] layoutOptions) =>
-        GUILayout.Label(content, HeaderLabelStyle, layoutOptions);
+        Draw(Style, layoutOptions);
+
+    public void Draw(GUIStyle style, params GUILayoutOption[] layoutOptions) =>
+        GUILayout.Label(content, style, layoutOptions);
 }

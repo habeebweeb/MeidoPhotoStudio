@@ -114,19 +114,18 @@ public class CopyPosePane : BasePane
             GUILayout.EndHorizontal();
         }
 
-        static void DrawDropdown<T>(Dropdown<T> dropdown)
+        void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             GUILayout.BeginHorizontal();
 
-            const float dropdownButtonWidth = 175f;
+            const int ScrollBarWidth = 23;
+
+            var buttonAndScrollbarSize = ScrollBarWidth + Utility.GetPix(20) * 2 + 5;
+            var dropdownButtonWidth = parent.WindowRect.width - buttonAndScrollbarSize;
 
             dropdown.Draw(GUILayout.Width(dropdownButtonWidth));
 
-            var arrowLayoutOptions = new[]
-            {
-                GUILayout.ExpandWidth(false),
-                GUILayout.ExpandHeight(false),
-            };
+            var arrowLayoutOptions = GUILayout.ExpandWidth(false);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
                 dropdown.CyclePrevious();

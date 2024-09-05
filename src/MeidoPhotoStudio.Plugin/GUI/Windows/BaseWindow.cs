@@ -71,6 +71,14 @@ public abstract class BaseWindow : BasePane
             pane.Deactivate();
     }
 
+    public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
+    {
+        base.OnScreenDimensionsChanged(newScreenDimensions);
+
+        foreach (var pane in Panes)
+            pane.OnScreenDimensionsChanged(newScreenDimensions);
+    }
+
     protected T AddPane<T>(T pane)
         where T : BasePane
     {

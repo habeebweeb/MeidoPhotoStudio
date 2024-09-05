@@ -1,3 +1,5 @@
+using MeidoPhotoStudio.Plugin.Framework.UI;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class SelectionGrid : BaseControl
@@ -11,18 +13,23 @@ public class SelectionGrid : BaseControl
         toggles = MakeToggles(items);
     }
 
+    public static LazyStyle Style { get; } = new(13, () => new(GUI.skin.toggle));
+
     public int SelectedItemIndex
     {
         get => selectedItemIndex;
         set => SetValue(value);
     }
 
-    public override void Draw(params GUILayoutOption[] layoutOptions)
+    public override void Draw(params GUILayoutOption[] layoutOptions) =>
+        Draw(Style, layoutOptions);
+
+    public void Draw(GUIStyle style, params GUILayoutOption[] layoutOptions)
     {
         GUILayout.BeginHorizontal();
 
         foreach (var toggle in toggles)
-            toggle.Draw(layoutOptions);
+            toggle.Draw(style, layoutOptions);
 
         GUILayout.EndHorizontal();
     }
@@ -99,9 +106,9 @@ public class SelectionGrid : BaseControl
 
         public event EventHandler ControlEvent;
 
-        public void Draw(params GUILayoutOption[] layoutOptions)
+        public void Draw(GUIStyle style, params GUILayoutOption[] layoutOptions)
         {
-            var value = GUILayout.Toggle(Value, Label, layoutOptions);
+            var value = GUILayout.Toggle(Value, Label, style, layoutOptions);
 
             if (value == Value)
                 return;

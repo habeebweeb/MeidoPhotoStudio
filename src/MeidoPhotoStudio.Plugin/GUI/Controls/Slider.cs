@@ -1,3 +1,5 @@
+using MeidoPhotoStudio.Plugin.Framework.UI;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class Slider : BaseControl
@@ -36,6 +38,32 @@ public class Slider : BaseControl
     public event EventHandler EndedInteraction;
 
     public event EventHandler PushingResetButton;
+
+    public static LazyStyle LabelStyle { get; } = new(
+        13,
+        () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.LowerLeft,
+            normal = { textColor = Color.white },
+        });
+
+    public static LazyStyle SliderStyle { get; } = new(0, () => new(GUI.skin.horizontalSlider));
+
+    public static LazyStyle NoLabelSliderStyle { get; } = new(
+        0,
+        () => new(GUI.skin.horizontalSlider)
+        {
+            margin = { top = 10 },
+        });
+
+    public static LazyStyle SliderThumbStyle { get; } = new(0, () => new(GUI.skin.horizontalSliderThumb));
+
+    public static LazyStyle ResetButtonStyle { get; } = new(
+        10,
+        () => new(GUI.skin.button)
+        {
+            alignment = TextAnchor.MiddleRight,
+        });
 
     public bool HasReset { get; set; }
 
@@ -116,23 +144,23 @@ public class Slider : BaseControl
 
             if (hasLabel)
             {
-                GUILayout.Label(Label, MpsGui.SliderLabelStyle, GUILayout.ExpandWidth(false));
+                GUILayout.Label(Label, LabelStyle, GUILayout.ExpandWidth(false));
                 GUILayout.FlexibleSpace();
             }
 
             if (HasTextField)
-                textField.Draw(MpsGui.SliderTextBoxStyle, GUILayout.Width(60f));
+                textField.Draw(GUILayout.Width(60f));
 
-            if (HasReset && GUILayout.Button("|", MpsGui.SliderResetButtonStyle, GUILayout.Width(15f)))
+            if (HasReset && GUILayout.Button("|", ResetButtonStyle, GUILayout.Width(15f)))
                 OnResetButtonPushed();
 
             GUILayout.EndHorizontal();
         }
 
-        var sliderStyle = hasUpper ? MpsGui.SliderStyle : MpsGui.SliderStyleNoLabel;
+        var sliderStyle = hasUpper ? SliderStyle : NoLabelSliderStyle;
 
         temporaryValue =
-            GUILayout.HorizontalSlider(temporaryValue, Left, Right, sliderStyle, MpsGui.SliderThumbStyle, layoutOptions);
+            GUILayout.HorizontalSlider(temporaryValue, Left, Right, sliderStyle, SliderThumbStyle, layoutOptions);
 
         var @event = Event.current;
 

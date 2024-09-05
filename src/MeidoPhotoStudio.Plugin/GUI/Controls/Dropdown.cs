@@ -67,20 +67,10 @@ public class Dropdown<T> : BaseControl, IEnumerable<T>
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();
 
-    public override void Draw(params GUILayoutOption[] layoutOptions)
-    {
-        var buttonStyle = new GUIStyle(GUI.skin.button)
-        {
-            alignment = TextAnchor.MiddleLeft,
-        };
+    public override void Draw(params GUILayoutOption[] layoutOptions) =>
+        Draw(DropdownHelper.ButtonStyle, DropdownHelper.DefaultDropdownStyle, layoutOptions);
 
-        Draw(buttonStyle, layoutOptions);
-    }
-
-    public void Draw(GUIStyle buttonStyle, params GUILayoutOption[] layoutOptions) =>
-        Draw(buttonStyle, null, layoutOptions);
-
-    public void Draw(GUIStyle buttonStyle, GUIStyle dropdownStyle = null, params GUILayoutOption[] layoutOptions)
+    public void Draw(GUIStyle buttonStyle, GUIStyle dropdownStyle, params GUILayoutOption[] layoutOptions)
     {
         var clicked = GUILayout.Button(label, buttonStyle, layoutOptions) && items.Length > 0;
 

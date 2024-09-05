@@ -19,6 +19,7 @@ using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Core.UndoRedo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.Menu;
+using MeidoPhotoStudio.Plugin.Framework.UI;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 using MeidoPhotoStudio.Plugin.Service;
 using MeidoPhotoStudio.Plugin.Service.Input;
@@ -62,6 +63,7 @@ public partial class PluginCore : MonoBehaviour
     private SepiaToneController sepiaToneController;
     private TransformWatcher transformWatcher;
     private UndoRedoService undoRedoService;
+    private ScreenSizeChecker screenSizeChecker;
 
     public bool UIActive
     {
@@ -116,6 +118,8 @@ public partial class PluginCore : MonoBehaviour
         dragHandleClickHandler.enabled = false;
         gizmoClickHandler = gameObject.AddComponent<CustomGizmo.ClickHandler>();
         gizmoClickHandler.enabled = false;
+        screenSizeChecker = gameObject.AddComponent<ScreenSizeChecker>();
+        screenSizeChecker.enabled = false;
     }
 
     private void Update()
@@ -497,6 +501,7 @@ public partial class PluginCore : MonoBehaviour
         dragHandleClickHandler.enabled = true;
         transformWatcher.enabled = true;
         gizmoClickHandler.enabled = true;
+        screenSizeChecker.enabled = true;
 
         // TODO: Move all this activation/deactivation stuff.
         backgroundRepository.Refresh();
@@ -599,6 +604,7 @@ public partial class PluginCore : MonoBehaviour
             dragHandleClickHandler.enabled = false;
             transformWatcher.enabled = false;
             gizmoClickHandler.enabled = false;
+            screenSizeChecker.enabled = false;
 
             characterService.Deactivate();
             cameraController.Deactivate();

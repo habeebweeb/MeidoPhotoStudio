@@ -1,8 +1,18 @@
+using MeidoPhotoStudio.Plugin.Framework.UI;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class PaneHeader(string label, bool open = true) : BaseControl
 {
-    private static GUIStyle headerLabelStyle;
+    public const int FontSize = 14;
+
+    private static readonly LazyStyle ToggleStyle = new(
+        FontSize,
+        () => new(GUI.skin.toggle)
+        {
+            padding = new(15, 0, 2, 0),
+            normal = { textColor = Color.white },
+        });
 
     private string label = label;
     private GUIContent content = new(label ?? throw new ArgumentNullException(nameof(label)));
@@ -19,17 +29,12 @@ public class PaneHeader(string label, bool open = true) : BaseControl
 
     public bool Enabled { get; set; } = open;
 
-    private static GUIStyle HeaderLabelStyle =>
-        headerLabelStyle ??= new(GUI.skin.toggle)
-        {
-            padding = new(15, 0, 2, 0),
-            normal = { textColor = Color.white },
-            fontSize = 14,
-        };
+    public override void Draw(params GUILayoutOption[] layoutOptions) =>
+        Draw(ToggleStyle, layoutOptions);
 
-    public override void Draw(params GUILayoutOption[] layoutOptions)
+    public void Draw(GUIStyle style, params GUILayoutOption[] layoutOptions)
     {
-        Enabled = GUILayout.Toggle(Enabled, content, HeaderLabelStyle, layoutOptions);
+        Enabled = GUILayout.Toggle(Enabled, content, style, layoutOptions);
 
         MpsGui.WhiteLine();
     }

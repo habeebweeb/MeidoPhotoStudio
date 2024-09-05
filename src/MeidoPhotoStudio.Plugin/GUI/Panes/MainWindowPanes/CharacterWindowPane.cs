@@ -17,8 +17,7 @@ public class CharacterWindowPane : BaseMainWindowPane
         CharacterSwitcherPane characterSwitcherPane,
         TabSelectionController tabSelectionController)
     {
-        this.characterSwitcherPane = characterSwitcherPane
-            ?? throw new ArgumentNullException(nameof(characterSwitcherPane));
+        this.characterSwitcherPane = AddPane(characterSwitcherPane ?? throw new ArgumentNullException(nameof(characterSwitcherPane)));
 
         this.tabSelectionController = tabSelectionController
             ?? throw new ArgumentNullException(nameof(tabSelectionController));

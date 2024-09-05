@@ -3,11 +3,21 @@ using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
+using MeidoPhotoStudio.Plugin.Framework.UI;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class MenuPropsPane : BasePane
 {
+    private readonly LazyStyle propButtonStyle = new(
+        11,
+        () => new(GUI.skin.button)
+        {
+            alignment = TextAnchor.UpperLeft,
+            margin = new(0, 0, 0, 0),
+            padding = new(0, 0, 0, 0),
+        });
+
     private readonly PropService propService;
     private readonly MenuPropRepository menuPropRepository;
     private readonly MenuPropsConfiguration menuPropsConfiguration;
@@ -109,24 +119,18 @@ public class MenuPropsPane : BasePane
 
         DrawPropList();
 
-        static void DrawDropdown<T>(Dropdown<T> dropdown)
+        void DrawDropdown<T>(Dropdown<T> dropdown)
         {
-            var arrowLayoutOptions = new[]
-            {
-                GUILayout.ExpandWidth(false),
-                GUILayout.ExpandHeight(false),
-            };
-
-            const float dropdownButtonWidth = 185f;
-
-            var dropdownLayoutOptions = new[]
-            {
-                GUILayout.Width(dropdownButtonWidth),
-            };
-
             GUILayout.BeginHorizontal();
 
-            dropdown.Draw(dropdownLayoutOptions);
+            const int ScrollBarWidth = 23;
+
+            var buttonAndScrollbarSize = ScrollBarWidth + Utility.GetPix(20) * 2 + 5;
+            var dropdownButtonWidth = parent.WindowRect.width - buttonAndScrollbarSize;
+
+            dropdown.Draw(GUILayout.Width(dropdownButtonWidth));
+
+            var arrowLayoutOptions = GUILayout.ExpandWidth(false);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
                 dropdown.CyclePrevious();
@@ -141,8 +145,6 @@ public class MenuPropsPane : BasePane
         {
             scrollPosition = GUILayout.BeginScrollView(scrollPosition);
 
-            const float buttonSize = 55f;
-
             var propList = currentPropList;
 
             if (!menuPropsConfiguration.ModMenuPropsOnly)
@@ -153,7 +155,7 @@ public class MenuPropsPane : BasePane
                     propList = currentPropList.Where(prop => prop.GameMenu);
             }
 
-            var buttonStyle = new GUIStyle(GUI.skin.button) { margin = new(0, 0, 0, 0), padding = new(0, 0, 0, 0) };
+            var buttonSize = Utility.GetPix(55);
             var buttonLayoutOptions = new GUILayoutOption[]
             {
                 GUILayout.Width(buttonSize), GUILayout.Height(buttonSize),
@@ -167,8 +169,8 @@ public class MenuPropsPane : BasePane
                 {
                     var image = iconCache.GetMenuIcon(prop);
                     var clicked = image
-                        ? GUILayout.Button(image, buttonStyle, buttonLayoutOptions)
-                        : GUILayout.Button(prop.Name, buttonStyle, buttonLayoutOptions);
+                        ? GUILayout.Button(image, propButtonStyle, buttonLayoutOptions)
+                        : GUILayout.Button(prop.Name, propButtonStyle, buttonLayoutOptions);
 
                     if (clicked)
                         propService.Add(prop);

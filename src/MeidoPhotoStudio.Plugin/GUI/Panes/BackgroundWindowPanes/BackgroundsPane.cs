@@ -144,18 +144,21 @@ public class BackgroundsPane : BasePane
 
         DrawColourSliders();
 
-        static void DrawDropdown<T>(Dropdown<T> dropdown)
+        void DrawDropdown<T>(Dropdown<T> dropdown)
         {
-            var arrowLayoutOptions = GUILayout.ExpandWidth(false);
-
-            const float dropdownButtonWidth = 153f;
-
             GUILayout.BeginHorizontal();
+
+            const int ScrollBarWidth = 23;
+
+            var buttonAndScrollbarSize = ScrollBarWidth + Utility.GetPix(20) * 2 + 5;
+            var dropdownButtonWidth = parent.WindowRect.width - buttonAndScrollbarSize;
+
+            dropdown.Draw(GUILayout.Width(dropdownButtonWidth));
+
+            var arrowLayoutOptions = GUILayout.ExpandWidth(false);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
                 dropdown.CyclePrevious();
-
-            dropdown.Draw(GUILayout.Width(dropdownButtonWidth));
 
             if (GUILayout.Button(">", arrowLayoutOptions))
                 dropdown.CycleNext();

@@ -1,18 +1,55 @@
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Character;
+using MeidoPhotoStudio.Plugin.Framework.UI;
 using MeidoPhotoStudio.Plugin.Service;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class CharacterSwitcherPane : BasePane
 {
+    private const float BoxSize = 70;
+    private const int Margin = (int)(BoxSize / 2.8f);
+    private const int FontSize = 13;
+
     private readonly CharacterService characterService;
     private readonly SelectionController<CharacterController> characterSelectionController;
     private readonly CustomMaidSceneService customMaidSceneService;
     private readonly EditModeMaidService editModeMaidService;
+    private readonly LazyStyle buttonStyle = new(
+        FontSize,
+        () => new(GUI.skin.button)
+        {
+            margin = { top = Margin },
+        });
+
+    private readonly LazyStyle horizontalStyle = new(
+        0,
+        () => new()
+        {
+            padding = new(4, 4, 0, 0),
+        });
+
+    private readonly LazyStyle labelStyle = new(
+        FontSize,
+        () => new(GUI.skin.label)
+        {
+            margin = { top = Margin },
+        });
+
+    private readonly LazyStyle slotStyle = new(
+        FontSize,
+        () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.UpperRight,
+            padding = { right = 5 },
+            normal = { textColor = Color.white },
+        });
+
     private readonly Button previousButton;
     private readonly Button nextButton;
-    private readonly Toggle editToggle;
+
+    private bool editingCharacter;
+    private string editToggleLabel;
 
     private CharacterController preCallCharacter;
 
@@ -39,25 +76,11 @@ public class CharacterSwitcherPane : BasePane
         nextButton.ControlEvent += (_, _) =>
             NextCharacter();
 
-        editToggle = new(Translation.Get("characterSwitcher", "editToggle"));
-        editToggle.ControlEvent += OnEditCharacterChanged;
+        editToggleLabel = Translation.Get("characterSwitcher", "editToggle");
     }
 
     public override void Draw()
     {
-        const float boxSize = 70;
-        const int margin = (int)(boxSize / 2.8f);
-
-        var buttonStyle = new GUIStyle(GUI.skin.button)
-        {
-            margin = { top = margin },
-        };
-
-        var horizontalStyle = new GUIStyle
-        {
-            padding = new RectOffset(4, 4, 0, 0),
-        };
-
         var buttonOptions = new[]
         {
             GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(false),
@@ -65,14 +88,15 @@ public class CharacterSwitcherPane : BasePane
 
         var boxLayoutOptions = new[]
         {
-            GUILayout.Height(boxSize), GUILayout.Width(boxSize),
+            GUILayout.Height(Utility.GetPix(BoxSize)),
+            GUILayout.Width(Utility.GetPix(BoxSize)),
         };
 
         var guiEnabled = characterService.Count > 0;
 
         GUI.enabled = guiEnabled;
 
-        GUILayout.BeginHorizontal(horizontalStyle, GUILayout.Height(boxSize));
+        GUILayout.BeginHorizontal(horizontalStyle, GUILayout.Height(Utility.GetPix(BoxSize)));
 
         previousButton.Draw(buttonStyle, buttonOptions);
 
@@ -84,11 +108,6 @@ public class CharacterSwitcherPane : BasePane
         {
             if (GUILayout.Button(character.CharacterModel.Portrait, boxLayoutOptions))
                 character.FocusOnBody();
-
-            var labelStyle = new GUIStyle(GUI.skin.label)
-            {
-                margin = { top = margin },
-            };
 
             var label = character.CharacterModel.FullName("{0}\n{1}");
 
@@ -105,29 +124,28 @@ public class CharacterSwitcherPane : BasePane
 
         if (customMaidSceneService.EditScene)
         {
-            GUI.enabled = guiEnabled && !editToggle.Value;
+            GUI.enabled = guiEnabled && !editingCharacter;
 
-            editToggle.Draw(new Rect(previousRect.x + 4f, previousRect.y, 40f, 20f));
+            var value = GUI.Toggle(new Rect(previousRect.x + 4f, previousRect.y, 40f, 20f), editingCharacter, editToggleLabel);
+
+            if (value != editingCharacter)
+            {
+                editingCharacter = value;
+
+                ChangeEditCharacter();
+            }
 
             GUI.enabled = guiEnabled;
         }
 
         var labelRect = new Rect(previousRect.width - 45f, previousRect.y, 40f, 20f);
 
-        var slotStyle = new GUIStyle()
-        {
-            alignment = TextAnchor.UpperRight,
-            fontSize = 13,
-            padding = { right = 5 },
-            normal = { textColor = Color.white },
-        };
-
         if (characterService.Count > 0)
             GUI.Label(labelRect, $"{character.Slot + 1}", slotStyle);
     }
 
     protected override void ReloadTranslation() =>
-        editToggle.Label = Translation.Get("characterSwitcher", "editToggle");
+        editToggleLabel = Translation.Get("characterSwitcher", "editToggle");
 
     private static int Wrap(int value, int min, int max) =>
         value < min ? max : value > max ? min : value;
@@ -140,11 +158,10 @@ public class CharacterSwitcherPane : BasePane
         if (characterSelectionController.Current is null)
             return;
 
-        editToggle.SetEnabledWithoutNotify(
-            editModeMaidService.EditingCharacter == characterSelectionController.Current.CharacterModel);
+        editingCharacter = editModeMaidService.EditingCharacter == characterSelectionController.Current.CharacterModel;
     }
 
-    private void OnEditCharacterChanged(object sender, EventArgs e)
+    private void ChangeEditCharacter()
     {
         if (!customMaidSceneService.EditScene)
             return;

@@ -34,6 +34,10 @@ public abstract class BasePane
     {
     }
 
+    public virtual void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
+    {
+    }
+
     protected virtual void ReloadTranslation()
     {
     }

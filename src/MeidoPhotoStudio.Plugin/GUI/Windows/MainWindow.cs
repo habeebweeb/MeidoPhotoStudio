@@ -1,4 +1,5 @@
 using MeidoPhotoStudio.Plugin.Core;
+using MeidoPhotoStudio.Plugin.Framework.UI;
 using MeidoPhotoStudio.Plugin.Service;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -6,8 +7,16 @@ namespace MeidoPhotoStudio.Plugin;
 /// <summary>Main window.</summary>
 public partial class MainWindow : BaseWindow
 {
-    private const float WindowWidth = 260f;
+    private const float MinimumWindowWidth = 215f;
 
+    private readonly LazyStyle pluginInfoStyle = new(
+        10,
+        () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.LowerLeft,
+        });
+
+    private readonly LazyStyle buttonStyle = new(13, () => new(GUI.skin.button));
     private readonly TabSelectionController tabSelectionController;
     private readonly Dictionary<Constants.Window, BaseMainWindowPane> windowPanes;
     private readonly CustomMaidSceneService customMaidSceneService;
@@ -34,9 +43,9 @@ public partial class MainWindow : BaseWindow
         this.inputRemapper = inputRemapper ? inputRemapper : throw new ArgumentNullException(nameof(inputRemapper));
 
         windowPanes = [];
-        WindowRect = new(Screen.width, Screen.height * 0.08f, WindowWidth, Screen.height * 0.9f);
+        WindowRect = new(Screen.width, Screen.height * 0.08f, MinimumWindowWidth, Screen.height * 0.9f);
 
-        tabsPane = new();
+        tabsPane = AddPane<TabsPane>(new());
         tabsPane.TabChange += (_, _) =>
             ChangeTab();
 
@@ -62,7 +71,7 @@ public partial class MainWindow : BaseWindow
     {
         set
         {
-            value.width = WindowWidth;
+            value.width = Mathf.Max(MinimumWindowWidth, Screen.width * 0.13f);
             value.height = Screen.height * 0.9f;
 
             if (customMaidSceneService.EditScene)
@@ -109,19 +118,13 @@ public partial class MainWindow : BaseWindow
 
         GUILayout.FlexibleSpace();
 
-        var labelStyle = new GUIStyle(GUI.skin.label)
-        {
-            fontSize = 10,
-            alignment = TextAnchor.LowerLeft,
-        };
-
         GUILayout.BeginHorizontal();
-        GUILayout.Label(Plugin.PluginString, labelStyle);
+        GUILayout.Label(Plugin.PluginString, pluginInfoStyle);
         GUILayout.FlexibleSpace();
 
         GUI.enabled = !inputRemapper.Listening;
 
-        settingsButton.Draw(GUILayout.ExpandWidth(false));
+        settingsButton.Draw(buttonStyle, GUILayout.ExpandWidth(false));
 
         GUI.enabled = true;
 

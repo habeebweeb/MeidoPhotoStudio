@@ -1,3 +1,5 @@
+using MeidoPhotoStudio.Plugin.Framework.UI;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class TransformControl : BaseControl
@@ -8,10 +10,12 @@ public class TransformControl : BaseControl
     private readonly NumericalTextField xTextField;
     private readonly NumericalTextField yTextField;
     private readonly NumericalTextField zTextField;
+    private readonly LazyStyle labelStyle = new(13, () => new(GUI.skin.label));
+    private readonly Header header;
 
     public TransformControl(string header, Vector3 defaultValue)
     {
-        Header = header;
+        this.header = new(header);
         DefaultValue = defaultValue;
 
         copyButton = new("C");
@@ -52,7 +56,11 @@ public class TransformControl : BaseControl
 
     public TransformClipboard Clipboard { get; set; }
 
-    public string Header { get; set; }
+    public string Header
+    {
+        get => header.Text;
+        set => header.Text = value;
+    }
 
     public string CopyButtonLabel
     {
@@ -84,7 +92,7 @@ public class TransformControl : BaseControl
         var textFieldWidth = GUILayout.Width(60f);
 
         GUILayout.BeginHorizontal();
-        MpsGui.Header(Header);
+        header.Draw();
         GUILayout.FlexibleSpace();
 
         if (Clipboard is not null)
@@ -97,11 +105,11 @@ public class TransformControl : BaseControl
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
-        GUILayout.Label("X", noExpandWidth);
+        GUILayout.Label("X", labelStyle, noExpandWidth);
         xTextField.Draw(textFieldWidth);
-        GUILayout.Label("Y", noExpandWidth);
+        GUILayout.Label("Y", labelStyle, noExpandWidth);
         yTextField.Draw(textFieldWidth);
-        GUILayout.Label("Z", noExpandWidth);
+        GUILayout.Label("Z", labelStyle, noExpandWidth);
         zTextField.Draw(textFieldWidth);
         GUILayout.EndHorizontal();
     }

@@ -3,6 +3,7 @@ namespace MeidoPhotoStudio.Plugin;
 public static class Modal
 {
     private static BaseWindow currentModal;
+    private static GUIStyle windowStyle;
 
     internal static bool Visible
     {
@@ -15,6 +16,9 @@ public static class Modal
             currentModal.Visible = value;
         }
     }
+
+    private static GUIStyle WindowStyle =>
+        windowStyle ??= new(GUI.skin.box);
 
     internal static void Show(BaseWindow modalWindow)
     {
@@ -47,9 +51,7 @@ public static class Modal
         if (!Visible)
             return;
 
-        var windowStyle = new GUIStyle(GUI.skin.box);
-
         currentModal.WindowRect =
-            GUI.ModalWindow(currentModal.WindowID, currentModal.WindowRect, currentModal.GUIFunc, string.Empty, windowStyle);
+            GUI.ModalWindow(currentModal.WindowID, currentModal.WindowRect, currentModal.GUIFunc, string.Empty, WindowStyle);
     }
 }

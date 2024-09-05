@@ -1,3 +1,5 @@
+using MeidoPhotoStudio.Plugin.Framework.UI;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class Toggle : BaseControl
@@ -17,6 +19,8 @@ public class Toggle : BaseControl
 
     private Toggle(bool state = false) =>
         value = state;
+
+    public static LazyStyle Style { get; } = new(13, () => new(GUI.skin.toggle));
 
     public string Label
     {
@@ -45,19 +49,11 @@ public class Toggle : BaseControl
     }
 
     public override void Draw(params GUILayoutOption[] layoutOptions) =>
-        Draw(new(GUI.skin.toggle), layoutOptions);
+        Draw(Style, layoutOptions);
 
     public void Draw(GUIStyle toggleStyle, params GUILayoutOption[] layoutOptions)
     {
         var value = GUILayout.Toggle(Value, toggleContent, toggleStyle, layoutOptions);
-
-        if (value != Value)
-            Value = value;
-    }
-
-    public void Draw(Rect rect)
-    {
-        var value = GUI.Toggle(rect, Value, toggleContent);
 
         if (value != Value)
             Value = value;

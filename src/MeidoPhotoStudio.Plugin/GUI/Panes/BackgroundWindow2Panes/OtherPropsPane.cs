@@ -42,23 +42,18 @@ public class OtherPropsPane : BasePane
 
         addPropButton.Draw();
 
-        static void DrawDropdown<T>(Dropdown<T> dropdown)
+        void DrawDropdown<T>(Dropdown<T> dropdown)
         {
-            var arrowLayoutOptions = new[]
-            {
-                GUILayout.ExpandWidth(false),
-                GUILayout.ExpandHeight(false),
-            };
-
-            const float dropdownButtonWidth = 185f;
-
-            var dropdownLayoutOptions = new[]
-            {
-                GUILayout.Width(dropdownButtonWidth),
-            };
-
             GUILayout.BeginHorizontal();
-            dropdown.Draw(dropdownLayoutOptions);
+
+            const int ScrollBarWidth = 23;
+
+            var buttonAndScrollbarSize = ScrollBarWidth + Utility.GetPix(20) * 2 + 5;
+            var dropdownButtonWidth = parent.WindowRect.width - buttonAndScrollbarSize;
+
+            dropdown.Draw(GUILayout.Width(dropdownButtonWidth));
+
+            var arrowLayoutOptions = GUILayout.ExpandWidth(false);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
                 dropdown.CyclePrevious();

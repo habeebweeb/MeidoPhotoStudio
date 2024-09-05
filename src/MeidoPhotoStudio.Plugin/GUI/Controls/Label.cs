@@ -1,9 +1,13 @@
+using MeidoPhotoStudio.Plugin.Framework.UI;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class Label(string text) : BaseControl
 {
     private string text = text;
     private GUIContent content = new(text);
+
+    public static LazyStyle Style { get; } = new(13, () => new(GUI.skin.label));
 
     public string Text
     {
@@ -16,7 +20,7 @@ public class Label(string text) : BaseControl
     }
 
     public override void Draw(params GUILayoutOption[] layoutOptions) =>
-        GUILayout.Label(content, layoutOptions);
+        Draw(Style, layoutOptions);
 
     public virtual void Draw(GUIStyle labelStyle, params GUILayoutOption[] layoutOptions) =>
         GUILayout.Label(content, labelStyle, layoutOptions);

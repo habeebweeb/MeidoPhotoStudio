@@ -1,3 +1,5 @@
+using MeidoPhotoStudio.Plugin.Framework.UI;
+
 namespace MeidoPhotoStudio.Plugin;
 
 internal static class DropdownHelper
@@ -5,7 +7,6 @@ internal static class DropdownHelper
     public static Rect DropdownWindow;
 
     private static int dropdownID = 100;
-    private static GUIStyle defaultDropdownStyle;
     private static bool onScrollBar;
     private static Rect dropdownScrollRect;
     private static Rect dropdownRect;
@@ -24,39 +25,46 @@ internal static class DropdownHelper
     public static int DropdownID =>
         dropdownID++;
 
-    public static GUIStyle DefaultDropdownStyle
-    {
-        get
+    public static LazyStyle ButtonStyle { get; } = new(
+        13,
+        () => new(GUI.skin.button)
         {
-            return defaultDropdownStyle ??= InitializeStyle();
+            alignment = TextAnchor.MiddleLeft,
+        });
 
-            static GUIStyle InitializeStyle()
+    public static LazyStyle DefaultDropdownStyle { get; } = new(
+        13,
+        () =>
+        {
+            var whiteBackground = new Texture2D(2, 2);
+
+            return new GUIStyle(GUI.skin.button)
             {
-                var style = new GUIStyle(GUI.skin.button)
+                alignment = TextAnchor.MiddleLeft,
+                margin = new(0, 0, 0, 0),
+                padding =
                 {
-                    alignment = TextAnchor.MiddleLeft,
-                    margin = new(0, 0, 0, 0),
-                };
-
-                style.padding.top = style.padding.bottom = 2;
-                style.normal.background = Utility.MakeTex(2, 2, new(0f, 0f, 0f, 0.5f));
-
-                var whiteBackground = new Texture2D(2, 2);
-
-                style.onHover.background
-                    = style.hover.background
-                    = style.onNormal.background
-                    = whiteBackground;
-
-                style.onHover.textColor
-                    = style.onNormal.textColor
-                    = style.hover.textColor
-                    = Color.black;
-
-                return style;
-            }
-        }
-    }
+                    top = 2,
+                    bottom = 2,
+                },
+                normal = { background = Utility.MakeTex(2, 2, new(0f, 0f, 0f, 0.5f)) },
+                hover =
+                {
+                    background = whiteBackground,
+                    textColor = Color.black,
+                },
+                onHover =
+                {
+                    background = whiteBackground,
+                    textColor = Color.black,
+                },
+                onNormal =
+                {
+                    background = whiteBackground,
+                    textColor = Color.black,
+                },
+            };
+        });
 
     public static bool Visible { get; set; }
 

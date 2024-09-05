@@ -176,20 +176,20 @@ public class AnimationSelectorPane : BasePane
 
         void DrawAddAnimation()
         {
+            const int ScrollBarWidth = 23;
+
             var parentWidth = parent.WindowRect.width;
-            var width = GUILayout.Width(parentWidth - 75f);
+            var textFieldWidth = GUILayout.MaxWidth(parentWidth - Utility.GetPix(20) - ScrollBarWidth - 5);
 
             animationDirectoryHeader.Draw();
-            animationCategoryComboBox.Draw(width);
+            animationCategoryComboBox.Draw(textFieldWidth);
 
             animationFilenameHeader.Draw();
-            GUILayout.BeginHorizontal(width);
+            animationNameTextField.Draw(textFieldWidth);
 
-            animationNameTextField.Draw();
+            MpsGui.BlackLine();
 
-            savePoseButton.Draw(GUILayout.ExpandWidth(false));
-
-            GUILayout.EndHorizontal();
+            savePoseButton.Draw();
 
             if (!showSavedAnimationLabel)
                 return;
@@ -204,19 +204,18 @@ public class AnimationSelectorPane : BasePane
             savedAnimationLabel.Draw();
         }
 
-        static void DrawDropdown<T>(Dropdown<T> dropdown)
+        void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             GUILayout.BeginHorizontal();
 
-            const float dropdownButtonWidth = 175f;
+            const int ScrollBarWidth = 23;
+
+            var buttonAndScrollbarSize = ScrollBarWidth + Utility.GetPix(20) * 2 + 5;
+            var dropdownButtonWidth = parent.WindowRect.width - buttonAndScrollbarSize;
 
             dropdown.Draw(GUILayout.Width(dropdownButtonWidth));
 
-            var arrowLayoutOptions = new[]
-            {
-                GUILayout.ExpandWidth(false),
-                GUILayout.ExpandHeight(false),
-            };
+            var arrowLayoutOptions = GUILayout.ExpandWidth(false);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
                 dropdown.CyclePrevious();

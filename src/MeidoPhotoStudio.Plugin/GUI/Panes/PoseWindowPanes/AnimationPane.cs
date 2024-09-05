@@ -2,6 +2,7 @@ using System.ComponentModel;
 
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Character;
+using MeidoPhotoStudio.Plugin.Framework.UI;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -13,6 +14,7 @@ public class AnimationPane : BasePane
     private const string PauseIconBase64 =
         "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIUlEQVQ4EWP4//8/AyWYYVAagAzwiY0aMGoAbQ0YYpkJANk+OPKm3865AAAAAElFTkSuQmCC";
 
+    private static LazyStyle buttonStyle = new(13, () => new(GUI.skin.button));
     private static Texture2D playIcon;
     private static Texture2D pauseIcon;
 
@@ -118,7 +120,7 @@ public class AnimationPane : BasePane
 
         var noExpandWidth = GUILayout.ExpandWidth(false);
 
-        playPauseButton.Draw(new GUIStyle(GUI.skin.button), GUILayout.Width(45f));
+        playPauseButton.Draw(buttonStyle, GUILayout.Width(45f));
 
         GUI.enabled = guiEnabled && animationStopped;
 

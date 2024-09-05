@@ -141,20 +141,20 @@ public class BlendSetSelectorPane : BasePane
 
         void DrawAddBlendSet()
         {
+            const int ScrollBarWidth = 23;
+
             var parentWidth = parent.WindowRect.width;
-            var width = GUILayout.Width(parentWidth - 75f);
+            var textFieldWidth = GUILayout.MaxWidth(parentWidth - Utility.GetPix(20) - ScrollBarWidth - 5);
 
             blendSetDirectoryHeader.Draw();
-            blendSetCategoryComboBox.Draw(width);
+            blendSetCategoryComboBox.Draw(textFieldWidth);
 
             blendSetFilenameHeader.Draw();
-            GUILayout.BeginHorizontal();
+            blendSetNameTextField.Draw(textFieldWidth);
 
-            blendSetNameTextField.Draw(width);
+            MpsGui.BlackLine();
 
-            saveBlendSetButton.Draw(GUILayout.ExpandWidth(false));
-
-            GUILayout.EndHorizontal();
+            saveBlendSetButton.Draw();
 
             if (!showSaveBlendSetLabel)
                 return;
@@ -169,19 +169,18 @@ public class BlendSetSelectorPane : BasePane
             savedBlendSetLabel.Draw();
         }
 
-        static void DrawDropdown<T>(Dropdown<T> dropdown)
+        void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             GUILayout.BeginHorizontal();
 
-            const float dropdownButtonWidth = 175f;
+            const int ScrollBarWidth = 23;
+
+            var buttonAndScrollbarSize = ScrollBarWidth + Utility.GetPix(20) * 2 + 5;
+            var dropdownButtonWidth = parent.WindowRect.width - buttonAndScrollbarSize;
 
             dropdown.Draw(GUILayout.Width(dropdownButtonWidth));
 
-            var arrowLayoutOptions = new[]
-            {
-                GUILayout.ExpandWidth(false),
-                GUILayout.ExpandHeight(false),
-            };
+            var arrowLayoutOptions = GUILayout.ExpandWidth(false);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
                 dropdown.CyclePrevious();

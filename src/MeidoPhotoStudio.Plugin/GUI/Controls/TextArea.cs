@@ -1,3 +1,5 @@
+using MeidoPhotoStudio.Plugin.Framework.UI;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class TextArea : BaseControl
@@ -10,6 +12,8 @@ public class TextArea : BaseControl
 
     public event EventHandler LostFocus;
 
+    public static LazyStyle Style { get; } = new(13, () => new(GUI.skin.textArea));
+
     public string Value { get; set; } = string.Empty;
 
     public bool HasFocus { get; private set; }
@@ -18,7 +22,7 @@ public class TextArea : BaseControl
         ++textAreaID;
 
     public override void Draw(params GUILayoutOption[] layoutOptions) =>
-        Draw(new(GUI.skin.textArea), layoutOptions);
+        Draw(Style, layoutOptions);
 
     public void Draw(GUIStyle textAreaStyle, params GUILayoutOption[] layoutOptions)
     {

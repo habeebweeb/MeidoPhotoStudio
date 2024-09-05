@@ -2,6 +2,7 @@ using MeidoPhotoStudio.Database.Props;
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
+using MeidoPhotoStudio.Plugin.Framework.UI;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -10,6 +11,13 @@ public class MyRoomPropsPane : BasePane
     private readonly PropService propService;
     private readonly MyRoomPropRepository myRoomPropRepository;
     private readonly IconCache iconCache;
+    private readonly LazyStyle buttonStyle = new(
+        13,
+        () => new(GUI.skin.button)
+        {
+            padding = new(0, 0, 0, 0),
+        });
+
     private readonly Dropdown<int> propCategoryDropdown;
 
     private Vector2 scrollPosition;
@@ -41,24 +49,18 @@ public class MyRoomPropsPane : BasePane
 
         DrawPropList();
 
-        static void DrawDropdown<T>(Dropdown<T> dropdown)
+        void DrawDropdown<T>(Dropdown<T> dropdown)
         {
-            var arrowLayoutOptions = new[]
-            {
-                GUILayout.ExpandWidth(false),
-                GUILayout.ExpandHeight(false),
-            };
-
-            const float dropdownButtonWidth = 185f;
-
-            var dropdownLayoutOptions = new[]
-            {
-                GUILayout.Width(dropdownButtonWidth),
-            };
-
             GUILayout.BeginHorizontal();
 
-            dropdown.Draw(dropdownLayoutOptions);
+            const int ScrollBarWidth = 23;
+
+            var buttonAndScrollbarSize = ScrollBarWidth + Utility.GetPix(20) * 2 + 5;
+            var dropdownButtonWidth = parent.WindowRect.width - buttonAndScrollbarSize;
+
+            dropdown.Draw(GUILayout.Width(dropdownButtonWidth));
+
+            var arrowLayoutOptions = GUILayout.ExpandWidth(false);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
                 dropdown.CyclePrevious();
@@ -73,9 +75,8 @@ public class MyRoomPropsPane : BasePane
         {
             scrollPosition = GUILayout.BeginScrollView(scrollPosition);
 
-            const float buttonSize = 70f;
+            var buttonSize = Utility.GetPix(70);
 
-            var buttonStyle = new GUIStyle(GUI.skin.button) { padding = new(0, 0, 0, 0) };
             var buttonLayoutOptions = new GUILayoutOption[]
             {
                 GUILayout.Width(buttonSize), GUILayout.Height(buttonSize),

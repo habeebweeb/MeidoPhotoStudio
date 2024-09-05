@@ -1,10 +1,20 @@
+using MeidoPhotoStudio.Plugin.Framework.UI;
+
 using static MeidoPhotoStudio.Plugin.Constants;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class WindowManager : IManager
 {
+    private static GUIStyle windowStyle;
+
     private readonly Dictionary<Window, BaseWindow> windows = [];
+
+    public WindowManager() =>
+        ScreenSizeChecker.ScreenSizeChanged += OnScreenSizeChanged;
+
+    private static GUIStyle WindowStyle =>
+        windowStyle ??= new(GUI.skin.box);
 
     public BaseWindow this[Window id]
     {
@@ -17,9 +27,7 @@ public class WindowManager : IManager
         if (!window.Visible)
             return;
 
-        var windowStyle = new GUIStyle(GUI.skin.box);
-
-        window.WindowRect = GUI.Window(window.WindowID, window.WindowRect, window.GUIFunc, string.Empty, windowStyle);
+        window.WindowRect = GUI.Window(window.WindowID, window.WindowRect, window.GUIFunc, string.Empty, WindowStyle);
     }
 
     public void DrawWindows()
@@ -60,5 +68,11 @@ public class WindowManager : IManager
 
             return window.WindowRect.Contains(mousePosition);
         }
+    }
+
+    private void OnScreenSizeChanged(object sender, EventArgs e)
+    {
+        foreach (var window in windows.Values)
+            window.OnScreenDimensionsChanged(new(Screen.width, Screen.height));
     }
 }

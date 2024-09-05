@@ -146,14 +146,18 @@ public class HandPresetSelectorPane : BasePane
 
         void DrawAddHandPreset()
         {
+            const int ScrollBarWidth = 23;
+
             var parentWidth = parent.WindowRect.width;
-            var width = GUILayout.Width(parentWidth - 75f);
+            var textFieldWidth = GUILayout.MaxWidth(parentWidth - Utility.GetPix(20) - ScrollBarWidth - 5);
 
             handPresetDirectoryHeader.Draw();
-            handPresetCategoryComboBox.Draw(width);
+            handPresetCategoryComboBox.Draw(textFieldWidth);
 
             handPresetFilenameHeader.Draw();
-            handPresetNameTextField.Draw(width);
+            handPresetNameTextField.Draw(textFieldWidth);
+
+            MpsGui.BlackLine();
 
             GUILayout.BeginHorizontal();
 
@@ -175,19 +179,18 @@ public class HandPresetSelectorPane : BasePane
             savedHandPresetLabel.Draw();
         }
 
-        static void DrawDropdown<T>(Dropdown<T> dropdown)
+        void DrawDropdown<T>(Dropdown<T> dropdown)
         {
             GUILayout.BeginHorizontal();
 
-            const float dropdownButtonWidth = 175f;
+            const int ScrollBarWidth = 23;
+
+            var buttonAndScrollbarSize = ScrollBarWidth + Utility.GetPix(20) * 2 + 5;
+            var dropdownButtonWidth = parent.WindowRect.width - buttonAndScrollbarSize;
 
             dropdown.Draw(GUILayout.Width(dropdownButtonWidth));
 
-            var arrowLayoutOptions = new[]
-            {
-                GUILayout.ExpandWidth(false),
-                GUILayout.ExpandHeight(false),
-            };
+            var arrowLayoutOptions = GUILayout.ExpandWidth(false);
 
             if (GUILayout.Button("<", arrowLayoutOptions))
                 dropdown.CyclePrevious();

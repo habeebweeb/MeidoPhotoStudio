@@ -1,3 +1,5 @@
+using MeidoPhotoStudio.Plugin.Framework.UI;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class Button : BaseControl
@@ -12,6 +14,8 @@ public class Button : BaseControl
 
     public Button(Texture icon) =>
         Icon = icon;
+
+    public static LazyStyle Style { get; } = new(13, () => GUI.skin.button);
 
     public string Label
     {
@@ -33,12 +37,8 @@ public class Button : BaseControl
         }
     }
 
-    public override void Draw(params GUILayoutOption[] layoutOptions)
-    {
-        var buttonStyle = new GUIStyle(GUI.skin.button);
-
-        Draw(buttonStyle, layoutOptions);
-    }
+    public override void Draw(params GUILayoutOption[] layoutOptions) =>
+        Draw(Style, layoutOptions);
 
     public void Draw(GUIStyle buttonStyle, params GUILayoutOption[] layoutOptions)
     {

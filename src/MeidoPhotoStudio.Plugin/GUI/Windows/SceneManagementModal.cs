@@ -2,11 +2,14 @@ using MeidoPhotoStudio.Database.Scenes;
 using MeidoPhotoStudio.Plugin.Core.SceneManagement;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
+using MeidoPhotoStudio.Plugin.Framework.UI;
 
 namespace MeidoPhotoStudio.Plugin;
 
 public class SceneManagementModal : BaseWindow
 {
+    private const int FontSize = 13;
+
     private static readonly Texture2D InfoHighlight = Utility.MakeTex(2, 2, new(0f, 0f, 0f, 0.8f));
 
     private readonly SceneRepository sceneRepository;
@@ -14,6 +17,28 @@ public class SceneManagementModal : BaseWindow
     private readonly SceneSchemaBuilder sceneSchemaBuilder;
     private readonly ISceneSerializer sceneSerializer;
     private readonly SceneLoader sceneLoader;
+    private readonly LazyStyle messageStyle = new(
+        FontSize,
+        () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.MiddleCenter,
+        });
+
+    private readonly LazyStyle infoLabelStyle = new(
+        FontSize,
+        () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.MiddleCenter,
+            normal = { background = InfoHighlight },
+        });
+
+    private readonly LazyStyle paddedToggleStyle = new(
+        FontSize,
+        () => new(GUI.skin.toggle)
+        {
+            margin = { left = 10 },
+        });
+
     private readonly Button okButton;
     private readonly Button cancelButton;
     private readonly Button deleteButton;
@@ -108,6 +133,7 @@ public class SceneManagementModal : BaseWindow
 
     public override Rect WindowRect
     {
+        // TODO: This is not very good
         set =>
             base.WindowRect = value with
             {
@@ -182,14 +208,8 @@ public class SceneManagementModal : BaseWindow
             if (CurrentMode is Mode.ManageScene)
                 DrawLoadOptionsToggle();
 
-            static void DrawMessage(string message)
+            void DrawMessage(string message)
             {
-                var messageStyle = new GUIStyle(GUI.skin.label)
-                {
-                    alignment = TextAnchor.MiddleCenter,
-                    fontSize = Utility.GetPix(12),
-                };
-
                 GUILayout.Space(10f);
 
                 GUILayout.Label(message, messageStyle);
@@ -215,22 +235,14 @@ public class SceneManagementModal : BaseWindow
 
                 MpsGui.DrawTexture(thumb, GUILayout.Width(width), GUILayout.Height(height));
 
-                var labelStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = Utility.GetPix(12),
-                    alignment = TextAnchor.MiddleCenter,
-                };
-
-                labelStyle.normal.background = InfoHighlight;
-
                 var labelBox = GUILayoutUtility.GetLastRect();
 
-                var labelSize = labelStyle.CalcSize(new GUIContent(infoString));
+                var labelSize = infoLabelStyle.Style.CalcSize(new GUIContent(infoString));
 
                 labelBox = new(
                     labelBox.x + 10, labelBox.y + labelBox.height - (labelSize.y + 10), labelSize.x + 10, labelSize.y + 2);
 
-                GUI.Label(labelBox, infoString, labelStyle);
+                GUI.Label(labelBox, infoString, infoLabelStyle);
 
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
@@ -238,41 +250,31 @@ public class SceneManagementModal : BaseWindow
 
             void DrawDeleteButtons()
             {
-                var buttonStyle = new GUIStyle(GUI.skin.button)
-                {
-                    fontSize = Utility.GetPix(12),
-                };
-
                 var buttonHeight = GUILayout.Height(Utility.GetPix(20));
 
                 GUILayout.BeginHorizontal();
 
                 GUILayout.FlexibleSpace();
 
-                okButton.Draw(buttonStyle, buttonHeight, GUILayout.ExpandWidth(false));
-                cancelButton.Draw(buttonStyle, buttonHeight, GUILayout.MinWidth(100));
+                okButton.Draw(buttonHeight, GUILayout.ExpandWidth(false));
+                cancelButton.Draw(buttonHeight, GUILayout.MinWidth(100));
 
                 GUILayout.EndHorizontal();
             }
 
             void DrawSceneManagementButtons()
             {
-                var buttonStyle = new GUIStyle(GUI.skin.button)
-                {
-                    fontSize = Utility.GetPix(12),
-                };
-
                 var buttonHeight = GUILayout.Height(Utility.GetPix(20));
 
                 GUILayout.BeginHorizontal();
 
-                deleteButton.Draw(buttonStyle, buttonHeight, GUILayout.ExpandWidth(false));
-                overwriteButton.Draw(buttonStyle, buttonHeight, GUILayout.ExpandWidth(false));
+                deleteButton.Draw(buttonHeight, GUILayout.ExpandWidth(false));
+                overwriteButton.Draw(buttonHeight, GUILayout.ExpandWidth(false));
 
                 GUILayout.FlexibleSpace();
 
-                okButton.Draw(buttonStyle, buttonHeight, GUILayout.ExpandWidth(false));
-                cancelButton.Draw(buttonStyle, buttonHeight, GUILayout.MinWidth(100));
+                okButton.Draw(buttonHeight, GUILayout.ExpandWidth(false));
+                cancelButton.Draw(buttonHeight, GUILayout.MinWidth(100));
 
                 GUILayout.EndHorizontal();
             }
@@ -286,10 +288,6 @@ public class SceneManagementModal : BaseWindow
                 GUILayout.FlexibleSpace();
 
                 cancelButton.Draw(
-                    new GUIStyle(GUI.skin.button)
-                    {
-                        fontSize = Utility.GetPix(12),
-                    },
                     GUILayout.Height(Utility.GetPix(20)),
                     GUILayout.ExpandWidth(false));
 
@@ -302,10 +300,7 @@ public class SceneManagementModal : BaseWindow
 
                 GUILayout.FlexibleSpace();
 
-                loadOptionsToggle.Draw(new GUIStyle(GUI.skin.toggle)
-                {
-                    fontSize = Utility.GetPix(12),
-                });
+                loadOptionsToggle.Draw();
 
                 GUILayout.EndHorizontal();
             }
@@ -313,11 +308,6 @@ public class SceneManagementModal : BaseWindow
 
         void DrawLoadOptions()
         {
-            var padding = new GUIStyle(GUI.skin.toggle)
-            {
-                margin = { left = 10 },
-            };
-
             scrollPos = GUILayout.BeginScrollView(scrollPos);
 
             GUI.enabled = managingSceneSchema.Character is not null;
@@ -329,7 +319,7 @@ public class SceneManagementModal : BaseWindow
             {
                 GUI.enabled = managingSceneSchema.Character?.Version >= 2;
 
-                characterIDLoadOptionToggle.Draw(padding);
+                characterIDLoadOptionToggle.Draw(paddedToggleStyle);
             }
 
             GUI.enabled = managingSceneSchema.MessageWindow is not null;
@@ -354,12 +344,12 @@ public class SceneManagementModal : BaseWindow
 
             if (effectsLoadOptionToggle.Value)
             {
-                bloomLoadOptionToggle.Draw(padding);
-                depthOfFieldLoadOptionToggle.Draw(padding);
-                vignetteLoadOptionToggle.Draw(padding);
-                fogLoadOptionToggle.Draw(padding);
-                sepiaToneLoadOptionToggle.Draw(padding);
-                blurLoadOptionToggle.Draw(padding);
+                bloomLoadOptionToggle.Draw(paddedToggleStyle);
+                depthOfFieldLoadOptionToggle.Draw(paddedToggleStyle);
+                vignetteLoadOptionToggle.Draw(paddedToggleStyle);
+                fogLoadOptionToggle.Draw(paddedToggleStyle);
+                sepiaToneLoadOptionToggle.Draw(paddedToggleStyle);
+                blurLoadOptionToggle.Draw(paddedToggleStyle);
             }
 
             GUI.enabled = managingSceneSchema.Background is not null;

@@ -1,5 +1,6 @@
 using MeidoPhotoStudio.Plugin.Core;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
+using MeidoPhotoStudio.Plugin.Framework.UI;
 using MeidoPhotoStudio.Plugin.Input;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -14,9 +15,25 @@ public class SettingsWindowPane : BaseMainWindowPane
     private readonly Dictionary<SettingHeader, string> settingHeaders;
     private readonly Dictionary<Shortcut, string> shortcutMapping;
     private readonly Dictionary<Shortcut, string> shortcutName;
+    private readonly LazyStyle headerStyle = new(
+        14,
+        () => new(GUI.skin.label)
+        {
+            padding = new(7, 0, 0, -5),
+            normal = { textColor = Color.white },
+        });
+
+    private readonly LazyStyle labelStyle = new(13, () => new(GUI.skin.label));
+    private readonly LazyStyle leftMargin = new(
+        0,
+        () => new()
+        {
+            margin = new(8, 0, 0, 0),
+        });
 
     private Hotkey currentHotkey;
     private Shortcut currentShortcut;
+    private bool listeningToShortcut;
     private string cancelRebindLabel = "Cancel";
     private string pushAnyKeyLabel = "Push any key combo";
 
@@ -85,14 +102,22 @@ public class SettingsWindowPane : BaseMainWindowPane
 
         DrawHeader(SettingHeader.Controls);
 
+        GUILayout.BeginVertical(leftMargin);
+
         DrawGeneralControls();
         DrawCameraControls();
         DrawGeneralDragHandleControls();
         DrawMaidDragHandleControls();
 
+        GUILayout.EndVertical();
+
         DrawHeader(SettingHeader.Reload);
 
+        GUILayout.BeginVertical(leftMargin);
+
         reloadTranslationButton.Draw();
+
+        GUILayout.EndVertical();
 
         GUILayout.EndScrollView();
 
@@ -135,7 +160,7 @@ public class SettingsWindowPane : BaseMainWindowPane
 
         void DrawHeader(SettingHeader settingHeader)
         {
-            MpsGui.Header(settingHeaders[settingHeader]);
+            GUILayout.Label(settingHeaders[settingHeader], headerStyle);
             MpsGui.WhiteLine();
         }
 
@@ -165,8 +190,8 @@ public class SettingsWindowPane : BaseMainWindowPane
 
             bool CurrentControlIsListening(Enum key, bool isShortcut) =>
                 inputRemapper.Listening && (isShortcut
-                    ? (Shortcut)key == currentShortcut
-                    : (Hotkey)key == currentHotkey);
+                    ? listeningToShortcut && (Shortcut)key == currentShortcut
+                    : !listeningToShortcut && (Hotkey)key == currentHotkey);
 
             bool DrawControlButton(Enum key, bool isShortcut)
             {
@@ -179,6 +204,8 @@ public class SettingsWindowPane : BaseMainWindowPane
 
             void ListenForNewKeyCombo(Enum key, bool isShortcut)
             {
+                listeningToShortcut = isShortcut;
+
                 if (isShortcut)
                 {
                     inputRemapper.ListenForShortcut(OnControlRemapped);
@@ -229,7 +256,7 @@ public class SettingsWindowPane : BaseMainWindowPane
             {
                 var keyName = isShortcut ? shortcutName[(Shortcut)key] : hotkeyName[(Hotkey)key];
 
-                GUILayout.Label(keyName, GUILayout.ExpandWidth(false));
+                GUILayout.Label(keyName, labelStyle, GUILayout.ExpandWidth(false));
             }
         }
     }

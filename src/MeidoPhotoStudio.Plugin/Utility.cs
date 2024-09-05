@@ -31,8 +31,18 @@ public static class Utility
         return value < min ? max : value > max ? min : value;
     }
 
-    public static int GetPix(int num) =>
-        (int)((1f + (Screen.width / 1280f - 1f) * 0.6f) * num);
+    public static int GetPix(int num)
+    {
+        var scaleX = Screen.width / 1920f;
+        var scaleY = Screen.height / 1080f;
+
+        var scale = 1f + (Mathf.Min(scaleX, scaleY) - 1f) * 0.6f;
+
+        return Mathf.RoundToInt(scale * num);
+    }
+
+    public static int GetPix(float num) =>
+        GetPix(Mathf.RoundToInt(num));
 
     public static float Bound(float value, float left, float right) =>
         left > (double)right ? Mathf.Clamp(value, right, left) : Mathf.Clamp(value, left, right);

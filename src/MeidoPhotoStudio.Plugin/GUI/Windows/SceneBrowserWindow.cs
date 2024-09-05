@@ -3,6 +3,7 @@ using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
+using MeidoPhotoStudio.Plugin.Framework.UI;
 
 namespace MeidoPhotoStudio.Plugin;
 
@@ -11,6 +12,7 @@ public class SceneBrowserWindow : BaseWindow
     private const float ThumbnailScale = 0.4f;
     private const float ResizeHandleSize = 15f;
     private const int CategoryListWidth = 200;
+    private const int FontSize = 13;
 
     private static readonly Texture2D CategorySelectedTexture = Utility.MakeTex(2, 2, new(0.5f, 0.5f, 0.5f, 0.4f));
     private static readonly Vector2 ThumbnailDimensions = new(480f, 270f);
@@ -20,11 +22,56 @@ public class SceneBrowserWindow : BaseWindow
     private readonly SceneSchemaBuilder sceneSchemaBuilder;
     private readonly SceneBrowserConfiguration configuration;
     private readonly ScreenshotService screenshotService;
+    private readonly LazyStyle labelStyle = new(
+        FontSize,
+        () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.MiddleCenter,
+        });
+
+    private readonly LazyStyle categoryStyle = new(
+        FontSize,
+        () => new(GUI.skin.button)
+        {
+            alignment = TextAnchor.MiddleLeft,
+            margin = new(0, 0, 0, 0),
+        });
+
+    private readonly LazyStyle selectedCategoryStyle = new(
+        FontSize,
+        () => new GUIStyle(GUI.skin.button)
+        {
+            alignment = TextAnchor.MiddleLeft,
+            margin = new(0, 0, 0, 0),
+            normal =
+                {
+                    textColor = Color.white,
+                    background = CategorySelectedTexture,
+                },
+            hover = { background = CategorySelectedTexture },
+        });
+
+    private readonly LazyStyle deleteButtonStyle = new(
+        FontSize,
+        () => new(GUI.skin.button)
+        {
+            margin = new(0, 0, 0, 0),
+        });
+
+    private readonly LazyStyle thumbnailStyle = new(
+        FontSize,
+        () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.MiddleCenter,
+            padding = new RectOffset(0, 0, 0, 0),
+        });
+
     private readonly TextField categoryNameTextfield;
     private readonly TextField sceneNameTextfield;
     private readonly Button refreshScenesButton;
     private readonly Button addCategoryButton;
     private readonly Button saveSceneButton;
+    private readonly Button closeButton;
     private readonly Dropdown<SortingMode> sortingModesDropdown;
     private readonly Toggle descendingToggle;
 
@@ -101,6 +148,9 @@ public class SceneBrowserWindow : BaseWindow
         descendingToggle = new(Translation.Get("sceneManager", "descendingToggle"), this.configuration.SortDescending);
         descendingToggle.ControlEvent += OnDescendingToggleChanged;
 
+        closeButton = new("X");
+        closeButton.ControlEvent += OnCloseButtonPushed;
+
         PopulateWindow();
 
         void PopulateWindow()
@@ -157,8 +207,8 @@ public class SceneBrowserWindow : BaseWindow
                 var mousePosition = Event.current.mousePosition;
 
                 var (windowWidth, windowHeight) = mousePosition;
-                var minimumWidth = Utility.GetPix((int)(CategoryListWidth + ThumbnailDimensions.x * ThumbnailScale + 38));
-                var minimumHeight = Utility.GetPix((int)(ThumbnailDimensions.y * ThumbnailScale + 40));
+                var minimumWidth = Utility.GetPix(CategoryListWidth + ThumbnailDimensions.x * ThumbnailScale + 38);
+                var minimumHeight = Utility.GetPix(ThumbnailDimensions.y * ThumbnailScale + 40);
 
                 WindowRect = windowRect with
                 {
@@ -173,11 +223,13 @@ public class SceneBrowserWindow : BaseWindow
     {
         GUILayout.BeginArea(new(10f, 10f, WindowRect.width - 20f, WindowRect.height - 20f));
 
+        var categoryWidth = GUILayout.Width(Utility.GetPix(CategoryListWidth));
+
         DrawTitleBar();
 
         GUILayout.BeginHorizontal();
 
-        GUILayout.BeginVertical(GUILayout.Width(Utility.GetPix(CategoryListWidth)));
+        GUILayout.BeginVertical(categoryWidth);
 
         DrawCategories();
 
@@ -201,30 +253,21 @@ public class SceneBrowserWindow : BaseWindow
         {
             GUILayout.BeginHorizontal();
 
-            GUILayout.BeginHorizontal(GUILayout.Width(Utility.GetPix(CategoryListWidth)));
+            GUILayout.BeginHorizontal(categoryWidth);
 
-            var buttonStyle = new GUIStyle(GUI.skin.button)
-            {
-                fontSize = Utility.GetPix(12),
-            };
-
-            refreshScenesButton.Draw(buttonStyle, GUILayout.ExpandWidth(false));
+            refreshScenesButton.Draw(GUILayout.ExpandWidth(false));
 
             GUILayout.EndHorizontal();
 
-            GUILayout.Label(sortLabel, new GUIStyle(GUI.skin.label) { fontSize = Utility.GetPix(12) });
+            GUILayout.Label(sortLabel, labelStyle);
 
-            sortingModesDropdown.Draw(buttonStyle);
+            sortingModesDropdown.Draw();
 
-            descendingToggle.Draw(new GUIStyle(GUI.skin.toggle)
-            {
-                fontSize = Utility.GetPix(12),
-            });
+            descendingToggle.Draw();
 
             GUILayout.FlexibleSpace();
 
-            if (GUILayout.Button("X", buttonStyle))
-                Visible = !Visible;
+            closeButton.Draw();
 
             GUILayout.EndHorizontal();
         }
@@ -233,37 +276,12 @@ public class SceneBrowserWindow : BaseWindow
         {
             if (!hasCategories)
             {
-                var labelStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = Utility.GetPix(11),
-                    alignment = TextAnchor.MiddleCenter,
-                };
-
                 GUILayout.Label(noCategoriesLabel, labelStyle);
 
                 return;
             }
 
             categoryScrollPosition = GUILayout.BeginScrollView(categoryScrollPosition);
-
-            var categoryStyle = new GUIStyle(GUI.skin.button)
-            {
-                fontSize = Utility.GetPix(12),
-                alignment = TextAnchor.MiddleLeft,
-                margin = new(0, 0, 0, 0),
-            };
-
-            var categorySelectedStyle = new GUIStyle(categoryStyle);
-
-            categorySelectedStyle.normal.textColor = Color.white;
-            categorySelectedStyle.normal.background = CategorySelectedTexture;
-            categorySelectedStyle.hover.background = CategorySelectedTexture;
-
-            var deleteButtonStyle = new GUIStyle(GUI.skin.button)
-            {
-                fontSize = Utility.GetPix(12),
-                margin = new(0, 0, 0, 0),
-            };
 
             var buttonLayoutOption = GUILayout.ExpandWidth(false);
 
@@ -273,7 +291,7 @@ public class SceneBrowserWindow : BaseWindow
 
                 if (GUILayout.Button(
                     category,
-                    string.Equals(category, currentCategory, StringComparison.Ordinal) ? categorySelectedStyle : categoryStyle))
+                    string.Equals(category, currentCategory, StringComparison.Ordinal) ? selectedCategoryStyle : categoryStyle))
                     ChangeCategory(category);
 
                 if (!string.Equals(category, sceneRepository.RootCategoryName, StringComparison.Ordinal)
@@ -290,12 +308,6 @@ public class SceneBrowserWindow : BaseWindow
         {
             if (!hasScenes)
             {
-                var labelStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = Utility.GetPix(12),
-                    alignment = TextAnchor.MiddleCenter,
-                };
-
                 GUILayout.Label(noScenesLabel, labelStyle);
 
                 return;
@@ -313,12 +325,6 @@ public class SceneBrowserWindow : BaseWindow
             {
                 GUILayout.Height(thumbnailHeight),
                 GUILayout.Width(thumbnailWidth),
-            };
-
-            var thumbnailStyle = new GUIStyle(GUI.skin.label)
-            {
-                alignment = TextAnchor.MiddleCenter,
-                padding = new RectOffset(0, 0, 0, 0),
             };
 
             GUILayout.BeginHorizontal();
@@ -351,30 +357,36 @@ public class SceneBrowserWindow : BaseWindow
         {
             GUILayout.BeginHorizontal();
 
-            GUILayout.BeginHorizontal(GUILayout.Width(Utility.GetPix(CategoryListWidth)));
+            GUILayout.BeginHorizontal(categoryWidth);
 
-            var textFieldStyle = new GUIStyle(GUI.skin.textField)
-            {
-                fontSize = Utility.GetPix(12),
-            };
+            categoryNameTextfield.Draw();
 
-            var buttonStyle = new GUIStyle(GUI.skin.button)
-            {
-                fontSize = Utility.GetPix(12),
-            };
-
-            categoryNameTextfield.Draw(textFieldStyle);
-
-            addCategoryButton.Draw(buttonStyle, GUILayout.ExpandWidth(false));
+            addCategoryButton.Draw(GUILayout.ExpandWidth(false));
 
             GUILayout.EndHorizontal();
 
-            sceneNameTextfield.Draw(textFieldStyle);
+            sceneNameTextfield.Draw();
 
-            saveSceneButton.Draw(buttonStyle, GUILayout.ExpandWidth(false));
+            saveSceneButton.Draw(GUILayout.ExpandWidth(false));
 
             GUILayout.EndHorizontal();
         }
+    }
+
+    public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
+    {
+        base.OnScreenDimensionsChanged(newScreenDimensions);
+
+        sceneManagementModal.OnScreenDimensionsChanged(newScreenDimensions);
+
+        var minimumWidth = Utility.GetPix(CategoryListWidth + ThumbnailDimensions.x * ThumbnailScale + 20);
+        var minimumHeight = Utility.GetPix(ThumbnailDimensions.y * ThumbnailScale + 40);
+
+        WindowRect = windowRect with
+        {
+            width = Mathf.Max(minimumWidth, windowRect.width),
+            height = Mathf.Max(minimumHeight, windowRect.height),
+        };
     }
 
     protected override void ReloadTranslation()
@@ -397,6 +409,9 @@ public class SceneBrowserWindow : BaseWindow
             SortingMode.DateModified => scenes.OrderBy(scene => File.GetLastWriteTime(scene.Filename), descending),
             _ => throw new NotImplementedException($"'{sortingMode}' is not implemented"),
         };
+
+    private void OnCloseButtonPushed(object sender, EventArgs e) =>
+        Visible = false;
 
     private void OnRefreshScenesButtonPushed(object sender, EventArgs e) =>
         sceneRepository.Refresh();

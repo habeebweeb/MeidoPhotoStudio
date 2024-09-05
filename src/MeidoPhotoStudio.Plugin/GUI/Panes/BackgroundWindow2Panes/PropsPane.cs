@@ -43,13 +43,14 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
 
         GUILayout.BeginHorizontal();
 
-        propTypeDropdown.Draw();
+        const int ScrollBarWidth = 23;
 
-        var arrowLayoutOptions = new[]
-        {
-            GUILayout.ExpandWidth(false),
-            GUILayout.ExpandHeight(false),
-        };
+        var buttonAndScrollbarSize = ScrollBarWidth + Utility.GetPix(20) * 2 + 5;
+        var dropdownButtonWidth = parent.WindowRect.width - buttonAndScrollbarSize;
+
+        propTypeDropdown.Draw(GUILayout.Width(dropdownButtonWidth));
+
+        var arrowLayoutOptions = GUILayout.ExpandWidth(false);
 
         if (GUILayout.Button("<", arrowLayoutOptions))
             propTypeDropdown.CyclePrevious();
@@ -79,6 +80,14 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
         propTypes.Add(key);
 
         propTypeDropdown.SetItemsWithoutNotify(propTypes, 0);
+    }
+
+    public override void SetParent(BaseWindow window)
+    {
+        base.SetParent(window);
+
+        foreach (var pane in propPanes.Values)
+            pane.SetParent(window);
     }
 
     protected override void ReloadTranslation()

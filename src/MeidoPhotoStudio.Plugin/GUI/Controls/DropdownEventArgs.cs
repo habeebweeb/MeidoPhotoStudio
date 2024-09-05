@@ -1,5 +1,3 @@
-using System;
-
 namespace MeidoPhotoStudio.Plugin;
 
 public class DropdownEventArgs<T>(T item, int selectedItemIndex, int previousSelectedItemIndex) : EventArgs

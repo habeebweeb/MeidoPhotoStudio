@@ -37,12 +37,16 @@ public class ComboBox : BaseControl, IEnumerable<string>
         selectedItemIndex = 0;
     }
 
-    public override void Draw(params GUILayoutOption[] layoutOptions)
+    public override void Draw(params GUILayoutOption[] layoutOptions) =>
+        Draw(TextField.Style, DropdownHelper.ButtonStyle, DropdownHelper.DefaultDropdownStyle, layoutOptions);
+
+    public void Draw(GUIStyle textFieldStyle, GUIStyle buttonStyle, GUIStyle dropdownStyle, params GUILayoutOption[] layoutOptions)
     {
         GUILayout.BeginHorizontal();
-        textField.Draw(new(GUI.skin.textField), layoutOptions);
 
-        var clicked = GUILayout.Button("▾", GUILayout.ExpandWidth(false));
+        textField.Draw(textFieldStyle, layoutOptions);
+
+        var clicked = GUILayout.Button("v", buttonStyle, GUILayout.ExpandWidth(false));
 
         if (clicked)
         {
@@ -75,7 +79,8 @@ public class ComboBox : BaseControl, IEnumerable<string>
                 items,
                 selectedItemIndex,
                 buttonRect,
-                itemSize);
+                itemSize,
+                dropdownStyle);
 
             void OnSelectionChanged(object sender, DropdownHelper.DropdownSelectArgs e)
             {
