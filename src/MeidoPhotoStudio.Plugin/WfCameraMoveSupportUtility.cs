@@ -37,7 +37,10 @@ public static class WfCameraMoveSupportUtility
 
     public static void Destroy()
     {
-        if (wfCameraGameObject)
+        if (SceneEdit.Instance)
+            return;
+
+        if (!wfCameraGameObject)
             Object.Destroy(wfCameraGameObject);
     }
 }
