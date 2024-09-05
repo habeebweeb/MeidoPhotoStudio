@@ -50,6 +50,20 @@ public class LazyStyle
     public static implicit operator GUIStyle(LazyStyle style) =>
         style.Style;
 
+    public bool TrySet(Action<GUIStyle> setter)
+    {
+        try
+        {
+            setter(Style);
+        }
+        catch
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     private void OnScreenSizeChanged(object sender, EventArgs e)
     {
         if (style is null)

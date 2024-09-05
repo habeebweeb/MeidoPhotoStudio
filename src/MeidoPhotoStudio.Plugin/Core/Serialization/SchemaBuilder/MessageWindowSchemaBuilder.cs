@@ -15,5 +15,6 @@ public class MessageWindowSchemaBuilder(MessageWindowManager messageWindowManage
             FontSize = messageWindowManager.FontSize,
             Name = messageWindowManager.MessageName,
             MessageBody = messageWindowManager.MessageText,
+            Alignment = messageWindowManager.MessageAlignment,
         };
 }

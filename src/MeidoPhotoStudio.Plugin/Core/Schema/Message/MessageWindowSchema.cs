@@ -13,4 +13,6 @@ public class MessageWindowSchema(short version = MessageWindowSchema.SchemaVersi
     public string Name { get; init; }
 
     public string MessageBody { get; init; }
+
+    public NGUIText.Alignment Alignment { get; init; } = NGUIText.Alignment.Left;
 }

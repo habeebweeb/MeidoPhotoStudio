@@ -528,7 +528,11 @@
   "messageWindow": {
     "name": "Name",
     "fontSize": "Font Size",
-    "okButton": "OK"
+    "okButton": "OK",
+    "alignmentLabel": "Text Alignment",
+    "alignLeft": "Left",
+    "alignCenter": "Center",
+    "alignRight": "Right"
   },
   "systemMessage": {
     "exitConfirm": "Are you sure you want to quit {0}?\nAny unsaved data will be lost.",

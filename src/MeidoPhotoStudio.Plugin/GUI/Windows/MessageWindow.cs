@@ -1,3 +1,8 @@
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
+using MeidoPhotoStudio.Plugin.Framework.UI;
+
+using Alignment = NGUIText.Alignment;
+
 namespace MeidoPhotoStudio.Plugin;
 
 /// <summary>Message window UI.</summary>
@@ -8,8 +13,13 @@ public partial class MessageWindow : BaseWindow
     private readonly Slider fontSizeSlider;
     private readonly TextArea messageTextArea;
     private readonly Button okButton;
+    private readonly Button closeButton;
+    private readonly Label alignmentLabel;
+    private readonly Dropdown<Alignment> alignmentDropdown;
     private readonly Label nameLabel;
     private readonly Label fontSizeLabel;
+    private readonly Label fontPointLabel;
+    private readonly LazyStyle textAreaStyle;
 
     public MessageWindow(MessageWindowManager messageWindowManager)
     {
@@ -29,16 +39,37 @@ public partial class MessageWindow : BaseWindow
         okButton = new(Translation.Get("messageWindow", "okButton"));
         okButton.ControlEvent += ShowMessage;
 
+        alignmentLabel = new(Translation.Get("messageWindow", "alignmentLabel"));
+
+        alignmentDropdown = new(
+            new Alignment[] { Alignment.Left, Alignment.Center, Alignment.Right },
+            formatter: AlignmentFormatter);
+        alignmentDropdown.SelectionChanged += OnAlignmentChanged;
+
+        closeButton = new("X");
+        closeButton.ControlEvent += OnCloseButtonPushed;
+
         nameLabel = new(Translation.Get("messageWindow", "name"));
         fontSizeLabel = new(Translation.Get("messageWindow", "fontSize"));
+        fontPointLabel = new($"{messageWindowManager.FontSize}pt");
+
+        textAreaStyle = new(
+            messageWindowManager.FontSize,
+            () => new(GUI.skin.textArea)
+            {
+                alignment = NGUIAlignmentToTextAnchor(messageWindowManager.MessageAlignment),
+            });
+
+        static string AlignmentFormatter(Alignment alignment, int index) =>
+            Translation.Get("messageWindow", string.Concat("align", alignment.ToString()));
     }
 
     public override Rect WindowRect
     {
         set
         {
-            value.width = Mathf.Clamp(Screen.width * 0.4f, 440, Mathf.Infinity);
-            value.height = Mathf.Clamp(Screen.height * 0.15f, 150, Mathf.Infinity);
+            value.width = Mathf.Clamp(Screen.width * 0.5f, 440, Mathf.Infinity);
+            value.height = Mathf.Clamp(Screen.height * 0.17f, 150, Mathf.Infinity);
             base.WindowRect = value;
         }
     }
@@ -48,18 +79,32 @@ public partial class MessageWindow : BaseWindow
         GUILayout.BeginHorizontal();
 
         nameLabel.Draw(GUILayout.ExpandWidth(false));
-        nameTextField.Draw(GUILayout.Width(120));
+        nameTextField.Draw(GUILayout.Width(Utility.GetPix(150)));
 
-        GUILayout.Space(30);
+        GUILayout.Space(Utility.GetPix(20));
 
         fontSizeLabel.Draw(GUILayout.ExpandWidth(false));
-        fontSizeSlider.Draw(GUILayout.Width(120), GUILayout.ExpandWidth(false));
+        fontSizeSlider.Draw(GUILayout.Width(Utility.GetPix(120)), GUILayout.ExpandWidth(false));
+        fontPointLabel.Draw();
 
-        GUILayout.Label($"{(int)fontSizeSlider.Value}pt");
+        GUILayout.Space(Utility.GetPix(20));
+
+        alignmentLabel.Draw(GUILayout.ExpandWidth(false));
+        alignmentDropdown.Draw(GUILayout.Width(Utility.GetPix(120)));
+
+        GUILayout.FlexibleSpace();
+
+        closeButton.Draw();
+
         GUILayout.EndHorizontal();
 
-        messageTextArea.Draw(GUILayout.MinHeight(90));
-        okButton.Draw(GUILayout.ExpandWidth(false), GUILayout.Width(30));
+        scrollPos = GUILayout.BeginScrollView(scrollPos);
+
+        messageTextArea.Draw(textAreaStyle, GUILayout.ExpandHeight(true));
+
+        GUILayout.EndScrollView();
+
+        okButton.Draw(GUILayout.ExpandWidth(false), GUILayout.Width(Utility.GetPix(60)));
     }
 
     public override void Deactivate()
@@ -72,12 +117,40 @@ public partial class MessageWindow : BaseWindow
     public override void Activate() =>
         ResetUI();
 
+    public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
+    {
+        base.OnScreenDimensionsChanged(newScreenDimensions);
+
+        if (WindowRect.xMax > newScreenDimensions.x)
+            WindowRect = WindowRect with
+            {
+                x = newScreenDimensions.x - WindowRect.width - 5f,
+            };
+
+        if (WindowRect.yMax > newScreenDimensions.y)
+            WindowRect = WindowRect with
+            {
+                y = newScreenDimensions.y - WindowRect.height - 5f,
+            };
+    }
+
     protected override void ReloadTranslation()
     {
         okButton.Label = Translation.Get("messageWindow", "okButton");
         nameLabel.Text = Translation.Get("messageWindow", "name");
         fontSizeLabel.Text = Translation.Get("messageWindow", "fontSize");
+        alignmentLabel.Text = Translation.Get("messageWindow", "alignmentLabel");
+        alignmentDropdown.Reformat();
     }
+
+    private static TextAnchor NGUIAlignmentToTextAnchor(Alignment alignment) =>
+        alignment switch
+        {
+            Alignment.Left => TextAnchor.UpperLeft,
+            Alignment.Right => TextAnchor.UpperRight,
+            Alignment.Center => TextAnchor.UpperCenter,
+            _ => TextAnchor.UpperLeft,
+        };
 
     private void ToggleVisibility()
     {
@@ -87,8 +160,12 @@ public partial class MessageWindow : BaseWindow
             Visible = !Visible;
     }
 
-    private void ChangeFontSize(object sender, EventArgs args) =>
+    private void ChangeFontSize(object sender, EventArgs args)
+    {
         messageWindowManager.FontSize = (int)fontSizeSlider.Value;
+        textAreaStyle.FontSize = (int)fontSizeSlider.Value;
+        fontPointLabel.Text = $"{(int)fontSizeSlider.Value}pt";
+    }
 
     private void ShowMessage(object sender, EventArgs args)
     {
@@ -96,9 +173,22 @@ public partial class MessageWindow : BaseWindow
         messageWindowManager.ShowMessage(nameTextField.Value, messageTextArea.Value);
     }
 
+    private void OnCloseButtonPushed(object sender, EventArgs e) =>
+        Visible = false;
+
+    private void OnAlignmentChanged(object sender, DropdownEventArgs<Alignment> e)
+    {
+        messageWindowManager.MessageAlignment = e.Item;
+        textAreaStyle.TrySet(style => style.alignment = NGUIAlignmentToTextAnchor(e.Item));
+    }
+
     private void ResetUI()
     {
         fontSizeSlider.SetValueWithoutNotify(MessageWindowManager.FontBounds.Left);
+        fontPointLabel.Text = $"{(int)fontSizeSlider.Value}pt";
+        alignmentDropdown.SetSelectedIndexWithoutNotify(0);
+        textAreaStyle.TrySet(style => style.alignment = TextAnchor.UpperLeft);
+        textAreaStyle.FontSize = (int)MessageWindowManager.FontBounds.Left;
         nameTextField.Value = string.Empty;
         messageTextArea.Value = string.Empty;
     }

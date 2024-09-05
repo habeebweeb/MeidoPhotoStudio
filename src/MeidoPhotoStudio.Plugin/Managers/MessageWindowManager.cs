@@ -1,3 +1,5 @@
+using Alignment = NGUIText.Alignment;
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class MessageWindowManager : IManager
@@ -58,6 +60,12 @@ public class MessageWindowManager : IManager
     {
         get => messageLabel.fontSize;
         set => messageLabel.fontSize = (int)Mathf.Clamp(value, FontBounds.Left, FontBounds.Right);
+    }
+
+    public Alignment MessageAlignment
+    {
+        get => messageLabel.alignment;
+        set => messageLabel.alignment = value;
     }
 
     public void Update()
@@ -125,6 +133,7 @@ public class MessageWindowManager : IManager
     private void ResetMessageBoxProperties()
     {
         FontSize = 25;
+        MessageAlignment = Alignment.Left;
         MessageName = string.Empty;
         MessageText = string.Empty;
     }

@@ -19,6 +19,8 @@ public class MessageAspectLoader(MessageWindowManager messageWindowManager) : IS
 
         messageWindowManager.FontSize = messageWindowSchema.FontSize;
 
+        messageWindowManager.MessageAlignment = messageWindowSchema.Alignment;
+
         if (messageWindowSchema.ShowingMessage)
             messageWindowManager.ShowMessage(messageWindowSchema.Name, messageWindowSchema.MessageBody);
     }
