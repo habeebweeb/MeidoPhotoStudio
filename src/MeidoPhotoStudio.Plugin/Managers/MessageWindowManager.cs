@@ -1,5 +1,7 @@
 using System.ComponentModel;
 
+using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
+
 using Alignment = NGUIText.Alignment;
 
 namespace MeidoPhotoStudio.Plugin;

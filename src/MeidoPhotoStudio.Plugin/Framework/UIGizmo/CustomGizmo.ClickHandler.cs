@@ -15,7 +15,7 @@ public partial class CustomGizmo
         private Camera mainCamera;
         private bool clicked;
 
-        public WindowManager WindowManager { get; set; }
+        public Core.UI.Legacy.WindowManager WindowManager { get; set; }
 
         private void Awake() =>
             mainCamera = GameMain.Instance.MainCamera.camera;

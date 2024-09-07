@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 using BepInEx.Configuration;
 
-using SortingMode = MeidoPhotoStudio.Plugin.SceneBrowserWindow.SortingMode;
+using SortingMode = MeidoPhotoStudio.Plugin.Core.UI.Legacy.SceneBrowserWindow.SortingMode;
 
 namespace MeidoPhotoStudio.Plugin.Core.Configuration;
 
