@@ -8,7 +8,6 @@ public static class MpsGui
 
     private static readonly GUIStyle LineStyleWhite;
     private static readonly GUIStyle LineStyleBlack;
-    private static readonly GUIStyle TextureBoxStyle;
 
     static MpsGui()
     {
@@ -26,13 +25,6 @@ public static class MpsGui
         {
             normal = { background = Utility.MakeTex(2, 2, new(0f, 0f, 0f, 0.3f)) },
         };
-
-        TextureBoxStyle = new(GUI.skin.box)
-        {
-            normal = { background = Utility.MakeTex(2, 2, new(0f, 0f, 0f, 0f)) },
-        };
-
-        TextureBoxStyle.padding = TextureBoxStyle.margin = new(0, 0, 0, 0);
     }
 
     public static void WhiteLine() =>
@@ -40,12 +32,6 @@ public static class MpsGui
 
     public static void BlackLine() =>
         Line(LineStyleBlack);
-
-    public static void DrawTexture(Texture texture, params GUILayoutOption[] layoutOptions) =>
-        GUILayout.Box(texture, TextureBoxStyle, layoutOptions);
-
-    public static int ClampFont(int size, int min, int max) =>
-        Mathf.Clamp(Utility.GetPix(size), min, max);
 
     private static void Line(GUIStyle style) =>
         GUILayout.Box(GUIContent.none, style, GUILayout.Height(1));

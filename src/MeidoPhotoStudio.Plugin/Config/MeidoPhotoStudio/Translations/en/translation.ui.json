@@ -486,7 +486,7 @@
     "deleteFileConfirm": "Are you sure you want to permanently delete '{0}'?",
     "deleteDirectoryButton": "Delete Folder",
     "deleteFileCommit": "Delete Scene",
-    "fileLoadCommit": "Load Scene",
+    "fileLoadCommit": "Load",
     "infoKankyo": "Kankyo",
     "infoMaidSingular": "{0} Maid",
     "infoMaidPlural": "{0} Maids",
@@ -494,7 +494,8 @@
     "cancelButton": "Cancel",
     "overwriteButton": "Overwrite",
     "loadOptionsToggle": "Load Options",
-    "sceneLoadErrorMessage": "Could not open scene '{0}'"
+    "sceneLoadErrorMessage": "Could not open scene '{0}'",
+    "okButton": "OK",
   },
   "sceneManagerModalLoadOptions": {
     "loadCharactersToggle": "Maids",

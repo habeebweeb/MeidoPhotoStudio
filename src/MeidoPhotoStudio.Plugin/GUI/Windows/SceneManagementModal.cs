@@ -4,67 +4,18 @@ using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
 using MeidoPhotoStudio.Plugin.Framework.UI;
 
+using WindowSize = (float Width, float Height);
+
 namespace MeidoPhotoStudio.Plugin;
 
 public class SceneManagementModal : BaseWindow
 {
     private const int FontSize = 13;
+    private const float PaddingSize = 10f;
 
-    private static readonly Texture2D InfoHighlight = Utility.MakeTex(2, 2, new(0f, 0f, 0f, 0.8f));
-
-    private readonly SceneRepository sceneRepository;
-    private readonly ScreenshotService screenshotService;
-    private readonly SceneSchemaBuilder sceneSchemaBuilder;
-    private readonly ISceneSerializer sceneSerializer;
-    private readonly SceneLoader sceneLoader;
-    private readonly LazyStyle messageStyle = new(
-        FontSize,
-        () => new(GUI.skin.label)
-        {
-            alignment = TextAnchor.MiddleCenter,
-        });
-
-    private readonly LazyStyle infoLabelStyle = new(
-        FontSize,
-        () => new(GUI.skin.label)
-        {
-            alignment = TextAnchor.MiddleCenter,
-            normal = { background = InfoHighlight },
-        });
-
-    private readonly LazyStyle paddedToggleStyle = new(
-        FontSize,
-        () => new(GUI.skin.toggle)
-        {
-            margin = { left = 10 },
-        });
-
-    private readonly Button okButton;
-    private readonly Button cancelButton;
-    private readonly Button deleteButton;
-    private readonly Button overwriteButton;
-    private readonly Toggle loadOptionsToggle;
-    private readonly Toggle characterLoadOptionToggle;
-    private readonly Toggle characterIDLoadOptionToggle;
-    private readonly Toggle messageWindowLoadOptionToggle;
-    private readonly Toggle lightsLoadOptionToggle;
-    private readonly Toggle effectsLoadOptionToggle;
-    private readonly Toggle bloomLoadOptionToggle;
-    private readonly Toggle depthOfFieldLoadOptionToggle;
-    private readonly Toggle vignetteLoadOptionToggle;
-    private readonly Toggle fogLoadOptionToggle;
-    private readonly Toggle sepiaToneLoadOptionToggle;
-    private readonly Toggle blurLoadOptionToggle;
-    private readonly Toggle backgroundLoadOptionToggle;
-    private readonly Toggle propsLoadOptionToggle;
-    private readonly Toggle cameraLoadOptionToggle;
-
-    private Mode currentMode = Mode.None;
-    private SceneModel managingScene;
-    private string managingCategory = string.Empty;
-    private SceneSchema managingSceneSchema;
-    private string message = string.Empty;
-    private string infoString = string.Empty;
+    private readonly NoneMode noneMode;
+    private readonly ManageSceneMode manageSceneMode;
+    private readonly DeleteCategoryMode deleteCategoryMode;
 
     public SceneManagementModal(
         SceneRepository sceneRepository,
@@ -73,229 +24,270 @@ public class SceneManagementModal : BaseWindow
         ISceneSerializer sceneSerializer,
         SceneLoader sceneLoader)
     {
-        this.sceneRepository = sceneRepository ?? throw new ArgumentNullException(nameof(sceneRepository));
-        this.screenshotService = screenshotService
-            ? screenshotService : throw new ArgumentNullException(nameof(screenshotService));
-        this.sceneSchemaBuilder = sceneSchemaBuilder ?? throw new ArgumentNullException(nameof(sceneSchemaBuilder));
-        this.sceneSerializer = sceneSerializer ?? throw new ArgumentNullException(nameof(sceneSerializer));
-        this.sceneLoader = sceneLoader ?? throw new ArgumentNullException(nameof(sceneLoader));
+        noneMode = new(this);
+        manageSceneMode = new(this, sceneSerializer, sceneSchemaBuilder, screenshotService, sceneLoader, sceneRepository);
+        deleteCategoryMode = new(this, sceneRepository);
 
-        okButton = new(Translation.Get("sceneManagerModal", "fileLoadCommit"));
-        okButton.ControlEvent += OnCommitButtonPushed;
-
-        cancelButton = new(Translation.Get("sceneManagerModal", "cancelButton"));
-        cancelButton.ControlEvent += OnCancelButtonPushed;
-
-        deleteButton = new(Translation.Get("sceneManagerModal", "deleteButton"));
-        deleteButton.ControlEvent += OnDeleteButtonPushed;
-
-        overwriteButton = new(Translation.Get("sceneManagerModal", "overwriteButton"));
-        overwriteButton.ControlEvent += OnOverwriteButtonPushed;
-
-        loadOptionsToggle = new(Translation.Get("sceneManagerModal", "loadOptionsToggle"), false);
-
-        characterLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadCharactersToggle"), true);
-        characterIDLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadCharactersByIDToggle"));
-
-        messageWindowLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadMessageToggle"), true);
-
-        cameraLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadCameraToggle"), true);
-
-        lightsLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadLightsToggle"), true);
-
-        effectsLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadEffectsToggle"), true);
-        bloomLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadBloomToggle"), true);
-        depthOfFieldLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadDepthOfFieldToggle"), true);
-        vignetteLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadVignetteToggle"), true);
-        fogLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadFogToggle"), true);
-        sepiaToneLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadSepiaToneToggle"), true);
-        blurLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadBlurToggle"), true);
-
-        backgroundLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadBackgroundToggle"), true);
-
-        propsLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadPropsToggle"), true);
-
-        WindowRect = WindowRect with
-        {
-            x = MiddlePosition.x,
-            y = MiddlePosition.y,
-        };
+        CurrentMode = noneMode;
     }
 
-    private enum Mode
-    {
-        None,
-        ManageScene,
-        DeleteScene,
-        DeleteCategory,
-        Error,
-    }
-
-    public override Rect WindowRect
-    {
-        // TODO: This is not very good
-        set =>
-            base.WindowRect = value with
-            {
-                width = CurrentMode is Mode.ManageScene && loadOptionsToggle.Value
-                    ? Screen.width * 0.35f
-                    : Screen.width * 0.2f,
-                height = CurrentMode switch
-                {
-                    Mode.DeleteCategory or Mode.Error => 150f,
-                    Mode.DeleteScene => Screen.height * 0.32f,
-                    Mode.ManageScene or Mode.None or _ => Screen.height * 0.31f,
-                },
-            };
-    }
-
-    public override bool Visible =>
-        CurrentMode is not Mode.None;
-
-    private Mode CurrentMode
-    {
-        get => currentMode;
-        set
-        {
-            if (currentMode == value)
-                return;
-
-            currentMode = value;
-
-            OnModeChanged(currentMode);
-        }
-    }
+    private Mode CurrentMode { get; set; }
 
     public override void Draw()
     {
-        GUILayout.BeginArea(new(10f, 10f, WindowRect.width - 20f, WindowRect.height - 20f));
+        GUILayout.BeginArea(new(PaddingSize, PaddingSize, WindowRect.width - PaddingSize * 2, WindowRect.height - PaddingSize * 2));
 
-        GUILayout.BeginHorizontal();
-
-        GUILayout.BeginVertical(GUILayout.MaxWidth(Screen.width * 0.2f));
-
-        DrawMainContent();
-
-        GUILayout.EndVertical();
-
-        if (CurrentMode is Mode.ManageScene && loadOptionsToggle.Value)
-        {
-            GUILayout.BeginVertical();
-
-            DrawLoadOptions();
-
-            GUILayout.EndVertical();
-        }
-
-        GUILayout.EndHorizontal();
+        CurrentMode.Draw();
 
         GUILayout.EndArea();
+    }
 
-        void DrawMainContent()
+    public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
+    {
+        base.OnScreenDimensionsChanged(newScreenDimensions);
+
+        CurrentMode.OnScreenDimensionsChanged();
+    }
+
+    public void ManageScene(SceneModel scene) =>
+        manageSceneMode.ManageScene(scene);
+
+    public void DeleteCategory(string category) =>
+        deleteCategoryMode.DeleteCategory(category);
+
+    protected override void ReloadTranslation()
+    {
+        manageSceneMode.OnReloadTranslation();
+        deleteCategoryMode.OnReloadTranslation();
+    }
+
+    private abstract class Mode(SceneManagementModal sceneManagementModal)
+    {
+        protected readonly LazyStyle messageStyle = new(
+            FontSize,
+            () => new(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+            });
+
+        protected readonly SceneManagementModal sceneManagementModal = sceneManagementModal;
+
+        protected Rect WindowRect
         {
-            if (CurrentMode is Mode.ManageScene or Mode.DeleteScene)
+            get => sceneManagementModal.WindowRect;
+            set => sceneManagementModal.WindowRect = value;
+        }
+
+        protected Mode CurrentMode
+        {
+            get => sceneManagementModal.CurrentMode;
+            set
+            {
+                sceneManagementModal.CurrentMode = value;
+
+                CurrentMode.OnModeEnter();
+
+                Modal.Show(sceneManagementModal);
+            }
+        }
+
+        public abstract void Draw();
+
+        public abstract void OnReloadTranslation();
+
+        public abstract void OnScreenDimensionsChanged();
+
+        protected static Rect MiddlePosition(float width, float height) =>
+            new(Screen.width / 2f - width / 2f, Screen.height / 2f - height / 2f, width, height);
+
+        protected static int ScaledMinimum(float value) =>
+            Mathf.Min(Utility.GetPix(Mathf.RoundToInt(value)), (int)value);
+
+        protected virtual void OnModeEnter()
+        {
+        }
+
+        protected void CloseModal()
+        {
+            Modal.Close();
+
+            sceneManagementModal.CurrentMode = sceneManagementModal.noneMode;
+        }
+    }
+
+    private sealed class NoneMode(SceneManagementModal sceneManagementModal) : Mode(sceneManagementModal)
+    {
+        public override void Draw() =>
+            GUILayout.Label("You're not supposed to see this");
+
+        public override void OnReloadTranslation()
+        {
+        }
+
+        public override void OnScreenDimensionsChanged()
+        {
+        }
+    }
+
+    private class ManageSceneMode : Mode
+    {
+        private static readonly Texture2D InfoHighlight = Utility.MakeTex(2, 2, new(0f, 0f, 0f, 0.8f));
+
+        private readonly ISceneSerializer sceneSerializer;
+        private readonly SceneSchemaBuilder sceneSchemaBuilder;
+        private readonly ScreenshotService screenshotService;
+        private readonly SceneLoader sceneLoader;
+        private readonly SceneRepository sceneRepository;
+        private readonly DeleteSceneMode deleteSceneMode;
+        private readonly ErrorMode errorMode;
+        private readonly WindowSize manageSceneWindowSize = (540, 415);
+        private readonly WindowSize loadOptionsWindowSize = (800, 415);
+
+        private readonly LazyStyle infoLabelStyle = new(
+            FontSize,
+            () => new(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                normal = { background = InfoHighlight },
+            });
+
+        private readonly LazyStyle paddedToggleStyle = new(
+            FontSize,
+            () => new(GUI.skin.toggle)
+            {
+                margin = { left = 10 },
+            });
+
+        private readonly LazyStyle thumbnailStyle = new(
+            0,
+            () => new(GUI.skin.box)
+            {
+                margin = new(0, 0, 0, 0),
+                border = new(0, 0, 0, 0),
+                normal = { background = MpsGui.White },
+                stretchWidth = false,
+                stretchHeight = false,
+            });
+
+        private readonly Button loadButton;
+        private readonly Button cancelButton;
+        private readonly Button deleteButton;
+        private readonly Button overwriteButton;
+        private readonly Label sceneFilenameLabel;
+        private readonly Toggle loadOptionsToggle;
+        private readonly Toggle characterLoadOptionToggle;
+        private readonly Toggle characterIDLoadOptionToggle;
+        private readonly Toggle messageWindowLoadOptionToggle;
+        private readonly Toggle lightsLoadOptionToggle;
+        private readonly Toggle effectsLoadOptionToggle;
+        private readonly Toggle bloomLoadOptionToggle;
+        private readonly Toggle depthOfFieldLoadOptionToggle;
+        private readonly Toggle vignetteLoadOptionToggle;
+        private readonly Toggle fogLoadOptionToggle;
+        private readonly Toggle sepiaToneLoadOptionToggle;
+        private readonly Toggle blurLoadOptionToggle;
+        private readonly Toggle backgroundLoadOptionToggle;
+        private readonly Toggle propsLoadOptionToggle;
+        private readonly Toggle cameraLoadOptionToggle;
+
+        private Vector2 loadOptionsScrollPosition;
+        private SceneSchema managingSceneSchema;
+        private SceneModel managingScene;
+        private GUIContent characterCount;
+
+        public ManageSceneMode(
+            SceneManagementModal sceneManagementModal,
+            ISceneSerializer sceneSerializer,
+            SceneSchemaBuilder sceneSchemaBuilder,
+            ScreenshotService screenshotService,
+            SceneLoader sceneLoader,
+            SceneRepository sceneRepository)
+            : base(sceneManagementModal)
+        {
+            this.sceneSerializer = sceneSerializer ?? throw new ArgumentNullException(nameof(sceneSerializer));
+            this.sceneSchemaBuilder = sceneSchemaBuilder ?? throw new ArgumentNullException(nameof(sceneSchemaBuilder));
+            this.screenshotService = screenshotService
+                ? screenshotService : throw new ArgumentNullException(nameof(screenshotService));
+
+            this.sceneLoader = sceneLoader ?? throw new ArgumentNullException(nameof(sceneLoader));
+            this.sceneRepository = sceneRepository ?? throw new ArgumentNullException(nameof(sceneRepository));
+
+            sceneFilenameLabel = new(string.Empty);
+
+            loadButton = new(Translation.Get("sceneManagerModal", "fileLoadCommit"));
+            loadButton.ControlEvent += OnLoadButtonPushed;
+
+            cancelButton = new(Translation.Get("sceneManagerModal", "cancelButton"));
+            cancelButton.ControlEvent += OnCancelButtonPushed;
+
+            deleteButton = new(Translation.Get("sceneManagerModal", "deleteButton"));
+            deleteButton.ControlEvent += OnDeleteButtonPushed;
+
+            overwriteButton = new(Translation.Get("sceneManagerModal", "overwriteButton"));
+            overwriteButton.ControlEvent += OnOverwriteButtonPushed;
+
+            loadOptionsToggle = new(Translation.Get("sceneManagerModal", "loadOptionsToggle"), false);
+            loadOptionsToggle.ControlEvent += OnLoadOptionsToggleChanged;
+
+            characterLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadCharactersToggle"), true);
+            characterIDLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadCharactersByIDToggle"));
+
+            messageWindowLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadMessageToggle"), true);
+
+            cameraLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadCameraToggle"), true);
+
+            lightsLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadLightsToggle"), true);
+
+            effectsLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadEffectsToggle"), true);
+            bloomLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadBloomToggle"), true);
+            depthOfFieldLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadDepthOfFieldToggle"), true);
+            vignetteLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadVignetteToggle"), true);
+            fogLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadFogToggle"), true);
+            sepiaToneLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadSepiaToneToggle"), true);
+            blurLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadBlurToggle"), true);
+
+            backgroundLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadBackgroundToggle"), true);
+
+            propsLoadOptionToggle = new(Translation.Get("sceneManagerModalLoadOptions", "loadPropsToggle"), true);
+
+            deleteSceneMode = new(sceneManagementModal, this, sceneRepository);
+            errorMode = new(sceneManagementModal);
+        }
+
+        public override void Draw()
+        {
+            GUILayout.BeginHorizontal();
+
+            DrawManageScene();
+
+            if (loadOptionsToggle.Value)
+                DrawLoadOptions();
+
+            GUILayout.EndHorizontal();
+
+            void DrawManageScene()
+            {
+                if (loadOptionsToggle.Value)
+                {
+                    var maxWidth = ScaledMinimum(manageSceneWindowSize.Width);
+
+                    GUILayout.BeginVertical(GUILayout.MaxWidth(maxWidth - 20));
+                }
+                else
+                {
+                    GUILayout.BeginVertical();
+                }
+
                 DrawThumbnail();
 
-            DrawMessage(message);
-
-            if (CurrentMode is Mode.DeleteCategory or Mode.DeleteScene)
-                DrawDeleteButtons();
-            else if (CurrentMode is Mode.Error)
-                DrawErrorButtons();
-            else
-                DrawSceneManagementButtons();
-
-            if (CurrentMode is Mode.ManageScene)
-                DrawLoadOptionsToggle();
-
-            void DrawMessage(string message)
-            {
-                GUILayout.Space(10f);
-
-                GUILayout.Label(message, messageStyle);
-
-                GUILayout.Space(10f);
-            }
-
-            void DrawThumbnail()
-            {
-                if (managingScene is null)
-                    return;
-
-                var thumb = managingScene.Thumbnail;
-
-                var windowWidth = Screen.width * 0.2f;
-
-                var scale = Mathf.Min((windowWidth - 20f) / thumb.width, (windowRect.height - 110f) / thumb.height);
-                var width = Mathf.Min(thumb.width, thumb.width * scale);
-                var height = Mathf.Min(thumb.height, thumb.height * scale);
-
-                GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
 
-                MpsGui.DrawTexture(thumb, GUILayout.Width(width), GUILayout.Height(height));
-
-                var labelBox = GUILayoutUtility.GetLastRect();
-
-                var labelSize = infoLabelStyle.Style.CalcSize(new GUIContent(infoString));
-
-                labelBox = new(
-                    labelBox.x + 10, labelBox.y + labelBox.height - (labelSize.y + 10), labelSize.x + 10, labelSize.y + 2);
-
-                GUI.Label(labelBox, infoString, infoLabelStyle);
-
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-            }
-
-            void DrawDeleteButtons()
-            {
-                var buttonHeight = GUILayout.Height(Utility.GetPix(20));
-
-                GUILayout.BeginHorizontal();
+                sceneFilenameLabel.Draw(messageStyle);
 
                 GUILayout.FlexibleSpace();
 
-                okButton.Draw(buttonHeight, GUILayout.ExpandWidth(false));
-                cancelButton.Draw(buttonHeight, GUILayout.MinWidth(100));
+                DrawButtons();
 
-                GUILayout.EndHorizontal();
-            }
-
-            void DrawSceneManagementButtons()
-            {
-                var buttonHeight = GUILayout.Height(Utility.GetPix(20));
-
-                GUILayout.BeginHorizontal();
-
-                deleteButton.Draw(buttonHeight, GUILayout.ExpandWidth(false));
-                overwriteButton.Draw(buttonHeight, GUILayout.ExpandWidth(false));
-
-                GUILayout.FlexibleSpace();
-
-                okButton.Draw(buttonHeight, GUILayout.ExpandWidth(false));
-                cancelButton.Draw(buttonHeight, GUILayout.MinWidth(100));
-
-                GUILayout.EndHorizontal();
-            }
-
-            void DrawErrorButtons()
-            {
-                GUILayout.FlexibleSpace();
-
-                GUILayout.BeginHorizontal();
-
-                GUILayout.FlexibleSpace();
-
-                cancelButton.Draw(
-                    GUILayout.Height(Utility.GetPix(20)),
-                    GUILayout.ExpandWidth(false));
-
-                GUILayout.EndHorizontal();
-            }
-
-            void DrawLoadOptionsToggle()
-            {
                 GUILayout.BeginHorizontal();
 
                 GUILayout.FlexibleSpace();
@@ -303,243 +295,228 @@ public class SceneManagementModal : BaseWindow
                 loadOptionsToggle.Draw();
 
                 GUILayout.EndHorizontal();
+
+                GUILayout.EndVertical();
+
+                void DrawButtons()
+                {
+                    GUILayout.BeginHorizontal();
+
+                    deleteButton.Draw(GUILayout.ExpandWidth(false));
+                    overwriteButton.Draw(GUILayout.ExpandWidth(false));
+
+                    GUILayout.FlexibleSpace();
+
+                    loadButton.Draw(GUILayout.ExpandWidth(false));
+                    cancelButton.Draw(GUILayout.MinWidth(Utility.GetPix(110)));
+
+                    GUILayout.EndHorizontal();
+                }
             }
-        }
 
-        void DrawLoadOptions()
-        {
-            scrollPos = GUILayout.BeginScrollView(scrollPos);
-
-            GUI.enabled = managingSceneSchema.Character is not null;
-
-            characterLoadOptionToggle.Draw();
-            MpsGui.WhiteLine();
-
-            if (characterLoadOptionToggle.Value)
+            void DrawLoadOptions()
             {
-                GUI.enabled = managingSceneSchema.Character?.Version >= 2;
+                GUILayout.BeginVertical();
 
-                characterIDLoadOptionToggle.Draw(paddedToggleStyle);
+                loadOptionsScrollPosition = GUILayout.BeginScrollView(loadOptionsScrollPosition);
+
+                GUI.enabled = managingSceneSchema.Character is not null;
+
+                characterLoadOptionToggle.Draw();
+                MpsGui.WhiteLine();
+
+                if (characterLoadOptionToggle.Value)
+                {
+                    GUI.enabled = managingSceneSchema.Character?.Version >= 2;
+
+                    characterIDLoadOptionToggle.Draw(paddedToggleStyle);
+                }
+
+                GUI.enabled = managingSceneSchema.MessageWindow is not null;
+
+                messageWindowLoadOptionToggle.Draw();
+                MpsGui.WhiteLine();
+
+                GUI.enabled = managingSceneSchema.Camera is not null;
+
+                cameraLoadOptionToggle.Draw();
+                MpsGui.WhiteLine();
+
+                GUI.enabled = managingSceneSchema.Lights is not null;
+
+                lightsLoadOptionToggle.Draw();
+                MpsGui.WhiteLine();
+
+                GUI.enabled = managingSceneSchema.Effects is not null;
+
+                effectsLoadOptionToggle.Draw();
+                MpsGui.WhiteLine();
+
+                if (effectsLoadOptionToggle.Value)
+                {
+                    bloomLoadOptionToggle.Draw(paddedToggleStyle);
+                    depthOfFieldLoadOptionToggle.Draw(paddedToggleStyle);
+                    vignetteLoadOptionToggle.Draw(paddedToggleStyle);
+                    fogLoadOptionToggle.Draw(paddedToggleStyle);
+                    sepiaToneLoadOptionToggle.Draw(paddedToggleStyle);
+                    blurLoadOptionToggle.Draw(paddedToggleStyle);
+                }
+
+                GUI.enabled = managingSceneSchema.Background is not null;
+
+                backgroundLoadOptionToggle.Draw();
+                MpsGui.WhiteLine();
+
+                GUI.enabled = managingSceneSchema.Props is not null;
+
+                propsLoadOptionToggle.Draw();
+                MpsGui.WhiteLine();
+
+                GUI.enabled = true;
+
+                GUILayout.EndScrollView();
+
+                GUILayout.EndVertical();
             }
-
-            GUI.enabled = managingSceneSchema.MessageWindow is not null;
-
-            messageWindowLoadOptionToggle.Draw();
-            MpsGui.WhiteLine();
-
-            GUI.enabled = managingSceneSchema.Camera is not null;
-
-            cameraLoadOptionToggle.Draw();
-            MpsGui.WhiteLine();
-
-            GUI.enabled = managingSceneSchema.Lights is not null;
-
-            lightsLoadOptionToggle.Draw();
-            MpsGui.WhiteLine();
-
-            GUI.enabled = managingSceneSchema.Effects is not null;
-
-            effectsLoadOptionToggle.Draw();
-            MpsGui.WhiteLine();
-
-            if (effectsLoadOptionToggle.Value)
-            {
-                bloomLoadOptionToggle.Draw(paddedToggleStyle);
-                depthOfFieldLoadOptionToggle.Draw(paddedToggleStyle);
-                vignetteLoadOptionToggle.Draw(paddedToggleStyle);
-                fogLoadOptionToggle.Draw(paddedToggleStyle);
-                sepiaToneLoadOptionToggle.Draw(paddedToggleStyle);
-                blurLoadOptionToggle.Draw(paddedToggleStyle);
-            }
-
-            GUI.enabled = managingSceneSchema.Background is not null;
-
-            backgroundLoadOptionToggle.Draw();
-            MpsGui.WhiteLine();
-
-            GUI.enabled = managingSceneSchema.Props is not null;
-
-            propsLoadOptionToggle.Draw();
-            MpsGui.WhiteLine();
-
-            GUI.enabled = true;
-
-            GUILayout.EndScrollView();
         }
-    }
 
-    public void ManageScene(SceneModel scene)
-    {
-        _ = scene ?? throw new ArgumentNullException(nameof(scene));
-
-        SceneSchema schema;
-
-        try
+        public override void OnReloadTranslation()
         {
-            using var fileStream = File.OpenRead(scene.Filename);
+            loadButton.Label = Translation.Get("sceneManagerModal", "fileLoadCommit");
+            cancelButton.Label = Translation.Get("sceneManagerModal", "cancelButton");
+            deleteButton.Label = Translation.Get("sceneManagerModal", "deleteButton");
+            overwriteButton.Label = Translation.Get("sceneManagerModal", "overwriteButton");
+            loadOptionsToggle.Label = Translation.Get("sceneManagerModal", "loadOptionsToggle");
+            characterLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadCharactersToggle");
+            characterIDLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadCharactersByIDToggle");
+            messageWindowLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadMessageToggle");
+            cameraLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadCameraToggle");
+            lightsLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadLightsToggle");
+            effectsLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadEffectsToggle");
+            bloomLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadBloomToggle");
+            depthOfFieldLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadDepthOfFieldToggle");
+            vignetteLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadVignetteToggle");
+            fogLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadFogToggle");
+            sepiaToneLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadSepiaToneToggle");
+            blurLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadBlurToggle");
+            backgroundLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadBackgroundToggle");
+            propsLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadPropsToggle");
 
-            Utility.SeekPngEnd(fileStream);
-
-            schema = sceneSerializer.DeserializeScene(fileStream);
-
-            if (schema is null)
-            {
-                CurrentMode = Mode.Error;
-
-                message = string.Format(Translation.Get("sceneManagerModal", "sceneLoadErrorMessage"), scene.Name);
-
-                Modal.Show(this);
-
-                return;
-            }
+            deleteSceneMode.OnReloadTranslation();
+            errorMode.OnReloadTranslation();
         }
-        catch
+
+        public override void OnScreenDimensionsChanged()
         {
-            throw;
-        }
+            var (width, height) = loadOptionsToggle.Value ? loadOptionsWindowSize : manageSceneWindowSize;
 
-        managingScene = scene;
-        managingSceneSchema = schema;
-
-        CurrentMode = Mode.ManageScene;
-
-        Modal.Show(this);
-    }
-
-    public void DeleteCategory(string category)
-    {
-        if (string.IsNullOrEmpty(category))
-            throw new ArgumentException($"'{nameof(category)}' cannot be null or empty.", nameof(category));
-
-        if (!sceneRepository.ContainsCategory(category))
-            throw new ArgumentException($"'{category}' does not exist.", nameof(category));
-
-        managingCategory = category;
-
-        CurrentMode = Mode.DeleteCategory;
-
-        Modal.Show(this);
-    }
-
-    protected override void ReloadTranslation()
-    {
-        okButton.Label = Translation.Get("sceneManagerModal", "fileLoadCommit");
-        cancelButton.Label = Translation.Get("sceneManagerModal", "cancelButton");
-        deleteButton.Label = Translation.Get("sceneManagerModal", "deleteButton");
-        overwriteButton.Label = Translation.Get("sceneManagerModal", "overwriteButton");
-        loadOptionsToggle.Label = Translation.Get("sceneManagerModal", "loadOptionsToggle");
-        characterLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadCharactersToggle");
-        characterIDLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadCharactersByIDToggle");
-        messageWindowLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadMessageToggle");
-        cameraLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadCameraToggle");
-        lightsLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadLightsToggle");
-        effectsLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadEffectsToggle");
-        bloomLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadBloomToggle");
-        depthOfFieldLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadDepthOfFieldToggle");
-        vignetteLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadVignetteToggle");
-        fogLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadFogToggle");
-        sepiaToneLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadSepiaToneToggle");
-        blurLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadBlurToggle");
-        backgroundLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadBackgroundToggle");
-        propsLoadOptionToggle.Label = Translation.Get("sceneManagerModalLoadOptions", "loadPropsToggle");
-    }
-
-    private void OnModeChanged(Mode currentMode)
-    {
-        if (currentMode is Mode.ManageScene)
-            ApplyManageSceneMode();
-        else if (currentMode is Mode.DeleteScene)
-            ApplyDeleteSceneMode();
-        else if (currentMode is Mode.DeleteCategory)
-            ApplyDeleteCategoryMode();
-        else
-            ResetState();
-
-        if (currentMode is Mode.None)
             WindowRect = WindowRect with
             {
-                x = MiddlePosition.x,
-                y = MiddlePosition.y,
+                width = Mathf.Min(Utility.GetPix(width), width),
+                height = Mathf.Min(Utility.GetPix(height), height),
             };
+        }
 
-        void ApplyManageSceneMode()
+        public void ManageScene(SceneModel scene)
         {
-            message = managingScene.Name;
+            _ = scene ?? throw new ArgumentNullException(nameof(scene));
+
+            SceneSchema schema;
+
+            try
+            {
+                using var fileStream = File.OpenRead(scene.Filename);
+
+                Utility.SeekPngEnd(fileStream);
+
+                schema = sceneSerializer.DeserializeScene(fileStream);
+
+                if (schema is null)
+                {
+                    errorMode.ShowError(
+                        string.Format(Translation.Get("sceneManagerModal", "sceneLoadErrorMessage"), scene.Name));
+
+                    return;
+                }
+            }
+            catch
+            {
+                throw;
+            }
+
+            managingScene = scene;
+            managingSceneSchema = schema;
+
+            sceneFilenameLabel.Text = scene.Name;
 
             var characterCount = managingSceneSchema?.Character?.Characters.Count ?? 0;
 
-            infoString = string.Format(
+            this.characterCount = new(string.Format(
                 characterCount is 1
                     ? Translation.Get("sceneManagerModal", "infoMaidSingular")
                     : Translation.Get("sceneManagerModal", "infoMaidPlural"),
-                characterCount);
+                characterCount));
 
-            okButton.Label = Translation.Get("sceneManagerModal", "fileLoadCommit");
+            CurrentMode = this;
+
+            var (width, height) = loadOptionsToggle.Value ? loadOptionsWindowSize : manageSceneWindowSize;
+
+            WindowRect = MiddlePosition(ScaledMinimum(width), ScaledMinimum(height));
         }
 
-        void ApplyDeleteSceneMode()
+        protected override void OnModeEnter()
         {
-            message = string.Format(Translation.Get("sceneManagerModal", "deleteFileConfirm"), managingScene.Name);
-            okButton.Label = Translation.Get("sceneManagerModal", "deleteFileCommit");
-        }
+            var (width, height) = loadOptionsToggle.Value ? loadOptionsWindowSize : manageSceneWindowSize;
 
-        void ApplyDeleteCategoryMode()
-        {
-            message = string.Format(Translation.Get("sceneManagerModal", "deleteDirectoryConfirm"), managingCategory);
-            okButton.Label = Translation.Get("sceneManagerModal", "deleteDirectoryButton");
-        }
-
-        void ResetState()
-        {
-            managingScene = null;
-            managingSceneSchema = null;
-            managingCategory = string.Empty;
-            message = string.Empty;
-        }
-    }
-
-    private void OnOverwriteButtonPushed(object sender, EventArgs e)
-    {
-        if (managingScene is null)
-            return;
-
-        var sceneSchema = sceneSchemaBuilder.Build();
-
-        screenshotService.TakeScreenshotToTexture(
-            (screenshot) =>
+            WindowRect = WindowRect with
             {
-                sceneRepository.Overwrite(sceneSchema, screenshot, managingScene);
+                width = Mathf.Min(Utility.GetPix(width), width),
+                height = Mathf.Min(Utility.GetPix(height), height),
+            };
+        }
 
-                CurrentMode = Mode.None;
+        private void DrawThumbnail()
+        {
+            GUILayout.BeginHorizontal();
 
-                Modal.Close();
-            },
-            new());
-    }
+            GUILayout.FlexibleSpace();
 
-    private void OnDeleteButtonPushed(object sender, EventArgs e)
-    {
-        if (CurrentMode is not Mode.ManageScene)
-            return;
+            var thumbnail = managingScene.Thumbnail;
 
-        CurrentMode = Mode.DeleteScene;
-    }
+            var (windowWidth, windowHeight) = manageSceneWindowSize;
 
-    private void OnCommitButtonPushed(object sender, EventArgs e)
-    {
-        if (CurrentMode is Mode.DeleteCategory)
-            DeleteCategory(managingCategory);
-        else if (CurrentMode is Mode.DeleteScene)
-            DeleteScene(managingScene);
-        else if (CurrentMode is Mode.ManageScene)
-            LoadScene(managingSceneSchema);
+            var scaleWidth = (ScaledMinimum(windowWidth) - PaddingSize * 2) / thumbnail.width;
+            var scaleHeight = ScaledMinimum(windowHeight) / thumbnail.height;
 
-        CurrentMode = Mode.None;
+            var scale = Mathf.Min(scaleWidth, scaleHeight);
 
-        Modal.Close();
+            var thumbnailWidth = Mathf.Min(thumbnail.width, thumbnail.width * scale);
+            var thumbnailHeight = Mathf.Min(thumbnail.height, thumbnail.height * scale);
 
-        void LoadScene(SceneSchema scene) =>
-            sceneLoader.LoadScene(scene, new()
+            GUILayout.Box(
+                thumbnail,
+                thumbnailStyle,
+                GUILayout.MaxWidth(thumbnailWidth),
+                GUILayout.MaxHeight(thumbnailHeight));
+
+            var thumbnailRect = GUILayoutUtility.GetLastRect();
+            var labelSize = infoLabelStyle.Style.CalcSize(characterCount);
+
+            var labelRect = new Rect(
+                thumbnailRect.x + 10,
+                thumbnailRect.yMax - (labelSize.y + 10),
+                labelSize.x + 10,
+                labelSize.y + 2);
+
+            GUI.Label(labelRect, characterCount, infoLabelStyle);
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.EndHorizontal();
+        }
+
+        private void OnLoadButtonPushed(object sender, EventArgs e) =>
+            sceneLoader.LoadScene(managingSceneSchema, new()
             {
                 Characters = new()
                 {
@@ -563,34 +540,277 @@ public class SceneManagementModal : BaseWindow
                 Props = propsLoadOptionToggle.Value,
             });
 
-        void DeleteScene(SceneModel scene)
+        private void OnCancelButtonPushed(object sender, EventArgs e) =>
+            CloseModal();
+
+        private void OnDeleteButtonPushed(object sender, EventArgs e)
         {
-            if (scene is null)
+            if (managingScene is null)
                 return;
 
-            sceneRepository.Delete(scene);
+            deleteSceneMode.DeleteScene();
         }
 
-        void DeleteCategory(string category)
+        private void OnOverwriteButtonPushed(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(category))
+            if (managingScene is null)
                 return;
 
-            sceneRepository.DeleteCategory(category);
+            var sceneSchema = sceneSchemaBuilder.Build();
+
+            screenshotService.TakeScreenshotToTexture(
+                screenshot =>
+                {
+                    sceneRepository.Overwrite(sceneSchema, screenshot, managingScene);
+
+                    CloseModal();
+                },
+                new());
+        }
+
+        private void OnLoadOptionsToggleChanged(object sender, EventArgs e)
+        {
+            var (width, height) = loadOptionsToggle.Value ? loadOptionsWindowSize : manageSceneWindowSize;
+
+            WindowRect = WindowRect with
+            {
+                width = ScaledMinimum(width),
+                height = ScaledMinimum(height),
+            };
+        }
+
+        private class DeleteSceneMode : Mode
+        {
+            private readonly ManageSceneMode manageSceneMode;
+            private readonly SceneRepository sceneRepository;
+            private readonly Label messageLabel;
+            private readonly Button deleteButton;
+            private readonly Button cancelButton;
+
+            public DeleteSceneMode(
+                SceneManagementModal sceneManagementModal,
+                ManageSceneMode manageSceneMode,
+                SceneRepository sceneRepository)
+                : base(sceneManagementModal)
+            {
+                this.manageSceneMode = manageSceneMode;
+                this.sceneRepository = sceneRepository;
+
+                messageLabel = new(string.Empty);
+
+                deleteButton = new(Translation.Get("sceneManagerModal", "deleteFileCommit"));
+                deleteButton.ControlEvent += OnDeleteButtonPushed;
+
+                cancelButton = new(Translation.Get("sceneManagerModal", "cancelButton"));
+                cancelButton.ControlEvent += OnCancelButtonPushed;
+            }
+
+            public override void Draw()
+            {
+                manageSceneMode.DrawThumbnail();
+
+                GUILayout.FlexibleSpace();
+
+                messageLabel.Draw(messageStyle, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+
+                GUILayout.FlexibleSpace();
+
+                GUILayout.BeginHorizontal();
+
+                GUILayout.FlexibleSpace();
+
+                deleteButton.Draw(GUILayout.ExpandWidth(false));
+
+                cancelButton.Draw(GUILayout.MinWidth(Utility.GetPix(110)));
+
+                GUILayout.EndHorizontal();
+            }
+
+            public override void OnReloadTranslation()
+            {
+                deleteButton.Label = Translation.Get("sceneManagerModal", "cancelButton");
+                cancelButton.Label = Translation.Get("sceneManagerModal", "cancelButton");
+            }
+
+            public override void OnScreenDimensionsChanged()
+            {
+                var (width, height) = manageSceneMode.manageSceneWindowSize;
+
+                WindowRect = WindowRect with
+                {
+                    width = ScaledMinimum(width),
+                    height = ScaledMinimum(height),
+                };
+            }
+
+            public void DeleteScene()
+            {
+                messageLabel.Text = string.Format(
+                    Translation.Get("sceneManagerModal", "deleteFileConfirm"), manageSceneMode.managingScene.Name);
+
+                CurrentMode = this;
+            }
+
+            protected override void OnModeEnter()
+            {
+                var (width, height) = manageSceneMode.manageSceneWindowSize;
+
+                WindowRect = WindowRect with
+                {
+                    width = ScaledMinimum(width),
+                    height = ScaledMinimum(height),
+                };
+            }
+
+            private void OnDeleteButtonPushed(object sender, EventArgs e)
+            {
+                sceneRepository.Delete(manageSceneMode.managingScene);
+
+                CloseModal();
+            }
+
+            private void OnCancelButtonPushed(object sender, EventArgs e) =>
+                CurrentMode = manageSceneMode;
+        }
+
+        private class ErrorMode : Mode
+        {
+            private readonly WindowSize windowSize = (450, 200);
+            private readonly Button okButton;
+            private readonly Label errorLabel;
+
+            public ErrorMode(SceneManagementModal sceneManagementModal)
+                : base(sceneManagementModal)
+            {
+                okButton = new(Translation.Get("sceneManagerModal", "okButton"));
+                okButton.ControlEvent += OnOKButtonPushed;
+
+                errorLabel = new(string.Empty);
+            }
+
+            public override void Draw()
+            {
+                GUILayout.BeginVertical();
+
+                GUILayout.FlexibleSpace();
+
+                errorLabel.Draw(messageStyle);
+
+                GUILayout.FlexibleSpace();
+
+                GUILayout.EndVertical();
+
+                GUILayout.BeginHorizontal();
+
+                GUILayout.FlexibleSpace();
+
+                okButton.Draw(GUILayout.MinWidth(Utility.GetPix(110)));
+
+                GUILayout.EndHorizontal();
+            }
+
+            public override void OnScreenDimensionsChanged() =>
+                WindowRect = WindowRect with
+                {
+                    width = ScaledMinimum(windowSize.Width),
+                    height = ScaledMinimum(windowSize.Height),
+                };
+
+            public override void OnReloadTranslation() =>
+                okButton.Label = Translation.Get("sceneManagerModal", "okButton");
+
+            public void ShowError(string message)
+            {
+                errorLabel.Text = message;
+
+                CurrentMode = this;
+            }
+
+            protected override void OnModeEnter() =>
+                WindowRect = MiddlePosition(ScaledMinimum(windowSize.Width), ScaledMinimum(windowSize.Height));
+
+            private void OnOKButtonPushed(object sender, EventArgs e) =>
+                CloseModal();
         }
     }
 
-    private void OnCancelButtonPushed(object sender, EventArgs e)
+    private class DeleteCategoryMode : Mode
     {
-        if (CurrentMode is Mode.DeleteScene)
-        {
-            CurrentMode = Mode.ManageScene;
-        }
-        else
-        {
-            CurrentMode = Mode.None;
+        private readonly WindowSize windowSize = (450, 200);
+        private readonly SceneRepository sceneRepository;
+        private readonly Label messageLabel;
+        private readonly Button deleteButton;
+        private readonly Button cancelButton;
 
-            Modal.Close();
+        private string managingCategory;
+
+        public DeleteCategoryMode(SceneManagementModal sceneManagementModal, SceneRepository sceneRepository)
+            : base(sceneManagementModal)
+        {
+            this.sceneRepository = sceneRepository ?? throw new ArgumentNullException(nameof(sceneRepository));
+
+            messageLabel = new(string.Empty);
+
+            cancelButton = new(Translation.Get("sceneManagerModal", "cancelButton"));
+            cancelButton.ControlEvent += OnCancelButtonPushed;
+
+            deleteButton = new(Translation.Get("sceneManagerModal", "deleteButton"));
+            deleteButton.ControlEvent += OnDeleteButtonPushed;
+        }
+
+        public override void Draw()
+        {
+            messageLabel.Draw(messageStyle, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.FlexibleSpace();
+
+            deleteButton.Draw(GUILayout.ExpandWidth(false));
+
+            cancelButton.Draw(GUILayout.MinWidth(Utility.GetPix(110)));
+
+            GUILayout.EndHorizontal();
+        }
+
+        public override void OnReloadTranslation() =>
+            messageLabel.Text = string.Format(Translation.Get("sceneManagerModal", "deleteDirectoryConfirm"), managingCategory);
+
+        public override void OnScreenDimensionsChanged() =>
+            WindowRect = WindowRect with
+            {
+                width = ScaledMinimum(windowSize.Width),
+                height = ScaledMinimum(windowSize.Height),
+            };
+
+        public void DeleteCategory(string category)
+        {
+            if (string.IsNullOrEmpty(category))
+                throw new ArgumentException($"'{nameof(category)}' cannot be null or empty.", nameof(category));
+
+            if (!sceneRepository.ContainsCategory(category))
+                throw new ArgumentException($"'{category}' does not exist.", nameof(category));
+
+            managingCategory = category;
+            messageLabel.Text = string.Format(Translation.Get("sceneManagerModal", "deleteDirectoryConfirm"), managingCategory);
+
+            CurrentMode = this;
+        }
+
+        protected override void OnModeEnter() =>
+            WindowRect = MiddlePosition(ScaledMinimum(windowSize.Width), ScaledMinimum(windowSize.Height));
+
+        private void OnCancelButtonPushed(object sender, EventArgs e) =>
+            CloseModal();
+
+        private void OnDeleteButtonPushed(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(managingCategory))
+                return;
+
+            sceneRepository.DeleteCategory(managingCategory);
+
+            CloseModal();
         }
     }
 }
