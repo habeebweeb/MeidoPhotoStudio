@@ -1,4 +1,3 @@
-using BepInEx.Configuration;
 using Newtonsoft.Json.Linq;
 
 namespace MeidoPhotoStudio.Plugin;
@@ -9,45 +8,16 @@ namespace MeidoPhotoStudio.Plugin;
 // ui/backgrounds/cm3d2/categoryName -> "Custom Maid 3D 2" and ui/backgrounds/cm3d2/backgrounds/Yashiki_Day -> "Inn".
 public static class Translation
 {
-    private const string SettingsHeader = "Translation";
-
     private static readonly string[] Props = ["ui", "props", "bg", "face"];
-    private static readonly ConfigEntry<string> CurrentLanguageConfig = Configuration.Config.Bind(
-        SettingsHeader,
-        "Language",
-        "en",
-        "Directory to pull translations from\nTranslations are found in the 'Translations' folder");
-
-    private static readonly ConfigEntry<bool> SuppressWarningsConfig = Configuration.Config.Bind(
-        SettingsHeader,
-        "SuppressWarnings",
-        false,
-        "Suppress translation warnings from showing up in the console");
 
     private static Dictionary<string, Dictionary<string, string>> translations;
     private static bool forceSuppressWarnings;
-    private static bool suppressWarningsCached;
-
-    static Translation() =>
-        suppressWarningsCached = !SuppressWarningsConfig.Value;
 
     public static event EventHandler ReloadTranslationEvent;
 
-    public static bool SuppressWarnings
-    {
-        get => suppressWarningsCached;
-        set
-        {
-            suppressWarningsCached = value;
-            SuppressWarningsConfig.Value = value;
-        }
-    }
+    public static bool SuppressWarnings { get; set; }
 
-    public static string CurrentLanguage
-    {
-        get => CurrentLanguageConfig.Value;
-        set => CurrentLanguageConfig.Value = value;
-    }
+    public static string CurrentLanguage { get; set; }
 
     public static void Initialize(string language)
     {

@@ -1,3 +1,4 @@
+using BepInEx.Configuration;
 using com.workman.cm3d2.scene.dailyEtc;
 using MeidoPhotoStudio.Database.Background;
 using MeidoPhotoStudio.Database.Character;
@@ -35,6 +36,7 @@ public partial class PluginCore : MonoBehaviour
 {
     private readonly IconCache iconCache = new();
 
+    private ConfigFile configuration;
     private WindowManager windowManager;
     private MessageWindowManager messageWindowManager;
     private PropService propService;
@@ -111,9 +113,12 @@ public partial class PluginCore : MonoBehaviour
 
     private void Start()
     {
-        Translation.Initialize(Translation.CurrentLanguage);
+        configuration = new(Path.Combine(Constants.ConfigPath, $"{Plugin.PluginName}.cfg"), false);
 
-        inputConfiguration = new InputConfiguration(MeidoPhotoStudio.Plugin.Configuration.Config);
+        var translationConfiguration = new TranslationConfiguration(configuration);
+
+        Translation.Initialize(translationConfiguration.CurrentLanguage);
+        inputConfiguration = new InputConfiguration(configuration);
 
         inputPollingService = gameObject.AddComponent<InputPollingService>();
         inputPollingService.AddInputHandler(new InputHandler(this, inputConfiguration));
@@ -233,7 +238,7 @@ public partial class PluginCore : MonoBehaviour
         var customBlendSetPath = Path.Combine(presetsPath, "Face Presets");
         var customHandPresetPath = Path.Combine(presetsPath, "Hand Presets");
 
-        var faceShapeKeyConfiguration = new FaceShapeKeyConfiguration(MeidoPhotoStudio.Plugin.Configuration.Config);
+        var faceShapeKeyConfiguration = new FaceShapeKeyConfiguration(configuration);
         var facialExpressionBuilder = new FacialExpressionBuilder(faceShapeKeyConfiguration);
 
         messageWindowManager = new();
@@ -283,7 +288,7 @@ public partial class PluginCore : MonoBehaviour
         var backgroundPropRepository = new BackgroundPropRepository(backgroundRepository);
         var myRoomPropRepository = new MyRoomPropRepository();
 
-        var menuPropsConfiguration = new MenuPropsConfiguration(MeidoPhotoStudio.Plugin.Configuration.Config);
+        var menuPropsConfiguration = new MenuPropsConfiguration(configuration);
         var menuPropRepository = new MenuPropRepository(
             menuPropsConfiguration,
             new MenuFileCacheSerializer(Path.Combine(BepInEx.Paths.ConfigPath, Plugin.PluginName)));
@@ -382,7 +387,7 @@ public partial class PluginCore : MonoBehaviour
             new(sceneRepository, screenshotService, sceneSchemaBuilder, sceneSerializer, sceneLoader),
             sceneSchemaBuilder,
             screenshotService,
-            new(MeidoPhotoStudio.Plugin.Configuration.Config));
+            new(configuration));
 
         AddPluginActiveInputHandler(new SceneBrowserWindowInputHandler(sceneBrowser, inputConfiguration));
 
@@ -652,7 +657,7 @@ public partial class PluginCore : MonoBehaviour
 
             Modal.Close();
 
-            MeidoPhotoStudio.Plugin.Configuration.Config.Save();
+            configuration.Save();
 
             if (customMaidSceneService.EditScene)
                 return;
