@@ -540,7 +540,7 @@ public class IKController : INotifyPropertyChanged
 
     private bool SetLimits(bool value, bool digits)
     {
-        if (digits && limitDigitRotations == value || limitLimbRotations == value)
+        if (digits && limitDigitRotations == value || !digits && limitLimbRotations == value)
             return false;
 
         if (digits)
