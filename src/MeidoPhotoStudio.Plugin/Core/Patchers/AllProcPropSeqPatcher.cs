@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Core.Patchers;
 
 #pragma warning disable SA1313, IDE0051
 public static class AllProcPropSeqPatcher

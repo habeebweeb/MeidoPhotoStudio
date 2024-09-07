@@ -1,6 +1,6 @@
 using HarmonyLib;
 
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Core.Patchers;
 
 public static class BgMgrPatcher
 {

@@ -1,4 +1,4 @@
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Core.Patchers;
 
 public class ProcStartEventArgs(Maid maid) : EventArgs
 {

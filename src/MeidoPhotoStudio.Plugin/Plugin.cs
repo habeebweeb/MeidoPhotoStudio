@@ -1,4 +1,5 @@
 using BepInEx;
+using MeidoPhotoStudio.Plugin.Core.Patchers;
 
 namespace MeidoPhotoStudio.Plugin;
 
