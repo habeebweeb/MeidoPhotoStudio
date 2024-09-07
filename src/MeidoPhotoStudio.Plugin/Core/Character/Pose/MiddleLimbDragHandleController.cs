@@ -43,7 +43,7 @@ public class MiddleLimbDragHandleController(
         : PoseableMode(controller)
     {
         private static Vector2 MouseDelta =>
-            new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
+            new(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
         public override void OnModeEnter()
         {

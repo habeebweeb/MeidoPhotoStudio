@@ -27,7 +27,7 @@ public class GravityDragHandleInputService(InputConfiguration inputConfiguration
         UpdateDragHandleMode(newMode);
 
         bool OtherKeyPressed() =>
-            inputConfiguration.KeyPool.Any(UnityEngine.Input.GetKey);
+            inputConfiguration.KeyPool.Any(Input.GetKey);
     }
 
     private void UpdateDragHandleMode(GravityDragHandleMode newMode)

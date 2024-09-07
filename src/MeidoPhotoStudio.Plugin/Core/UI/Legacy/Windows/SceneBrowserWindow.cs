@@ -198,9 +198,9 @@ public class SceneBrowserWindow : BaseWindow
                 y = windowRect.height - ResizeHandleSize,
             };
 
-            if (resizing && !UnityEngine.Input.GetMouseButton(0))
+            if (resizing && !Input.GetMouseButton(0))
                 resizing = false;
-            else if (!resizing && UnityEngine.Input.GetMouseButtonDown(0) && resizeHandleRect.Contains(Event.current.mousePosition))
+            else if (!resizing && Input.GetMouseButtonDown(0) && resizeHandleRect.Contains(Event.current.mousePosition))
                 resizing = true;
 
             if (resizing)

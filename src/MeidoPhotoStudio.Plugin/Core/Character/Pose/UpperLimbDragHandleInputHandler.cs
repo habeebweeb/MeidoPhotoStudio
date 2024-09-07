@@ -28,7 +28,7 @@ public class UpperLimbDragHandleInputHandler(InputConfiguration inputConfigurati
         UpdateDragHandleMode(newMode);
 
         bool OtherKeyPressed() =>
-            inputConfiguration.KeyPool.Any(UnityEngine.Input.GetKey);
+            inputConfiguration.KeyPool.Any(Input.GetKey);
     }
 
     void IDragHandleInputHandler<ICharacterDragHandleController>.AddController(ICharacterDragHandleController controller) =>

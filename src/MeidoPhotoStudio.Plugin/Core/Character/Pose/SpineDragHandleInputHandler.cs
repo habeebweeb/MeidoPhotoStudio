@@ -37,7 +37,7 @@ public class SpineDragHandleInputHandler(InputConfiguration inputConfiguration)
         UpdateDragHandleMode(newMode);
 
         bool OtherKeyPressed() =>
-            inputConfiguration.KeyPool.Any(UnityEngine.Input.GetKey);
+            inputConfiguration.KeyPool.Any(Input.GetKey);
     }
 
     protected override void OnControllerAdded(SpineDragHandleController controller) =>

@@ -33,7 +33,7 @@ public class WindowManager
 
         static bool MouseOverWindow(BaseWindow window)
         {
-            var mousePosition = new Vector2(UnityEngine.Input.mousePosition.x, Screen.height - UnityEngine.Input.mousePosition.y);
+            var mousePosition = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
 
             return window.WindowRect.Contains(mousePosition);
         }

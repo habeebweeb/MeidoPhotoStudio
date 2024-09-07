@@ -10,7 +10,7 @@ public abstract partial class GeneralDragHandleController
         where T : GeneralDragHandleController
     {
         protected static Vector2 MouseDelta =>
-            new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
+            new(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
         protected virtual T Controller { get; } = controller ?? throw new ArgumentNullException(nameof(controller));
 

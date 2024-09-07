@@ -37,7 +37,7 @@ public class MiddleLimbDragHandleInputHandler(InputConfiguration inputConfigurat
         UpdateDragHandleMode(newMode);
 
         bool OtherKeyPressed() =>
-            inputConfiguration.KeyPool.Any(UnityEngine.Input.GetKey);
+            inputConfiguration.KeyPool.Any(Input.GetKey);
     }
 
     protected override void OnControllerAdded(MiddleLimbDragHandleController controller) =>

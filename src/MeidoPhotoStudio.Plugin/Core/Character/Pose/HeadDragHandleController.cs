@@ -148,7 +148,7 @@ public class HeadDragHandleController(
         : RotateHeadMode(controller)
     {
         private static Vector2 MouseDelta =>
-            new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
+            new(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
         protected override void Drag()
         {
@@ -167,7 +167,7 @@ public class HeadDragHandleController(
         : RotateHeadMode(controller)
     {
         private static Vector2 MouseDelta =>
-            new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
+            new(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
         protected override void Drag()
         {
@@ -181,7 +181,7 @@ public class HeadDragHandleController(
         : PoseableMode(controller)
     {
         private static Vector2 MouseDelta =>
-            new(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
+            new(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
         public override void OnModeEnter() =>
             controller.DragHandleActive = true;

@@ -37,7 +37,7 @@ public class HipDragHandleInputHandler(InputConfiguration inputConfiguration)
         UpdateDragHandleMode(newMode);
 
         bool OtherKeyPressed() =>
-            inputConfiguration.KeyPool.Any(UnityEngine.Input.GetKey);
+            inputConfiguration.KeyPool.Any(Input.GetKey);
     }
 
     protected override void OnControllerAdded(HipDragHandleController controller) =>
