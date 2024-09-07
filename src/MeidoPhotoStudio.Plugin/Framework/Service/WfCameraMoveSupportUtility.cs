@@ -1,4 +1,4 @@
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Framework.Service;
 
 public static class WfCameraMoveSupportUtility
 {

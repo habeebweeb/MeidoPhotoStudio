@@ -2,6 +2,7 @@ using MeidoPhotoStudio.Database.Scenes;
 using MeidoPhotoStudio.Plugin.Core.SceneManagement;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
+using MeidoPhotoStudio.Plugin.Framework.Service;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 using WindowSize = (float Width, float Height);

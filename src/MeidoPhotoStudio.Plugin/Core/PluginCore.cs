@@ -22,10 +22,10 @@ using MeidoPhotoStudio.Plugin.Core.UndoRedo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.Input;
 using MeidoPhotoStudio.Plugin.Framework.Menu;
+using MeidoPhotoStudio.Plugin.Framework.Service;
 using MeidoPhotoStudio.Plugin.Framework.UI;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
-using MeidoPhotoStudio.Plugin.Service;
 using UnityEngine.SceneManagement;
 
 namespace MeidoPhotoStudio.Plugin.Core;
@@ -169,7 +169,7 @@ public partial class PluginCore : MonoBehaviour
         inputRemapper = gameObject.AddComponent<InputRemapper>();
         inputRemapper.InputPollingService = inputPollingService;
 
-        AddPluginActiveInputHandler(new ScreenshotService.InputHandler(screenshotService, inputConfiguration));
+        AddPluginActiveInputHandler(new ScreenshotServiceInputHandler(screenshotService, inputConfiguration));
 
         undoRedoService = new();
 

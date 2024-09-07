@@ -2,6 +2,7 @@ using System.ComponentModel;
 
 using MeidoPhotoStudio.Database.Props;
 using MeidoPhotoStudio.Plugin.Framework;
+using MeidoPhotoStudio.Plugin.Framework.Service;
 using UnityEngine.Rendering;
 
 namespace MeidoPhotoStudio.Plugin.Core.Props;

@@ -1,4 +1,4 @@
-namespace MeidoPhotoStudio.Plugin.Service;
+namespace MeidoPhotoStudio.Plugin.Framework.Service;
 
 public class CustomMaidSceneChangeEventArgs(
     CustomMaidSceneService.CustomMaidScene current,

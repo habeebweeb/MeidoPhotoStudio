@@ -1,4 +1,4 @@
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 public static class MpsGui
 {

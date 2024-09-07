@@ -2,7 +2,7 @@ using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Plugin.Core.UndoRedo;
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
-using MeidoPhotoStudio.Plugin.Service;
+using MeidoPhotoStudio.Plugin.Framework.Service;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 

@@ -1,4 +1,5 @@
 using BepInEx.Configuration;
+using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Input;
 
 using KeyboardShortcut = MeidoPhotoStudio.Plugin.Framework.Input.KeyboardShortcut;

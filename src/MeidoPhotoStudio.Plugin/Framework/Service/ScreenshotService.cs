@@ -2,10 +2,9 @@ using MeidoPhotoStudio.Plugin.Core;
 
 using ScreenshotScale = CMSystem.SSSuperSizeType;
 
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Framework.Service;
 
-/// <summary>Screenshot service.</summary>
-public partial class ScreenshotService : MonoBehaviour
+public class ScreenshotService : MonoBehaviour
 {
     private GameObject dragHandleParent;
 

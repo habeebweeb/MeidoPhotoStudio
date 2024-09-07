@@ -1,5 +1,5 @@
+using MeidoPhotoStudio.Plugin.Framework.Service;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
-using MeidoPhotoStudio.Plugin.Service;
 
 namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 

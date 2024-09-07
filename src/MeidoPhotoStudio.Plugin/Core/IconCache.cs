@@ -1,5 +1,6 @@
 using MeidoPhotoStudio.Database.Props;
 using MeidoPhotoStudio.Database.Props.Menu;
+using MeidoPhotoStudio.Plugin.Framework;
 
 namespace MeidoPhotoStudio.Plugin.Core;
 

@@ -1,4 +1,5 @@
 using MeidoPhotoStudio.Plugin.Core.Configuration;
+using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Input;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 

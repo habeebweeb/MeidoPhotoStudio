@@ -1,14 +1,14 @@
 using UnityEngine.SceneManagement;
 
-namespace MeidoPhotoStudio.Plugin.Service;
+namespace MeidoPhotoStudio.Plugin.Framework.Service;
 
 public class CustomMaidSceneService
 {
     public CustomMaidSceneService()
     {
-        UpdateCurrentScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        UpdateCurrentScene(SceneManager.GetActiveScene());
 
-        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     public enum CustomMaidScene

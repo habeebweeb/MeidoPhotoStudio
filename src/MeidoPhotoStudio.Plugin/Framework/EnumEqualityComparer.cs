@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Framework;
 
 /// <summary>Provides allocation free <see cref="IEqualityComparer{T}"/> for <see langword="enum"/>.</summary>
 /// <typeparam name="TEnum">An <see langword="enum"/> type.</typeparam>
