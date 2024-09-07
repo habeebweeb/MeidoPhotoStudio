@@ -3,7 +3,7 @@ using MeidoPhotoStudio.Plugin.Service;
 
 namespace MeidoPhotoStudio.Plugin.Core.Camera;
 
-public class CameraController(CustomMaidSceneService customMaidSceneService) : IManager
+public class CameraController(CustomMaidSceneService customMaidSceneService)
 {
     private readonly CustomMaidSceneService customMaidSceneService = customMaidSceneService
         ?? throw new ArgumentNullException(nameof(customMaidSceneService));
@@ -13,7 +13,23 @@ public class CameraController(CustomMaidSceneService customMaidSceneService) : I
     private static CameraMain MainCamera =>
         GameMain.Instance.MainCamera;
 
-    public void Activate()
+    public void ApplyCameraInfo(CameraInfo cameraInfo)
+    {
+        MainCamera.ApplyCameraInfo(cameraInfo);
+
+        CameraChange?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void ResetCamera()
+    {
+        MainCamera.Reset(CameraMain.CameraType.Target, true);
+        MainCamera.SetTargetPos(new(0f, 0.9f, 0f));
+        MainCamera.SetDistance(3f);
+
+        CameraChange?.Invoke(this, EventArgs.Empty);
+    }
+
+    internal void Activate()
     {
         MainCamera.m_UOCamera.enabled = true;
 
@@ -23,7 +39,7 @@ public class CameraController(CustomMaidSceneService customMaidSceneService) : I
         MainCamera.ForceCalcNearClip();
     }
 
-    public void Deactivate()
+    internal void Deactivate()
     {
         MainCamera.camera.backgroundColor = Color.black;
 
@@ -41,25 +57,5 @@ public class CameraController(CustomMaidSceneService customMaidSceneService) : I
             MainCamera.SetDistance(1.6f);
             MainCamera.SetAroundAngle(new(245.5691f, 6.273283f));
         }
-    }
-
-    public void Update()
-    {
-    }
-
-    public void ApplyCameraInfo(CameraInfo cameraInfo)
-    {
-        MainCamera.ApplyCameraInfo(cameraInfo);
-
-        CameraChange?.Invoke(this, EventArgs.Empty);
-    }
-
-    public void ResetCamera()
-    {
-        MainCamera.Reset(CameraMain.CameraType.Target, true);
-        MainCamera.SetTargetPos(new(0f, 0.9f, 0f));
-        MainCamera.SetDistance(3f);
-
-        CameraChange?.Invoke(this, EventArgs.Empty);
     }
 }

@@ -6,7 +6,7 @@ using Alignment = NGUIText.Alignment;
 
 namespace MeidoPhotoStudio.Plugin;
 
-public class MessageWindowManager : IManager, INotifyPropertyChanged
+public class MessageWindowManager : INotifyPropertyChanged
 {
     public const string Header = "TEXTBOX";
 
@@ -113,40 +113,6 @@ public class MessageWindowManager : IManager, INotifyPropertyChanged
         }
     }
 
-    public void Update()
-    {
-    }
-
-    public void Activate()
-    {
-        if (Product.supportMultiLanguage)
-            subtitlesDisplayPanel.SetActive(false);
-
-        ResetMessageBoxProperties();
-
-        SetMessageBoxActive(true);
-
-        SetMessageBoxExtrasActive(false);
-
-        CloseMessagePanel();
-    }
-
-    public void Deactivate()
-    {
-        if (Product.supportMultiLanguage)
-        {
-            subtitlesDisplayPanel.SetActive(true);
-
-            SetMessageBoxActive(false);
-        }
-
-        ResetMessageBoxProperties();
-
-        SetMessageBoxExtrasActive(true);
-
-        CloseMessagePanel();
-    }
-
     public void ShowMessage(string name, string message)
     {
         MessageName = name;
@@ -160,6 +126,36 @@ public class MessageWindowManager : IManager, INotifyPropertyChanged
             return;
 
         ShowingMessage = false;
+    }
+
+    internal void Activate()
+    {
+        if (Product.supportMultiLanguage)
+            subtitlesDisplayPanel.SetActive(false);
+
+        ResetMessageBoxProperties();
+
+        SetMessageBoxActive(true);
+
+        SetMessageBoxExtrasActive(false);
+
+        CloseMessagePanel();
+    }
+
+    internal void Deactivate()
+    {
+        if (Product.supportMultiLanguage)
+        {
+            subtitlesDisplayPanel.SetActive(true);
+
+            SetMessageBoxActive(false);
+        }
+
+        ResetMessageBoxProperties();
+
+        SetMessageBoxExtrasActive(true);
+
+        CloseMessagePanel();
     }
 
     private void SetMessageBoxActive(bool active)

@@ -5,7 +5,7 @@ using static MeidoPhotoStudio.Plugin.Constants;
 
 namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
-public class WindowManager : IManager
+public class WindowManager
 {
     private static GUIStyle windowStyle;
 
@@ -23,38 +23,6 @@ public class WindowManager : IManager
         set => windows[id] = value;
     }
 
-    public void DrawWindow(BaseWindow window)
-    {
-        if (!window.Visible)
-            return;
-
-        window.WindowRect = GUI.Window(window.WindowID, window.WindowRect, window.GUIFunc, string.Empty, WindowStyle);
-    }
-
-    public void DrawWindows()
-    {
-        foreach (var window in windows.Values)
-            DrawWindow(window);
-    }
-
-    public void Update()
-    {
-        foreach (var window in windows.Values)
-            window.Update();
-    }
-
-    public void Activate()
-    {
-        foreach (var window in windows.Values)
-            window.Activate();
-    }
-
-    public void Deactivate()
-    {
-        foreach (var window in windows.Values)
-            window.Deactivate();
-    }
-
     public bool MouseOverAnyWindow()
     {
         foreach (var window in windows.Values.Where(window => window.Visible))
@@ -69,6 +37,35 @@ public class WindowManager : IManager
 
             return window.WindowRect.Contains(mousePosition);
         }
+    }
+
+    internal void DrawWindows()
+    {
+        foreach (var window in windows.Values)
+        {
+            if (!window.Visible)
+                continue;
+
+            window.WindowRect = GUI.Window(window.WindowID, window.WindowRect, window.GUIFunc, string.Empty, WindowStyle);
+        }
+    }
+
+    internal void Update()
+    {
+        foreach (var window in windows.Values)
+            window.Update();
+    }
+
+    internal void Activate()
+    {
+        foreach (var window in windows.Values)
+            window.Activate();
+    }
+
+    internal void Deactivate()
+    {
+        foreach (var window in windows.Values)
+            window.Deactivate();
     }
 
     private void OnScreenSizeChanged(object sender, EventArgs e)
