@@ -14,7 +14,7 @@ public class TranslationConfiguration
         suppressWarningsConfigEntry = configFile.Bind(
             "Translation",
             "SuppressWarnings",
-            false,
+            true,
             "Suppress translation warnings from showing up in the console");
 
         currentLanguageConfig = configFile.Bind(
@@ -22,6 +22,9 @@ public class TranslationConfiguration
             "Language",
             "en",
             "Directory to pull translations from\nTranslations are found in the 'Translations' folder");
+
+        Translation.SuppressWarnings = suppressWarningsConfigEntry.Value;
+        Translation.CurrentLanguage = currentLanguageConfig.Value;
     }
 
     public bool SuppressWarnings
