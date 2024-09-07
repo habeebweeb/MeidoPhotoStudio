@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-using MeidoPhotoStudio.Database.Props;
+using MeidoPhotoStudio.Plugin.Core.Database.Props;
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Service;
 using UnityEngine.Rendering;

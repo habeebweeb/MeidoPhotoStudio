@@ -1,4 +1,4 @@
-using MeidoPhotoStudio.Database.Scenes;
+using MeidoPhotoStudio.Plugin.Core.Database.Scenes;
 using MeidoPhotoStudio.Plugin.Core.SceneManagement;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Serialization;

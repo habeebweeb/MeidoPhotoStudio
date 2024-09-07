@@ -1,4 +1,4 @@
-using MeidoPhotoStudio.Database.Props;
+using MeidoPhotoStudio.Plugin.Core.Database.Props;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;

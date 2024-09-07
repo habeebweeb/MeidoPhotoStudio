@@ -1,4 +1,4 @@
-using MeidoPhotoStudio.Database.Background;
+using MeidoPhotoStudio.Plugin.Core.Database.Background;
 using MeidoPhotoStudio.Plugin.Core.Schema.Background;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;

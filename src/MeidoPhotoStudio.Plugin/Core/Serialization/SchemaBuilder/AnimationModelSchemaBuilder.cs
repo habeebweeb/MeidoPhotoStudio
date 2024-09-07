@@ -1,4 +1,4 @@
-using MeidoPhotoStudio.Database.Character;
+using MeidoPhotoStudio.Plugin.Core.Database.Character;
 using MeidoPhotoStudio.Plugin.Core.Schema.Character;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;

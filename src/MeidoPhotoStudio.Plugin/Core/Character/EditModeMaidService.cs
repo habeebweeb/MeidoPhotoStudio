@@ -1,4 +1,4 @@
-using MeidoPhotoStudio.Database.Character;
+using MeidoPhotoStudio.Plugin.Core.Database.Character;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.Service;
 

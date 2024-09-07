@@ -1,4 +1,4 @@
-using MeidoPhotoStudio.Database.Props.Menu;
+using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 namespace MeidoPhotoStudio.Plugin.Framework.Menu;

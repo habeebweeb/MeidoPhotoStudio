@@ -1,5 +1,5 @@
-using MeidoPhotoStudio.Database.Background;
-using MeidoPhotoStudio.Database.Props;
+using MeidoPhotoStudio.Plugin.Core.Database.Background;
+using MeidoPhotoStudio.Plugin.Core.Database.Props;
 
 namespace MeidoPhotoStudio.Plugin.Core.Props;
 

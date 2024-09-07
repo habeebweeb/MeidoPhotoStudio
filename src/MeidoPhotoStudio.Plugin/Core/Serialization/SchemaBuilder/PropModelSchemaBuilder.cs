@@ -1,5 +1,5 @@
-using MeidoPhotoStudio.Database.Props;
-using MeidoPhotoStudio.Database.Props.Menu;
+using MeidoPhotoStudio.Plugin.Core.Database.Props;
+using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;

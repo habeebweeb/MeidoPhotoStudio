@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-using MeidoPhotoStudio.Database.Character;
+using MeidoPhotoStudio.Plugin.Core.Database.Character;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;

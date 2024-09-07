@@ -1,5 +1,5 @@
 using BepInEx.Configuration;
-using MeidoPhotoStudio.Database.Props.Menu;
+using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 
 namespace MeidoPhotoStudio.Plugin.Core.Configuration;
 

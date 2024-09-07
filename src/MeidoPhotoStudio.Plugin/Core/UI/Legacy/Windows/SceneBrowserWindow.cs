@@ -1,5 +1,5 @@
-using MeidoPhotoStudio.Database.Scenes;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
+using MeidoPhotoStudio.Plugin.Core.Database.Scenes;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;

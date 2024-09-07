@@ -1,7 +1,7 @@
 using System.ComponentModel;
 
-using MeidoPhotoStudio.Database.Background;
 using MeidoPhotoStudio.Plugin.Core.Background;
+using MeidoPhotoStudio.Plugin.Core.Database.Background;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 

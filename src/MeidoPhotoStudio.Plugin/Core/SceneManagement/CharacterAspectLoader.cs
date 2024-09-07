@@ -1,7 +1,7 @@
-using MeidoPhotoStudio.Database.Character;
-using MeidoPhotoStudio.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core.Character;
 using MeidoPhotoStudio.Plugin.Core.Character.Pose;
+using MeidoPhotoStudio.Plugin.Core.Database.Character;
+using MeidoPhotoStudio.Plugin.Core.Database.Props;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Schema.Character;
 using MeidoPhotoStudio.Plugin.Framework;

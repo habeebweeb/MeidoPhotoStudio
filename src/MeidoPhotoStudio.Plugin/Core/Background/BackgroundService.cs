@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
 using HarmonyLib;
-using MeidoPhotoStudio.Database.Background;
+using MeidoPhotoStudio.Plugin.Core.Database.Background;
 
 namespace MeidoPhotoStudio.Plugin.Core.Background;
 

@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-using MeidoPhotoStudio.Database.Props.Menu;
+using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Framework;
 
 using CostumeType = MaidExtension.MaidCostumeChangeController.CostumeType;

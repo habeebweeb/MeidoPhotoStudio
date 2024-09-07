@@ -1,5 +1,5 @@
-using MeidoPhotoStudio.Database.Character;
 using MeidoPhotoStudio.Plugin.Core.Character.Pose;
+using MeidoPhotoStudio.Plugin.Core.Database.Character;
 using MeidoPhotoStudio.Plugin.Core.UndoRedo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 

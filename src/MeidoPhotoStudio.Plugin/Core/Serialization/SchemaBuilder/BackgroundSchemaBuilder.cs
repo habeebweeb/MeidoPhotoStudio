@@ -1,5 +1,5 @@
-using MeidoPhotoStudio.Database.Background;
 using MeidoPhotoStudio.Plugin.Core.Background;
+using MeidoPhotoStudio.Plugin.Core.Database.Background;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Schema.Background;
 
