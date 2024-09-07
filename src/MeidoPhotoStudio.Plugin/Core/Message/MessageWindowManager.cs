@@ -4,7 +4,7 @@ using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 using Alignment = NGUIText.Alignment;
 
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Core.Message;
 
 public class MessageWindowManager : INotifyPropertyChanged
 {

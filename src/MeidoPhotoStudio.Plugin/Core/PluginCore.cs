@@ -11,6 +11,7 @@ using MeidoPhotoStudio.Plugin.Core.Character.Pose;
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Effects;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
+using MeidoPhotoStudio.Plugin.Core.Message;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Core.SceneManagement;
 using MeidoPhotoStudio.Plugin.Core.Scenes;

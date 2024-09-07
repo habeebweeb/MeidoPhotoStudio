@@ -1,3 +1,5 @@
+using MeidoPhotoStudio.Plugin.Core.Props;
+
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Props;
 
 public class AttachPointSchema(short version = AttachPointSchema.SchemaVersion)

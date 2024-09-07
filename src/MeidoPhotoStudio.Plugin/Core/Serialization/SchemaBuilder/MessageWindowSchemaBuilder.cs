@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.Message;
 using MeidoPhotoStudio.Plugin.Core.Schema.Message;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;

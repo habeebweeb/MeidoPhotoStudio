@@ -1,4 +1,4 @@
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Core.Schema.Props;
 
 public class PropInfo(PropInfo.PropType type)
 {

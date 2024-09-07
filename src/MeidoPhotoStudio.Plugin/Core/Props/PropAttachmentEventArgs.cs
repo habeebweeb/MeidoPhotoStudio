@@ -1,5 +1,4 @@
-using MeidoPhotoStudio.Plugin;
-using MeidoPhotoStudio.Plugin.Core.Props;
+namespace MeidoPhotoStudio.Plugin.Core.Props;
 
 public class PropAttachmentEventArgs(PropController prop, CharacterController character, AttachPoint attachPoint)
     : EventArgs

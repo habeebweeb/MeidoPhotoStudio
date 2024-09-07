@@ -1,4 +1,4 @@
-namespace MeidoPhotoStudio.Plugin;
+namespace MeidoPhotoStudio.Plugin.Core.Props;
 
 public enum AttachPoint
 {

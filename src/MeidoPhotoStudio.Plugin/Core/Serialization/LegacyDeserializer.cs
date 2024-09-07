@@ -1,4 +1,5 @@
 using Ionic.Zlib;
+using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Schema.Background;
 using MeidoPhotoStudio.Plugin.Core.Schema.Camera;
