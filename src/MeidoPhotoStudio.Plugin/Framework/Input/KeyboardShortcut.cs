@@ -2,7 +2,7 @@ using BepInEx.Configuration;
 
 using UInput = UnityEngine.Input;
 
-namespace MeidoPhotoStudio.Plugin.Input;
+namespace MeidoPhotoStudio.Plugin.Framework.Input;
 
 /// <summary>BepInEx's KeyboardShortcut turned into a class for polymorphism.</summary>
 public class KeyboardShortcut : KeyboardInput

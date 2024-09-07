@@ -1,4 +1,4 @@
-namespace MeidoPhotoStudio.Plugin.Input;
+namespace MeidoPhotoStudio.Plugin.Framework.Input;
 
 public abstract class KeyboardInput(params KeyCode[] keys)
 {

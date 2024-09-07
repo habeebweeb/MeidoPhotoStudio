@@ -19,12 +19,12 @@ using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Core.UndoRedo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
+using MeidoPhotoStudio.Plugin.Framework.Input;
 using MeidoPhotoStudio.Plugin.Framework.Menu;
 using MeidoPhotoStudio.Plugin.Framework.UI;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 using MeidoPhotoStudio.Plugin.Service;
-using MeidoPhotoStudio.Plugin.Service.Input;
 using UnityEngine.SceneManagement;
 
 namespace MeidoPhotoStudio.Plugin.Core;

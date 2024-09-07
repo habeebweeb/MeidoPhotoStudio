@@ -1,5 +1,5 @@
 using MeidoPhotoStudio.Plugin.Core.Configuration;
-using MeidoPhotoStudio.Plugin.Service.Input;
+using MeidoPhotoStudio.Plugin.Framework.Input;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 

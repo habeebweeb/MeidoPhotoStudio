@@ -1,4 +1,4 @@
-namespace MeidoPhotoStudio.Plugin.Service.Input;
+namespace MeidoPhotoStudio.Plugin.Framework.Input;
 
 public interface IInputHandler
 {

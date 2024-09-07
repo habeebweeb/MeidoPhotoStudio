@@ -1,6 +1,6 @@
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.UndoRedo;
-using MeidoPhotoStudio.Plugin.Service.Input;
+using MeidoPhotoStudio.Plugin.Framework.Input;
 
 namespace MeidoPhotoStudio.Plugin.Core;
 

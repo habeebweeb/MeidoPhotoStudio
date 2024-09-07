@@ -1,6 +1,6 @@
 using BepInEx.Configuration;
 
-namespace MeidoPhotoStudio.Plugin.Input;
+namespace MeidoPhotoStudio.Plugin.Framework.Input;
 
 /// <summary>
 /// BepInEx's KeyboardShortcut but every key must be pressed and the order of the keys are pressed doesn't matter.

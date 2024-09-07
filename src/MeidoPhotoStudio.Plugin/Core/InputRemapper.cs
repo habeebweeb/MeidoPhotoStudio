@@ -1,5 +1,4 @@
-using MeidoPhotoStudio.Plugin.Input;
-using MeidoPhotoStudio.Plugin.Service.Input;
+using MeidoPhotoStudio.Plugin.Framework.Input;
 
 using UInput = UnityEngine.Input;
 
