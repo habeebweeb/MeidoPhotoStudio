@@ -169,6 +169,8 @@ public class LightsPane : BasePane
 
         DrawTopBar();
 
+        MpsGui.BlackLine();
+
         if (CurrentLightController == null)
         {
             noLightsLabel.Draw();
@@ -177,6 +179,8 @@ public class LightsPane : BasePane
         }
 
         DrawLightType();
+
+        MpsGui.BlackLine();
 
         var enabled = GUI.enabled;
 
@@ -203,7 +207,7 @@ public class LightsPane : BasePane
 
             GUILayout.BeginHorizontal();
 
-            lightDropdown.Draw(GUILayout.Width(84f));
+            lightDropdown.Draw(GUILayout.Width(Utility.GetPix(90)));
 
             var noExpandWidth = GUILayout.ExpandWidth(false);
 
