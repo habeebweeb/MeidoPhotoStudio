@@ -48,7 +48,7 @@ public class FaceController : INotifyPropertyChanged
         get => !Maid.MabatakiUpdateStop;
         set
         {
-            if (value == Maid.MabatakiUpdateStop)
+            if (value == Blink)
                 return;
 
             Maid.MabatakiUpdateStop = !value;
