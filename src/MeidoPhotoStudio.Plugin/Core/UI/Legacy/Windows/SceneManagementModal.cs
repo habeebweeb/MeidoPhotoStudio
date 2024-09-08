@@ -516,7 +516,8 @@ public class SceneManagementModal : BaseWindow
             GUILayout.EndHorizontal();
         }
 
-        private void OnLoadButtonPushed(object sender, EventArgs e) =>
+        private void OnLoadButtonPushed(object sender, EventArgs e)
+        {
             sceneLoader.LoadScene(managingSceneSchema, new()
             {
                 Characters = new()
@@ -540,6 +541,9 @@ public class SceneManagementModal : BaseWindow
                 Background = backgroundLoadOptionToggle.Value,
                 Props = propsLoadOptionToggle.Value,
             });
+
+            CloseModal();
+        }
 
         private void OnCancelButtonPushed(object sender, EventArgs e) =>
             CloseModal();
