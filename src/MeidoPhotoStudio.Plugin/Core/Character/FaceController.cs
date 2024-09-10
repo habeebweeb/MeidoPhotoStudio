@@ -160,6 +160,10 @@ public class FaceController : INotifyPropertyChanged
         if (key is "nosefook")
             Maid.boNoseFook = Convert.ToBoolean(value);
 
+        Face.SetBlendValues(index, value);
+        Face.FixBlendValues();
+        Face.FixBlendValues_Face();
+
         if (notify)
             OnBlendValueChanged(key);
     }
