@@ -42,4 +42,6 @@ public partial class MenuFilePropModel : IPropModel
     public IEnumerable<ModelAnimation> ModelAnimations { get; init; }
 
     public IEnumerable<ModelMaterialAnimation> ModelMaterialAnimations { get; init; }
+
+    public IEnumerable<MaterialTextureChange> MaterialTextureChanges { get; init; }
 }

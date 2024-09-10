@@ -157,9 +157,21 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                 new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 4) },
                 menuFilename =>
                 {
+                    if (string.IsNullOrEmpty(menuFilename))
+                        return;
+
                     if (!menuFileCache.TryGetValue(menuFilename, out var menuFile))
                     {
-                        menuFile = menuFileParser.ParseMenuFile(menuFilename, false);
+                        try
+                        {
+                            menuFile = menuFileParser.ParseMenuFile(menuFilename, false);
+                        }
+                        catch
+                        {
+                            Utility.LogDebug($"Could not parse {menuFilename}");
+
+                            return;
+                        }
 
                         if (menuFile is null)
                             return;

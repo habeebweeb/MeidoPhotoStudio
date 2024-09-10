@@ -5,7 +5,7 @@ namespace MeidoPhotoStudio.Plugin.Framework.Menu;
 
 public class MenuFileCacheSerializer : IMenuFileCacheSerializer
 {
-    private const int CacheVersion = 1;
+    private const int CacheVersion = 2;
 
     private readonly string cacheDirectory;
 
@@ -101,6 +101,16 @@ public class MenuFileCacheSerializer : IMenuFileCacheSerializer
                     MaterialIndex = reader.ReadInt32(),
                 });
 
+            var materialTextureChangeCount = reader.ReadInt32();
+
+            for (var i = 0; i < materialTextureChangeCount; i++)
+                builder.AddMaterialTextureChange(new()
+                {
+                    MaterialIndex = reader.ReadInt32(),
+                    MaterialPropertyName = reader.ReadNullableString(),
+                    TextureFilename = reader.ReadNullableString(),
+                });
+
             return builder.Build();
         }
     }
@@ -146,6 +156,15 @@ public class MenuFileCacheSerializer : IMenuFileCacheSerializer
             {
                 writer.Write((int)modelMaterialAnimation.Slot);
                 writer.Write(modelMaterialAnimation.MaterialIndex);
+            }
+
+            writer.Write(menuFile.MaterialTextureChanges.Count());
+
+            foreach (var materialTextureChange in menuFile.MaterialTextureChanges)
+            {
+                writer.Write(materialTextureChange.MaterialIndex);
+                writer.WriteNullableString(materialTextureChange.MaterialPropertyName);
+                writer.WriteNullableString(materialTextureChange.TextureFilename);
             }
         }
     }

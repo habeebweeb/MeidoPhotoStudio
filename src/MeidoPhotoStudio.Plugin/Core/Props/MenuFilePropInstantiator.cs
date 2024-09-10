@@ -18,11 +18,23 @@ public class MenuFilePropInstantiator
         if (!model)
             return null;
 
-        ApplyMaterialChanges(menuFile.MaterialChanges, model);
-        ApplyModelAnimations(menuFile.ModelAnimations, model);
-        ApplyMaterialAnimations(menuFile.ModelMaterialAnimations, model);
+        try
+        {
+            ApplyMaterialChanges(menuFile.MaterialChanges, model);
+            ApplyMaterialTextureChanges(menuFile.MaterialTextureChanges, model);
+            ApplyModelAnimations(menuFile.ModelAnimations, model);
+            ApplyMaterialAnimations(menuFile.ModelMaterialAnimations, model);
 
-        model.name = menuFile.Filename;
+            model.name = menuFile.Filename;
+        }
+        catch (Exception e)
+        {
+            Utility.LogWarning($"Could not apply model properties properly because {e}");
+
+            Object.Destroy(model);
+
+            return null;
+        }
 
         return model;
 
@@ -280,11 +292,7 @@ public class MenuFilePropInstantiator
 
         static void ApplyMaterialChanges(IEnumerable<MaterialChange> materialChanges, GameObject model)
         {
-            var renderers = model.transform
-                .GetComponentsInChildren<Transform>(true)
-                .Select(transform => transform.GetComponent<Renderer>())
-                .Where(renderer => renderer && renderer.material)
-                .ToList();
+            var renderers = GetRenderers(model);
 
             foreach (var materialChange in materialChanges)
                 foreach (var renderer in renderers)
@@ -293,6 +301,8 @@ public class MenuFilePropInstantiator
                             materialChange.MaterialFilename, null, renderer.materials[materialChange.MaterialIndex]);
         }
 
+        // TODO: Model animations animations rely on goSlot to apply the animation to the correct
+        // game object in the bone heirarchy I think because animations don't seem to work
         static void ApplyModelAnimations(IEnumerable<ModelAnimation> modelAnimations, GameObject model)
         {
             var animation = model.GetOrAddComponent<Animation>();
@@ -361,5 +371,30 @@ public class MenuFilePropInstantiator
                 materialAnimator.Init();
             }
         }
+
+        static void ApplyMaterialTextureChanges(IEnumerable<MaterialTextureChange> materialTextureChanges, GameObject model)
+        {
+            var renderers = GetRenderers(model);
+
+            foreach (var textureChange in materialTextureChanges)
+                foreach (var renderer in renderers)
+                    if (textureChange.MaterialIndex < renderer.materials.Length)
+                        renderer.materials[textureChange.MaterialIndex].SetTexture(
+                            textureChange.MaterialPropertyName, LoadTexture(textureChange.TextureFilename));
+
+            static Texture2D LoadTexture(string filename)
+            {
+                var textureResource = ImportCM.LoadTexture(GameUty.FileSystem, filename, false);
+
+                return textureResource.CreateTexture2D();
+            }
+        }
+
+        static IList<Renderer> GetRenderers(GameObject gameObject) =>
+            gameObject.transform
+                .GetComponentsInChildren<Transform>(true)
+                .Select(transform => transform.GetComponent<Renderer>())
+                .Where(renderer => renderer && renderer.material)
+                .ToList();
     }
 }

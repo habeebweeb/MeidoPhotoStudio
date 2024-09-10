@@ -16,6 +16,7 @@ public partial class MenuFilePropModel
         private List<MaterialChange> materialChanges;
         private List<ModelAnimation> modelAnimations;
         private List<ModelMaterialAnimation> modelMaterialAnimations;
+        private List<MaterialTextureChange> modelTextureChanges;
 
         public Builder(string menuFilename, bool gameMenu)
         {
@@ -85,6 +86,14 @@ public partial class MenuFilePropModel
             return this;
         }
 
+        public Builder AddMaterialTextureChange(MaterialTextureChange modelTextureChange)
+        {
+            modelTextureChanges ??= [];
+            modelTextureChanges.Add(modelTextureChange);
+
+            return this;
+        }
+
         public MenuFilePropModel Build() =>
             new(menuFilename, gameMenu)
             {
@@ -94,9 +103,10 @@ public partial class MenuFilePropModel
                 IconFilename = iconFilename,
                 Priority = priority,
                 ModelFilename = modelFilename,
-                MaterialChanges = materialChanges ?? Enumerable.Empty<MaterialChange>(),
-                ModelAnimations = modelAnimations ?? Enumerable.Empty<ModelAnimation>(),
-                ModelMaterialAnimations = modelMaterialAnimations ?? Enumerable.Empty<ModelMaterialAnimation>(),
+                MaterialChanges = materialChanges ?? [],
+                ModelAnimations = modelAnimations ?? [],
+                ModelMaterialAnimations = modelMaterialAnimations ?? [],
+                MaterialTextureChanges = modelTextureChanges ?? [],
             };
     }
 }

@@ -89,7 +89,7 @@ internal class MenuFileParser
             {
                 menuBuilder.WithPriority(float.Parse(menuProps[1]));
             }
-            else if (header is "マテリアル変更" or "tex")
+            else if (header is "マテリアル変更")
             {
                 var materialIndex = int.Parse(menuProps[2]);
                 var materialFilename = menuProps[3];
@@ -98,6 +98,36 @@ internal class MenuFileParser
                 {
                     MaterialIndex = materialIndex,
                     MaterialFilename = materialFilename,
+                });
+            }
+            else if (header is "テクスチャ変更" or "tex")
+            {
+                var materialIndexInfo = menuProps[2].Split('&');
+                var materialIndex = -1;
+
+                if (materialIndexInfo.Length >= 2)
+                {
+                    foreach (var info in materialIndexInfo)
+                    {
+                        var mpnString = info.Split('=');
+                        var mpn = (MPN)Enum.Parse(typeof(MPN), mpnString[0], ignoreCase: true);
+
+                        int.TryParse(mpnString[1], out materialIndex);
+                    }
+                }
+                else
+                {
+                    int.TryParse(materialIndexInfo[0], out materialIndex);
+                }
+
+                var materialProperty = menuProps[3];
+                var textureFilename = menuProps[4];
+
+                menuBuilder.AddMaterialTextureChange(new()
+                {
+                    MaterialIndex = materialIndex,
+                    MaterialPropertyName = materialProperty,
+                    TextureFilename = textureFilename,
                 });
             }
             else if (header is "additem")
