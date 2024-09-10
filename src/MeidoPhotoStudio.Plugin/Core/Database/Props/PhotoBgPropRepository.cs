@@ -50,6 +50,9 @@ public class PhotoBgPropRepository : IEnumerable<PhotoBgPropModel>
                     ? prop.create_prefab_name
                     : prop.create_asset_bundle_name;
 
+                if (string.IsNullOrEmpty(assetName))
+                    continue;
+
                 props[category].Add(new(prop, Translation.Get("propNames", assetName)));
             }
         }
@@ -64,6 +67,9 @@ public class PhotoBgPropRepository : IEnumerable<PhotoBgPropModel>
         foreach (var prop in this)
         {
             var assetName = string.IsNullOrEmpty(prop.AssetName) ? prop.PrefabName : prop.AssetName;
+
+            if (string.IsNullOrEmpty(assetName))
+                continue;
 
             prop.Name = Translation.Get("propNames", assetName);
         }
