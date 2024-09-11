@@ -6,12 +6,15 @@ using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Schema.Character;
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
+using MeidoPhotoStudio.Plugin.Framework.Service;
 
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
 public class CharacterAspectLoader(
     CharacterService characterService,
     CharacterRepository characterRepository,
+    EditModeMaidService editModeMaidService,
+    CustomMaidSceneService customMaidSceneService,
     GlobalGravityService globalGravityService,
     GameAnimationRepository gameAnimationRepository,
     CustomAnimationRepository customAnimationRepository,
@@ -25,6 +28,12 @@ public class CharacterAspectLoader(
 
     private readonly CharacterRepository characterRepository = characterRepository
         ?? throw new ArgumentNullException(nameof(characterRepository));
+
+    private readonly EditModeMaidService editModeMaidService = editModeMaidService
+        ?? throw new ArgumentNullException(nameof(editModeMaidService));
+
+    private readonly CustomMaidSceneService customMaidSceneService = customMaidSceneService
+        ?? throw new ArgumentNullException(nameof(editModeMaidService));
 
     private readonly GlobalGravityService globalGravityService = globalGravityService
         ?? throw new ArgumentNullException(nameof(globalGravityService));
@@ -63,7 +72,17 @@ public class CharacterAspectLoader(
                 .Select(character => character.ID)
                 .Where(id => !string.IsNullOrEmpty(id))
                 .Select(characterRepository.GetByID)
-                .Where(model => model is not null);
+                .Where(model => model is not null)
+                .ToList();
+
+            if (customMaidSceneService.EditScene)
+            {
+                if (!charactersToLoad.Contains(editModeMaidService.EditingCharacter))
+                    editModeMaidService.SetEditingCharacter(editModeMaidService.OriginalEditingCharacter);
+
+                if (!charactersToLoad.Contains(editModeMaidService.OriginalEditingCharacter))
+                    charactersToLoad.Insert(0, editModeMaidService.OriginalEditingCharacter);
+            }
 
             characterService.Call(charactersToLoad);
             characterService.CalledCharacters += OnCharactersCalled;

@@ -349,6 +349,8 @@ public partial class PluginCore : MonoBehaviour
             new CharacterAspectLoader(
                 characterService,
                 characterRepository,
+                editModeMaidService,
+                customMaidSceneService,
                 globalGravityService,
                 gameAnimationRepository,
                 customAnimationRepository,

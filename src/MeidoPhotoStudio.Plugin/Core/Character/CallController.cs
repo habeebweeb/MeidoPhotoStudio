@@ -92,12 +92,29 @@ public class CallController : IEnumerable<CharacterModel>
     {
         selectedCharacters.Clear();
         selectedCharactersSet.Clear();
+
+        if (!customMaidSceneService.EditScene)
+            return;
+
+        selectedCharacters.Add(editModeMaidService.OriginalEditingCharacter);
+        selectedCharactersSet.Add(editModeMaidService.OriginalEditingCharacter);
     }
 
     public void Call()
     {
-        if (!selectedCharacters.Contains(editModeMaidService.EditingCharacter))
-            editModeMaidService.SetEditingCharacter(editModeMaidService.OriginalEditingCharacter);
+        if (customMaidSceneService.EditScene)
+        {
+            if (!selectedCharacters.Contains(editModeMaidService.EditingCharacter))
+                editModeMaidService.SetEditingCharacter(editModeMaidService.OriginalEditingCharacter);
+
+            if (!selectedCharacters.Contains(editModeMaidService.OriginalEditingCharacter))
+            {
+                Utility.LogDebug($"Original editing character was not in the set of characters to call");
+
+                selectedCharacters.Insert(0, editModeMaidService.OriginalEditingCharacter);
+                selectedCharactersSet.Add(editModeMaidService.OriginalEditingCharacter);
+            }
+        }
 
         characterService.Call(selectedCharacters);
     }
