@@ -120,7 +120,7 @@ public partial class PluginCore : MonoBehaviour
         inputConfiguration = new InputConfiguration(configuration);
 
         inputPollingService = gameObject.AddComponent<InputPollingService>();
-        inputPollingService.AddInputHandler(new InputHandler(this, inputConfiguration));
+        inputPollingService.AddInputHandler(new InputHandler(this, inputConfiguration, customMaidSceneService));
         dragHandleClickHandler = gameObject.AddComponent<DragHandle.ClickHandler>();
         dragHandleClickHandler.enabled = false;
         gizmoClickHandler = gameObject.AddComponent<CustomGizmo.ClickHandler>();
