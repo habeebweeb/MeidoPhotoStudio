@@ -2,6 +2,7 @@ using System.ComponentModel;
 
 using MeidoPhotoStudio.Plugin.Core.Character;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
+using UnityEngine.SceneManagement;
 
 namespace MeidoPhotoStudio.Plugin.Core.Props;
 
@@ -94,6 +95,8 @@ public class PropAttachmentService
         propTransform.SetParent(null, true);
 
         propTransform.localScale = originalScale;
+
+        SceneManager.MoveGameObjectToScene(propTransform.gameObject, SceneManager.GetActiveScene());
 
         attachedProps.Remove(prop);
 
