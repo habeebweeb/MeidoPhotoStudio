@@ -114,6 +114,14 @@ public class LightRepository(TransformWatcher transformWatcher) : IEnumerable<Li
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();
 
+    internal static void DestroyParent()
+    {
+        if (!lightParent)
+            return;
+
+        Object.Destroy(lightParent);
+    }
+
     private static bool IsMainLight(LightController lightController) =>
         lightController.Light == GameMain.Instance.MainLight.GetComponent<Light>();
 

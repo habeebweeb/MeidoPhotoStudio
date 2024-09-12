@@ -144,5 +144,13 @@ public partial class DragHandle
 
             return dragHandle;
         }
+
+        internal static void DestroyParent()
+        {
+            if (!dragHandleParent)
+                return;
+
+            Destroy(dragHandleParent);
+        }
     }
 }

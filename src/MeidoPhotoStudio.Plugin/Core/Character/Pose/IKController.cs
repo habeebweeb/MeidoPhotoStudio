@@ -408,6 +408,14 @@ public class IKController : INotifyPropertyChanged
     public HandOrFootPreset GetHandOrFootPreset(HandOrFootType type) =>
         GetControllerByType(this, type).GetPresetData();
 
+    internal static void DestroyParent()
+    {
+        if (!ikTargetParent)
+            return;
+
+        Object.Destroy(ikTargetParent);
+    }
+
     private static HandController GetControllerByType(IKController ikController, HandOrFootType type) =>
         type switch
         {

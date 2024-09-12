@@ -103,10 +103,10 @@ public partial class PluginCore : MonoBehaviour
 
         iconCache.Destroy();
 
-        Destroy(GameObject.Find("[MPS Drag Handle Parent]"));
-        Destroy(GameObject.Find("[MPS Light Parent]"));
-        Destroy(GameObject.Find("[MPS Coroutine Runner Parent]"));
-        Destroy(GameObject.Find("[IK Solver Target Parent]"));
+        DragHandle.Builder.DestroyParent();
+        LightRepository.DestroyParent();
+        Framework.CoroutineRunner.DestroyParent();
+        IKController.DestroyParent();
         WfCameraMoveSupportUtility.Destroy();
     }
 

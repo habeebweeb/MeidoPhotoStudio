@@ -63,6 +63,14 @@ public class CoroutineRunner(Func<IEnumerator> coroutine)
         }
     }
 
+    internal static void DestroyParent()
+    {
+        if (!coroutineRunnerParent)
+            return;
+
+        Object.Destroy(coroutineRunnerParent);
+    }
+
     private class CoroutineBehaviour : MonoBehaviour
     {
     }
