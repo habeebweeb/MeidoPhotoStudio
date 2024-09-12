@@ -24,7 +24,9 @@ public class BackgroundSchemaBuilder(
         new()
         {
             Background = backgroundModelSchemaBuilder.Build(backgroundService.CurrentBackground),
-            Transform = transformSchemaBuilder.Build(backgroundService.BackgroundTransform),
+            Transform = backgroundService.BackgroundTransform
+                ? transformSchemaBuilder.Build(backgroundService.BackgroundTransform)
+                : new(),
             Colour = backgroundService.BackgroundColour,
             Visible = backgroundService.BackgroundVisible,
         };
