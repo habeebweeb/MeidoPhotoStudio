@@ -6,7 +6,7 @@ namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 /// <summary>Main window.</summary>
 public partial class MainWindow : BaseWindow
 {
-    private const float MinimumWindowWidth = 215f;
+    private const float MinimumWindowWidth = 235f;
 
     private readonly LazyStyle pluginInfoStyle = new(
         10,

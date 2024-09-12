@@ -113,7 +113,7 @@ public class AttachPropPane : BasePane
             return;
         }
 
-        DrawCharacterDropdown();
+        DrawDropdown(characterDropdown);
 
         MpsGui.BlackLine();
 
@@ -123,27 +123,6 @@ public class AttachPropPane : BasePane
 
         foreach (var attachPointGroup in AttachPointGroups)
             DrawToggleGroup(attachPointGroup);
-
-        void DrawCharacterDropdown()
-        {
-            GUILayout.BeginHorizontal();
-
-            characterDropdown.Draw(GUILayout.Width(185f));
-
-            var arrowLayoutOptions = new[]
-            {
-                GUILayout.ExpandWidth(false),
-                GUILayout.ExpandHeight(false),
-            };
-
-            if (GUILayout.Button("<", arrowLayoutOptions))
-                characterDropdown.CyclePrevious();
-
-            if (GUILayout.Button(">", arrowLayoutOptions))
-                characterDropdown.CycleNext();
-
-            GUILayout.EndHorizontal();
-        }
 
         void DrawToggleGroup(AttachPoint[] attachPoints)
         {

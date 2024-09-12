@@ -60,30 +60,7 @@ public class HandItemPropsPane : BasePane
             return;
         }
 
-        var arrowLayoutOptions = new[]
-        {
-            GUILayout.ExpandWidth(false),
-            GUILayout.ExpandHeight(false),
-        };
-
-        const float dropdownButtonWidth = 185f;
-
-        var dropdownLayoutOptions = new[]
-        {
-            GUILayout.Width(dropdownButtonWidth),
-        };
-
-        GUILayout.BeginHorizontal();
-
-        propDropdown.Draw(dropdownLayoutOptions);
-
-        if (GUILayout.Button("<", arrowLayoutOptions))
-            propDropdown.CyclePrevious();
-
-        if (GUILayout.Button(">", arrowLayoutOptions))
-            propDropdown.CycleNext();
-
-        GUILayout.EndHorizontal();
+        DrawDropdown(propDropdown);
 
         MpsGui.BlackLine();
 

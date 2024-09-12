@@ -40,24 +40,7 @@ public class EffectsPane : BasePane, IEnumerable<KeyValuePair<EffectsPane.Effect
         if (!paneHeader.Enabled)
             return;
 
-        GUILayout.BeginHorizontal();
-
-        const int ScrollBarWidth = 23;
-
-        var buttonAndScrollbarSize = ScrollBarWidth + Utility.GetPix(20) * 2 + 5;
-        var dropdownButtonWidth = parent.WindowRect.width - buttonAndScrollbarSize;
-
-        effectTypesDropdown.Draw(GUILayout.Width(dropdownButtonWidth));
-
-        var arrowLayoutOptions = GUILayout.ExpandWidth(false);
-
-        if (GUILayout.Button("<", arrowLayoutOptions))
-            effectTypesDropdown.CyclePrevious();
-
-        if (GUILayout.Button(">", arrowLayoutOptions))
-            effectTypesDropdown.CycleNext();
-
-        GUILayout.EndHorizontal();
+        DrawDropdown(effectTypesDropdown);
 
         effectsPanes[effectTypesDropdown.SelectedItem].Draw();
     }

@@ -35,11 +35,12 @@ public class PropShapeKeyPane : BasePane
         if (!paneHeader.Enabled)
             return;
 
-        var sliderWidth = GUILayout.Width(parent.WindowRect.width / 2 - 15f);
+        var sliderWidth = GUILayout.Width(parent.WindowRect.width / 2 - 10f);
+        var maxWidth = GUILayout.MaxWidth(parent.WindowRect.width - 10f);
 
         foreach (var chunk in CurrentShapeKeyController.Keys.Chunk(2))
         {
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal(maxWidth);
 
             foreach (var hashKey in chunk)
                 sliders[hashKey].Draw(sliderWidth);

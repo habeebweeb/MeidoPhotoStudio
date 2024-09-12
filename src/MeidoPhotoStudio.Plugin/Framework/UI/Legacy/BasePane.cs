@@ -42,6 +42,40 @@ public abstract class BasePane
     {
     }
 
+    protected void DrawDropdown<T>(Dropdown<T> dropdown)
+    {
+        GUILayout.BeginHorizontal();
+
+        var buttonAndScrollbarSize = 33 * 2 + 15;
+        var dropdownButtonWidth = parent.WindowRect.width - buttonAndScrollbarSize;
+
+        dropdown.Draw(GUILayout.Width(dropdownButtonWidth));
+
+        var arrowLayoutOptions = GUILayout.MaxWidth(20);
+
+        if (GUILayout.Button("<", arrowLayoutOptions))
+            dropdown.CyclePrevious();
+
+        if (GUILayout.Button(">", arrowLayoutOptions))
+            dropdown.CycleNext();
+
+        GUILayout.EndHorizontal();
+    }
+
+    protected void DrawComboBox(ComboBox comboBox)
+    {
+        var textFieldWidth = parent.WindowRect.width - 56;
+
+        comboBox.Draw(GUILayout.Width(textFieldWidth));
+    }
+
+    protected void DrawTextFieldMaxWidth(TextField textField)
+    {
+        var maxWidth = parent.WindowRect.width - 25;
+
+        textField.Draw(GUILayout.MaxWidth(maxWidth));
+    }
+
     private void OnReloadTranslation(object sender, EventArgs args) =>
         ReloadTranslation();
 }

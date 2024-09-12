@@ -44,24 +44,7 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
         if (!paneHeader.Enabled)
             return;
 
-        GUILayout.BeginHorizontal();
-
-        const int ScrollBarWidth = 23;
-
-        var buttonAndScrollbarSize = ScrollBarWidth + Utility.GetPix(20) * 2 + 5;
-        var dropdownButtonWidth = parent.WindowRect.width - buttonAndScrollbarSize;
-
-        propTypeDropdown.Draw(GUILayout.Width(dropdownButtonWidth));
-
-        var arrowLayoutOptions = GUILayout.ExpandWidth(false);
-
-        if (GUILayout.Button("<", arrowLayoutOptions))
-            propTypeDropdown.CyclePrevious();
-
-        if (GUILayout.Button(">", arrowLayoutOptions))
-            propTypeDropdown.CycleNext();
-
-        GUILayout.EndHorizontal();
+        DrawDropdown(propTypeDropdown);
 
         MpsGui.WhiteLine();
 

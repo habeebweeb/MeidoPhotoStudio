@@ -46,7 +46,7 @@ public class ComboBox : BaseControl, IEnumerable<string>
 
         textField.Draw(textFieldStyle, layoutOptions);
 
-        var clicked = GUILayout.Button("v", buttonStyle, GUILayout.ExpandWidth(false));
+        var clicked = GUILayout.Button("v", buttonStyle, GUILayout.MaxWidth(20));
 
         if (clicked)
         {

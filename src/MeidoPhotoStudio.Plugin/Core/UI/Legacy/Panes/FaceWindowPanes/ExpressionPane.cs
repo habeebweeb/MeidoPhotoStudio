@@ -124,15 +124,15 @@ public class ExpressionPane : BasePane
             const int SliderColumnCount = 2;
             const int ToggleColumnCount = 3;
 
-            var sliderWidth = GUILayout.Width(parent.WindowRect.width / SliderColumnCount - 15f);
-            var toggleWidth = GUILayout.Width(parent.WindowRect.width / ToggleColumnCount - 15f);
+            var maxWidth = GUILayout.MaxWidth(parent.WindowRect.width - 10f);
+            var sliderWidth = GUILayout.MaxWidth(parent.WindowRect.width / SliderColumnCount - 10f);
 
             foreach (var chunk in EyeHashes
                 .Where(CurrentFace.ContainsExpressionKey)
                 .Select(hash => controls[hash])
                 .Chunk(SliderColumnCount))
             {
-                GUILayout.BeginHorizontal();
+                GUILayout.BeginHorizontal(maxWidth);
 
                 foreach (var slider in chunk)
                     slider.Draw(sliderWidth);
@@ -145,7 +145,7 @@ public class ExpressionPane : BasePane
                 .Select(hash => controls[hash])
                 .Chunk(SliderColumnCount))
             {
-                GUILayout.BeginHorizontal();
+                GUILayout.BeginHorizontal(maxWidth);
 
                 foreach (var slider in chunk)
                     slider.Draw(sliderWidth);
@@ -160,10 +160,10 @@ public class ExpressionPane : BasePane
                 .Select(hash => controls[hash])
                 .Chunk(ToggleColumnCount))
             {
-                GUILayout.BeginHorizontal();
+                GUILayout.BeginHorizontal(maxWidth);
 
                 foreach (var slider in chunk)
-                    slider.Draw(toggleWidth);
+                    slider.Draw();
 
                 GUILayout.EndHorizontal();
             }

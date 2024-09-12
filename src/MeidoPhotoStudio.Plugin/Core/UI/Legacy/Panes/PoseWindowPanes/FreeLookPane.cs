@@ -71,14 +71,12 @@ public class FreeLookPane : BasePane
 
         freeLookToggle.Draw();
 
-        var sliderWidth = GUILayout.Width(parent.WindowRect.width / 2 - 15f);
-
         GUI.enabled = enabled && eitherBindingEnabled && freeLookToggle.Value;
 
-        GUILayout.BeginHorizontal();
+        GUILayout.BeginHorizontal(GUILayout.MaxWidth(parent.WindowRect.width - 10f));
 
-        offsetLookXSlider.Draw(sliderWidth);
-        offsetLookYSlider.Draw(sliderWidth);
+        offsetLookXSlider.Draw();
+        offsetLookYSlider.Draw();
 
         GUILayout.EndHorizontal();
 

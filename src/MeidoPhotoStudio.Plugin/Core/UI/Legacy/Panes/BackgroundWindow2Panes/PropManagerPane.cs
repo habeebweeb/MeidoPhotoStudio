@@ -146,23 +146,7 @@ public class PropManagerPane : BasePane
             return;
         }
 
-        GUILayout.BeginHorizontal();
-
-        propDropdown.Draw(GUILayout.Width(185f));
-
-        var arrowLayoutOptions = new[]
-        {
-            GUILayout.ExpandWidth(false),
-            GUILayout.ExpandHeight(false),
-        };
-
-        if (GUILayout.Button("<", arrowLayoutOptions))
-            propDropdown.CyclePrevious();
-
-        if (GUILayout.Button(">", arrowLayoutOptions))
-            propDropdown.CycleNext();
-
-        GUILayout.EndHorizontal();
+        DrawDropdown(propDropdown);
 
         MpsGui.BlackLine();
 

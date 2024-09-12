@@ -146,16 +146,11 @@ public class HandPresetSelectorPane : BasePane
 
         void DrawAddHandPreset()
         {
-            const int ScrollBarWidth = 23;
-
-            var parentWidth = parent.WindowRect.width;
-            var textFieldWidth = GUILayout.MaxWidth(parentWidth - Utility.GetPix(20) - ScrollBarWidth - 5);
-
             handPresetDirectoryHeader.Draw();
-            handPresetCategoryComboBox.Draw(textFieldWidth);
+            DrawComboBox(handPresetCategoryComboBox);
 
             handPresetFilenameHeader.Draw();
-            handPresetNameTextField.Draw(textFieldWidth);
+            DrawTextFieldMaxWidth(handPresetNameTextField);
 
             MpsGui.BlackLine();
 
@@ -177,28 +172,6 @@ public class HandPresetSelectorPane : BasePane
             }
 
             savedHandPresetLabel.Draw();
-        }
-
-        void DrawDropdown<T>(Dropdown<T> dropdown)
-        {
-            GUILayout.BeginHorizontal();
-
-            const int ScrollBarWidth = 23;
-
-            var buttonAndScrollbarSize = ScrollBarWidth + Utility.GetPix(20) * 2 + 5;
-            var dropdownButtonWidth = parent.WindowRect.width - buttonAndScrollbarSize;
-
-            dropdown.Draw(GUILayout.Width(dropdownButtonWidth));
-
-            var arrowLayoutOptions = GUILayout.ExpandWidth(false);
-
-            if (GUILayout.Button("<", arrowLayoutOptions))
-                dropdown.CyclePrevious();
-
-            if (GUILayout.Button(">", arrowLayoutOptions))
-                dropdown.CycleNext();
-
-            GUILayout.EndHorizontal();
         }
     }
 
