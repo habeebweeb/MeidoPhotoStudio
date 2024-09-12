@@ -29,7 +29,7 @@ public class MenuPropsPane : BasePane
 
     private MPN[] categories;
     private Vector2 scrollPosition;
-    private IEnumerable<MenuFilePropModel> currentPropList;
+    private IEnumerable<MenuFilePropModel> currentPropList = [];
     private bool menuDatabaseBusy = false;
 
     public MenuPropsPane(
@@ -195,7 +195,7 @@ public class MenuPropsPane : BasePane
 
         if (currentCategory is MPN.null_mpn)
         {
-            currentPropList = Enumerable.Empty<MenuFilePropModel>();
+            currentPropList = [];
 
             return;
         }
