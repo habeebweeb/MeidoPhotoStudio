@@ -1,5 +1,4 @@
 using MeidoPhotoStudio.Plugin.Core.Character;
-using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
@@ -9,7 +8,13 @@ public class CharacterCallPane : BasePane
     private const int FontSize = 13;
 
     private readonly CallController characterCallController;
-    private readonly LazyStyle labelStyle = new(FontSize, () => new(GUI.skin.label));
+    private readonly LazyStyle labelStyle = new(
+        FontSize,
+        () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.MiddleLeft,
+        });
+
     private readonly LazyStyle selectedIndexStyle = new(
         FontSize,
         () => new(GUI.skin.label)
@@ -23,6 +28,7 @@ public class CharacterCallPane : BasePane
         () => new(GUI.skin.label)
         {
             normal = { textColor = Color.black },
+            alignment = TextAnchor.MiddleLeft,
         });
 
     private readonly Button clearSelectedButton;
@@ -62,30 +68,39 @@ public class CharacterCallPane : BasePane
         GUI.enabled = true;
 
         var windowRect = parent.WindowRect;
-        var windowHeight = windowRect.height;
-        var buttonWidth = windowRect.width - 30f;
-
-        var previousRect = GUILayoutUtility.GetLastRect();
+        var buttonWidth = windowRect.width - 25f;
 
         const float buttonSize = 85f;
 
-        var offsetTop = previousRect.yMax + 5f;
-
         var buttonHeight = Utility.GetPix(buttonSize);
 
-        var positionRect = new Rect(5f, offsetTop, windowRect.width - 10f, windowHeight - (offsetTop + 35));
-        var viewRect = new Rect(0f, 0f, buttonWidth, buttonHeight * characterCallController.Count + 5f);
+        var scrollRect = GUILayoutUtility.GetRect(0f, windowRect.width, 0f, windowRect.height);
+        var scrollView = new Rect(scrollRect.x, scrollRect.y, windowRect.width - 20f, buttonHeight * characterCallController.Count);
 
         if (characterCallController.ActiveOnly)
-            activeCharactersListScrollPosition = GUI.BeginScrollView(positionRect, activeCharactersListScrollPosition, viewRect);
+            activeCharactersListScrollPosition = GUI.BeginScrollView(scrollRect, activeCharactersListScrollPosition, scrollView);
         else
-            charactersListScrollPosition = GUI.BeginScrollView(positionRect, charactersListScrollPosition, viewRect);
+            charactersListScrollPosition = GUI.BeginScrollView(scrollRect, charactersListScrollPosition, scrollView);
 
-        foreach (var (i, character) in characterCallController.WithIndex())
+        var scrollPosition = characterCallController.ActiveOnly
+            ? activeCharactersListScrollPosition
+            : charactersListScrollPosition;
+
+        var firstVisibleIndex = Mathf.FloorToInt(scrollPosition.y / buttonHeight);
+        var lastVisibleIndex = Mathf.CeilToInt((scrollPosition.y + scrollRect.height) / buttonHeight);
+
+        if (firstVisibleIndex < 0)
+            firstVisibleIndex = 0;
+
+        if (lastVisibleIndex > characterCallController.Count)
+            lastVisibleIndex = characterCallController.Count;
+
+        for (var i = firstVisibleIndex; i < lastVisibleIndex; i++)
         {
-            var y = i * buttonHeight;
+            var character = characterCallController[i];
+            var y = scrollRect.y + i * buttonHeight;
 
-            if (GUI.Button(new(0f, y, buttonWidth, buttonHeight), string.Empty))
+            if (GUI.Button(new(scrollRect.x, y, buttonWidth, buttonHeight), string.Empty))
                 characterCallController.Select(character);
 
             var characterSelected = characterCallController.CharacterSelected(character);
@@ -94,16 +109,16 @@ public class CharacterCallPane : BasePane
             {
                 var selectedIndex = characterCallController.IndexOfSelectedCharacter(character) + 1;
 
-                GUI.DrawTexture(new(5f, y + 5f, buttonWidth - 10f, buttonHeight - 10f), Texture2D.whiteTexture);
+                GUI.DrawTexture(new(scrollRect.x + 5f, y + 5f, buttonWidth - 10f, buttonHeight - 10f), Texture2D.whiteTexture);
 
-                GUI.Label(new(0f, y + 5f, buttonWidth - 10f, buttonHeight), selectedIndex.ToString(), selectedIndexStyle);
+                GUI.Label(new(scrollRect.x, y + 5f, buttonWidth - 10f, buttonHeight), selectedIndex.ToString(), selectedIndexStyle);
             }
 
             if (character.Portrait)
-                GUI.DrawTexture(new(5f, y, buttonHeight, buttonHeight), character.Portrait);
+                GUI.DrawTexture(new(scrollRect.x + 5f, y, buttonHeight, buttonHeight), character.Portrait);
 
             GUI.Label(
-                new(buttonHeight + 10f, y + 30f, buttonWidth - 80f, buttonHeight),
+                new(scrollRect.x + buttonHeight + 5f, y, buttonWidth - scrollRect.x + buttonHeight + 5f, buttonHeight),
                 character.FullName("{0}\n{1}"),
                 characterSelected ? selectedLabelStyle : labelStyle);
         }
