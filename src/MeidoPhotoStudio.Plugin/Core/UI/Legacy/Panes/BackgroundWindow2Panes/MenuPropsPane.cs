@@ -29,8 +29,9 @@ public class MenuPropsPane : BasePane
 
     private MPN[] categories;
     private Vector2 scrollPosition;
-    private IEnumerable<MenuFilePropModel> currentPropList = [];
+    private IList<MenuFilePropModel> currentPropList = [];
     private bool menuDatabaseBusy = false;
+    private FilterType currentFilter;
 
     public MenuPropsPane(
         PropService propService,
@@ -117,47 +118,57 @@ public class MenuPropsPane : BasePane
             MpsGui.BlackLine();
         }
 
-        DrawPropList();
+        if (propCategoryDropdown.SelectedItem is not MPN.null_mpn)
+            DrawPropList();
 
         void DrawPropList()
         {
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition);
+            var gridSize = 4;
+            var buttonSize = (parent.WindowRect.width - 20f) / gridSize;
+            var boxDimensions = new Vector2(buttonSize, buttonSize);
+            var scrollRect = GUILayoutUtility.GetRect(0f, parent.WindowRect.width, 100f, parent.WindowRect.height);
+            var scrollView = new Rect(scrollRect.x, scrollRect.y, scrollRect.width - 20, boxDimensions.y * Mathf.CeilToInt((float)currentPropList.Count / gridSize));
 
-            var propList = currentPropList;
+            scrollPosition = GUI.BeginScrollView(scrollRect, scrollPosition, scrollView);
 
-            if (!menuPropsConfiguration.ModMenuPropsOnly)
+            var firstVisibleIndex = Mathf.FloorToInt(scrollPosition.y / boxDimensions.y) * gridSize;
+            var lastVisibleIndex = Mathf.CeilToInt((scrollPosition.y + scrollRect.height) / boxDimensions.y) * gridSize + gridSize;
+
+            if (firstVisibleIndex < 0)
+                firstVisibleIndex = 0;
+
+            if (lastVisibleIndex > currentPropList.Count)
+                lastVisibleIndex = currentPropList.Count;
+
+            for (var i = firstVisibleIndex; i < lastVisibleIndex; i += gridSize)
             {
-                if (modFilterToggle.Value)
-                    propList = currentPropList.Where(prop => !prop.GameMenu);
-                else if (baseFilterToggle.Value)
-                    propList = currentPropList.Where(prop => prop.GameMenu);
-            }
-
-            var buttonSize = Utility.GetPix(55);
-            var buttonLayoutOptions = new GUILayoutOption[]
-            {
-                GUILayout.Width(buttonSize), GUILayout.Height(buttonSize),
-            };
-
-            foreach (var propChunk in propList.Chunk(4))
-            {
-                GUILayout.BeginHorizontal();
-
-                foreach (var prop in propChunk)
+                for (var j = 0; j < gridSize; j++)
                 {
+                    var itemIndex = i + j;
+
+                    if (itemIndex >= currentPropList.Count)
+                        break;
+
+                    var prop = currentPropList[itemIndex];
+
                     var image = iconCache.GetMenuIcon(prop);
+
+                    var buttonRect = new Rect(
+                        scrollRect.x + boxDimensions.x * j,
+                        scrollRect.y + boxDimensions.y * (i / gridSize),
+                        boxDimensions.x,
+                        boxDimensions.y);
+
                     var clicked = image
-                        ? GUILayout.Button(image, propButtonStyle, buttonLayoutOptions)
-                        : GUILayout.Button(prop.Name, propButtonStyle, buttonLayoutOptions);
+                        ? GUI.Button(buttonRect, image, propButtonStyle)
+                        : GUI.Button(buttonRect, prop.Name, propButtonStyle);
 
                     if (clicked)
                         propService.Add(prop);
                 }
-
-                GUILayout.EndHorizontal();
             }
 
-            GUILayout.EndScrollView();
+            GUI.EndScrollView();
         }
 
         void DrawFilterToggles()
@@ -186,7 +197,7 @@ public class MenuPropsPane : BasePane
         initializingLabel.Text = Translation.Get("systemMessage", "initializing");
     }
 
-    private void UpdateCurrentPropList()
+    private void UpdateCurrentPropList(bool resetScrollPosition = true)
     {
         if (menuDatabaseBusy)
             return;
@@ -200,9 +211,20 @@ public class MenuPropsPane : BasePane
             return;
         }
 
-        scrollPosition = Vector2.zero;
+        if (resetScrollPosition)
+            scrollPosition = Vector2.zero;
 
-        currentPropList = menuPropRepository[currentCategory];
+        IEnumerable<MenuFilePropModel> propList = menuPropRepository[currentCategory];
+
+        if (!menuPropsConfiguration.ModMenuPropsOnly)
+        {
+            if (modFilterToggle.Value)
+                propList = propList.Where(prop => !prop.GameMenu);
+            else if (baseFilterToggle.Value)
+                propList = propList.Where(prop => prop.GameMenu);
+        }
+
+        currentPropList = propList.ToArray();
     }
 
     private void OnPropCategoryDropdownChanged(object sender, EventArgs e) =>
@@ -210,16 +232,24 @@ public class MenuPropsPane : BasePane
 
     private void ChangeFilter(FilterType filterType)
     {
-        if (!modFilterToggle.Value || !baseFilterToggle.Value)
+        if (filterType == currentFilter)
             return;
 
-        modFilterToggle.SetEnabledWithoutNotify(filterType is FilterType.Mod);
-        baseFilterToggle.SetEnabledWithoutNotify(filterType is FilterType.Base);
+        currentFilter = filterType;
+
+        modFilterToggle.SetEnabledWithoutNotify(currentFilter is FilterType.Mod);
+        baseFilterToggle.SetEnabledWithoutNotify(currentFilter is FilterType.Base);
+
+        UpdateCurrentPropList(false);
     }
 
     private void OnModFilterChanged(object sender, EventArgs e) =>
-        ChangeFilter(FilterType.Mod);
+        ChangeFilter(modFilterToggle.Value
+            ? FilterType.Mod
+            : FilterType.None);
 
     private void OnBaseFilterChanged(object sender, EventArgs e) =>
-        ChangeFilter(FilterType.Base);
+        ChangeFilter(baseFilterToggle.Value
+            ? FilterType.Base
+            : FilterType.None);
 }

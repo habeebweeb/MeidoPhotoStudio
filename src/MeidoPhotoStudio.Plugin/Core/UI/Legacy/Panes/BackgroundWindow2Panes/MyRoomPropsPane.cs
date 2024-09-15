@@ -20,7 +20,7 @@ public class MyRoomPropsPane : BasePane
     private readonly Dropdown<int> propCategoryDropdown;
 
     private Vector2 scrollPosition;
-    private IEnumerable<MyRoomPropModel> currentPropList;
+    private IList<MyRoomPropModel> currentPropList;
 
     public MyRoomPropsPane(
         PropService propService, MyRoomPropRepository myRoomPropRepository, IconCache iconCache)
@@ -44,38 +44,61 @@ public class MyRoomPropsPane : BasePane
     {
         DrawDropdown(propCategoryDropdown);
 
-        MpsGui.BlackLine();
+        if (propCategoryDropdown.SelectedItem is not -1)
+        {
+            MpsGui.BlackLine();
 
-        DrawPropList();
+            DrawPropList();
+        }
 
         void DrawPropList()
         {
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition);
+            var gridSize = 3;
+            var buttonSize = (parent.WindowRect.width - 20f) / gridSize;
+            var boxDimensions = new Vector2(buttonSize, buttonSize);
+            var scrollRect = GUILayoutUtility.GetRect(0f, parent.WindowRect.width, 100f, parent.WindowRect.height);
+            var scrollView = new Rect(scrollRect.x, scrollRect.y, scrollRect.width - 20, boxDimensions.y * Mathf.CeilToInt((float)currentPropList.Count / gridSize));
 
-            var buttonSize = Utility.GetPix(70);
+            scrollPosition = GUI.BeginScrollView(scrollRect, scrollPosition, scrollView);
 
-            var buttonLayoutOptions = new GUILayoutOption[]
+            var firstVisibleIndex = Mathf.FloorToInt(scrollPosition.y / boxDimensions.y) * gridSize;
+            var lastVisibleIndex = Mathf.CeilToInt((scrollPosition.y + scrollRect.height) / boxDimensions.y) * gridSize + gridSize;
+
+            if (firstVisibleIndex < 0)
+                firstVisibleIndex = 0;
+
+            if (lastVisibleIndex > currentPropList.Count)
+                lastVisibleIndex = currentPropList.Count;
+
+            for (var i = firstVisibleIndex; i < lastVisibleIndex; i += gridSize)
             {
-                GUILayout.Width(buttonSize), GUILayout.Height(buttonSize),
-            };
-
-            foreach (var propChunk in currentPropList.Chunk(3))
-            {
-                GUILayout.BeginHorizontal();
-
-                foreach (var prop in propChunk)
+                for (var j = 0; j < gridSize; j++)
                 {
-                    var icon = iconCache.GetMyRoomIcon(prop);
-                    var clicked = GUILayout.Button(icon, buttonStyle, buttonLayoutOptions);
+                    var itemIndex = i + j;
+
+                    if (itemIndex >= currentPropList.Count)
+                        break;
+
+                    var prop = currentPropList[itemIndex];
+
+                    var image = iconCache.GetMyRoomIcon(prop);
+
+                    var buttonRect = new Rect(
+                        scrollRect.x + boxDimensions.x * j,
+                        scrollRect.y + boxDimensions.y * (i / gridSize),
+                        boxDimensions.x,
+                        boxDimensions.y);
+
+                    var clicked = image
+                        ? GUI.Button(buttonRect, image, buttonStyle)
+                        : GUI.Button(buttonRect, prop.Name, buttonStyle);
 
                     if (clicked)
                         propService.Add(prop);
                 }
-
-                GUILayout.EndHorizontal();
             }
 
-            GUILayout.EndScrollView();
+            GUI.EndScrollView();
         }
     }
 
@@ -88,7 +111,7 @@ public class MyRoomPropsPane : BasePane
 
         if (currentCategory is -1)
         {
-            currentPropList = Enumerable.Empty<MyRoomPropModel>();
+            currentPropList = [];
 
             return;
         }
