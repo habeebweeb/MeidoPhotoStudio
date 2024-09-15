@@ -13,6 +13,7 @@ internal static class DropdownHelper
     private static Rect buttonRect;
     private static string[] items;
     private static Vector2 scrollPos;
+    private static float itemHeight;
     private static int currentDropdownID;
     private static int selectedItemIndex;
 
@@ -152,6 +153,8 @@ internal static class DropdownHelper
                 rectHeight);
         }
 
+        itemHeight = calculatedSize.y;
+
         DropdownWindow.x = Mathf.Clamp(DropdownWindow.x, 0, Screen.width - rectWidth - 18);
 
         dropdownScrollRect = new(0, 0, DropdownWindow.width, DropdownWindow.height);
@@ -168,9 +171,36 @@ internal static class DropdownHelper
         if (Event.current.type is EventType.MouseUp)
             clicked = true;
 
+        var listView = new Rect(dropdownScrollRect.x, dropdownScrollRect.y, dropdownScrollRect.width - 10, itemHeight * items.Length);
+
         scrollPos = GUI.BeginScrollView(dropdownScrollRect, scrollPos, dropdownRect);
 
-        var selection = GUI.SelectionGrid(dropdownRect, selectedItemIndex, items, 1, dropdownItemStyle);
+        var firstVisibleIndex = Mathf.FloorToInt(scrollPos.y / itemHeight);
+        var lastVisibleIndex = Mathf.CeilToInt((scrollPos.y + dropdownScrollRect.height) / itemHeight);
+
+        if (firstVisibleIndex < 0)
+            firstVisibleIndex = 0;
+
+        if (lastVisibleIndex > items.Length)
+            lastVisibleIndex = items.Length;
+
+        var selection = selectedItemIndex;
+
+        for (var i = firstVisibleIndex; i < lastVisibleIndex; i++)
+        {
+            var value = GUI.Toggle(
+                new(
+                    dropdownScrollRect.x,
+                    dropdownScrollRect.y + itemHeight * i,
+                    dropdownScrollRect.width,
+                    itemHeight),
+                selectedItemIndex == i,
+                items[i],
+                dropdownItemStyle);
+
+            if (value != (selectedItemIndex == i))
+                selection = i;
+        }
 
         GUI.EndScrollView();
 
