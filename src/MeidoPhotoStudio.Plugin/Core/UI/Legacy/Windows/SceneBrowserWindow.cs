@@ -16,7 +16,7 @@ public class SceneBrowserWindow : BaseWindow
     private const int FontSize = 13;
 
     private static readonly Texture2D CategorySelectedTexture = Utility.MakeTex(2, 2, new(0.5f, 0.5f, 0.5f, 0.4f));
-    private static readonly Vector2 ThumbnailDimensions = new(480f, 270f);
+    private static readonly Vector2 ThumbnailDimensions = new(600f, 337.5f);
 
     private readonly SceneRepository sceneRepository;
     private readonly SceneManagementModal sceneManagementModal;
@@ -79,7 +79,7 @@ public class SceneBrowserWindow : BaseWindow
     private bool resizing;
     private Rect resizeHandleRect = new(0f, 0f, ResizeHandleSize, ResizeHandleSize);
     private string currentCategory = string.Empty;
-    private IEnumerable<SceneModel> currentCategoryScenes;
+    private IList<SceneModel> currentCategoryScenes;
     private IEnumerable<string> currentCategories;
     private Vector2 scenesScrollPosition;
     private Vector2 categoryScrollPosition;
@@ -236,11 +236,7 @@ public class SceneBrowserWindow : BaseWindow
 
         GUILayout.EndVertical();
 
-        GUILayout.BeginVertical();
-
         DrawScenes();
-
-        GUILayout.EndVertical();
 
         GUILayout.EndHorizontal();
 
@@ -309,49 +305,57 @@ public class SceneBrowserWindow : BaseWindow
         {
             if (!hasScenes)
             {
-                GUILayout.Label(noScenesLabel, labelStyle);
+                GUILayout.Label(noScenesLabel, labelStyle, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
 
                 return;
             }
-
-            scenesScrollPosition = GUILayout.BeginScrollView(scenesScrollPosition);
 
             var scaledThumbnailDimensions = ThumbnailDimensions * ThumbnailScale;
             var (thumbnailWidth, thumbnailHeight) = (Utility.GetPix((int)scaledThumbnailDimensions.x), Utility.GetPix((int)scaledThumbnailDimensions.y));
             var sceneGridWidth = WindowRect.width - Utility.GetPix(CategoryListWidth) - 20f;
 
+            // TODO: Figure out a way to encapsulate all of this virtual scrolling boilerplate
             var columns = Mathf.Max(1, (int)(sceneGridWidth / (thumbnailWidth + 5f)));
 
-            var thumbnailLayoutOptions = new[]
+            var scrollRect = GUILayoutUtility.GetRect(0f, WindowRect.width, 0f, WindowRect.height);
+            var scrollView = new Rect(scrollRect.x, scrollRect.y, scrollRect.width - 20, (thumbnailHeight + 5f) * Mathf.CeilToInt((float)currentCategoryScenes.Count / columns));
+
+            scenesScrollPosition = GUI.BeginScrollView(scrollRect, scenesScrollPosition, scrollView);
+
+            var firstVisibleIndex = Mathf.FloorToInt(scenesScrollPosition.y / (thumbnailHeight + 5f)) * columns;
+            var lastVisibleIndex = Mathf.CeilToInt((scenesScrollPosition.y + scrollRect.height) / (thumbnailHeight + 5f)) * columns + columns;
+
+            if (firstVisibleIndex < 0)
+                firstVisibleIndex = 0;
+
+            if (lastVisibleIndex > currentCategoryScenes.Count)
+                lastVisibleIndex = currentCategoryScenes.Count;
+
+            var xOffset = (scrollRect.width - (thumbnailWidth + 5f) * columns) / 2f;
+
+            for (var i = firstVisibleIndex; i < lastVisibleIndex; i += columns)
             {
-                GUILayout.Height(thumbnailHeight),
-                GUILayout.Width(thumbnailWidth),
-            };
+                for (var j = 0; j < columns; j++)
+                {
+                    var itemIndex = i + j;
 
-            GUILayout.BeginHorizontal();
+                    if (itemIndex >= currentCategoryScenes.Count)
+                        break;
 
-            GUILayout.FlexibleSpace();
+                    var scene = currentCategoryScenes[itemIndex];
 
-            GUILayout.BeginVertical();
+                    var buttonRect = new Rect(
+                        scrollRect.x + xOffset + (thumbnailWidth + 5f) * j,
+                        scrollRect.y + (thumbnailHeight + 5f) * (i / columns),
+                        thumbnailWidth,
+                        thumbnailHeight);
 
-            foreach (var chunk in currentCategoryScenes.Chunk(columns))
-            {
-                GUILayout.BeginHorizontal();
-
-                foreach (var scene in chunk)
-                    if (GUILayout.Button(scene.Thumbnail, thumbnailStyle, thumbnailLayoutOptions))
+                    if (GUI.Button(buttonRect, scene.Thumbnail, thumbnailStyle))
                         sceneManagementModal.ManageScene(scene);
-
-                GUILayout.EndHorizontal();
+                }
             }
 
-            GUILayout.EndHorizontal();
-
-            GUILayout.FlexibleSpace();
-
-            GUILayout.EndVertical();
-
-            GUILayout.EndScrollView();
+            GUI.EndScrollView();
         }
 
         void DrawFooter()
@@ -485,7 +489,7 @@ public class SceneBrowserWindow : BaseWindow
         currentCategory = category;
         currentCategories = GetCategories();
         currentCategoryScenes = GetScenes(currentCategory);
-        hasScenes = currentCategories.Any();
+        hasScenes = currentCategoryScenes.Any();
     }
 
     private void OnRefreshing(object sender, EventArgs e)
