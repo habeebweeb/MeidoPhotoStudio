@@ -163,7 +163,7 @@ public class ScreenshotService : MonoBehaviour
                 .Where(uiRoot => uiRoot)
                 .SelectMany(uiRoot => uiRoot.transform.Cast<Transform>())
                 .Select(transform => transform.GetComponent<UIPanel>())
-                .Where(uiPanel => uiPanel && uiPanel.name is not "MessageWindowPanel")
+                .Where(uiPanel => uiPanel && uiPanel.alpha is not 0f && uiPanel.name is not "MessageWindowPanel")
                 .ToArray();
 
         void PlayScreenshotSound() =>
