@@ -10,6 +10,8 @@ public class TextField : BaseControl
 
     public event EventHandler LostFocus;
 
+    public event EventHandler ChangedValue;
+
     public static LazyStyle Style { get; } = new(13, () => new(GUI.skin.textField));
 
     public string Value { get; set; } = string.Empty;
@@ -26,7 +28,14 @@ public class TextField : BaseControl
     {
         GUI.SetNextControlName(controlName);
 
-        Value = GUILayout.TextField(Value, textFieldStyle, layoutOptions);
+        var value = GUILayout.TextField(Value, textFieldStyle, layoutOptions);
+
+        if (!string.Equals(value, Value, StringComparison.Ordinal))
+        {
+            Value = value;
+
+            ChangedValue?.Invoke(this, EventArgs.Empty);
+        }
 
         var focusedControl = GUI.GetNameOfFocusedControl();
 
