@@ -1,4 +1,7 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core.Character;
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
@@ -34,6 +37,10 @@ public class CharacterCallPane : BasePane
     private readonly Button clearSelectedButton;
     private readonly Button callButton;
     private readonly Toggle activeCharacterToggle;
+    private readonly TextField searchBar;
+    private readonly Dropdown<CallController.SortType> sortTypeDropdown;
+    private readonly Toggle descendingToggle;
+    private readonly Header header;
 
     private Vector2 charactersListScrollPosition;
     private Vector2 activeCharactersListScrollPosition;
@@ -41,6 +48,7 @@ public class CharacterCallPane : BasePane
     public CharacterCallPane(CallController characterCallController)
     {
         this.characterCallController = characterCallController ?? throw new ArgumentNullException(nameof(characterCallController));
+        this.characterCallController.PropertyChanged += OnCallControllerPropertyChanged;
 
         clearSelectedButton = new(Translation.Get("maidCallWindow", "clearButton"));
         clearSelectedButton.ControlEvent += OnClearMaidsButttonPushed;
@@ -50,22 +58,58 @@ public class CharacterCallPane : BasePane
 
         activeCharacterToggle = new(Translation.Get("maidCallWindow", "activeOnlyToggle"));
         activeCharacterToggle.ControlEvent += OnActiveCharactersToggleChanged;
+
+        searchBar = new()
+        {
+            Placeholder = Translation.Get("maidCallWindow", "searchBarPlaceholder"),
+        };
+
+        searchBar.ChangedValue += OnSearchSubmitted;
+
+        sortTypeDropdown = new(
+            (CallController.SortType[])Enum.GetValues(typeof(CallController.SortType)),
+            formatter: (sortType, _) => Translation.Get("characterSortTypeDropdown", sortType.ToLower()));
+
+        sortTypeDropdown.SelectionChanged += OnSortTypeChanged;
+
+        descendingToggle = new(Translation.Get("maidCallWindow", "descendingToggle"));
+        descendingToggle.ControlEvent += OnDescendingChanged;
+
+        header = new(Translation.Get("maidCallWindow", "header"));
     }
 
     public override void Draw()
     {
+        header.Draw();
+        MpsGui.WhiteLine();
+
+        searchBar.Draw(GUILayout.Width(parent.WindowRect.width - Utility.GetPix(10)));
+
         GUILayout.BeginHorizontal();
-        clearSelectedButton.Draw(GUILayout.ExpandWidth(false));
-        callButton.Draw();
+
+        sortTypeDropdown.Draw(GUILayout.Width(parent.WindowRect.width - Utility.GetPix(100)));
+
+        descendingToggle.Draw();
+
         GUILayout.EndHorizontal();
 
-        MpsGui.WhiteLine();
+        GUILayout.BeginHorizontal();
 
         GUI.enabled = characterCallController.HasActiveCharacters;
 
         activeCharacterToggle.Draw();
 
         GUI.enabled = true;
+
+        GUILayout.FlexibleSpace();
+
+        clearSelectedButton.Draw(GUILayout.ExpandWidth(false));
+
+        GUILayout.EndHorizontal();
+
+        MpsGui.BlackLine();
+
+        callButton.Draw();
 
         var windowRect = parent.WindowRect;
         var buttonWidth = windowRect.width - 25f;
@@ -75,7 +119,7 @@ public class CharacterCallPane : BasePane
         var buttonHeight = Utility.GetPix(buttonSize);
 
         var scrollRect = GUILayoutUtility.GetRect(0f, windowRect.width, 0f, windowRect.height);
-        var scrollView = new Rect(scrollRect.x, scrollRect.y, windowRect.width - 20f, buttonHeight * characterCallController.Count);
+        var scrollView = new Rect(scrollRect.x, scrollRect.y, windowRect.width - 25f, buttonHeight * characterCallController.Count);
 
         if (characterCallController.ActiveOnly)
             activeCharactersListScrollPosition = GUI.BeginScrollView(scrollRect, activeCharactersListScrollPosition, scrollView);
@@ -132,6 +176,7 @@ public class CharacterCallPane : BasePane
 
         charactersListScrollPosition = Vector2.zero;
         activeCharactersListScrollPosition = Vector2.zero;
+        searchBar.Value = string.Empty;
     }
 
     protected override void ReloadTranslation()
@@ -139,6 +184,19 @@ public class CharacterCallPane : BasePane
         clearSelectedButton.Label = Translation.Get("maidCallWindow", "clearButton");
         callButton.Label = Translation.Get("maidCallWindow", "callButton");
         activeCharacterToggle.Label = Translation.Get("maidCallWindow", "activeOnlyToggle");
+        descendingToggle.Label = Translation.Get("maidCallWindow", "descendingToggle");
+        header.Text = Translation.Get("maidCallWindow", "header");
+        searchBar.Placeholder = Translation.Get("maidCallWindow", "searchBarPlaceholder");
+    }
+
+    private void OnCallControllerPropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(CallController.ActiveOnly))
+            activeCharacterToggle.SetEnabledWithoutNotify(characterCallController.ActiveOnly);
+        else if (e.PropertyName is nameof(CallController.Sort))
+            sortTypeDropdown.SetSelectedIndexWithoutNotify(sortTypeDropdown.IndexOf(characterCallController.Sort));
+        else if (e.PropertyName is nameof(CallController.Descending))
+            descendingToggle.SetEnabledWithoutNotify(characterCallController.Descending);
     }
 
     private void OnClearMaidsButttonPushed(object sender, EventArgs e) =>
@@ -149,4 +207,13 @@ public class CharacterCallPane : BasePane
 
     private void OnActiveCharactersToggleChanged(object sender, EventArgs e) =>
         characterCallController.ActiveOnly = !characterCallController.ActiveOnly;
+
+    private void OnSearchSubmitted(object sender, EventArgs e) =>
+        characterCallController.Search(searchBar.Value);
+
+    private void OnSortTypeChanged(object sender, DropdownEventArgs<CallController.SortType> e) =>
+        characterCallController.Sort = e.Item;
+
+    private void OnDescendingChanged(object sender, EventArgs e) =>
+        characterCallController.Descending = descendingToggle.Value;
 }

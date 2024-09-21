@@ -8,9 +8,22 @@
   },
   "maidCallWindow": {
     "okButton": "OK",
-    "clearButton": "Clear",
+    "clearButton": "Clear Selected",
     "callButton": "Call",
-    "activeOnlyToggle": "Active Only"
+    "searchBarPlaceholder": "Search Characters",
+    "activeOnlyToggle": "Active Only",
+    "descendingToggle": "Descending",
+    "header": "Call Characters"
+  },
+  "characterSortTypeDropdown": {
+    "default": "Default",
+    "defaultNoSchedule": "Default (No Schedule)",
+    "firstName": "First Name",
+    "lastName": "Last Name"
+  },
+  "placementPane": {
+    "applyButton": "Apply",
+    "header": "Placement Presets"
   },
   "placementDropdown": {
     "normal": "Normal",

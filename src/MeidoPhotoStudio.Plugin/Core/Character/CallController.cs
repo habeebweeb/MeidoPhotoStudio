@@ -1,18 +1,39 @@
+using System.ComponentModel;
+
 using MeidoPhotoStudio.Plugin.Core.Database.Character;
+using MeidoPhotoStudio.Plugin.Framework;
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.Service;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
-public class CallController : IEnumerable<CharacterModel>
+public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChanged
 {
+    private static readonly IComparer<CharacterModel> DefaultComparer =
+        ComparisonComparer<CharacterModel>.Create(CompareDefault);
+
+    private static readonly IComparer<CharacterModel> DefaultNoScheduleComparer =
+        ComparisonComparer<CharacterModel>.Create(CompareDefaultNoSchedule);
+
+    private static readonly IComparer<CharacterModel> FirstNameComparer =
+        ComparisonComparer<CharacterModel>.Create(CompareFirstName);
+
+    private static readonly IComparer<CharacterModel> LastNameComparer =
+        ComparisonComparer<CharacterModel>.Create(CompareLastName);
+
     private readonly CharacterRepository characterRepository;
     private readonly CharacterService characterService;
     private readonly CustomMaidSceneService customMaidSceneService;
     private readonly EditModeMaidService editModeMaidService;
     private readonly List<CharacterModel> selectedCharacters = [];
     private readonly HashSet<CharacterModel> selectedCharactersSet = [];
+    private readonly List<CharacterModel> characters = [];
 
+    private string searchQuery;
     private bool activeOnly;
+    private SortType currentSortType;
+    private bool descending;
+    private IComparer<CharacterModel> sortComparer = DefaultComparer;
 
     public CallController(
         CharacterRepository characterRepository,
@@ -25,7 +46,17 @@ public class CallController : IEnumerable<CharacterModel>
         this.customMaidSceneService = customMaidSceneService ?? throw new ArgumentNullException(nameof(customMaidSceneService));
         this.editModeMaidService = editModeMaidService ?? throw new ArgumentNullException(nameof(editModeMaidService));
 
-        this.characterService.CallingCharacters += OnCharactersCalling;
+        this.characterService.CalledCharacters += OnCharactersCalled;
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public enum SortType
+    {
+        Default,
+        DefaultNoSchedule,
+        FirstName,
+        LastName,
     }
 
     public bool HasActiveCharacters =>
@@ -40,23 +71,64 @@ public class CallController : IEnumerable<CharacterModel>
                 return;
 
             activeOnly = value;
+
+            UpdateCharacterList();
+
+            RaisePropertyChanged(nameof(ActiveOnly));
+        }
+    }
+
+    public SortType Sort
+    {
+        get => currentSortType;
+        set
+        {
+            if (currentSortType == value)
+                return;
+
+            currentSortType = value;
+
+            sortComparer = currentSortType switch
+            {
+                SortType.Default => DefaultComparer,
+                SortType.DefaultNoSchedule => DefaultNoScheduleComparer,
+                SortType.FirstName => FirstNameComparer,
+                SortType.LastName => LastNameComparer,
+                _ => DefaultComparer,
+            };
+
+            UpdateCharacterList();
+
+            RaisePropertyChanged(nameof(Sort));
+        }
+    }
+
+    public bool Descending
+    {
+        get => descending;
+        set
+        {
+            if (descending == value)
+                return;
+
+            descending = value;
+
+            UpdateCharacterList();
+
+            RaisePropertyChanged(nameof(Descending));
         }
     }
 
     public int Count =>
-        ActiveOnly ? characterService.Count : characterRepository.Count;
+        characters.Count;
 
     public CharacterModel this[int index] =>
         (uint)index >= Count
             ? throw new ArgumentOutOfRangeException(nameof(index))
-            : ActiveOnly
-                ? characterService.GetCharacterModel(index)
-                : characterRepository[index];
+            : characters[index];
 
     public IEnumerator<CharacterModel> GetEnumerator() =>
-        ActiveOnly
-            ? characterService.ActiveCharacterModels.GetEnumerator()
-            : characterRepository.GetEnumerator();
+        characters.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();
@@ -119,19 +191,86 @@ public class CallController : IEnumerable<CharacterModel>
         characterService.Call(selectedCharacters);
     }
 
+    public void Search(string query)
+    {
+        if (string.Equals(searchQuery, query, StringComparison.CurrentCultureIgnoreCase))
+            return;
+
+        if (string.IsNullOrEmpty(query))
+            query = string.Empty;
+
+        searchQuery = query;
+
+        UpdateCharacterList();
+    }
+
     internal void Activate()
     {
         ClearSelected();
 
+        searchQuery = string.Empty;
+        currentSortType = SortType.Default;
+        sortComparer = DefaultComparer;
+        descending = false;
+        activeOnly = false;
+
+        characters.Clear();
+        characters.AddRange(characterRepository.OrderBy(sortComparer));
+
         if (customMaidSceneService.EditScene)
             Select(editModeMaidService.OriginalEditingCharacter);
 
-        activeOnly = false;
+        RaisePropertyChanged(nameof(Sort));
+        RaisePropertyChanged(nameof(Descending));
+        RaisePropertyChanged(nameof(ActiveOnly));
     }
 
-    private void OnCharactersCalling(object sender, CharacterServiceEventArgs e)
+    private static int CompareDefault(CharacterModel a, CharacterModel b) =>
+        CharacterSelectManager.SortMaidStandard(a.Maid, b.Maid);
+
+    private static int CompareDefaultNoSchedule(CharacterModel a, CharacterModel b) =>
+        CharacterSelectManager.SortMaidStandardNoSchedule(a.Maid, b.Maid);
+
+    private static int CompareFirstName(CharacterModel a, CharacterModel b) =>
+        string.Compare(a.FirstName, b.FirstName);
+
+    private static int CompareLastName(CharacterModel a, CharacterModel b) =>
+        string.Compare(a.LastName, b.LastName);
+
+    private void UpdateCharacterList()
+    {
+        characters.Clear();
+
+        var characterList = ActiveOnly
+            ? characterService.ActiveCharacterModels
+            : characterRepository;
+
+        if (string.IsNullOrEmpty(searchQuery))
+        {
+            characters.AddRange(characterList.OrderBy(sortComparer, Descending));
+
+            return;
+        }
+
+        characters.AddRange(
+            characterList
+                .Where(character => character.FullName().Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase))
+                .OrderBy(sortComparer, Descending));
+    }
+
+    private void OnCharactersCalled(object sender, CharacterServiceEventArgs e)
     {
         if (e.LoadedCharacters.Length is 0)
-            activeOnly = false;
+            ActiveOnly = false;
+        else
+            UpdateCharacterList();
+    }
+
+    private void RaisePropertyChanged(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
+
+        PropertyChanged?.Invoke(this, new(name));
     }
 }
