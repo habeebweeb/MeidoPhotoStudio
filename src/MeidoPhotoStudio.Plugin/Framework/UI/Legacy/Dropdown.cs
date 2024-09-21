@@ -174,6 +174,16 @@ public class Dropdown<T> : BaseControl, IEnumerable<T>
         label = items.Length is 0 ? string.Empty : Formatter(SelectedItem, selectedItemIndex);
     }
 
+    public int IndexOf(T item) =>
+        Array.IndexOf(items, item);
+
+    public int FindIndex(Func<T, bool> predicate)
+    {
+        _ = predicate ?? throw new ArgumentNullException(nameof(predicate));
+
+        return Array.FindIndex(items, new(predicate));
+    }
+
     private static int Wrap(int value, int min, int max) =>
         value < min ? max :
         value >= max ? min :
