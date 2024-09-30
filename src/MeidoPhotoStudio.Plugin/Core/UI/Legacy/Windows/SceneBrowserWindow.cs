@@ -8,7 +8,7 @@ using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
-public class SceneBrowserWindow : BaseWindow
+public class SceneBrowserWindow : BaseWindow, IVirtualListHandler
 {
     private const float ThumbnailScale = 0.4f;
     private const float ResizeHandleSize = 15f;
@@ -75,7 +75,9 @@ public class SceneBrowserWindow : BaseWindow
     private readonly Button closeButton;
     private readonly Dropdown<SortingMode> sortingModesDropdown;
     private readonly Toggle descendingToggle;
+    private readonly VirtualList scenesVirtualList;
 
+    private Vector2 thumbnailDimensions;
     private bool resizing;
     private Rect resizeHandleRect = new(0f, 0f, ResizeHandleSize, ResizeHandleSize);
     private string currentCategory = string.Empty;
@@ -154,6 +156,13 @@ public class SceneBrowserWindow : BaseWindow
 
         PopulateWindow();
 
+        scenesVirtualList = new()
+        {
+            Handler = this,
+            Grid = true,
+            Spacing = new(5f, 5f),
+        };
+
         void PopulateWindow()
         {
             currentCategory = sceneRepository.RootCategoryName;
@@ -178,6 +187,9 @@ public class SceneBrowserWindow : BaseWindow
         DateCreated,
         DateModified,
     }
+
+    int IVirtualListHandler.Count =>
+        currentCategoryScenes.Count;
 
     private bool Descending =>
         descendingToggle.Value;
@@ -311,48 +323,27 @@ public class SceneBrowserWindow : BaseWindow
             }
 
             var scaledThumbnailDimensions = ThumbnailDimensions * ThumbnailScale;
-            var (thumbnailWidth, thumbnailHeight) = (Utility.GetPix((int)scaledThumbnailDimensions.x), Utility.GetPix((int)scaledThumbnailDimensions.y));
-            var sceneGridWidth = WindowRect.width - Utility.GetPix(CategoryListWidth) - 20f;
 
-            // TODO: Figure out a way to encapsulate all of this virtual scrolling boilerplate
-            var columns = Mathf.Max(1, (int)(sceneGridWidth / (thumbnailWidth + 5f)));
+            thumbnailDimensions = new(Utility.GetPix((int)scaledThumbnailDimensions.x), Utility.GetPix((int)scaledThumbnailDimensions.y));
 
             var scrollRect = GUILayoutUtility.GetRect(0f, WindowRect.width, 0f, WindowRect.height);
-            var scrollView = new Rect(scrollRect.x, scrollRect.y, scrollRect.width - 20, (thumbnailHeight + 5f) * Mathf.CeilToInt((float)currentCategoryScenes.Count / columns));
 
-            scenesScrollPosition = GUI.BeginScrollView(scrollRect, scenesScrollPosition, scrollView);
+            scenesScrollPosition = scenesVirtualList.BeginScrollView(scrollRect, scenesScrollPosition);
 
-            var firstVisibleIndex = Mathf.FloorToInt(scenesScrollPosition.y / (thumbnailHeight + 5f)) * columns;
-            var lastVisibleIndex = Mathf.CeilToInt((scenesScrollPosition.y + scrollRect.height) / (thumbnailHeight + 5f)) * columns + columns;
+            var xOffset = (scrollRect.width - (thumbnailDimensions.x + scenesVirtualList.Spacing.x) * scenesVirtualList.ColumnCount) / 2f;
 
-            if (firstVisibleIndex < 0)
-                firstVisibleIndex = 0;
-
-            if (lastVisibleIndex > currentCategoryScenes.Count)
-                lastVisibleIndex = currentCategoryScenes.Count;
-
-            var xOffset = (scrollRect.width - (thumbnailWidth + 5f) * columns) / 2f;
-
-            for (var i = firstVisibleIndex; i < lastVisibleIndex; i += columns)
+            foreach (var (i, offset) in scenesVirtualList)
             {
-                for (var j = 0; j < columns; j++)
-                {
-                    var itemIndex = i + j;
+                var scene = currentCategoryScenes[i];
 
-                    if (itemIndex >= currentCategoryScenes.Count)
-                        break;
+                var buttonRect = new Rect(
+                    scrollRect.x + offset.x + xOffset,
+                    scrollRect.y + offset.y,
+                    thumbnailDimensions.x,
+                    thumbnailDimensions.y);
 
-                    var scene = currentCategoryScenes[itemIndex];
-
-                    var buttonRect = new Rect(
-                        scrollRect.x + xOffset + (thumbnailWidth + 5f) * j,
-                        scrollRect.y + (thumbnailHeight + 5f) * (i / columns),
-                        thumbnailWidth,
-                        thumbnailHeight);
-
-                    if (GUI.Button(buttonRect, scene.Thumbnail, thumbnailStyle))
-                        sceneManagementModal.ManageScene(scene);
-                }
+                if (GUI.Button(buttonRect, scene.Thumbnail, thumbnailStyle))
+                    sceneManagementModal.ManageScene(scene);
             }
 
             GUI.EndScrollView();
@@ -393,6 +384,9 @@ public class SceneBrowserWindow : BaseWindow
             height = Mathf.Max(minimumHeight, windowRect.height),
         };
     }
+
+    Vector2 IVirtualListHandler.ItemDimensions(int index) =>
+        thumbnailDimensions;
 
     protected override void ReloadTranslation()
     {

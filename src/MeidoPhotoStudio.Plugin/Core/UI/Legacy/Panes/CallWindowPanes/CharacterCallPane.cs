@@ -6,7 +6,7 @@ using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
-public class CharacterCallPane : BasePane
+public class CharacterCallPane : BasePane, IVirtualListHandler
 {
     private const int FontSize = 13;
 
@@ -41,7 +41,9 @@ public class CharacterCallPane : BasePane
     private readonly Dropdown<CallController.SortType> sortTypeDropdown;
     private readonly Toggle descendingToggle;
     private readonly Header header;
+    private readonly VirtualList virtualList;
 
+    private Vector2 buttonSize;
     private Vector2 charactersListScrollPosition;
     private Vector2 activeCharactersListScrollPosition;
 
@@ -76,7 +78,15 @@ public class CharacterCallPane : BasePane
         descendingToggle.ControlEvent += OnDescendingChanged;
 
         header = new(Translation.Get("maidCallWindow", "header"));
+
+        virtualList = new()
+        {
+            Handler = this,
+        };
     }
+
+    int IVirtualListHandler.Count =>
+        characterCallController.Count;
 
     public override void Draw()
     {
@@ -116,33 +126,20 @@ public class CharacterCallPane : BasePane
 
         const float buttonSize = 85f;
 
-        var buttonHeight = Utility.GetPix(buttonSize);
+        this.buttonSize = new(buttonWidth, Utility.GetPix(buttonSize));
+        var buttonHeight = this.buttonSize.y;
 
         var scrollRect = GUILayoutUtility.GetRect(0f, windowRect.width, 0f, windowRect.height);
-        var scrollView = new Rect(scrollRect.x, scrollRect.y, windowRect.width - 25f, buttonHeight * characterCallController.Count);
 
         if (characterCallController.ActiveOnly)
-            activeCharactersListScrollPosition = GUI.BeginScrollView(scrollRect, activeCharactersListScrollPosition, scrollView);
+            activeCharactersListScrollPosition = virtualList.BeginScrollView(scrollRect, activeCharactersListScrollPosition);
         else
-            charactersListScrollPosition = GUI.BeginScrollView(scrollRect, charactersListScrollPosition, scrollView);
+            charactersListScrollPosition = virtualList.BeginScrollView(scrollRect, charactersListScrollPosition);
 
-        var scrollPosition = characterCallController.ActiveOnly
-            ? activeCharactersListScrollPosition
-            : charactersListScrollPosition;
-
-        var firstVisibleIndex = Mathf.FloorToInt(scrollPosition.y / buttonHeight);
-        var lastVisibleIndex = Mathf.CeilToInt((scrollPosition.y + scrollRect.height) / buttonHeight);
-
-        if (firstVisibleIndex < 0)
-            firstVisibleIndex = 0;
-
-        if (lastVisibleIndex > characterCallController.Count)
-            lastVisibleIndex = characterCallController.Count;
-
-        for (var i = firstVisibleIndex; i < lastVisibleIndex; i++)
+        foreach (var (i, offset) in virtualList)
         {
             var character = characterCallController[i];
-            var y = scrollRect.y + i * buttonHeight;
+            var y = scrollRect.y + offset.y;
 
             if (GUI.Button(new(scrollRect.x, y, buttonWidth, buttonHeight), string.Empty))
                 characterCallController.Select(character);
@@ -179,6 +176,9 @@ public class CharacterCallPane : BasePane
         searchBar.Value = string.Empty;
     }
 
+    Vector2 IVirtualListHandler.ItemDimensions(int index) =>
+        buttonSize;
+
     protected override void ReloadTranslation()
     {
         clearSelectedButton.Label = Translation.Get("maidCallWindow", "clearButton");
@@ -206,7 +206,7 @@ public class CharacterCallPane : BasePane
         characterCallController.Call();
 
     private void OnActiveCharactersToggleChanged(object sender, EventArgs e) =>
-        characterCallController.ActiveOnly = !characterCallController.ActiveOnly;
+        characterCallController.ActiveOnly = activeCharacterToggle.Value;
 
     private void OnSearchSubmitted(object sender, EventArgs e) =>
         characterCallController.Search(searchBar.Value);

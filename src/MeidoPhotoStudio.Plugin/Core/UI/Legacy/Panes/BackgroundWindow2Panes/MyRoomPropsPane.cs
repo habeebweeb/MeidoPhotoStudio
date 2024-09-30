@@ -5,11 +5,12 @@ using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
-public class MyRoomPropsPane : BasePane
+public class MyRoomPropsPane : BasePane, IVirtualListHandler
 {
     private readonly PropService propService;
     private readonly MyRoomPropRepository myRoomPropRepository;
     private readonly IconCache iconCache;
+    private readonly VirtualList virtualList;
     private readonly LazyStyle buttonStyle = new(
         13,
         () => new(GUI.skin.button)
@@ -19,8 +20,9 @@ public class MyRoomPropsPane : BasePane
 
     private readonly Dropdown<int> propCategoryDropdown;
 
+    private Vector2 buttonSize;
     private Vector2 scrollPosition;
-    private IList<MyRoomPropModel> currentPropList;
+    private IList<MyRoomPropModel> currentPropList = [];
 
     public MyRoomPropsPane(
         PropService propService, MyRoomPropRepository myRoomPropRepository, IconCache iconCache)
@@ -36,9 +38,18 @@ public class MyRoomPropsPane : BasePane
 
         UpdateCurrentPropList();
 
+        virtualList = new()
+        {
+            Handler = this,
+            Grid = true,
+        };
+
         static string CategoryFormatter(int category, int index) =>
             Translation.Get("myRoomPropCategories", category.ToString());
     }
+
+    int IVirtualListHandler.Count =>
+        currentPropList.Count;
 
     public override void Draw()
     {
@@ -53,54 +64,38 @@ public class MyRoomPropsPane : BasePane
 
         void DrawPropList()
         {
-            var gridSize = 3;
-            var buttonSize = (parent.WindowRect.width - 20f) / gridSize;
-            var boxDimensions = new Vector2(buttonSize, buttonSize);
+            buttonSize = Vector2.one * (parent.WindowRect.width - 20f) / 3;
+
             var scrollRect = GUILayoutUtility.GetRect(0f, parent.WindowRect.width, 100f, parent.WindowRect.height);
-            var scrollView = new Rect(scrollRect.x, scrollRect.y, scrollRect.width - 20, boxDimensions.y * Mathf.CeilToInt((float)currentPropList.Count / gridSize));
 
-            scrollPosition = GUI.BeginScrollView(scrollRect, scrollPosition, scrollView);
+            scrollPosition = virtualList.BeginScrollView(scrollRect, scrollPosition);
 
-            var firstVisibleIndex = Mathf.FloorToInt(scrollPosition.y / boxDimensions.y) * gridSize;
-            var lastVisibleIndex = Mathf.CeilToInt((scrollPosition.y + scrollRect.height) / boxDimensions.y) * gridSize + gridSize;
-
-            if (firstVisibleIndex < 0)
-                firstVisibleIndex = 0;
-
-            if (lastVisibleIndex > currentPropList.Count)
-                lastVisibleIndex = currentPropList.Count;
-
-            for (var i = firstVisibleIndex; i < lastVisibleIndex; i += gridSize)
+            foreach (var (i, offset) in virtualList)
             {
-                for (var j = 0; j < gridSize; j++)
-                {
-                    var itemIndex = i + j;
+                var prop = currentPropList[i];
 
-                    if (itemIndex >= currentPropList.Count)
-                        break;
+                var image = iconCache.GetMyRoomIcon(prop);
 
-                    var prop = currentPropList[itemIndex];
+                var buttonRect = new Rect(
+                    scrollRect.x + offset.x,
+                    scrollRect.y + offset.y,
+                    buttonSize.x,
+                    buttonSize.y);
 
-                    var image = iconCache.GetMyRoomIcon(prop);
+                var clicked = image
+                    ? GUI.Button(buttonRect, image, buttonStyle)
+                    : GUI.Button(buttonRect, prop.Name, buttonStyle);
 
-                    var buttonRect = new Rect(
-                        scrollRect.x + boxDimensions.x * j,
-                        scrollRect.y + boxDimensions.y * (i / gridSize),
-                        boxDimensions.x,
-                        boxDimensions.y);
-
-                    var clicked = image
-                        ? GUI.Button(buttonRect, image, buttonStyle)
-                        : GUI.Button(buttonRect, prop.Name, buttonStyle);
-
-                    if (clicked)
-                        propService.Add(prop);
-                }
+                if (clicked)
+                    propService.Add(prop);
             }
 
             GUI.EndScrollView();
         }
     }
+
+    Vector2 IVirtualListHandler.ItemDimensions(int index) =>
+        buttonSize;
 
     protected override void ReloadTranslation() =>
         propCategoryDropdown.Reformat();
