@@ -32,11 +32,11 @@ public class DeskPropsPane : BasePane
 
         noPropsLabel = new(Translation.Get("propsPane", "noProps"));
 
-        static string CategoryFormatter(int id, int index) =>
-            Translation.Get("deskpropCategories", id.ToString());
+        static LabelledDropdownItem CategoryFormatter(int id, int index) =>
+            new(Translation.Get("deskpropCategories", id.ToString()));
 
-        static string PropFormatter(DeskPropModel prop, int index) =>
-            prop.Name;
+        static LabelledDropdownItem PropFormatter(DeskPropModel prop, int index) =>
+            new(prop.Name);
     }
 
     public override void Draw()

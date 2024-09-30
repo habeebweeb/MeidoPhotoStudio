@@ -12,7 +12,7 @@ public class EffectsPane : BasePane, IEnumerable<KeyValuePair<EffectsPane.Effect
 
     public EffectsPane()
     {
-        effectTypesDropdown = new((type, _) => Translation.Get("effectTypes", type.ToLower()));
+        effectTypesDropdown = new((type, _) => new LabelledDropdownItem(Translation.Get("effectTypes", type.ToLower())));
 
         paneHeader = new(Translation.Get("effectsPane", "header"), true);
     }

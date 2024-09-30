@@ -41,9 +41,9 @@ public class AttachedAccessoryPane : BasePane
         accessoryCategoryGrid.ControlEvent += OnAccessoryCategoryChanged;
 
         accessoryDropdown = new((model, _) =>
-            model is null
+            new LabelledDropdownItem(model is null
                 ? Translation.Get("attachMpnPropPane", NoAccessoryTranslationKey)
-                : Translation.Get("mpnAttachPropNames", model.Filename));
+                : Translation.Get("mpnAttachPropNames", model.Filename)));
 
         accessoryDropdown.SelectionChanged += OnAccessoryChanged;
 

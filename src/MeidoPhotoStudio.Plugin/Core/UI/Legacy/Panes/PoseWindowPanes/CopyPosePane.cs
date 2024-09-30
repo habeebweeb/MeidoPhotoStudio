@@ -53,8 +53,8 @@ public class CopyPosePane : BasePane
 
         copyHandHeader = new(Translation.Get("copyPosePane", "copyHandHeader"));
 
-        static string OtherCharacterFormatter(CharacterController character, int index) =>
-            $"{character.Slot + 1}: {character.CharacterModel.FullName()}";
+        static LabelledDropdownItem OtherCharacterFormatter(CharacterController character, int index) =>
+            new($"{character.Slot + 1}: {character.CharacterModel.FullName()}");
     }
 
     private CharacterController OtherCharacter =>

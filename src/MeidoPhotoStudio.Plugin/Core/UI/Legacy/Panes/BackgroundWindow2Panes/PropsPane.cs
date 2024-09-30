@@ -16,8 +16,8 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
 
         paneHeader = new(Translation.Get("propsPane", "header"), true);
 
-        static string CategoryFormatter(PropCategory category, int index) =>
-            Translation.Get("propTypes", EnumToLower(category));
+        static LabelledDropdownItem CategoryFormatter(PropCategory category, int index) =>
+            new(Translation.Get("propTypes", EnumToLower(category)));
     }
 
     public enum PropCategory

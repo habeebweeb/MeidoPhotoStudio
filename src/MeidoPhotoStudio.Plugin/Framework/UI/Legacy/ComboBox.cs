@@ -1,46 +1,38 @@
 namespace MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
-public class ComboBox : BaseControl, IEnumerable<string>
+public class ComboBox : DropdownBase<string>
 {
-    private readonly TextField textField;
-    private readonly int id = DropdownHelper.DropdownID;
+    private static readonly Func<string, int, IDropdownItem> DefaultFormatter = (string item, int index) =>
+        new LabelledDropdownItem(string.IsNullOrEmpty(item) ? string.Empty : item);
 
-    private string[] items;
-    private int selectedItemIndex;
-    private Vector2? itemSize = null;
-    private Vector2 scrollPosition;
+    private static readonly LazyStyle ButtonStyle = new(13, () => new(GUI.skin.button));
+
+    private readonly TextField textField;
+
     private bool clickedWhileOpen;
     private bool buttonClicked;
 
-    public ComboBox(IEnumerable<string> items, string value = null)
+    public ComboBox(IEnumerable<string> items, string value = null, Func<string, int, IDropdownItem> formatter = null)
     {
-        this.items = [.. items ?? throw new ArgumentNullException(nameof(items))];
+        _ = items ?? throw new ArgumentNullException(nameof(items));
 
         textField = new()
         {
             Value = value ?? string.Empty,
         };
+
+        Formatter = formatter ?? DefaultFormatter;
+
+        SetItems(items);
     }
 
     public string Value =>
         textField.Value;
 
-    public IEnumerator<string> GetEnumerator() =>
-        ((IEnumerable<string>)items).GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator() =>
-        GetEnumerator();
-
-    public void SetItems(IEnumerable<string> items)
-    {
-        this.items = [.. items ?? throw new ArgumentNullException(nameof(items))];
-        selectedItemIndex = 0;
-    }
-
     public override void Draw(params GUILayoutOption[] layoutOptions) =>
-        Draw(TextField.Style, DropdownHelper.ButtonStyle, DropdownHelper.DefaultDropdownStyle, layoutOptions);
+        Draw(TextField.Style, ButtonStyle, layoutOptions);
 
-    public void Draw(GUIStyle textFieldStyle, GUIStyle buttonStyle, GUIStyle dropdownStyle, params GUILayoutOption[] layoutOptions)
+    public void Draw(GUIStyle textFieldStyle, GUIStyle buttonStyle, params GUILayoutOption[] layoutOptions)
     {
         GUILayout.BeginHorizontal();
 
@@ -55,59 +47,29 @@ public class ComboBox : BaseControl, IEnumerable<string>
         }
 
         if (buttonClicked && Event.current.type is EventType.Repaint)
-            OpenDropdown(GUILayoutUtility.GetLastRect());
-
-        GUILayout.EndHorizontal();
-
-        void OpenDropdown(Rect buttonRect)
         {
             buttonClicked = false;
 
-            var rectPos = GUIUtility.GUIToScreenPoint(new(buttonRect.x, buttonRect.y));
-
-            buttonRect.x = rectPos.x;
-            buttonRect.y = rectPos.y;
-
-            itemSize ??= DropdownHelper.CalculateElementSize(items);
-
-            DropdownHelper.SelectionChange += OnSelectionChanged;
-            DropdownHelper.DropdownClose += OnDropdownClosed;
-
-            DropdownHelper.OpenDropdown(
-                id,
-                scrollPosition,
-                items,
-                selectedItemIndex,
-                buttonRect,
-                itemSize,
-                dropdownStyle);
-
-            void OnSelectionChanged(object sender, DropdownHelper.DropdownSelectArgs e)
-            {
-                if (e.DropdownID != id)
-                    return;
-
-                DropdownHelper.SelectionChange -= OnSelectionChanged;
-
-                selectedItemIndex = e.SelectedItemIndex;
-                textField.Value = items[selectedItemIndex];
-            }
-
-            void OnDropdownClosed(object sender, DropdownHelper.DropdownCloseArgs e)
-            {
-                if (e.DropdownID != id)
-                    return;
-
-                DropdownHelper.DropdownClose -= OnDropdownClosed;
-
-                scrollPosition = e.ScrollPos;
-                clickedWhileOpen = e.ClickedYou;
-
-                if (!clickedWhileOpen)
-                    return;
-
-                textField.Value = items[selectedItemIndex];
-            }
+            DropdownHelper.OpenDropdown(this, GUILayoutUtility.GetLastRect());
         }
+
+        GUILayout.EndHorizontal();
+    }
+
+    protected override void OnItemSelected(int index)
+    {
+        base.OnItemSelected(index);
+
+        textField.Value = this[SelectedItemIndex];
+    }
+
+    protected override void OnDropdownClosed(bool clickedButton)
+    {
+        clickedWhileOpen = clickedButton;
+
+        if (!clickedButton)
+            return;
+
+        textField.Value = this[SelectedItemIndex];
     }
 }

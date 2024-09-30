@@ -150,8 +150,8 @@ public class LightsPane : BasePane
         resetPositionButton = new Button(Translation.Get("lightsPane", "resetPosition"));
         resetPositionButton.ControlEvent += OnResetPositionButtonPressed;
 
-        string LightNameFormatter(LightController light, int index) =>
-            lightNames[light];
+        LabelledDropdownItem LightNameFormatter(LightController light, int index) =>
+            new(lightNames[light]);
     }
 
     public static Light MainLight =>

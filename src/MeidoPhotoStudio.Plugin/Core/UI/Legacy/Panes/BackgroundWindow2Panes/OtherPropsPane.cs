@@ -27,11 +27,11 @@ public class OtherPropsPane : BasePane
         addPropButton = new(Translation.Get("propsPane", "addProp"));
         addPropButton.ControlEvent += OnAddPropButtonPressed;
 
-        static string CategoryFormatter(string category, int index) =>
-            Translation.Get("otherPropCategories", category);
+        static LabelledDropdownItem CategoryFormatter(string category, int index) =>
+            new(Translation.Get("otherPropCategories", category));
 
-        static string PropFormatter(OtherPropModel prop, int index) =>
-            prop.Name;
+        static LabelledDropdownItem PropFormatter(OtherPropModel prop, int index) =>
+            new(prop.Name);
     }
 
     public override void Draw()

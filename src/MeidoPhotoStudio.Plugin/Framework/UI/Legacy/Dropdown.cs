@@ -1,26 +1,23 @@
 namespace MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
-public class Dropdown<T> : BaseControl, IEnumerable<T>
+public class Dropdown<T> : DropdownBase<T>
 {
-    private static readonly Func<T, int, string> DefaultItemFormatter = (T item, int index) =>
-        item?.ToString() ?? string.Empty;
+    private static readonly LazyStyle ButtonStyle = new(
+        13,
+        () => new(GUI.skin.button)
+        {
+            alignment = TextAnchor.MiddleLeft,
+        });
 
-    private readonly int id = DropdownHelper.DropdownID;
+    private GUIContent label = GUIContent.none;
 
-    private T[] items = [];
-    private string[] formattedItems;
-    private int selectedItemIndex;
-    private Func<T, int, string> itemFormatter = DefaultItemFormatter;
-    private Vector2? itemSize = null;
-    private string label = string.Empty;
-    private Vector2 scrollPosition;
     private bool clickedWhileOpen;
     private bool buttonClicked;
 
-    public Dropdown(Func<T, int, string> formatter = null) =>
+    public Dropdown(Func<T, int, IDropdownItem> formatter = null) =>
         Formatter = formatter;
 
-    public Dropdown(IEnumerable<T> items, int selectedItemIndex = 0, Func<T, int, string> formatter = null)
+    public Dropdown(IEnumerable<T> items, int selectedItemIndex = 0, Func<T, int, IDropdownItem> formatter = null)
         : this(formatter)
     {
         _ = items ?? throw new ArgumentNullException(nameof(items));
@@ -34,154 +31,69 @@ public class Dropdown<T> : BaseControl, IEnumerable<T>
 
     public event EventHandler DropdownClosed;
 
-    public T SelectedItem =>
-        items.Any()
-            ? items[SelectedItemIndex]
-            : default;
-
-    public int SelectedItemIndex
+    public override Func<T, int, IDropdownItem> Formatter
     {
-        get => selectedItemIndex;
-        set => SetSelectedItemIndex(value);
-    }
-
-    public Func<T, int, string> Formatter
-    {
-        get => itemFormatter;
+        get => base.Formatter;
         set
         {
-            itemFormatter = value ?? DefaultItemFormatter;
+            base.Formatter = value;
 
-            Reformat();
+            label = Count is 0 ? GUIContent.none : FormattedItem(SelectedItemIndex);
         }
     }
 
-    public T this[int index] =>
-        (uint)index >= items.Length
-            ? throw new ArgumentOutOfRangeException(nameof(index))
-            : items[index];
-
-    public IEnumerator<T> GetEnumerator() =>
-        ((IEnumerable<T>)items).GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator() =>
-        GetEnumerator();
+    public override int SelectedItemIndex
+    {
+        get => base.SelectedItemIndex;
+        set => SetSelectedItemIndex(value);
+    }
 
     public override void Draw(params GUILayoutOption[] layoutOptions) =>
-        Draw(DropdownHelper.ButtonStyle, DropdownHelper.DefaultDropdownStyle, layoutOptions);
+        Draw(ButtonStyle, layoutOptions);
 
-    public void Draw(GUIStyle buttonStyle, GUIStyle dropdownStyle, params GUILayoutOption[] layoutOptions)
+    public void Draw(GUIStyle buttonStyle, params GUILayoutOption[] layoutOptions)
     {
-        var clicked = GUILayout.Button(label, buttonStyle, layoutOptions) && items.Length > 0;
+        var clicked = GUILayout.Button(label, buttonStyle, layoutOptions);
 
-        if (clicked)
+        if (clicked && Count > 0)
         {
             buttonClicked = !clickedWhileOpen;
             clickedWhileOpen = false;
         }
 
         if (buttonClicked && Event.current.type is EventType.Repaint)
-            OpenDropdown(GUILayoutUtility.GetLastRect());
-
-        void OpenDropdown(Rect buttonRect)
         {
-            DropdownOpening?.Invoke(this, EventArgs.Empty);
-
             buttonClicked = false;
 
-            var rectPos = GUIUtility.GUIToScreenPoint(new(buttonRect.x, buttonRect.y));
+            DropdownOpening?.Invoke(this, EventArgs.Empty);
 
-            buttonRect.x = rectPos.x;
-            buttonRect.y = rectPos.y;
-
-            formattedItems ??= items
-                .Select((item, index) => Formatter(item, index))
-                .ToArray();
-
-            itemSize ??= DropdownHelper.CalculateElementSize(formattedItems, dropdownStyle);
-
-            DropdownHelper.SelectionChange += OnSelectionChanged;
-            DropdownHelper.DropdownClose += OnDropdownClosed;
-
-            DropdownHelper.OpenDropdown(
-                id,
-                scrollPosition,
-                formattedItems,
-                SelectedItemIndex,
-                buttonRect,
-                itemSize,
-                dropdownStyle);
-
-            void OnSelectionChanged(object sender, DropdownHelper.DropdownSelectArgs e)
-            {
-                if (e.DropdownID != id)
-                    return;
-
-                DropdownHelper.SelectionChange -= OnSelectionChanged;
-
-                SelectedItemIndex = e.SelectedItemIndex;
-            }
-
-            void OnDropdownClosed(object sender, DropdownHelper.DropdownCloseArgs e)
-            {
-                if (e.DropdownID != id)
-                    return;
-
-                DropdownHelper.DropdownClose -= OnDropdownClosed;
-
-                scrollPosition = e.ScrollPos;
-                clickedWhileOpen = e.ClickedYou;
-
-                if (clickedWhileOpen)
-                    SelectionChanged?.Invoke(this, new(SelectedItem, SelectedItemIndex, SelectedItemIndex));
-
-                DropdownClosed?.Invoke(this, EventArgs.Empty);
-            }
+            DropdownHelper.OpenDropdown(this, GUILayoutUtility.GetLastRect());
         }
     }
 
-    public void Clear() =>
-        SetItems([], 0);
-
-    public void SetItems(IEnumerable<T> items, int? newIndex = null)
-    {
-        _ = items ?? throw new ArgumentNullException(nameof(items));
-
-        SetItems(items, newIndex, true);
-    }
-
-    public void SetItemsWithoutNotify(IEnumerable<T> items, int? newIndex = null)
-    {
-        _ = items ?? throw new ArgumentNullException(nameof(items));
-
+    public void SetItemsWithoutNotify(IEnumerable<T> items, int? newIndex = null) =>
         SetItems(items, newIndex, false);
-    }
 
     public void SetSelectedIndexWithoutNotify(int index) =>
         SetSelectedItemIndex(index, false);
 
     public void CycleNext() =>
-        SelectedItemIndex = Wrap(SelectedItemIndex + 1, 0, items.Length);
+        SelectedItemIndex = Wrap(SelectedItemIndex + 1, 0, Count);
 
     public void CyclePrevious() =>
-        SelectedItemIndex = Wrap(SelectedItemIndex - 1, 0, items.Length);
+        SelectedItemIndex = Wrap(SelectedItemIndex - 1, 0, Count);
 
-    public void Reformat()
+    public override void SetItems(IEnumerable<T> items, int? newIndex = null) =>
+        SetItems(items, newIndex, true);
+
+    protected override void OnDropdownClosed(bool clickedButton)
     {
-        itemSize = null;
-        formattedItems = null;
+        clickedWhileOpen = clickedButton;
 
-        label = items.Length is 0 ? string.Empty : Formatter(SelectedItem, selectedItemIndex);
-    }
+        if (clickedWhileOpen)
+            SelectionChanged?.Invoke(this, new(SelectedItem, SelectedItemIndex, SelectedItemIndex));
 
-    public int IndexOf(T item) =>
-        Array.IndexOf(items, item);
-
-    public int FindIndex(Func<T, bool> predicate)
-    {
-        _ = predicate ?? throw new ArgumentNullException(nameof(predicate));
-
-        return Array.FindIndex(items, new(predicate));
+        DropdownClosed?.Invoke(this, EventArgs.Empty);
     }
 
     private static int Wrap(int value, int min, int max) =>
@@ -191,19 +103,25 @@ public class Dropdown<T> : BaseControl, IEnumerable<T>
 
     private void SetItems(IEnumerable<T> items, int? newIndex = null, bool notify = true)
     {
-        this.items = [.. items];
+        var previousSelectedItemIndex = base.SelectedItemIndex;
 
-        SetSelectedItemIndex(newIndex ?? SelectedItemIndex, notify);
-        Reformat();
+        base.SetItems(items, newIndex);
+
+        label = Count is 0 ? GUIContent.none : FormattedItem(SelectedItemIndex);
+
+        if (!notify)
+            return;
+
+        SelectionChanged?.Invoke(this, new(SelectedItem, SelectedItemIndex, previousSelectedItemIndex));
     }
 
     private void SetSelectedItemIndex(int index, bool notify = true)
     {
-        var previousSelectedItemIndex = selectedItemIndex;
+        var previousSelectedItemIndex = base.SelectedItemIndex;
 
-        selectedItemIndex = Mathf.Clamp(index, 0, items.Length - 1);
+        base.SelectedItemIndex = index;
 
-        label = items.Length is 0 ? string.Empty : Formatter(SelectedItem, selectedItemIndex);
+        label = Count is 0 ? GUIContent.none : FormattedItem(SelectedItemIndex);
 
         if (!notify)
             return;

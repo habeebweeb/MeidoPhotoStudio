@@ -63,7 +63,7 @@ public class AnimationSelectorPane : BasePane
 
         animationDropdown = new(
             AnimationList(animationSourceGrid.SelectedItemIndex is CustomAnimation),
-            formatter: (model, index) => $"{index + 1}: {model.Name}");
+            formatter: (model, index) => new LabelledDropdownItem($"{index + 1}: {model.Name}"));
 
         animationDropdown.SelectionChanged += OnAnimationChanged;
 
@@ -218,15 +218,15 @@ public class AnimationSelectorPane : BasePane
         savedAnimationLabel.Text = Translation.Get("posePane", "savedAnimationLabel");
     }
 
-    private static Func<string, int, string> GetAnimationCategoryFormatter(bool custom)
+    private static Func<string, int, IDropdownItem> GetAnimationCategoryFormatter(bool custom)
     {
         return custom ? CustomAnimationCategoryFormatter : GameAnimationCategoryFormatter;
 
-        static string CustomAnimationCategoryFormatter(string category, int index) =>
-            category;
+        static LabelledDropdownItem CustomAnimationCategoryFormatter(string category, int index) =>
+            new(category);
 
-        static string GameAnimationCategoryFormatter(string category, int index) =>
-            Translation.Get("poseGroupDropdown", category);
+        static LabelledDropdownItem GameAnimationCategoryFormatter(string category, int index) =>
+            new(Translation.Get("poseGroupDropdown", category));
     }
 
     private void OnAnimationAdded(object sender, AddedAnimationEventArgs e)

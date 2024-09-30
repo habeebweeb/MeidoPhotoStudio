@@ -144,7 +144,7 @@ public class SceneBrowserWindow : BaseWindow, IVirtualListHandler
         sortingModesDropdown = new(
             sortingModes,
             Array.IndexOf(sortingModes, this.configuration.SortingMode),
-            formatter: (sortingMode, _) => Translation.Get("sceneManager", sortingModeTranslationkeys[sortingMode]));
+            formatter: (sortingMode, _) => new LabelledDropdownItem(Translation.Get("sceneManager", sortingModeTranslationkeys[sortingMode])));
 
         sortingModesDropdown.SelectionChanged += OnSortOptionChanged;
 

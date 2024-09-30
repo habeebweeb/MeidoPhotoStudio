@@ -30,7 +30,7 @@ public class BackgroundPropsPane : BasePane
         addPropButton = new(Translation.Get("propsPane", "addProp"));
         addPropButton.ControlEvent += OnAddPropButtonPressed;
 
-        static string CategoryFormatter(BackgroundCategory category, int index)
+        static LabelledDropdownItem CategoryFormatter(BackgroundCategory category, int index)
         {
             var translationKey = category switch
             {
@@ -40,11 +40,11 @@ public class BackgroundPropsPane : BasePane
                 _ => throw new NotSupportedException($"{nameof(category)} is not supported"),
             };
 
-            return Translation.Get("backgroundSource", translationKey);
+            return new(Translation.Get("backgroundSource", translationKey));
         }
 
-        static string PropFormatter(BackgroundPropModel prop, int index) =>
-            prop.Name;
+        static LabelledDropdownItem PropFormatter(BackgroundPropModel prop, int index) =>
+            new(prop.Name);
     }
 
     public override void Draw()

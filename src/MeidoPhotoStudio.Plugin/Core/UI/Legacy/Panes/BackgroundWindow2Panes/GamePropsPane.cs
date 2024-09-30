@@ -30,11 +30,11 @@ public class GamePropsPane : BasePane
 
         noPropsLabel = new(Translation.Get("propsPane", "noProps"));
 
-        static string CategoryFormatter(string category, int index) =>
-            Translation.Get("gamePropCategories", category);
+        static LabelledDropdownItem CategoryFormatter(string category, int index) =>
+            new(Translation.Get("gamePropCategories", category));
 
-        static string PropFormatter(PhotoBgPropModel prop, int index) =>
-            prop.Name;
+        static LabelledDropdownItem PropFormatter(PhotoBgPropModel prop, int index) =>
+            new(prop.Name);
     }
 
     public override void Draw()

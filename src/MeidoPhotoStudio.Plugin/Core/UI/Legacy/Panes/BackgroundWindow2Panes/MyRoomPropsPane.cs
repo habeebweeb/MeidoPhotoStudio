@@ -44,8 +44,8 @@ public class MyRoomPropsPane : BasePane, IVirtualListHandler
             Grid = true,
         };
 
-        static string CategoryFormatter(int category, int index) =>
-            Translation.Get("myRoomPropCategories", category.ToString());
+        static LabelledDropdownItem CategoryFormatter(int category, int index) =>
+            new(Translation.Get("myRoomPropCategories", category.ToString()));
     }
 
     int IVirtualListHandler.Count =>

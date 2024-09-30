@@ -1,35 +1,22 @@
+using UInput = UnityEngine.Input;
+
 namespace MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 internal static class DropdownHelper
 {
-    public static Rect DropdownWindow;
-
-    private static int dropdownID = 100;
-    private static bool onScrollBar;
-    private static Rect dropdownScrollRect;
-    private static Rect dropdownRect;
-    private static GUIStyle dropdownItemStyle;
-    private static GUIStyle windowStyle;
-    private static Rect buttonRect;
-    private static string[] items;
-    private static Vector2 scrollPos;
-    private static float itemHeight;
-    private static int currentDropdownID;
-    private static int selectedItemIndex;
-
-    public static event EventHandler<DropdownSelectArgs> SelectionChange;
-
-    public static event EventHandler<DropdownCloseArgs> DropdownClose;
-
-    public static int DropdownID =>
-        dropdownID++;
-
-    public static LazyStyle ButtonStyle { get; } = new(
-        13,
-        () => new(GUI.skin.button)
+    private static readonly LazyStyle WindowStyle =
+        new(0, () => new(GUI.skin.box)
         {
-            alignment = TextAnchor.MiddleLeft,
+            padding = new(0, 0, 0, 0),
+            alignment = TextAnchor.UpperRight,
         });
+
+    private static readonly VirtualList VirtualList = new();
+
+    private static IDropdownHandler dropdownHandler;
+    private static Rect buttonRect;
+    private static Rect dropdownWindow;
+    private static Rect dropdownScrollRect;
 
     public static LazyStyle DefaultDropdownStyle { get; } = new(
         13,
@@ -65,192 +52,110 @@ internal static class DropdownHelper
             };
         });
 
-    public static bool Visible { get; set; }
+    public static bool Visible { get; private set; }
 
-    public static bool DropdownOpen { get; private set; }
-
-    private static GUIStyle WindowStyle =>
-        windowStyle ??= new(GUI.skin.box)
-        {
-            padding = new(0, 0, 0, 0),
-            alignment = TextAnchor.UpperRight,
-        };
-
-    public static Vector2 CalculateElementSize(string item, GUIStyle style = null)
+    public static Vector2 CalculateItemDimensions(GUIContent content)
     {
-        style ??= DefaultDropdownStyle;
+        _ = content ?? throw new ArgumentNullException(nameof(content));
 
-        return style.CalcSize(new(item));
+        return ((GUIStyle)DefaultDropdownStyle).CalcSize(content);
     }
 
-    public static Vector2 CalculateElementSize(string[] list, GUIStyle style = null)
+    public static void OpenDropdown(IDropdownHandler dropdownHandler, Rect buttonRect)
     {
-        if (list.Length is 0)
-            return Vector2.zero;
+        DropdownHelper.dropdownHandler = dropdownHandler ?? throw new ArgumentNullException(nameof(dropdownHandler));
 
-        style ??= DefaultDropdownStyle;
+        var buttonPosition = GUIUtility.GUIToScreenPoint(new(buttonRect.x, buttonRect.y));
 
-        var content = new GUIContent(list[0]);
+        DropdownHelper.buttonRect = buttonRect with { x = buttonPosition.x, y = buttonPosition.y };
 
-        return list.Skip(1).Aggregate(style.CalcSize(content), (accumulate, item) =>
+        VirtualList.Handler = dropdownHandler;
+
+        var (scrollViewWidth, scrollViewHeight) = (0f, 0f);
+
+        for (var i = 0; i < dropdownHandler.Count; i++)
         {
-            content.text = item;
+            var item = dropdownHandler.ItemDimensions(i);
 
-            var newSize = style.CalcSize(content);
+            if (item.x > scrollViewWidth)
+                scrollViewWidth = item.x;
 
-            return newSize.x > accumulate.x ? newSize : accumulate;
-        });
-    }
-
-    public static void HandleDropdown()
-    {
-        DropdownWindow = GUI.Window(Constants.DropdownWindowID, DropdownWindow, GUIFunc, string.Empty, WindowStyle);
-
-        if (UnityEngine.Input.mouseScrollDelta.y is not 0f && Visible && DropdownWindow.Contains(Event.current.mousePosition))
-            UnityEngine.Input.ResetInputAxes();
-    }
-
-    public static void OpenDropdown(
-        int id,
-        Vector2 scrollPosition,
-        string[] items,
-        int selectedItemIndex,
-        Rect dropdownButtonRect,
-        Vector2? itemSize = null,
-        GUIStyle style = null)
-    {
-        currentDropdownID = id;
-        scrollPos = scrollPosition;
-        DropdownHelper.items = items;
-        DropdownHelper.selectedItemIndex = selectedItemIndex;
-        buttonRect = dropdownButtonRect;
-        dropdownItemStyle = style ?? DefaultDropdownStyle;
-
-        var calculatedSize = itemSize ?? CalculateElementSize(DropdownHelper.items, dropdownItemStyle);
-        var calculatedListHeight = calculatedSize.y * DropdownHelper.items.Length;
-        var heightAbove = buttonRect.y;
-        var heightBelow = Screen.height - heightAbove - buttonRect.height;
-        var rectWidth = Mathf.Max(calculatedSize.x + 5, buttonRect.width);
-        var rectHeight = Mathf.Min(calculatedListHeight, Mathf.Max(heightAbove, heightBelow));
-
-        if (calculatedListHeight > heightBelow && heightAbove > heightBelow)
-        {
-            DropdownWindow = new(
-                buttonRect.x,
-                buttonRect.y - rectHeight,
-                rectWidth + 18,
-                rectHeight);
-        }
-        else
-        {
-            if (calculatedListHeight > heightBelow)
-                rectHeight -= calculatedSize.y;
-
-            DropdownWindow = new(
-                buttonRect.x,
-                buttonRect.y + buttonRect.height,
-                rectWidth + 18,
-                rectHeight);
+            scrollViewHeight += item.y;
         }
 
-        itemHeight = calculatedSize.y;
+        var heightAbove = DropdownHelper.buttonRect.y - 15f;
+        var heightBelow = Screen.height - DropdownHelper.buttonRect.yMax - 15f;
 
-        DropdownWindow.x = Mathf.Clamp(DropdownWindow.x, 0, Screen.width - rectWidth - 18);
+        var windowWidth = Mathf.Max(scrollViewWidth, DropdownHelper.buttonRect.width);
+        var windowHeight = Mathf.Min(scrollViewHeight, Mathf.Max(heightAbove, heightBelow));
+        var windowX = Mathf.Clamp(DropdownHelper.buttonRect.x, 0f, Screen.width - windowWidth);
+        var windowY = scrollViewHeight > heightBelow && heightAbove > heightBelow
+            ? DropdownHelper.buttonRect.y - windowHeight
+            : DropdownHelper.buttonRect.yMax;
 
-        dropdownScrollRect = new(0, 0, DropdownWindow.width, DropdownWindow.height);
-        dropdownRect = new(0, 0, rectWidth, calculatedListHeight);
+        dropdownWindow = new(windowX, windowY, windowWidth, windowHeight);
+        dropdownScrollRect = dropdownWindow with { x = 0f, y = 0f };
 
-        DropdownOpen = true;
         Visible = true;
+
+        GUI.BringWindowToFront(765);
     }
 
-    private static void GUIFunc(int id)
+    public static void CloseDropdown() =>
+        CloseDropdown(false);
+
+    internal static void DrawDropdown()
     {
-        var clicked = false;
+        if (!Visible)
+            return;
 
-        if (Event.current.type is EventType.MouseUp)
-            clicked = true;
+        dropdownWindow = GUI.Window(765, dropdownWindow, DropdownWindow, string.Empty, WindowStyle);
 
-        var listView = new Rect(dropdownScrollRect.x, dropdownScrollRect.y, dropdownScrollRect.width - 10, itemHeight * items.Length);
+        if (Visible && UInput.mouseScrollDelta.y is not 0f && dropdownWindow.Contains(Event.current.mousePosition))
+            UInput.ResetInputAxes();
+    }
 
-        scrollPos = GUI.BeginScrollView(dropdownScrollRect, scrollPos, dropdownRect);
+    private static void DropdownWindow(int windowId)
+    {
+        dropdownHandler.ScrollPosition = VirtualList
+            .BeginScrollView(dropdownScrollRect, dropdownHandler.ScrollPosition);
 
-        var firstVisibleIndex = Mathf.FloorToInt(scrollPos.y / itemHeight);
-        var lastVisibleIndex = Mathf.CeilToInt((scrollPos.y + dropdownScrollRect.height) / itemHeight);
-
-        if (firstVisibleIndex < 0)
-            firstVisibleIndex = 0;
-
-        if (lastVisibleIndex > items.Length)
-            lastVisibleIndex = items.Length;
-
-        var selection = selectedItemIndex;
-
-        for (var i = firstVisibleIndex; i < lastVisibleIndex; i++)
+        foreach (var (index, offset) in VirtualList)
         {
             var value = GUI.Toggle(
                 new(
                     dropdownScrollRect.x,
-                    dropdownScrollRect.y + itemHeight * i,
+                    dropdownScrollRect.y + offset.y,
                     dropdownScrollRect.width,
-                    itemHeight),
-                selectedItemIndex == i,
-                items[i],
-                dropdownItemStyle);
+                    dropdownHandler.ItemDimensions(index).y),
+                dropdownHandler.SelectedItemIndex == index,
+                dropdownHandler.FormattedItem(index),
+                DefaultDropdownStyle);
 
-            if (value != (selectedItemIndex == i))
-                selection = i;
+            if (value != (dropdownHandler.SelectedItemIndex == index))
+            {
+                dropdownHandler.OnItemSelected(index);
+                CloseDropdown();
+            }
         }
 
         GUI.EndScrollView();
 
-        var clickedYou = false;
-
-        if (AnyMouseDown())
+        if (AnyMouseDown() && Event.current.type is EventType.Repaint)
         {
-            var mousePos = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
-            var clickedMe = DropdownWindow.Contains(mousePos);
+            var mousePosition = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
 
-            onScrollBar = mousePos.x > DropdownWindow.x + DropdownWindow.width - 12f;
-
-            if (buttonRect.Contains(mousePos))
-                clickedYou = true;
-
-            if (!clickedMe)
-                DropdownOpen = false;
-        }
-
-        if (selection != selectedItemIndex || clicked && !onScrollBar)
-        {
-            SelectionChange?.Invoke(null, new(currentDropdownID, selection));
-            DropdownOpen = false;
-        }
-
-        if (!DropdownOpen)
-        {
-            Visible = false;
-            DropdownClose?.Invoke(null, new(currentDropdownID, scrollPos, clickedYou));
+            if (!dropdownWindow.Contains(mousePosition))
+                CloseDropdown(buttonRect.Contains(mousePosition));
         }
 
         static bool AnyMouseDown() =>
-            UnityEngine.Input.GetMouseButtonDown(0) || UnityEngine.Input.GetMouseButtonDown(1) || UnityEngine.Input.GetMouseButtonDown(2);
+            UInput.GetMouseButtonDown(0) || UInput.GetMouseButtonDown(1) || UInput.GetMouseButtonDown(2);
     }
 
-    public class DropdownEventArgs(int dropdownID) : EventArgs
+    private static void CloseDropdown(bool clickedButton = false)
     {
-        public int DropdownID { get; } = dropdownID;
-    }
-
-    public class DropdownSelectArgs(int dropdownID, int selection) : DropdownEventArgs(dropdownID)
-    {
-        public int SelectedItemIndex { get; } = selection;
-    }
-
-    public class DropdownCloseArgs(int dropdownID, Vector2 scrollPos, bool clickedYou = false)
-        : DropdownEventArgs(dropdownID)
-    {
-        public Vector2 ScrollPos { get; } = scrollPos;
-
-        public bool ClickedYou { get; } = clickedYou;
+        dropdownHandler?.OnDropdownClosed(clickedButton);
+        Visible = false;
     }
 }

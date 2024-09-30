@@ -38,7 +38,7 @@ public class BackgroundsPane : BasePane
         backgroundCategoryDropdown = new(BackgroundCategoryFormatter);
         backgroundCategoryDropdown.SelectionChanged += OnChangedCategory;
 
-        backgroundDropdown = new((model, _) => model.Name);
+        backgroundDropdown = new((model, _) => new LabelledDropdownItem(model.Name));
         backgroundDropdown.SelectionChanged += OnChangedBackground;
 
         dragHandleEnabledToggle = new(
@@ -79,7 +79,7 @@ public class BackgroundsPane : BasePane
 
         blueSlider.ControlEvent += OnColourSliderChanged;
 
-        static string BackgroundCategoryFormatter(BackgroundCategory category, int index)
+        static LabelledDropdownItem BackgroundCategoryFormatter(BackgroundCategory category, int index)
         {
             var translationKey = category switch
             {
@@ -89,7 +89,7 @@ public class BackgroundsPane : BasePane
                 _ => throw new InvalidEnumArgumentException(nameof(category), (int)category, typeof(BackgroundCategory)),
             };
 
-            return Translation.Get("backgroundSource", translationKey);
+            return new(Translation.Get("backgroundSource", translationKey));
         }
     }
 

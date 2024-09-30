@@ -26,8 +26,8 @@ public class CharacterPlacementPane : BasePane
 
         header = new(Translation.Get("placementPane", "header"));
 
-        static string PlacementTypeFormatter(PlacementService.Placement placement, int index) =>
-            Translation.Get("placementDropdown", placement.ToLower());
+        static LabelledDropdownItem PlacementTypeFormatter(PlacementService.Placement placement, int index) =>
+            new(Translation.Get("placementDropdown", placement.ToLower()));
     }
 
     public override void Draw()

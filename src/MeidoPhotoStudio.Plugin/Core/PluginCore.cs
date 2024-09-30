@@ -151,7 +151,7 @@ public partial class PluginCore : MonoBehaviour
         windowManager.DrawWindows();
 
         if (DropdownHelper.Visible)
-            DropdownHelper.HandleDropdown();
+            DropdownHelper.DrawDropdown();
 
         if (Modal.Visible)
             Modal.Draw();

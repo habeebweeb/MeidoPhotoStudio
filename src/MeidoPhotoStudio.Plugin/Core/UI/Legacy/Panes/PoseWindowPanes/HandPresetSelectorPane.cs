@@ -49,7 +49,7 @@ public class HandPresetSelectorPane : BasePane
         presetCategoryDropdown = new(PresetCategoryList());
         presetCategoryDropdown.SelectionChanged += OnPresetCategoryChanged;
 
-        presetDropdown = new(PresetList(), formatter: (preset, index) => $"{index + 1}: {preset.Name}");
+        presetDropdown = new(PresetList(), formatter: (preset, index) => new LabelledDropdownItem($"{index + 1}: {preset.Name}"));
 
         applyLeftHandButton = new(Translation.Get("handPane", "leftHand"));
         applyLeftHandButton.ControlEvent += OnApplyLeftButtonPushed;

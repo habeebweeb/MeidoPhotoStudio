@@ -125,8 +125,8 @@ public class PropManagerPane : BasePane
 
         noPropsLabel = new(Translation.Get("propManagerPane", "noProps"));
 
-        string PropNameFormatter(PropController prop, int index) =>
-            propNames[prop];
+        LabelledDropdownItem PropNameFormatter(PropController prop, int index) =>
+            new(propNames[prop]);
     }
 
     private PropController CurrentProp =>

@@ -65,7 +65,7 @@ public class BlendSetSelectorPane : BasePane
 
         blendSetDropdown = new(
             BlendSetList(sourceIndex is CustomBlendSet),
-            formatter: (blendSet, index) => $"{index + 1}: {blendSet.Name}");
+            formatter: (blendSet, index) => new LabelledDropdownItem($"{index + 1}: {blendSet.Name}"));
 
         blendSetDropdown.SelectionChanged += OnBlendSetChanged;
 
@@ -181,15 +181,15 @@ public class BlendSetSelectorPane : BasePane
         savedBlendSetLabel.Text = Translation.Get("maidFaceWindow", "savedBlendSetLabel");
     }
 
-    private static Func<string, int, string> GetBlendSetCategoryFormatter(bool custom)
+    private static Func<string, int, IDropdownItem> GetBlendSetCategoryFormatter(bool custom)
     {
         return custom ? CustomBlendSetCategoryFormatter : GameBlendSetCategoryFormatter;
 
-        static string CustomBlendSetCategoryFormatter(string category, int index) =>
-            category;
+        static LabelledDropdownItem CustomBlendSetCategoryFormatter(string category, int index) =>
+            new(category);
 
-        static string GameBlendSetCategoryFormatter(string category, int index) =>
-            Translation.Get("faceBlendCategory", category);
+        static LabelledDropdownItem GameBlendSetCategoryFormatter(string category, int index) =>
+            new(Translation.Get("faceBlendCategory", category));
     }
 
     private void OnBlendSetAdded(object sender, AddedBlendSetEventArgs e)

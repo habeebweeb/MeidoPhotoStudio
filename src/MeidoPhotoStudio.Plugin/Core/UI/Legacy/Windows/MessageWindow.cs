@@ -64,8 +64,8 @@ public partial class MessageWindow : BaseWindow
                 alignment = NGUIAlignmentToTextAnchor(messageWindowManager.MessageAlignment),
             });
 
-        static string AlignmentFormatter(Alignment alignment, int index) =>
-            Translation.Get("messageWindow", string.Concat("align", alignment.ToString()));
+        static LabelledDropdownItem AlignmentFormatter(Alignment alignment, int index) =>
+            new(Translation.Get("messageWindow", string.Concat("align", alignment.ToString())));
     }
 
     public override Rect WindowRect

@@ -70,7 +70,7 @@ public class CharacterCallPane : BasePane, IVirtualListHandler
 
         sortTypeDropdown = new(
             (CallController.SortType[])Enum.GetValues(typeof(CallController.SortType)),
-            formatter: (sortType, _) => Translation.Get("characterSortTypeDropdown", sortType.ToLower()));
+            formatter: (sortType, _) => new LabelledDropdownItem(Translation.Get("characterSortTypeDropdown", sortType.ToLower())));
 
         sortTypeDropdown.SelectionChanged += OnSortTypeChanged;
 

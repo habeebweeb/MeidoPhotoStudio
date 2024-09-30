@@ -74,8 +74,8 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
             Initialize();
         }
 
-        static string CategoryFormatter(MPN category, int index) =>
-            Translation.Get("clothing", category.ToString());
+        static LabelledDropdownItem CategoryFormatter(MPN category, int index) =>
+            new(Translation.Get("clothing", category.ToString()));
 
         void OnMenuDatabaseReady(object sender, EventArgs e)
         {

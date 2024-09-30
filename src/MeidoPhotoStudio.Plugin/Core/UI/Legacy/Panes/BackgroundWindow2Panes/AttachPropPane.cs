@@ -89,8 +89,8 @@ public class AttachPropPane : BasePane
 
         noCharactersOrPropsLabel = new(Translation.Get("attachPropPane", "noCharactersOrPropsLabel"));
 
-        static string CharacterFormatter(CharacterController character, int index) =>
-            $"{character.Slot + 1}: {character.CharacterModel.FullName()}";
+        static LabelledDropdownItem CharacterFormatter(CharacterController character, int index) =>
+            new($"{character.Slot + 1}: {character.CharacterModel.FullName()}");
     }
 
     private PropController CurrentProp =>

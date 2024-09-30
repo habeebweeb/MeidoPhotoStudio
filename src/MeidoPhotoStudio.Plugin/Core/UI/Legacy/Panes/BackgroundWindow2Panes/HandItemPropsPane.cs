@@ -39,8 +39,8 @@ public class HandItemPropsPane : BasePane
             propDropdown.SetItems(menuPropRepository[MPN.handitem]);
         }
 
-        static string PropFormatter(MenuFilePropModel prop, int index) =>
-            prop.Name;
+        static LabelledDropdownItem PropFormatter(MenuFilePropModel prop, int index) =>
+            new(prop.Name);
 
         void OnMenuDatabaseIndexed(object sender, EventArgs e)
         {
