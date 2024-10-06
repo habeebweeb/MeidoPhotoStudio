@@ -67,12 +67,22 @@ public class CharacterController(CharacterModel characterModel, TransformWatcher
         if (!Maid.Visible || !Maid.body0.isLoadedBody)
             return;
 
-        var bodyTransform = GetBone("Bip01");
+        var bounds = Maid.body0.goSlot
+            .Where(slot => slot.m_ParentMPN is not MPN.null_mpn)
+            .Select(slot => slot.obj_tr.GetComponentInChildren<Renderer>())
+            .Where(renderer => renderer)
+            .Select(renderer => renderer.bounds)
+            .Aggregate((a, b) =>
+            {
+                a.Encapsulate(b);
 
-        var bodyPosition = bodyTransform.position;
-        var bodyDistance = Mathf.Max(GameMain.Instance.MainCamera.GetDistance(), 3f);
-        var cameraRotation = GameMain.Instance.MainCamera.transform.eulerAngles;
-        var bodyAngle = new Vector2(cameraRotation.y, cameraRotation.x);
+                return a;
+            });
+
+        var bodyPosition = bounds.center;
+        var bodyDistance = bounds.extents.y * 3.5f;
+        var bodyRotation = GameMain.Instance.MainCamera.transform.eulerAngles;
+        var bodyAngle = new Vector2(bodyRotation.y, bodyRotation.x);
 
         WfCameraMoveSupportUtility.StartMove(bodyPosition, bodyDistance, bodyAngle);
     }
