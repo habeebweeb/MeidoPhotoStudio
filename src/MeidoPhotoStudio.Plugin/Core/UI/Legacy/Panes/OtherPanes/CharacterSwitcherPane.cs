@@ -7,33 +7,13 @@ namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 public class CharacterSwitcherPane : BasePane
 {
     private const float BoxSize = 70;
-    private const int Margin = (int)(BoxSize / 2.8f);
     private const int FontSize = 13;
 
     private readonly CharacterService characterService;
     private readonly SelectionController<CharacterController> characterSelectionController;
     private readonly CustomMaidSceneService customMaidSceneService;
     private readonly EditModeMaidService editModeMaidService;
-    private readonly LazyStyle buttonStyle = new(
-        FontSize,
-        () => new(GUI.skin.button)
-        {
-            margin = { top = Margin },
-        });
-
-    private readonly LazyStyle horizontalStyle = new(
-        0,
-        () => new()
-        {
-            padding = new(4, 4, 0, 0),
-        });
-
-    private readonly LazyStyle labelStyle = new(
-        FontSize,
-        () => new(GUI.skin.label)
-        {
-            margin = { top = Margin },
-        });
+    private readonly LazyStyle buttonStyle = new(FontSize, () => new(GUI.skin.button));
 
     private readonly LazyStyle slotStyle = new(
         FontSize,
@@ -44,11 +24,10 @@ public class CharacterSwitcherPane : BasePane
             normal = { textColor = Color.white },
         });
 
-    private readonly Button previousButton;
-    private readonly Button nextButton;
-
-    private bool editingCharacter;
-    private string editToggleLabel;
+    private readonly Dropdown<CharacterController> characterDropdown;
+    private readonly Toggle editToggle;
+    private readonly Button focusBodyButton;
+    private readonly Button focusFaceButton;
 
     private CharacterController preCallCharacter;
 
@@ -67,100 +46,93 @@ public class CharacterSwitcherPane : BasePane
         this.characterService.CalledCharacters += OnCharactersCalled;
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
-        previousButton = new("<");
-        previousButton.ControlEvent += (_, _) =>
-            PreviousCharacter();
+        characterDropdown = new([], formatter: CharacterFormatter);
+        characterDropdown.SelectionChanged += OnSelectionChanged;
 
-        nextButton = new(">");
-        nextButton.ControlEvent += (_, _) =>
-            NextCharacter();
+        editToggle = new(Translation.Get("characterSwitcher", "editToggle"));
+        editToggle.ControlEvent += OnEditToggleChanged;
 
-        editToggleLabel = Translation.Get("characterSwitcher", "editToggle");
+        focusBodyButton = new(Translation.Get("characterSwitcher", "focusBodyButton"));
+        focusBodyButton.ControlEvent += OnFocusBodyButtonPushed;
+
+        focusFaceButton = new(Translation.Get("characterSwitcher", "focusFaceButton"));
+        focusFaceButton.ControlEvent += OnFocusFaceButtonPushed;
+
+        static CharacterDropdownItem CharacterFormatter(CharacterController character, int index) =>
+            new(character);
     }
 
     public override void Draw()
     {
+        if (characterService.Count is 0)
+            return;
+
+        var buttonHeight = GUILayout.Height(Utility.GetPix(BoxSize));
+
         var buttonOptions = new[]
         {
-            GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(false),
-        };
-
-        var boxLayoutOptions = new[]
-        {
-            GUILayout.Height(Utility.GetPix(BoxSize)),
-            GUILayout.Width(Utility.GetPix(BoxSize)),
+            buttonHeight, GUILayout.ExpandWidth(false),
         };
 
         var guiEnabled = characterService.Count > 0;
 
-        GUI.enabled = guiEnabled;
-
-        GUILayout.BeginHorizontal(horizontalStyle, GUILayout.Height(Utility.GetPix(BoxSize)));
-
-        previousButton.Draw(buttonStyle, buttonOptions);
-
-        GUILayout.Space(20);
-
-        var character = characterSelectionController.Current;
-
-        if (characterService.Count > 0)
-        {
-            if (GUILayout.Button(character.CharacterModel.Portrait, boxLayoutOptions))
-                character.FocusOnBody();
-
-            var label = character.CharacterModel.FullName("{0}\n{1}");
-
-            GUILayout.Label(label, labelStyle, GUILayout.ExpandWidth(false));
-        }
-
-        GUILayout.FlexibleSpace();
-
-        nextButton.Draw(buttonStyle, buttonOptions);
-
-        GUILayout.EndHorizontal();
-
-        var previousRect = GUILayoutUtility.GetLastRect();
+        GUILayout.BeginHorizontal();
 
         if (customMaidSceneService.EditScene)
         {
-            GUI.enabled = guiEnabled && !editingCharacter;
+            GUI.enabled = guiEnabled && characterSelectionController.Current?.CharacterModel != editModeMaidService.EditingCharacter;
 
-            var value = GUI.Toggle(new Rect(previousRect.x + 4f, previousRect.y, 40f, 20f), editingCharacter, editToggleLabel);
-
-            if (value != editingCharacter)
-            {
-                editingCharacter = value;
-
-                ChangeEditCharacter();
-            }
+            editToggle.Draw();
 
             GUI.enabled = guiEnabled;
         }
 
-        var labelRect = new Rect(previousRect.width - 45f, previousRect.y, 40f, 20f);
+        GUILayout.FlexibleSpace();
 
-        if (characterService.Count > 0)
-            GUI.Label(labelRect, $"{character.Slot + 1}", slotStyle);
+        GUI.enabled = guiEnabled;
+
+        GUILayout.Label($"{characterSelectionController.Current?.Slot + 1}", slotStyle);
+
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+
+        if (GUILayout.Button("<", buttonStyle, buttonOptions))
+            characterDropdown.CyclePrevious();
+
+        GUILayout.FlexibleSpace();
+
+        var windowWidth = parent.WindowRect.width;
+        var dropdownWidth = windowWidth - 95f;
+
+        characterDropdown.Draw(GUILayout.Width(dropdownWidth), GUILayout.Height(Utility.GetPix(BoxSize)));
+
+        GUILayout.FlexibleSpace();
+
+        if (GUILayout.Button(">", buttonStyle, buttonOptions))
+            characterDropdown.CycleNext();
+
+        GUILayout.EndHorizontal();
+
+        MpsGui.BlackLine();
+
+        GUILayout.BeginHorizontal();
+
+        focusBodyButton.Draw();
+
+        focusFaceButton.Draw();
+
+        GUILayout.EndHorizontal();
     }
 
-    protected override void ReloadTranslation() =>
-        editToggleLabel = Translation.Get("characterSwitcher", "editToggle");
-
-    private static int Wrap(int value, int min, int max) =>
-        value < min ? max : value > max ? min : value;
-
-    private void OnCharacterSelectionChanged(object sender, SelectionEventArgs<CharacterController> e)
+    protected override void ReloadTranslation()
     {
-        if (!customMaidSceneService.EditScene)
-            return;
-
-        if (characterSelectionController.Current is null)
-            return;
-
-        editingCharacter = editModeMaidService.EditingCharacter == characterSelectionController.Current.CharacterModel;
+        editToggle.Label = Translation.Get("characterSwitcher", "editToggle");
+        focusBodyButton.Label = Translation.Get("characterSwitcher", "focusBodyButton");
+        focusFaceButton.Label = Translation.Get("characterSwitcher", "focusFaceButton");
     }
 
-    private void ChangeEditCharacter()
+    private void OnEditToggleChanged(object sender, EventArgs e)
     {
         if (!customMaidSceneService.EditScene)
             return;
@@ -171,6 +143,38 @@ public class CharacterSwitcherPane : BasePane
         editModeMaidService.SetEditingCharacter(characterSelectionController.Current.CharacterModel);
     }
 
+    private void OnFocusBodyButtonPushed(object sender, EventArgs e)
+    {
+        if (characterSelectionController.Current is null)
+            return;
+
+        characterSelectionController.Current.FocusOnBody();
+    }
+
+    private void OnFocusFaceButtonPushed(object sender, EventArgs e)
+    {
+        if (characterSelectionController.Current is null)
+            return;
+
+        characterSelectionController.Current.FocusOnFace();
+    }
+
+    private void OnCharacterSelectionChanged(object sender, SelectionEventArgs<CharacterController> e)
+    {
+        characterDropdown.SetSelectedIndexWithoutNotify(characterSelectionController.CurrentIndex);
+
+        if (!customMaidSceneService.EditScene)
+            return;
+
+        if (characterSelectionController.Current is null)
+            return;
+
+        editToggle.SetEnabledWithoutNotify(editModeMaidService.EditingCharacter == characterSelectionController.Current.CharacterModel);
+    }
+
+    private void OnSelectionChanged(object sender, DropdownEventArgs<CharacterController> e) =>
+        characterSelectionController.Select(e.Item);
+
     private void OnCallingCharacters(object sender, CharacterServiceEventArgs e) =>
         preCallCharacter = characterSelectionController.Current;
 
@@ -179,23 +183,38 @@ public class CharacterSwitcherPane : BasePane
         if (e.LoadedCharacters.Length is 0)
             return;
 
+        characterDropdown.SetItemsWithoutNotify(characterService);
+
         if (preCallCharacter is null || !e.LoadedCharacters.Contains(preCallCharacter))
+        {
             characterSelectionController.Select(0);
+            characterDropdown.SetSelectedIndexWithoutNotify(0);
+        }
         else
+        {
             characterSelectionController.Select(preCallCharacter);
+            characterDropdown.SetSelectedIndexWithoutNotify(characterSelectionController.CurrentIndex);
+        }
     }
 
-    private void NextCharacter()
+    private class CharacterDropdownItem(CharacterController characterController) : IDropdownItem
     {
-        var nextIndex = Wrap(characterSelectionController.CurrentIndex + 1, 0, characterService.Count - 1);
+        private GUIContent formatted;
 
-        characterSelectionController.Select(nextIndex);
-    }
+        public string Label { get; } = characterController.CharacterModel.FullName("{0}\n{1}");
 
-    private void PreviousCharacter()
-    {
-        var previousIndex = Wrap(characterSelectionController.CurrentIndex - 1, 0, characterService.Count - 1);
+        public bool HasIcon { get; } = true;
 
-        characterSelectionController.Select(previousIndex);
+        public int IconSize { get; } = (int)BoxSize;
+
+        public Texture Icon =>
+            characterController.CharacterModel.Portrait;
+
+        public GUIContent Formatted =>
+            formatted ??= new(Label, Icon);
+
+        public void Dispose()
+        {
+        }
     }
 }

@@ -41,7 +41,9 @@
     "waveInverse": "W"
   },
   "characterSwitcher": {
-    "editToggle": "Edit"
+    "editToggle": "Edit",
+    "focusBodyButton": "Focus Character",
+    "focusFaceButton": "Focus on Face"
   },
   "characterWindowPane": {
     "bodyTab": "Body",

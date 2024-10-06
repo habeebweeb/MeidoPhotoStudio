@@ -403,6 +403,7 @@ public partial class PluginCore : MonoBehaviour
         AddPluginActiveInputHandler(new MessageWindow.InputHandler(messageWindow, inputConfiguration));
 
         var characterWindowPane = new CharacterWindowPane(
+            characterService,
             new CharacterSwitcherPane(
                 characterService, characterSelectionController, customMaidSceneService, editModeMaidService),
             tabSelectionController)

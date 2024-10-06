@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.Character;
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
@@ -8,6 +9,7 @@ public class CharacterWindowPane : BaseMainWindowPane
     private static readonly string[] CharacterTabTranslationKeys = ["bodyTab", "faceTab"];
 
     private readonly CharacterSwitcherPane characterSwitcherPane;
+    private readonly CharacterService characterService;
     private readonly TabSelectionController tabSelectionController;
     private readonly Dictionary<CharacterWindowTab, CharacterWindowTabPane> windowPanes =
         new(EnumEqualityComparer<CharacterWindowTab>.Instance);
@@ -17,11 +19,12 @@ public class CharacterWindowPane : BaseMainWindowPane
     private CharacterWindowTabPane currentTab;
 
     public CharacterWindowPane(
+        CharacterService characterService,
         CharacterSwitcherPane characterSwitcherPane,
         TabSelectionController tabSelectionController)
     {
+        this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
         this.characterSwitcherPane = AddPane(characterSwitcherPane ?? throw new ArgumentNullException(nameof(characterSwitcherPane)));
-
         this.tabSelectionController = tabSelectionController
             ?? throw new ArgumentNullException(nameof(tabSelectionController));
 
@@ -51,12 +54,19 @@ public class CharacterWindowPane : BaseMainWindowPane
     public override void Draw()
     {
         tabsPane.Draw();
+
+        GUI.enabled = characterService.Count > 0;
+
         characterSwitcherPane.Draw();
+
+        MpsGui.BlackLine();
 
         tabs.Draw();
         MpsGui.WhiteLine();
 
         currentTab.Draw();
+
+        GUI.enabled = true;
     }
 
     public override void Activate()
