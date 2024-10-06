@@ -83,26 +83,25 @@ public class EditModeMaidService
 
     private void SetEditingMaid(Maid maid)
     {
-        SceneEdit.Instance.m_maid = maid;
-
         UpdateCharacterMgr(maid);
 
         UpdateEditModeUI(maid);
 
-        // TODO: WARN: Plugins that rely on CharacterMgr for the order that maids are called in by MPS will be out of
-        // order. Not sure if this will be a problem but I can't figure out a way around this.
+        SceneEdit.Instance.m_maid = maid;
+
         // NOTE: Changing the edit maid's position to 0 is required to get parts of the edit mode functionality to work,
         // most notably the parts colouring feature.
-        void UpdateCharacterMgr(Maid maid)
+        static void UpdateCharacterMgr(Maid maid)
         {
             var activeMaids = GameMain.Instance.CharacterMgr.m_gcActiveMaid;
-            var newEditMaidIndex = Array.IndexOf(activeMaids, maid);
+            var currentEditingMaid = SceneEdit.Instance.m_maid;
+            var currentEditingMaidIndex = Array.IndexOf(activeMaids, maid);
 
             maid.ActiveSlotNo = 0;
-            OriginalEditingCharacter.Maid.ActiveSlotNo = newEditMaidIndex;
+            currentEditingMaid.ActiveSlotNo = currentEditingMaidIndex;
 
             activeMaids[0] = maid;
-            activeMaids[newEditMaidIndex] = OriginalEditingCharacter.Maid;
+            activeMaids[currentEditingMaidIndex] = currentEditingMaid;
         }
 
         static void UpdateEditModeUI(Maid maid)
