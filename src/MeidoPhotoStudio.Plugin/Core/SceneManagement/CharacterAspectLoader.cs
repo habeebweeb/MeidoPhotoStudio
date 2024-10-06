@@ -182,10 +182,8 @@ public class CharacterAspectLoader(
 
                 if (schema.Version >= 2)
                 {
-                    if (ik.MuneLEnabled)
-                        ik.GetBone("Mune_L_sub").localRotation = schema.MuneSubL;
-                    if (ik.MuneREnabled)
-                        ik.GetBone("Mune_R_sub").localRotation = schema.MuneSubR;
+                    ik.GetBone("Mune_L_sub").localRotation = schema.MuneSubL;
+                    ik.GetBone("Mune_R_sub").localRotation = schema.MuneSubR;
                 }
             }
 
