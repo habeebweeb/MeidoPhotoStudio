@@ -2,7 +2,22 @@ namespace MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 public class TextField : BaseControl
 {
+    private const string EncodedClearButtonImage =
+        """
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABY0lEQVQ4y53TvWpUARAF4G+vq4V/
+        lSA4pQ8gglgJLqgvYLNqoxYqioWQap8gld0GiaURyaKdjQqBTW0jsbFJOXkHZf0pnCvXy0bFUw7n
+        DDNn5gz0kJkXMcYIp6u8izlmEbHd5Q86wlOY4KE/Y4rViNj71aDEj3HNv2ETKxGx11Rh0hE/w9d9
+        hB/xvrgTGNTO87ZzRFzPzBvYQNMTX8JxfMIQo6YMazHOzDsR8QK38K0nXuBliWE8LLe7pq5n5iAi
+        nmbmATzClRJv4WyHPxpk5mcc6u36HfcjYj0zhzi2RAxfmn3MGuBuZh6MiAUu4MwyYlNP0seHGvto
+        Zl6NiNe42fGkxW7TuUCLHVwu8ju8KmOf94yFeYPZklMt8BbnOsbei4gN3O40mTX129MqHMZJvMH5
+        nidPMvMBjtTq04jYbu+5ihP1YTu9B+o2WasLbZbmJ7GCsVKTNH/JwVqbg9/S+L9x/gGNSHqxMF5G
+        egAAAABJRU5ErkJggg==
+        """;
+
+    private static readonly Texture2D NoTexture = Utility.MakeTex(2, 2, new(0f, 0f, 0f, 0f));
+
     private static int textFieldID = 961;
+    private static Texture2D clearButtonTexture;
 
     private readonly string controlName = $"textField{ID}";
 
@@ -43,7 +58,12 @@ public class TextField : BaseControl
         }
     }
 
+    public bool HasClearButton { get; set; }
+
     public bool HasFocus { get; private set; }
+
+    private static Texture2D ClearButtonIcon =>
+        clearButtonTexture ? clearButtonTexture : clearButtonTexture = LoadIconFromBase64(EncodedClearButtonImage);
 
     private static LazyStyle PlaceholderStyle { get; } = new(
         13,
@@ -55,6 +75,16 @@ public class TextField : BaseControl
             {
                 textColor = new(1f, 1f, 1f, 0.6f),
             },
+        });
+
+    private static LazyStyle ClearButtonStyle { get; } = new(
+        13,
+        () => new(GUI.skin.box)
+        {
+            margin = new(0, 0, 0, 0),
+            padding = new(0, 0, 5, 5),
+            alignment = TextAnchor.MiddleCenter,
+            normal = { background = NoTexture },
         });
 
     private static int ID =>
@@ -77,6 +107,21 @@ public class TextField : BaseControl
             var textFieldRect = GUILayoutUtility.GetLastRect();
 
             GUI.Label(textFieldRect, placeholderContent, placeholderStyle);
+        }
+
+        if (HasClearButton && Value.Length is not 0)
+        {
+            var textFieldRect = GUILayoutUtility.GetLastRect();
+            var clearButtonRect = textFieldRect with { x = textFieldRect.xMax - Utility.GetPix(25f), width = Utility.GetPix(20f), };
+
+            GUI.Box(clearButtonRect, ClearButtonIcon, ClearButtonStyle);
+
+            if (UnityEngine.Input.GetMouseButtonDown(0) && clearButtonRect.Contains(Event.current.mousePosition))
+            {
+                Value = value = string.Empty;
+
+                ChangedValue?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         if (!string.Equals(value, Value, StringComparison.Ordinal))
@@ -103,5 +148,16 @@ public class TextField : BaseControl
 
         if (Event.current is { isKey: true, keyCode: KeyCode.Return or KeyCode.KeypadEnter } && string.Equals(focusedControl, controlName))
             OnControlEvent(EventArgs.Empty);
+    }
+
+    private static Texture2D LoadIconFromBase64(string base64)
+    {
+        var icon = new Texture2D(16, 16, TextureFormat.RGB24, false);
+
+        icon.LoadImage(Convert.FromBase64String(base64));
+
+        icon.Apply();
+
+        return icon;
     }
 }
