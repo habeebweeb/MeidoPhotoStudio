@@ -10,7 +10,7 @@
     "okButton": "OK",
     "clearButton": "Clear Selected",
     "callButton": "Call",
-    "searchBarPlaceholder": "Search Characters",
+    "searchBarPlaceholder": "Search characters",
     "activeOnlyToggle": "Active Only",
     "descendingToggle": "Descending",
     "header": "Call Characters"
@@ -87,6 +87,7 @@
   },
   "posePane": {
     "header": "Animations",
+    "searchBarPlaceholder": "Search animations",
     "categoryHeader": "Category",
     "noAnimations": "No Animations",
     "nameHeader": "Name",
@@ -178,6 +179,7 @@
   },
   "handPane": {
     "header": "Hand Presets",
+    "searchBarPlaceholder": "Search hand presets",
     "saveToggle": "Save Preset",
     "refreshButton": "Refresh",
     "categoryHeader": "Category",
@@ -203,6 +205,7 @@
   "maidFaceWindow": {
     "noBlendSets": "No Blend Sets",
     "header": "Face Blend Sets",
+    "searchBarPlaceholder": "Search blend sets",
     "savePaneToggle": "Save Blend Set",
     "saveButton": "Save Blend Set",
     "refreshButton": "Refresh",
@@ -276,6 +279,7 @@
   },
   "backgroundsPane": {
     "header": "Backgrounds",
+    "searchBarPlaceholder": "Search backgrounds",
     "dragHandleVisible": "Drag Handle",
     "backgroundVisible": "Visible",
     "colour": "Colour",
@@ -316,8 +320,28 @@
   "myRoomPane": {
     "header": "My Room"
   },
-  "modPropsPane": {
-    "header": "Mod Props"
+  "backgroundPropsPane": {
+    "searchBarPlaceholder": "Search backgrounds"
+  },
+  "deskPropsPane": {
+    "searchBarPlaceholder": "Search desk props"
+  },
+  "gamePropsPane": {
+    "searchBarPlaceholder": "Search game props"
+  },
+  "handItemPropsPane": {
+    "searchBarPlaceholder": "Search hand item props"
+  },
+  "menuFilePropsPane": {
+    "modsToggle": "Mods",
+    "baseToggle": "COM3D2",
+    "searchBarPlaceholder": "Search menu file props"
+  },
+  "myRoomPropsPane": {
+    "searchBarPlaceholder": "Search my room props"
+  },
+  "otherPropsPane": {
+    "searchBarPlaceholder": "Search other props"
   },
   "propManagerPane": {
     "header": "Manage Props",
@@ -438,8 +462,6 @@
     "itemLabel": "Item",
     "smallBGLabel": "BG (Prop)",
     "propLabel": "Clothes",
-    "modsToggle": "Mods",
-    "baseToggle": "COM3D2"
   },
   "clothingDropdown": {
     "myRoom": "My Room Custom",

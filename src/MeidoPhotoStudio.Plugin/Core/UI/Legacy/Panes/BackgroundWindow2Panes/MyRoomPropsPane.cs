@@ -19,6 +19,7 @@ public class MyRoomPropsPane : BasePane, IVirtualListHandler
         });
 
     private readonly Dropdown<int> propCategoryDropdown;
+    private readonly SearchBar<MyRoomPropModel> searchBar;
 
     private Vector2 buttonSize;
     private Vector2 scrollPosition;
@@ -36,6 +37,13 @@ public class MyRoomPropsPane : BasePane, IVirtualListHandler
         propCategoryDropdown = new(categories, formatter: CategoryFormatter);
         propCategoryDropdown.SelectionChanged += OnPropCategoryDropdownChanged;
 
+        searchBar = new(SearchSelector, PropFormatter)
+        {
+            Placeholder = Translation.Get("myRoomPropsPane", "searchBarPlaceholder"),
+        };
+
+        searchBar.SelectedValue += OnSearchSelected;
+
         UpdateCurrentPropList();
 
         virtualList = new()
@@ -46,6 +54,14 @@ public class MyRoomPropsPane : BasePane, IVirtualListHandler
 
         static LabelledDropdownItem CategoryFormatter(int category, int index) =>
             new(Translation.Get("myRoomPropCategories", category.ToString()));
+
+        IEnumerable<MyRoomPropModel> SearchSelector(string query) =>
+            this.myRoomPropRepository
+                .Where(model => model.Name.Contains(query, StringComparison.OrdinalIgnoreCase)
+                    || model.AssetName.Contains(query, StringComparison.OrdinalIgnoreCase));
+
+        IconDropdownItem PropFormatter(MyRoomPropModel model, int index) =>
+            new($"{model.Name}\n{model.AssetName}", () => iconCache.GetMyRoomIcon(model), 75);
     }
 
     int IVirtualListHandler.Count =>
@@ -53,6 +69,8 @@ public class MyRoomPropsPane : BasePane, IVirtualListHandler
 
     public override void Draw()
     {
+        searchBar.Draw();
+
         DrawDropdown(propCategoryDropdown);
 
         if (propCategoryDropdown.SelectedItem is not -1)
@@ -97,8 +115,15 @@ public class MyRoomPropsPane : BasePane, IVirtualListHandler
     Vector2 IVirtualListHandler.ItemDimensions(int index) =>
         buttonSize;
 
-    protected override void ReloadTranslation() =>
+    protected override void ReloadTranslation()
+    {
         propCategoryDropdown.Reformat();
+        searchBar.Placeholder = Translation.Get("myRoomPropsPane", "searchBarPlaceholder");
+        searchBar.Reformat();
+    }
+
+    private void OnSearchSelected(object sender, SearchBarSelectionEventArgs<MyRoomPropModel> e) =>
+        propService.Add(e.Item);
 
     private void UpdateCurrentPropList()
     {

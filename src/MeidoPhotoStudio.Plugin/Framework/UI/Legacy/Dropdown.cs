@@ -57,6 +57,7 @@ public class Dropdown<T> : DropdownBase<T>
 
         if (clicked && Count > 0)
         {
+            GUI.FocusControl(null);
             buttonClicked = !clickedWhileOpen;
             clickedWhileOpen = false;
         }

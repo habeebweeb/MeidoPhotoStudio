@@ -27,6 +27,7 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
     private readonly Toggle baseFilterToggle;
     private readonly Label initializingLabel;
     private readonly VirtualList virtualList;
+    private readonly SearchBar<MenuFilePropModel> searchBar;
 
     private Vector2 buttonSize;
     private MPN[] categories;
@@ -49,10 +50,10 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
         propCategoryDropdown = new(formatter: CategoryFormatter);
         propCategoryDropdown.SelectionChanged += OnPropCategoryDropdownChanged;
 
-        modFilterToggle = new(Translation.Get("background2Window", "modsToggle"));
+        modFilterToggle = new(Translation.Get("menuFilePropsPane", "modsToggle"));
         modFilterToggle.ControlEvent += OnModFilterChanged;
 
-        baseFilterToggle = new(Translation.Get("background2Window", "baseToggle"));
+        baseFilterToggle = new(Translation.Get("menuFilePropsPane", "baseToggle"));
         baseFilterToggle.ControlEvent += OnBaseFilterChanged;
 
         initializingLabel = new(Translation.Get("systemMessage", "initializing"));
@@ -62,6 +63,13 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
             Handler = this,
             Grid = true,
         };
+
+        searchBar = new(SearchSelector, PropFormatter)
+        {
+            Placeholder = Translation.Get("menuFilePropsPane", "searchBarPlaceholder"),
+        };
+
+        searchBar.SelectedValue += OnSearchSelected;
 
         if (menuPropRepository.Busy)
         {
@@ -76,6 +84,18 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
 
         static LabelledDropdownItem CategoryFormatter(MPN category, int index) =>
             new(Translation.Get("clothing", category.ToString()));
+
+        IEnumerable<MenuFilePropModel> SearchSelector(string query) =>
+            menuDatabaseBusy
+                ? []
+                : menuPropRepository
+                    .Where(model => model.CategoryMpn is not (MPN.handitem or MPN.kousoku_lower or MPN.kousoku_upper))
+                    .Where(model => modFilterToggle.Value ? !model.GameMenu : !baseFilterToggle.Value || model.GameMenu)
+                    .Where(model => model.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                        Path.GetFileNameWithoutExtension(model.Filename).Replace("_i_", string.Empty).Contains(query, StringComparison.OrdinalIgnoreCase));
+
+        IconDropdownItem PropFormatter(MenuFilePropModel model, int index) =>
+            new($"{model.Name}\n{model.Filename}", () => iconCache.GetMenuIcon(model), 75);
 
         void OnMenuDatabaseReady(object sender, EventArgs e)
         {
@@ -121,6 +141,8 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
         DrawDropdown(propCategoryDropdown);
 
         MpsGui.BlackLine();
+
+        searchBar.Draw();
 
         if (!menuPropsConfiguration.ModMenuPropsOnly)
         {
@@ -185,11 +207,15 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
 
         propCategoryDropdown.Reformat();
 
-        modFilterToggle.Label = Translation.Get("background2Window", "modsToggle");
-        baseFilterToggle.Label = Translation.Get("background2Window", "baseToggle");
+        modFilterToggle.Label = Translation.Get("menuFilePropsPane", "modsToggle");
+        baseFilterToggle.Label = Translation.Get("menuFilePropsPane", "baseToggle");
 
         initializingLabel.Text = Translation.Get("systemMessage", "initializing");
+        searchBar.Placeholder = Translation.Get("menuFilePropsPane", "searchBarPlaceholder");
     }
+
+    private void OnSearchSelected(object sender, SearchBarSelectionEventArgs<MenuFilePropModel> e) =>
+        propService.Add(e.Item);
 
     private void UpdateCurrentPropList(bool resetScrollPosition = true)
     {

@@ -32,6 +32,7 @@ public class BlendSetSelectorPane : BasePane
     private readonly Header blendSetFilenameHeader;
     private readonly Button refreshButton;
     private readonly Label savedBlendSetLabel;
+    private readonly SearchBar<IBlendSetModel> searchBar;
 
     private bool showSaveBlendSetLabel;
     private float saveTime;
@@ -57,15 +58,20 @@ public class BlendSetSelectorPane : BasePane
         blendSetSourceGrid = new(Translation.GetArray("maidFaceWindow", BlendSetSourceTranslationKeys), sourceIndex);
         blendSetSourceGrid.ControlEvent += OnBlendSetSourceChanged;
 
+        searchBar = new(SearchSelector, PropFormatter)
+        {
+            Placeholder = Translation.Get("maidFaceWindow", "searchBarPlaceholder"),
+        };
+
+        searchBar.SelectedValue += OnSearchSelected;
+
         blendSetCategoryDropdown = new(
             BlendSetCategoryList(sourceIndex is CustomBlendSet),
             formatter: GetBlendSetCategoryFormatter(sourceIndex is CustomBlendSet));
 
         blendSetCategoryDropdown.SelectionChanged += OnBlendSetCategoryChanged;
 
-        blendSetDropdown = new(
-            BlendSetList(sourceIndex is CustomBlendSet),
-            formatter: (blendSet, index) => new LabelledDropdownItem($"{index + 1}: {blendSet.Name}"));
+        blendSetDropdown = new(BlendSetList(sourceIndex is CustomBlendSet), formatter: PropFormatter);
 
         blendSetDropdown.SelectionChanged += OnBlendSetChanged;
 
@@ -85,6 +91,18 @@ public class BlendSetSelectorPane : BasePane
         blendSetFilenameHeader = new(Translation.Get("maidFaceWindow", "filenameHeader"));
 
         savedBlendSetLabel = new(Translation.Get("maidFaceWindow", "savedBlendSetLabel"));
+
+        IEnumerable<IBlendSetModel> SearchSelector(string query)
+        {
+            var repository = blendSetSourceGrid.SelectedItemIndex is GameBlendSet
+                ? gameBlendSetRepository.Cast<IBlendSetModel>()
+                : customBlendSetRepository.Cast<IBlendSetModel>();
+
+            return repository.Where(model => model.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+        }
+
+        IDropdownItem PropFormatter(IBlendSetModel blendSet, int index) =>
+            new LabelledDropdownItem($"{index + 1}: {blendSet.Name}");
     }
 
     private FaceController CurrentFace =>
@@ -112,11 +130,15 @@ public class BlendSetSelectorPane : BasePane
         }
         else if (!blendSetDropdown.Any())
         {
+            searchBar.Draw();
+
             DrawDropdown(blendSetCategoryDropdown);
             noBlendSetsLabel.Draw();
         }
         else
         {
+            searchBar.Draw();
+
             DrawDropdown(blendSetCategoryDropdown);
             DrawDropdown(blendSetDropdown);
         }
@@ -179,6 +201,7 @@ public class BlendSetSelectorPane : BasePane
         blendSetDirectoryHeader.Text = Translation.Get("maidFaceWindow", "directoryHeader");
         blendSetFilenameHeader.Text = Translation.Get("maidFaceWindow", "filenameHeader");
         savedBlendSetLabel.Text = Translation.Get("maidFaceWindow", "savedBlendSetLabel");
+        searchBar.Placeholder = Translation.Get("maidFaceWindow", "searchBarPlaceholder");
     }
 
     private static Func<string, int, IDropdownItem> GetBlendSetCategoryFormatter(bool custom)
@@ -280,6 +303,8 @@ public class BlendSetSelectorPane : BasePane
 
         if (blendSetDropdown.SelectedItem is not null)
             CurrentFace?.ApplyBlendSet(blendSetDropdown.SelectedItem);
+
+        searchBar.ClearQuery();
     }
 
     private void OnBlendSetCategoryChanged(object sender, DropdownEventArgs<string> e)
@@ -405,6 +430,14 @@ public class BlendSetSelectorPane : BasePane
         if (characterSelectionController.Current is null)
             return;
 
+        if (e.Item is null)
+            return;
+
+        CurrentFace?.ApplyBlendSet(e.Item);
+    }
+
+    private void OnSearchSelected(object sender, SearchBarSelectionEventArgs<IBlendSetModel> e)
+    {
         if (e.Item is null)
             return;
 

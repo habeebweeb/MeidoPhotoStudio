@@ -1,5 +1,6 @@
 using MeidoPhotoStudio.Plugin.Core.Database.Props;
 using MeidoPhotoStudio.Plugin.Core.Props;
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
@@ -11,11 +12,19 @@ public class OtherPropsPane : BasePane
     private readonly Dropdown<string> propCategoryDropdown;
     private readonly Dropdown<OtherPropModel> propDropdown;
     private readonly Button addPropButton;
+    private readonly SearchBar<OtherPropModel> searchBar;
 
     public OtherPropsPane(PropService propService, OtherPropRepository otherPropRepository)
     {
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
         this.otherPropRepository = otherPropRepository ?? throw new ArgumentNullException(nameof(otherPropRepository));
+
+        searchBar = new(SearchSelector, PropFormatter)
+        {
+            Placeholder = Translation.Get("otherPropsPane", "searchBarPlaceholder"),
+        };
+
+        searchBar.SelectedValue += OnSearchSelected;
 
         var categories = otherPropRepository.Categories.ToArray();
 
@@ -32,10 +41,15 @@ public class OtherPropsPane : BasePane
 
         static LabelledDropdownItem PropFormatter(OtherPropModel prop, int index) =>
             new(prop.Name);
+
+        IEnumerable<OtherPropModel> SearchSelector(string query) =>
+            otherPropRepository.Where(model => model.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
     }
 
     public override void Draw()
     {
+        searchBar.Draw();
+
         DrawDropdown(propCategoryDropdown);
         DrawDropdown(propDropdown);
 
@@ -49,7 +63,12 @@ public class OtherPropsPane : BasePane
         propCategoryDropdown.Reformat();
         propDropdown.Reformat();
         addPropButton.Label = Translation.Get("propsPane", "addProp");
+        searchBar.Placeholder = Translation.Get("otherPropsPane", "searchBarPlaceholder");
+        searchBar.Reformat();
     }
+
+    private void OnSearchSelected(object sender, SearchBarSelectionEventArgs<OtherPropModel> e) =>
+        propService.Add(e.Item);
 
     private void OnPropCategoryDropdownChanged(object sender, EventArgs e) =>
         propDropdown.SetItems(otherPropRepository[propCategoryDropdown.SelectedItem]);

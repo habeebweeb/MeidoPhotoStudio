@@ -28,6 +28,7 @@ public class HandPresetSelectorPane : BasePane
     private readonly Label noPresetsLabel;
     private readonly Button refreshButton;
     private readonly Label savedHandPresetLabel;
+    private readonly SearchBar<HandPresetModel> searchBar;
 
     private bool showSaveHandPresetLabel;
     private float saveTime;
@@ -46,10 +47,17 @@ public class HandPresetSelectorPane : BasePane
 
         paneHeader = new(Translation.Get("handPane", "header"), true);
 
+        searchBar = new(SearchSelector, Formatter)
+        {
+            Placeholder = Translation.Get("handPane", "searchBarPlaceholder"),
+        };
+
+        searchBar.SelectedValue += OnSearchSelected;
+
         presetCategoryDropdown = new(PresetCategoryList());
         presetCategoryDropdown.SelectionChanged += OnPresetCategoryChanged;
 
-        presetDropdown = new(PresetList(), formatter: (preset, index) => new LabelledDropdownItem($"{index + 1}: {preset.Name}"));
+        presetDropdown = new(PresetList(), formatter: Formatter);
 
         applyLeftHandButton = new(Translation.Get("handPane", "leftHand"));
         applyLeftHandButton.ControlEvent += OnApplyLeftButtonPushed;
@@ -78,6 +86,12 @@ public class HandPresetSelectorPane : BasePane
 
         noPresetsLabel = new(Translation.Get("handPane", "noPresetsMessage"));
         savedHandPresetLabel = new(Translation.Get("handPane", "savedHandPresetLabel"));
+
+        IDropdownItem Formatter(HandPresetModel preset, int index) =>
+            new LabelledDropdownItem($"{index + 1}: {preset.Name}");
+
+        IEnumerable<HandPresetModel> SearchSelector(string query) =>
+            handPresetRepository.Where(model => model.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
     }
 
     private CharacterController Character =>
@@ -105,12 +119,16 @@ public class HandPresetSelectorPane : BasePane
         }
         else if (!presetDropdown.Any())
         {
+            searchBar.Draw();
+
             DrawDropdown(presetCategoryDropdown);
 
             noPresetsLabel.Draw();
         }
         else
         {
+            searchBar.Draw();
+
             DrawDropdown(presetCategoryDropdown);
             DrawDropdown(presetDropdown);
         }
@@ -189,6 +207,29 @@ public class HandPresetSelectorPane : BasePane
         handPresetFilenameHeader.Text = Translation.Get("handPane", "nameHeader");
         noPresetsLabel.Text = Translation.Get("handPane", "noPresetsMessage");
         savedHandPresetLabel.Text = Translation.Get("handPane", "savedHandPresetLabel");
+        searchBar.Placeholder = Translation.Get("handPane", "searchBarPlaceholder");
+        searchBar.Reformat();
+    }
+
+    private void OnSearchSelected(object sender, SearchBarSelectionEventArgs<HandPresetModel> e)
+    {
+        var preset = e.Item;
+
+        if (!string.Equals(preset.Category, presetCategoryDropdown.SelectedItem))
+        {
+            var categoryIndex = presetCategoryDropdown
+                .FindIndex(category => string.Equals(preset.Category, category, StringComparison.Ordinal));
+
+            if (presetCategoryDropdown.SelectedItemIndex != categoryIndex)
+                presetCategoryDropdown.SelectedItemIndex = categoryIndex;
+        }
+
+        var presetIndex = presetDropdown.IndexOf(preset);
+
+        if (presetIndex < 0)
+            return;
+
+        presetDropdown.SetSelectedIndexWithoutNotify(presetIndex);
     }
 
     private void OnHandPresetAdded(object sender, AddedHandPresetEventArgs e)

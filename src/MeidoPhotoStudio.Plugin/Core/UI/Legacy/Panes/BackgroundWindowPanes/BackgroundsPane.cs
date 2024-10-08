@@ -21,6 +21,7 @@ public class BackgroundsPane : BasePane
     private readonly Slider greenSlider;
     private readonly Slider blueSlider;
     private readonly PaneHeader paneHeader;
+    private readonly SearchBar<BackgroundModel> searchBar;
 
     public BackgroundsPane(
         BackgroundService backgroundService,
@@ -35,10 +36,17 @@ public class BackgroundsPane : BasePane
 
         paneHeader = new(Translation.Get("backgroundsPane", "header"));
 
+        searchBar = new(SearchSelector, PropFormatter)
+        {
+            Placeholder = Translation.Get("backgroundsPane", "searchBarPlaceholder"),
+        };
+
+        searchBar.SelectedValue += OnSearchSelected;
+
         backgroundCategoryDropdown = new(BackgroundCategoryFormatter);
         backgroundCategoryDropdown.SelectionChanged += OnChangedCategory;
 
-        backgroundDropdown = new((model, _) => new LabelledDropdownItem(model.Name));
+        backgroundDropdown = new(PropFormatter);
         backgroundDropdown.SelectionChanged += OnChangedBackground;
 
         dragHandleEnabledToggle = new(
@@ -91,6 +99,12 @@ public class BackgroundsPane : BasePane
 
             return new(Translation.Get("backgroundSource", translationKey));
         }
+
+        IEnumerable<BackgroundModel> SearchSelector(string query) =>
+            backgroundRepository.Where(model => model.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+
+        IDropdownItem PropFormatter(BackgroundModel model, int index) =>
+            new LabelledDropdownItem(model.Name);
     }
 
     public override void Activate()
@@ -135,6 +149,8 @@ public class BackgroundsPane : BasePane
 
         if (!paneHeader.Enabled)
             return;
+
+        searchBar.Draw();
 
         DrawDropdown(backgroundCategoryDropdown);
         DrawDropdown(backgroundDropdown);
@@ -184,6 +200,8 @@ public class BackgroundsPane : BasePane
         blueSlider.Label = Translation.Get("backgroundsPane", "blue");
         backgroundCategoryDropdown.Reformat();
         backgroundDropdown.Reformat();
+        searchBar.Placeholder = Translation.Get("backgroundsPane", "searchBarPlaceholder");
+        searchBar.Reformat();
     }
 
     private void OnToggledDragHandleEnabled(object sender, EventArgs e) =>
@@ -249,6 +267,9 @@ public class BackgroundsPane : BasePane
             }
         }
     }
+
+    private void OnSearchSelected(object sender, SearchBarSelectionEventArgs<BackgroundModel> e) =>
+        backgroundService.ChangeBackground(e.Item);
 
     private void OnChangedBackground(object sender, EventArgs e) =>
         backgroundService.ChangeBackground(backgroundDropdown.SelectedItem);

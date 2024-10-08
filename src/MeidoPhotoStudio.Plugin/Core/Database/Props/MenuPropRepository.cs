@@ -145,9 +145,8 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                     menuFileCache.TryAdd(menuFilename, menuFile);
                 }
 
-                menuFile.Name = menuFile.CategoryMpn is MPN.handitem
-                    ? Translation.Get("propNames", menuFile.Filename)
-                    : menuFile.Filename;
+                if (menuFile.CategoryMpn is MPN.handitem)
+                    menuFile.Name = Translation.Get("propNames", menuFile.Filename);
 
                 models.Add(menuFile);
             }
@@ -181,8 +180,6 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 
                     if (!validMpn.Contains(menuFile.CategoryMpn))
                         return;
-
-                    menuFile.Name = menuFile.Filename;
 
                     lock (lockObject)
                         models.Add(menuFile);
