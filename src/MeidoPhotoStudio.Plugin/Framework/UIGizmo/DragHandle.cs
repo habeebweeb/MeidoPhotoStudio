@@ -178,6 +178,7 @@ public partial class DragHandle : MonoBehaviour
     private void OnEnable()
     {
         UpdatePositionAndRotation();
+        UpdateSize();
 
         if (!Selected)
             return;
