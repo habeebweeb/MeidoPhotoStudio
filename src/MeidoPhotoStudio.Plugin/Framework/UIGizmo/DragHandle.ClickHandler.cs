@@ -57,6 +57,8 @@ public partial class DragHandle
         {
             if (UInput.GetMouseButtonDown(0) && GetClickInfo(out var info))
             {
+                GizmoRender.is_drag_ = false;
+
                 clicked = true;
 
                 SelectedDragHandle = info.DragHandle;
