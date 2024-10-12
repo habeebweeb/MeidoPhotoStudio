@@ -40,6 +40,8 @@ public class ExpressionPane : BasePane
     private readonly Toggle editShapeKeysToggle;
     private readonly PaneHeader paneHeader;
     private readonly Dropdown<string> addShapeKeyDropdown;
+    private readonly LazyStyle deleteShapeKeyButtonStyle = new(13, () => new(GUI.skin.button));
+    private readonly LazyStyle shapeKeyLabelStyle = new(13, () => new(GUI.skin.label));
 
     private string[] shapeKeys;
     private bool hasShapeKeys;
@@ -162,8 +164,8 @@ public class ExpressionPane : BasePane
             {
                 GUILayout.BeginHorizontal(maxWidth);
 
-                foreach (var slider in chunk)
-                    slider.Draw();
+                foreach (var toggle in chunk)
+                    toggle.Draw();
 
                 GUILayout.EndHorizontal();
             }
@@ -202,12 +204,10 @@ public class ExpressionPane : BasePane
                 {
                     GUILayout.BeginHorizontal(maxWidth);
 
-                    if (GUILayout.Button("X", noExpandWidth))
-                    {
+                    if (GUILayout.Button("X", deleteShapeKeyButtonStyle, noExpandWidth))
                         faceShapeKeyConfiguration.RemoveCustomShapeKey(shapeKey);
-                    }
 
-                    GUILayout.Label(shapeKey);
+                    GUILayout.Label(shapeKey, shapeKeyLabelStyle);
 
                     GUILayout.EndHorizontal();
                 }
@@ -217,14 +217,15 @@ public class ExpressionPane : BasePane
             {
                 const int SliderColumnCount = 2;
 
-                var width = GUILayout.Width(parent.WindowRect.width / SliderColumnCount - 15f);
+                var maxWidth = GUILayout.MaxWidth(parent.WindowRect.width - 10f);
+                var sliderWidth = GUILayout.MaxWidth(parent.WindowRect.width / SliderColumnCount - 10f);
 
                 foreach (var chunk in shapeKeys.Where(CurrentFace.ContainsExpressionKey).Select(hash => controls[hash]).Chunk(2))
                 {
-                    GUILayout.BeginHorizontal();
+                    GUILayout.BeginHorizontal(maxWidth);
 
                     foreach (var slider in chunk)
-                        slider.Draw(width);
+                        slider.Draw(sliderWidth);
 
                     GUILayout.EndHorizontal();
                 }
