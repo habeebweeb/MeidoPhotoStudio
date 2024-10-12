@@ -47,18 +47,9 @@ public class BackgroundModel : IEquatable<BackgroundModel>
         if (GetType() != other.GetType())
             return false;
 
-        return Category == other.Category && string.Equals(AssetName, other.AssetName)
-            && string.Equals(Name, other.Name);
+        return Category == other.Category && string.Equals(AssetName, other.AssetName, StringComparison.OrdinalIgnoreCase);
     }
 
-    public override int GetHashCode()
-    {
-        var hashCode = 1174575641;
-
-        hashCode = hashCode * -1521134295 + Category.GetHashCode();
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetName);
-        hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
-
-        return hashCode;
-    }
+    public override int GetHashCode() =>
+        (ID, Category).GetHashCode();
 }

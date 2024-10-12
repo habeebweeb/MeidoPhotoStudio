@@ -1,6 +1,6 @@
 namespace MeidoPhotoStudio.Plugin.Core.Database.Props;
 
-public class PhotoBgPropModel(PhotoBGObjectData data, string name = "") : IPropModel
+public class PhotoBgPropModel(PhotoBGObjectData data, string name = "") : IEquatable<PhotoBgPropModel>, IPropModel
 {
     private readonly PhotoBGObjectData data = data ?? throw new ArgumentNullException(nameof(data));
 
@@ -29,4 +29,24 @@ public class PhotoBgPropModel(PhotoBGObjectData data, string name = "") : IPropM
 
     public string DirectFilename =>
         data.direct_file;
+
+    public bool Equals(IPropModel other) =>
+        other is PhotoBgPropModel model && Equals(model);
+
+    public bool Equals(PhotoBgPropModel other)
+    {
+        if (other is null)
+            return false;
+
+        if (ReferenceEquals(this, other))
+            return true;
+
+        if (GetType() != other.GetType())
+            return false;
+
+        return ID == other.ID && string.Equals(Category, other.Category, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public override int GetHashCode() =>
+        (ID, Category).GetHashCode();
 }
