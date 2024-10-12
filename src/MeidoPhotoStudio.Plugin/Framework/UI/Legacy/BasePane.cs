@@ -62,19 +62,20 @@ public abstract class BasePane
         GUILayout.EndHorizontal();
     }
 
-    protected void DrawComboBox(ComboBox comboBox)
-    {
-        var textFieldWidth = parent.WindowRect.width - 56;
+    protected void DrawComboBox(ComboBox comboBox) =>
+        comboBox.Draw(
+            GUILayout.Width(parent.WindowRect.width - 56f),
+            GUILayout.Height(Utility.GetPix(22f)));
 
-        comboBox.Draw(GUILayout.Width(textFieldWidth));
-    }
+    protected void DrawTextFieldMaxWidth(BaseControl textField) =>
+        textField.Draw(
+            GUILayout.MaxWidth(parent.WindowRect.width - 10f),
+            GUILayout.Height(Utility.GetPix(22f)));
 
-    protected void DrawTextFieldMaxWidth(TextField textField)
-    {
-        var maxWidth = parent.WindowRect.width - 25;
-
-        textField.Draw(GUILayout.MaxWidth(maxWidth));
-    }
+    protected void DrawTextFieldWithScrollBarOffset(BaseControl textField) =>
+        textField.Draw(
+            GUILayout.MaxWidth(parent.WindowRect.width - 25f),
+            GUILayout.Height(Utility.GetPix(22f)));
 
     private void OnReloadTranslation(object sender, EventArgs args) =>
         ReloadTranslation();

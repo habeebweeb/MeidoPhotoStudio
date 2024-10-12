@@ -142,7 +142,7 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
 
         MpsGui.BlackLine();
 
-        searchBar.Draw();
+        DrawTextFieldWithScrollBarOffset(searchBar);
 
         if (!menuPropsConfiguration.ModMenuPropsOnly)
         {

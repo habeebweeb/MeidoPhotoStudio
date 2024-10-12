@@ -76,7 +76,7 @@ public class HandItemPropsPane : BasePane
             return;
         }
 
-        searchBar.Draw();
+        DrawTextFieldWithScrollBarOffset(searchBar);
 
         DrawDropdown(propDropdown);
 

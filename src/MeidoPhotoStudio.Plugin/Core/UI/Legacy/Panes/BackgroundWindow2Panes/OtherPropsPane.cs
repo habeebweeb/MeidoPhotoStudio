@@ -48,7 +48,7 @@ public class OtherPropsPane : BasePane
 
     public override void Draw()
     {
-        searchBar.Draw();
+        DrawTextFieldWithScrollBarOffset(searchBar);
 
         DrawDropdown(propCategoryDropdown);
         DrawDropdown(propDropdown);

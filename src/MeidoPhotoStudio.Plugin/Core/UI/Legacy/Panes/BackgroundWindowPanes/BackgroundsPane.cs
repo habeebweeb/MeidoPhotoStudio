@@ -150,7 +150,7 @@ public class BackgroundsPane : BasePane
         if (!paneHeader.Enabled)
             return;
 
-        searchBar.Draw();
+        DrawTextFieldWithScrollBarOffset(searchBar);
 
         DrawDropdown(backgroundCategoryDropdown);
         DrawDropdown(backgroundDropdown);

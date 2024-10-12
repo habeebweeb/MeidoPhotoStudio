@@ -51,7 +51,7 @@ public class GamePropsPane : BasePane
 
     public override void Draw()
     {
-        searchBar.Draw();
+        DrawTextFieldWithScrollBarOffset(searchBar);
 
         DrawDropdown(propCategoryDropdown);
 

@@ -69,7 +69,7 @@ public class MyRoomPropsPane : BasePane, IVirtualListHandler
 
     public override void Draw()
     {
-        searchBar.Draw();
+        DrawTextFieldWithScrollBarOffset(searchBar);
 
         DrawDropdown(propCategoryDropdown);
 

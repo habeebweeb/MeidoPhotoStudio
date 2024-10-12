@@ -31,7 +31,12 @@ public class TextField : BaseControl
 
     public event EventHandler ChangedValue;
 
-    public static LazyStyle Style { get; } = new(13, () => new(GUI.skin.textField));
+    public static LazyStyle Style { get; } = new(
+        13,
+        () => new(GUI.skin.textField)
+        {
+            alignment = TextAnchor.MiddleLeft,
+        });
 
     public string Value { get; set; } = string.Empty;
 

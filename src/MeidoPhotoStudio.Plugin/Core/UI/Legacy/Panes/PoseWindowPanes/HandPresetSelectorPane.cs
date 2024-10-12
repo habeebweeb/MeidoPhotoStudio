@@ -119,7 +119,7 @@ public class HandPresetSelectorPane : BasePane
         }
         else if (!presetDropdown.Any())
         {
-            searchBar.Draw();
+            DrawTextFieldWithScrollBarOffset(searchBar);
 
             DrawDropdown(presetCategoryDropdown);
 
@@ -127,7 +127,7 @@ public class HandPresetSelectorPane : BasePane
         }
         else
         {
-            searchBar.Draw();
+            DrawTextFieldWithScrollBarOffset(searchBar);
 
             DrawDropdown(presetCategoryDropdown);
             DrawDropdown(presetDropdown);
@@ -168,7 +168,7 @@ public class HandPresetSelectorPane : BasePane
             DrawComboBox(handPresetCategoryComboBox);
 
             handPresetFilenameHeader.Draw();
-            DrawTextFieldMaxWidth(handPresetNameTextField);
+            DrawTextFieldWithScrollBarOffset(handPresetNameTextField);
 
             MpsGui.BlackLine();
 

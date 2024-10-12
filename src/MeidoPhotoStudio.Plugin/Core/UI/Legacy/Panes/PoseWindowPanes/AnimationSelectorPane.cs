@@ -156,7 +156,7 @@ public class AnimationSelectorPane : BasePane
         animationSourceGrid.Draw();
         MpsGui.BlackLine();
 
-        searchBar.Draw();
+        DrawTextFieldWithScrollBarOffset(searchBar);
 
         GUI.enabled = enabled;
 
@@ -208,7 +208,7 @@ public class AnimationSelectorPane : BasePane
             DrawComboBox(animationCategoryComboBox);
 
             animationFilenameHeader.Draw();
-            DrawTextFieldMaxWidth(animationNameTextField);
+            DrawTextFieldWithScrollBarOffset(animationNameTextField);
 
             MpsGui.BlackLine();
 

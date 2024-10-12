@@ -130,14 +130,14 @@ public class BlendSetSelectorPane : BasePane
         }
         else if (!blendSetDropdown.Any())
         {
-            searchBar.Draw();
+            DrawTextFieldWithScrollBarOffset(searchBar);
 
             DrawDropdown(blendSetCategoryDropdown);
             noBlendSetsLabel.Draw();
         }
         else
         {
-            searchBar.Draw();
+            DrawTextFieldWithScrollBarOffset(searchBar);
 
             DrawDropdown(blendSetCategoryDropdown);
             DrawDropdown(blendSetDropdown);
@@ -167,7 +167,7 @@ public class BlendSetSelectorPane : BasePane
             DrawComboBox(blendSetCategoryComboBox);
 
             blendSetFilenameHeader.Draw();
-            DrawTextFieldMaxWidth(blendSetNameTextField);
+            DrawTextFieldWithScrollBarOffset(blendSetNameTextField);
 
             MpsGui.BlackLine();
 

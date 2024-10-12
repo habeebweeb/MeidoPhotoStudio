@@ -93,7 +93,7 @@ public class CharacterCallPane : BasePane, IVirtualListHandler
         header.Draw();
         MpsGui.WhiteLine();
 
-        searchBar.Draw(GUILayout.Width(parent.WindowRect.width - Utility.GetPix(10)));
+        DrawTextFieldMaxWidth(searchBar);
 
         GUILayout.BeginHorizontal();
 
