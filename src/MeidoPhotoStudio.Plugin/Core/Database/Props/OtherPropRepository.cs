@@ -40,7 +40,7 @@ public class OtherPropRepository : IEnumerable<OtherPropModel>
         GetEnumerator();
 
     public OtherPropModel GetByID(string id) =>
-        this.FirstOrDefault(model => string.Equals(model.ID, id));
+        this.FirstOrDefault(model => string.Equals(model.ID, id, StringComparison.OrdinalIgnoreCase));
 
     private static Dictionary<string, IList<OtherPropModel>> Initialize(BackgroundRepository backgroundRepository)
     {
@@ -70,17 +70,38 @@ public class OtherPropRepository : IEnumerable<OtherPropModel>
 
         static ReadOnlyCollection<OtherPropModel> GameProps(BackgroundRepository backgroundRepository)
         {
-            var backgroundSet = new HashSet<string>(backgroundRepository.Select(background => background.AssetName));
+            var otherProps = OtherPropsSet();
 
             return GameUty.FileSystem.GetList("bg", AFileSystemBase.ListType.AllFile)
                 .Concat(GameUty.FileSystemOld.GetList("bg", AFileSystemBase.ListType.AllFile))
                 .Where(path => Path.GetExtension(path) is ".asset_bg" && !path.StartsWith(@"bg\myroomcustomize"))
-                .Select(path => Path.GetFileNameWithoutExtension(path))
+                .Select(Path.GetFileNameWithoutExtension)
                 .Where(file => !file.EndsWith("_hit") && !file.EndsWith("_not_optimisation"))
-                .Where(file => !backgroundSet.Contains(file))
+                .Where(file => !otherProps.Contains(file))
                 .Select(file => new OtherPropModel(file, Translation.Get("propNames", file)))
                 .ToList()
                 .AsReadOnly();
+
+            HashSet<string> OtherPropsSet()
+            {
+                var set = new HashSet<string>(backgroundRepository.Select(background => background.AssetName), StringComparer.OrdinalIgnoreCase);
+
+                PhotoBGObjectData.Create();
+
+                set.UnionWith(PhotoBGObjectData.data
+                    .Select(data => string.IsNullOrEmpty(data.create_asset_bundle_name)
+                        ? data.create_prefab_name
+                        : data.create_asset_bundle_name)
+                    .Where(assetName => !string.IsNullOrEmpty(assetName)));
+
+                set.UnionWith(DeskManager.item_detail_data_dic.Values
+                    .Select(data => string.IsNullOrEmpty(data.asset_name)
+                        ? data.prefab_name
+                        : data.asset_name)
+                    .Where(assetName => !string.IsNullOrEmpty(assetName)));
+
+                return set;
+            }
         }
 
         static ReadOnlyCollection<OtherPropModel> GetPropExtend()
@@ -105,7 +126,7 @@ public class OtherPropRepository : IEnumerable<OtherPropModel>
                 Utility.LogError($"Could not parse extra prop database because {e.Message}");
             }
 
-            return Enumerable.Empty<OtherPropModel>().ToList().AsReadOnly();
+            return new([]);
         }
     }
 

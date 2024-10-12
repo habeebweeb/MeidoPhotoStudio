@@ -1,7 +1,4 @@
 using MeidoPhotoStudio.Plugin.Core.Character;
-using MeidoPhotoStudio.Plugin.Core.Database.Background;
-using MeidoPhotoStudio.Plugin.Core.Database.Props;
-using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;
@@ -14,11 +11,7 @@ public class PropsAspectLoader(
     PropDragHandleService propDragHandleService,
     PropAttachmentService propAttachmentService,
     CharacterService characterService,
-    BackgroundRepository backgroundRepository,
-    DeskPropRepository deskPropRepository,
-    MyRoomPropRepository myRoomPropRepository,
-    PhotoBgPropRepository photoBgPropRepository,
-    MenuPropRepository menuPropRepository)
+    PropSchemaToPropModelMapper propSchemaMapper)
     : ISceneAspectLoader<PropsSchema>
 {
     private readonly PropService propService = propService
@@ -33,20 +26,8 @@ public class PropsAspectLoader(
     private readonly CharacterService characterService = characterService
         ?? throw new ArgumentNullException(nameof(characterService));
 
-    private readonly BackgroundRepository backgroundRepository = backgroundRepository
-        ?? throw new ArgumentNullException(nameof(backgroundRepository));
-
-    private readonly DeskPropRepository deskPropRepository = deskPropRepository
-        ?? throw new ArgumentNullException(nameof(deskPropRepository));
-
-    private readonly MyRoomPropRepository myRoomPropRepository = myRoomPropRepository
-        ?? throw new ArgumentNullException(nameof(myRoomPropRepository));
-
-    private readonly PhotoBgPropRepository photoBgPropRepository = photoBgPropRepository
-        ?? throw new ArgumentNullException(nameof(photoBgPropRepository));
-
-    private readonly MenuPropRepository menuPropRepository = menuPropRepository
-        ?? throw new ArgumentNullException(nameof(menuPropRepository));
+    private readonly PropSchemaToPropModelMapper propSchemaMapper = propSchemaMapper
+        ?? throw new ArgumentNullException(nameof(propSchemaMapper));
 
     public void Load(PropsSchema propsSchema, LoadOptions loadOptions)
     {
@@ -62,7 +43,7 @@ public class PropsAspectLoader(
         for (; currentPropIndex < propsSchema.Props.Count; currentPropIndex++)
         {
             var propSchema = propsSchema.Props[currentPropIndex];
-            var propModel = GetPropModel(propSchema.PropModel);
+            var propModel = propSchemaMapper.Resolve(propSchema.PropModel);
 
             if (propModel is null)
                 continue;
@@ -156,57 +137,5 @@ public class PropsAspectLoader(
                     propController.ShapeKeyController[hashKey] = blendValue;
             }
         }
-    }
-
-    private IPropModel GetPropModel(IPropModelSchema propModelSchema)
-    {
-        if (propModelSchema is BackgroundPropModelSchema backgroundPropModelSchema)
-        {
-            var model = backgroundRepository.GetByID(backgroundPropModelSchema.ID);
-
-            if (model is not null)
-                return new BackgroundPropModel(model);
-        }
-        else if (propModelSchema is DeskPropModelSchema deskPropModelSchema)
-        {
-            return deskPropRepository.GetByID(deskPropModelSchema.ID);
-        }
-        else if (propModelSchema is MyRoomPropModelSchema myRoomPropModelSchema)
-        {
-            return myRoomPropRepository.GetByID(myRoomPropModelSchema.ID);
-        }
-        else if (propModelSchema is OtherPropModelSchema otherPropModel)
-        {
-            // NOTE: Older versions saved desk/prop/dogu as the same thing so the repository cannot be reliably searched
-            return new OtherPropModel(otherPropModel.AssetName, Translation.Get("propNames", otherPropModel.AssetName));
-        }
-        else if (propModelSchema is PhotoBgPropModelSchema photoBgPropModelSchema)
-        {
-            return photoBgPropRepository.GetByID(photoBgPropModelSchema.ID);
-        }
-        else if (propModelSchema is MenuFilePropModelSchema menuFilePropModelSchema)
-        {
-            if (menuPropRepository.Busy)
-            {
-                if (string.IsNullOrEmpty(menuFilePropModelSchema.Filename))
-                    return null;
-
-                var menuFile = new MenuFileParser().ParseMenuFile(menuFilePropModelSchema.Filename, false);
-
-                if (menuFile is not null)
-                    menuFile.Name = menuFile.CategoryMpn is MPN.handitem
-                        ? Translation.Get("propNames", menuFile.Filename)
-                        : menuFile.Filename;
-
-                return menuFile;
-            }
-
-            if (string.IsNullOrEmpty(menuFilePropModelSchema.ID))
-                return null;
-
-            return menuPropRepository.GetByID(menuFilePropModelSchema.ID);
-        }
-
-        return null;
     }
 }

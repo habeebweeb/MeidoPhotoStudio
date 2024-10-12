@@ -33,6 +33,9 @@ public class BackgroundPropRepository(BackgroundRepository backgroundRepository)
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();
 
+    public BackgroundPropModel GetByID(string id) =>
+        this.FirstOrDefault(model => string.Equals(model.ID, id, StringComparison.OrdinalIgnoreCase));
+
     private static Dictionary<BackgroundCategory, IList<BackgroundPropModel>>
         Initialize(BackgroundRepository backgroundRepository)
     {

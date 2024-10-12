@@ -301,6 +301,14 @@ public partial class PluginCore : MonoBehaviour
         var transformSchemaBuilder = new TransformSchemaBuilder();
         var propModelSchemaBuilder = new PropModelSchemaBuilder();
 
+        var propSchemaMapper = new PropSchemaToPropModelMapper(
+            backgroundPropRepository,
+            deskPropRepository,
+            myRoomPropRepository,
+            gamePropRepository,
+            menuPropRepository,
+            otherPropRepository);
+
         // TODO: This is kinda stupid tbf. Maybe look into writing a code generator and attributes to create these
         // "schema" things instead of manually building it.
         // Would that even be possible? idk.
@@ -340,7 +348,7 @@ public partial class PluginCore : MonoBehaviour
                 propService,
                 propDragHandleService,
                 propAttachmentService,
-                new PropControllerSchemaBuilder(new PropModelSchemaBuilder(), transformSchemaBuilder),
+                new PropControllerSchemaBuilder(propModelSchemaBuilder, transformSchemaBuilder),
                 new DragHandleSchemaBuilder(),
                 new AttachPointSchemaBuilder()));
 
@@ -373,11 +381,7 @@ public partial class PluginCore : MonoBehaviour
                 propDragHandleService,
                 propAttachmentService,
                 characterService,
-                backgroundRepository,
-                deskPropRepository,
-                myRoomPropRepository,
-                gamePropRepository,
-                menuPropRepository));
+                propSchemaMapper));
 
         var sceneSerializer = new WrappedSerializer(new(), new());
 

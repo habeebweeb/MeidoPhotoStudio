@@ -615,10 +615,11 @@ public class LegacyDeserializer : ISceneSerializer
                         Visible = propSchema.PropVisible,
                     };
 
-                    static IPropModelSchema ConvertPropInfo(PropInfoSchema propInfoSchema) =>
-                        propInfoSchema.Type switch
+                    static IPropModelSchema ConvertPropInfo(PropInfoSchema propInfoSchema)
+                    {
+                        if (propInfoSchema.Type is PropInfo.PropType.Mod)
                         {
-                            PropInfo.PropType.Mod => new MenuFilePropModelSchema()
+                            return new MenuFilePropModelSchema()
                             {
                                 ID = string.IsNullOrEmpty(propInfoSchema.SubFilename)
                                     ? propInfoSchema.Filename
@@ -626,26 +627,82 @@ public class LegacyDeserializer : ISceneSerializer
                                 Filename = string.IsNullOrEmpty(propInfoSchema.SubFilename)
                                     ? propInfoSchema.Filename
                                     : propInfoSchema.SubFilename,
-                            },
-                            PropInfo.PropType.MyRoom => new MyRoomPropModelSchema()
+                            };
+                        }
+                        else if (propInfoSchema.Type is PropInfo.PropType.MyRoom)
+                        {
+                            return new MyRoomPropModelSchema()
                             {
                                 ID = propInfoSchema.MyRoomID,
-                            },
-                            PropInfo.PropType.Bg => new BackgroundPropModelSchema()
+                            };
+                        }
+                        else if (propInfoSchema.Type is PropInfo.PropType.Bg)
+                        {
+                            return new BackgroundPropModelSchema()
                             {
                                 ID = propInfoSchema.Filename,
-                            },
-                            PropInfo.PropType.Odogu when propInfoSchema.Filename.EndsWith(".menu") => new MenuFilePropModelSchema()
+                            };
+                        }
+                        else if (propInfoSchema.Type is PropInfo.PropType.Odogu && Path.GetExtension(propInfoSchema.Filename) is ".menu")
+                        {
+                            return new MenuFilePropModelSchema()
                             {
                                 ID = propInfoSchema.Filename.ToLower(),
                                 Filename = propInfoSchema.Filename.ToLower(),
-                            },
-                            PropInfo.PropType.Odogu => new OtherPropModelSchema()
+                            };
+                        }
+                        else if (propInfoSchema.Type is PropInfo.PropType.Odogu)
+                        {
+                            PhotoBGObjectData.Create();
+
+                            var photoBgData = PhotoBGObjectData.data.FirstOrDefault(IsPhotoBgObject);
+
+                            if (photoBgData is not null)
+                                return new PhotoBgPropModelSchema()
+                                {
+                                    ID = photoBgData.id,
+                                };
+
+                            var deskItemData = DeskManager.item_detail_data_dic.Values.FirstOrDefault(IsDeskItemData);
+
+                            if (deskItemData is not null)
+                                return new DeskPropModelSchema()
+                                {
+                                    ID = deskItemData.id,
+                                };
+
+                            return new OtherPropModelSchema()
                             {
                                 AssetName = propInfoSchema.Filename,
-                            },
-                            _ => null,
-                        };
+                            };
+
+                            bool IsPhotoBgObject(PhotoBGObjectData data)
+                            {
+                                var assetName = string.IsNullOrEmpty(data.create_asset_bundle_name)
+                                    ? data.create_prefab_name
+                                    : data.create_asset_bundle_name;
+
+                                if (string.IsNullOrEmpty(assetName))
+                                    return false;
+
+                                return string.Equals(propInfoSchema.Filename, assetName, StringComparison.OrdinalIgnoreCase);
+                            }
+
+                            bool IsDeskItemData(DeskManager.ItemData data)
+                            {
+                                var assetName = string.IsNullOrEmpty(data.asset_name)
+                                    ? data.prefab_name
+                                    : data.asset_name;
+
+                                if (string.IsNullOrEmpty(assetName))
+                                    return false;
+
+                                return string.Equals(propInfoSchema.Filename, assetName, StringComparison.OrdinalIgnoreCase);
+                            }
+                        }
+
+                        return null;
+                    }
                 }
 
                 static DragHandleSchema ConvertDragHandleSettings(LegacyPropSchema propSchema) =>
