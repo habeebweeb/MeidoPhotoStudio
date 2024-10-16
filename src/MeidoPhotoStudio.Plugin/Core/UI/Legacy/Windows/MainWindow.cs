@@ -6,7 +6,9 @@ namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 /// <summary>Main window.</summary>
 public partial class MainWindow : BaseWindow
 {
-    private const float MinimumWindowWidth = 235f;
+    private const float ResizeHandleSize = 15f;
+    private const float MinimumWindowWidth = 255f;
+    private const float MinimumWindowHeight = 400f;
 
     private readonly LazyStyle pluginInfoStyle = new(
         10,
@@ -23,6 +25,8 @@ public partial class MainWindow : BaseWindow
     private readonly TabsPane tabsPane;
     private readonly Button settingsButton;
 
+    private Rect resizeHandleRect = new(0f, 0f, ResizeHandleSize, ResizeHandleSize);
+    private bool resizing;
     private BaseMainWindowPane currentWindowPane;
     private string settingsButtonLabel;
     private string closeButtonLabel;
@@ -70,12 +74,6 @@ public partial class MainWindow : BaseWindow
     {
         set
         {
-            value.width = Mathf.Max(MinimumWindowWidth, Screen.width * 0.13f);
-            value.height = Screen.height * 0.9f;
-
-            if (customMaidSceneService.EditScene)
-                value.height *= 0.85f;
-
             value.x = Mathf.Clamp(value.x, 0, Screen.width - value.width);
             value.y = Mathf.Clamp(value.y, -value.height + 30, Screen.height - 50);
 
@@ -101,12 +99,76 @@ public partial class MainWindow : BaseWindow
         Panes.Add(windowPanes[id]);
     }
 
+    public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
+    {
+        base.OnScreenDimensionsChanged(newScreenDimensions);
+
+        var newWindowRect = new Rect(
+            Screen.width,
+            Screen.height * 0.08f,
+            ClampWindowWidth(Screen.width * 0.13f),
+            Screen.height * 0.9f);
+
+        if (customMaidSceneService.EditScene)
+            newWindowRect.height *= 0.85f;
+
+        WindowRect = newWindowRect;
+    }
+
     public override void Activate()
     {
         base.Activate();
 
         tabsPane.SelectedTab = Constants.Window.Call;
         Visible = true;
+
+        var newWindowRect = new Rect(
+            Screen.width,
+            Screen.height * 0.08f,
+            ClampWindowWidth(Screen.width * 0.13f),
+            Screen.height * 0.9f);
+
+        if (customMaidSceneService.EditScene)
+            newWindowRect.height *= 0.85f;
+
+        WindowRect = newWindowRect;
+    }
+
+    public override void GUIFunc(int id)
+    {
+        HandleResize();
+
+        Draw();
+
+        if (!resizing)
+            GUI.DragWindow();
+
+        void HandleResize()
+        {
+            resizeHandleRect = resizeHandleRect with
+            {
+                x = 0f,
+                y = windowRect.height - ResizeHandleSize,
+            };
+
+            if (resizing && !Input.GetMouseButton(0))
+                resizing = false;
+            else if (!resizing && Input.GetMouseButtonDown(0) && resizeHandleRect.Contains(Event.current.mousePosition))
+                resizing = true;
+
+            if (resizing)
+            {
+                var minimumWindowWidth = Mathf.Max(MinimumWindowWidth, Utility.GetPix(MinimumWindowWidth));
+                var xMin = Mathf.Max(0f, Mathf.Min(windowRect.xMax - minimumWindowWidth, Input.mousePosition.x - ResizeHandleSize / 2f));
+                var height = Mathf.Max(MinimumWindowHeight, Event.current.mousePosition.y + ResizeHandleSize / 2f);
+
+                WindowRect = windowRect with
+                {
+                    xMin = Mathf.RoundToInt(xMin),
+                    height = height,
+                };
+            }
+        }
     }
 
     public override void Draw()
@@ -118,7 +180,11 @@ public partial class MainWindow : BaseWindow
         GUILayout.FlexibleSpace();
 
         GUILayout.BeginHorizontal();
+
+        GUILayout.Space(ResizeHandleSize + 3f);
+
         GUILayout.Label(Plugin.PluginString, pluginInfoStyle);
+
         GUILayout.FlexibleSpace();
 
         GUI.enabled = !inputRemapper.Listening;
@@ -129,7 +195,7 @@ public partial class MainWindow : BaseWindow
 
         GUILayout.EndHorizontal();
 
-        GUI.DragWindow();
+        GUI.Box(resizeHandleRect, GUIContent.none);
     }
 
     protected override void ReloadTranslation()
@@ -138,6 +204,9 @@ public partial class MainWindow : BaseWindow
         closeButtonLabel = Translation.Get("settingsLabels", "closeSettingsButton");
         settingsButton.Label = selectedWindow == Constants.Window.Settings ? closeButtonLabel : settingsButtonLabel;
     }
+
+    private float ClampWindowWidth(float width) =>
+        Mathf.Max(MinimumWindowWidth, Mathf.Min(Utility.GetPix(MinimumWindowWidth), width));
 
     private void ChangeTab()
     {

@@ -302,11 +302,14 @@ public class VirtualList(int bucketSize = 100) : IEnumerable<(int Index, Vector2
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();
 
-    private void Invalidate()
+    public void Invalidate()
     {
         scrollRect = null;
         scrollPosition = Vector2.zero;
         scrollViewRect = Rect.zero;
+        offsetBuckets.Clear();
+        firstVisibleIndex = 0;
+        lastVisibleIndex = 0;
     }
 
     private sealed class EmptyHandler : IVirtualListHandler

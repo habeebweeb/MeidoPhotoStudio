@@ -82,11 +82,13 @@ public class MyRoomPropsPane : BasePane, IVirtualListHandler
 
         void DrawPropList()
         {
-            buttonSize = Vector2.one * (parent.WindowRect.width - 20f) / 3;
+            buttonSize = Vector2.one * Mathf.Min(80f, (parent.WindowRect.width - 20f) / 3);
 
             var scrollRect = GUILayoutUtility.GetRect(0f, parent.WindowRect.width, 100f, parent.WindowRect.height);
 
             scrollPosition = virtualList.BeginScrollView(scrollRect, scrollPosition);
+
+            var xOffset = (scrollRect.width - buttonSize.x * virtualList.ColumnCount) / 2f;
 
             foreach (var (i, offset) in virtualList)
             {
@@ -95,7 +97,7 @@ public class MyRoomPropsPane : BasePane, IVirtualListHandler
                 var image = iconCache.GetMyRoomIcon(prop);
 
                 var buttonRect = new Rect(
-                    scrollRect.x + offset.x,
+                    scrollRect.x + offset.x + xOffset,
                     scrollRect.y + offset.y,
                     buttonSize.x,
                     buttonSize.y);

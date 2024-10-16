@@ -12,6 +12,9 @@ public abstract class DropdownBase<T> : BaseControl, IEnumerable<T>, IDropdownHa
     private Func<T, int, IDropdownItem> itemFormatter = DefaultItemFormatter;
     private Vector2 scrollPosition;
 
+    protected DropdownBase() =>
+        ScreenSizeChecker.ScreenSizeChanged += OnScreenSizeChanged;
+
     public T SelectedItem =>
         items.Length is 0
             ? default
@@ -141,5 +144,11 @@ public abstract class DropdownBase<T> : BaseControl, IEnumerable<T>, IDropdownHa
 
     protected virtual void OnDropdownClosed(bool clickedButton)
     {
+    }
+
+    private void OnScreenSizeChanged(object sender, EventArgs e)
+    {
+        DropdownHelper.CloseDropdown();
+        itemSizeCache = [];
     }
 }

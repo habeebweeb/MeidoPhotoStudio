@@ -97,7 +97,9 @@ public class CharacterCallPane : BasePane, IVirtualListHandler
 
         GUILayout.BeginHorizontal();
 
-        sortTypeDropdown.Draw(GUILayout.Width(parent.WindowRect.width - Utility.GetPix(100)));
+        sortTypeDropdown.Draw(GUILayout.Width(parent.WindowRect.width - Utility.GetPix(125)));
+
+        GUILayout.FlexibleSpace();
 
         descendingToggle.Draw();
 
@@ -124,10 +126,9 @@ public class CharacterCallPane : BasePane, IVirtualListHandler
         var windowRect = parent.WindowRect;
         var buttonWidth = windowRect.width - 25f;
 
-        const float buttonSize = 85f;
+        buttonSize = new(buttonWidth, Utility.GetPix(85f));
 
-        this.buttonSize = new(buttonWidth, Utility.GetPix(buttonSize));
-        var buttonHeight = this.buttonSize.y;
+        var buttonHeight = buttonSize.y;
 
         var scrollRect = GUILayoutUtility.GetRect(0f, windowRect.width, 0f, windowRect.height);
 
@@ -166,6 +167,9 @@ public class CharacterCallPane : BasePane, IVirtualListHandler
 
         GUI.EndScrollView();
     }
+
+    public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions) =>
+        virtualList.Invalidate();
 
     public override void Activate()
     {

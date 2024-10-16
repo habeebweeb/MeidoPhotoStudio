@@ -132,6 +132,15 @@ public class PropManagerPane : BasePane
     private PropController CurrentProp =>
         propSelectionController.Current;
 
+    public override void SetParent(BaseWindow parent)
+    {
+        base.SetParent(parent);
+
+        positionTransformControl.ParentWindow = parent;
+        rotationTransformControl.ParentWindow = parent;
+        scaleTransformControl.ParentWindow = parent;
+    }
+
     public override void Draw()
     {
         paneHeader.Draw();

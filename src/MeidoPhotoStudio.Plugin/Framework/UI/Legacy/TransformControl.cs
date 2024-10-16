@@ -84,10 +84,12 @@ public class TransformControl : BaseControl
         set => SetValue(value);
     }
 
+    // TODO: Hack. An actual solution require having some UI element hierarchy but too bad.
+    internal BaseWindow ParentWindow { get; set; }
+
     public override void Draw(params GUILayoutOption[] layoutoptions)
     {
         var noExpandWidth = GUILayout.ExpandWidth(false);
-        var textFieldWidth = GUILayout.Width(60f);
 
         GUILayout.BeginHorizontal();
         header.Draw();
@@ -101,6 +103,8 @@ public class TransformControl : BaseControl
 
         resetButton.Draw(noExpandWidth);
         GUILayout.EndHorizontal();
+
+        var textFieldWidth = GUILayout.Width((ParentWindow.WindowRect.width - 23f * 3 - 18f) / 3f);
 
         GUILayout.BeginHorizontal();
         GUILayout.Label("X", labelStyle, noExpandWidth);
