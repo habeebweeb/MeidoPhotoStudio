@@ -54,4 +54,14 @@ public static class Modal
         currentModal.WindowRect =
             GUI.ModalWindow(currentModal.WindowID, currentModal.WindowRect, currentModal.GUIFunc, string.Empty, WindowStyle);
     }
+
+    internal static bool MouseOverModal()
+    {
+        if (!Visible)
+            return false;
+
+        var mousePosition = new Vector2(UnityEngine.Input.mousePosition.x, Screen.height - UnityEngine.Input.mousePosition.y);
+
+        return currentModal.WindowRect.Contains(mousePosition);
+    }
 }
