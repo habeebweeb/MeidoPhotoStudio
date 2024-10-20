@@ -12,6 +12,7 @@ public class PropManagerPane : BasePane
     private static readonly string[] GizmoSpaceTranslationKeys = ["gizmoSpaceLocal", "gizmoSpaceWorld"];
 
     private readonly PropService propService;
+    private readonly FavouritePropRepository favouritePropRepository;
     private readonly PropDragHandleService propDragHandleService;
     private readonly SelectionController<PropController> propSelectionController;
     private readonly TransformClipboard transformClipboard;
@@ -28,6 +29,8 @@ public class PropManagerPane : BasePane
     private readonly TransformControl rotationTransformControl;
     private readonly TransformControl scaleTransformControl;
     private readonly Button focusButton;
+    private readonly Button addToFavouritesButton;
+    private readonly Button removeFromFavouritesButton;
     private readonly PaneHeader paneHeader;
     private readonly Toggle toggleAllDragHandles;
     private readonly Toggle toggleAllGizmos;
@@ -36,20 +39,26 @@ public class PropManagerPane : BasePane
     private readonly Label noPropsLabel;
 
     private bool transformControlChangedTransform;
+    private bool isFavouriteProp;
 
     public PropManagerPane(
         PropService propService,
+        FavouritePropRepository favouritePropRepository,
         PropDragHandleService propDragHandleService,
         SelectionController<PropController> propSelectionController,
         TransformClipboard transformClipboard)
     {
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
+        this.favouritePropRepository = favouritePropRepository ?? throw new ArgumentNullException(nameof(favouritePropRepository));
         this.propDragHandleService = propDragHandleService ?? throw new ArgumentNullException(nameof(propDragHandleService));
         this.propSelectionController = propSelectionController ?? throw new ArgumentNullException(nameof(propSelectionController));
         this.transformClipboard = transformClipboard ?? throw new ArgumentNullException(nameof(transformClipboard));
 
         this.propService.AddedProp += OnAddedProp;
         this.propService.RemovedProp += OnRemovedProp;
+        this.favouritePropRepository.AddedFavouriteProp += OnFavouritePropAddedOrRemoved;
+        this.favouritePropRepository.RemovedFavouriteProp += OnFavouritePropAddedOrRemoved;
+        this.favouritePropRepository.Refreshed += OnFavouritePropRepositoryRefreshed;
         this.propSelectionController.Selecting += OnSelectingProp;
         this.propSelectionController.Selected += OnSelectedProp;
 
@@ -87,6 +96,12 @@ public class PropManagerPane : BasePane
         toggleAllGizmos.ControlEvent += OnToggleAllGizmosChanged;
 
         gizmoSpaceLabel = new(Translation.Get("propManagerPane", "gizmoSpaceToggle"));
+
+        addToFavouritesButton = new(Translation.Get("propManagerPane", "addFavouriteButton"));
+        addToFavouritesButton.ControlEvent += OnAddFavouritePropButtonPushed;
+
+        removeFromFavouritesButton = new(Translation.Get("propManagerPane", "removeFavouriteButton"));
+        removeFromFavouritesButton.ControlEvent += OnRemoveFavouritePropButtonPushed;
 
         positionTransformControl = new(Translation.Get("propManagerPane", "positionControl"), Vector3.zero)
         {
@@ -196,6 +211,13 @@ public class PropManagerPane : BasePane
 
         GUILayout.EndHorizontal();
 
+        MpsGui.BlackLine();
+
+        if (isFavouriteProp)
+            removeFromFavouritesButton.Draw();
+        else
+            addToFavouritesButton.Draw();
+
         toggleAllHandlesHeader.Draw();
         MpsGui.WhiteLine();
 
@@ -245,6 +267,9 @@ public class PropManagerPane : BasePane
         toggleAllHandlesHeader.Text = Translation.Get("propManagerPane", "toggleAllHandlesHeader");
         paneHeader.Label = Translation.Get("propManagerPane", "header");
         noPropsLabel.Text = Translation.Get("propManagerPane", "noProps");
+
+        addToFavouritesButton.Label = Translation.Get("propManagerPane", "addFavouriteButton");
+        removeFromFavouritesButton.Label = Translation.Get("propManagerPane", "removeFavouriteButton");
     }
 
     private void UpdateControls()
@@ -372,6 +397,8 @@ public class PropManagerPane : BasePane
 
         propDropdown.SetSelectedIndexWithoutNotify(e.Index);
 
+        isFavouriteProp = favouritePropRepository.ContainsProp(prop.PropModel);
+
         UpdateControls();
     }
 
@@ -467,6 +494,47 @@ public class PropManagerPane : BasePane
             return;
 
         CurrentProp.Focus();
+    }
+
+    private void OnFavouritePropAddedOrRemoved(object sender, FavouritePropRepositoryEventArgs e)
+    {
+        if (CurrentProp is null)
+            return;
+
+        if (e.FavouriteProp.PropModel != CurrentProp.PropModel)
+            return;
+
+        isFavouriteProp = favouritePropRepository.ContainsProp(e.FavouriteProp.PropModel);
+    }
+
+    private void OnFavouritePropRepositoryRefreshed(object sender, EventArgs e)
+    {
+        if (CurrentProp is null)
+            return;
+
+        isFavouriteProp = favouritePropRepository.ContainsProp(CurrentProp.PropModel);
+    }
+
+    private void OnAddFavouritePropButtonPushed(object sender, EventArgs e)
+    {
+        if (CurrentProp is null)
+            return;
+
+        if (favouritePropRepository.ContainsProp(CurrentProp.PropModel))
+            return;
+
+        favouritePropRepository.Add(CurrentProp.PropModel);
+    }
+
+    private void OnRemoveFavouritePropButtonPushed(object sender, EventArgs e)
+    {
+        if (CurrentProp is null)
+            return;
+
+        if (!favouritePropRepository.ContainsProp(CurrentProp.PropModel))
+            return;
+
+        favouritePropRepository.Remove(CurrentProp.PropModel);
     }
 
     private void OnTransformControlChanged(object sender, TransformComponentChangeEventArgs e)

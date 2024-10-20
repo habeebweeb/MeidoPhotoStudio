@@ -316,7 +316,8 @@
     "background": "Background",
     "myRoom": "My Room Custom",
     "menu": "Mod",
-    "handItem": "Hand items"
+    "handItem": "Hand items",
+    "favourite": "Favourite Props"
   },
   "myRoomPane": {
     "header": "My Room"
@@ -344,6 +345,23 @@
   "otherPropsPane": {
     "searchBarPlaceholder": "Search other props"
   },
+  "favouritePropsPane": {
+    "noFavouritePropsLabel": "No favouirte props",
+    "descendingToggle": "Descending",
+    "searchBarPlaceholder": "Search favourite props",
+    "refreshButton": "Refresh",
+    "editModeToggle": "Edit"
+  },
+  "favouritePropsSortTypes": {
+    "name": "Name",
+    "dateAdded": "Date Added"
+  },
+  "renameFavouritePropModal": {
+    "renameHeader": "Rename '{0}'",
+    "renameButton": "Rename",
+    "cancelButton": "Cancel",
+    "renameTextFieldPlaceholder": "New name"
+  },
   "propManagerPane": {
     "header": "Manage Props",
     "dragPointToggle": "Cube",
@@ -362,7 +380,9 @@
     "focusPropButton": "Focus",
     "positionControl": "Position",
     "rotationControl": "Rotation",
-    "scaleControl": "Scale"
+    "scaleControl": "Scale",
+    "addFavouriteButton": "Add to favourites",
+    "removeFavouriteButton": "Remove from favourites"
   },
   "propShapeKeyPane": {
     "header": "Prop Shape Keys"

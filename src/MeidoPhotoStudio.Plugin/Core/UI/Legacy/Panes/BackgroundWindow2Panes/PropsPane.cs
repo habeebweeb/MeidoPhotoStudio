@@ -29,6 +29,7 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
         MyRoom,
         Menu,
         HandItem,
+        Favourite,
     }
 
     public BasePane this[PropCategory category]
@@ -74,6 +75,12 @@ public class PropsPane : BasePane, IEnumerable<KeyValuePair<PropsPane.PropCatego
 
         foreach (var pane in propPanes.Values)
             pane.SetParent(window);
+    }
+
+    public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
+    {
+        foreach (var pane in propPanes.Values)
+            pane.OnScreenDimensionsChanged(newScreenDimensions);
     }
 
     protected override void ReloadTranslation()

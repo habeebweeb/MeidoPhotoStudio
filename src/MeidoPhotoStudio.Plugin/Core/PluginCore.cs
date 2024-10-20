@@ -68,6 +68,7 @@ public partial class PluginCore : MonoBehaviour
     private TransformWatcher transformWatcher;
     private UndoRedoService undoRedoService;
     private ScreenSizeChecker screenSizeChecker;
+    private FavouritePropRepository favouritePropRepository;
 
     public bool UIActive
     {
@@ -312,6 +313,12 @@ public partial class PluginCore : MonoBehaviour
             menuPropRepository,
             otherPropRepository);
 
+        favouritePropRepository = new FavouritePropRepository(
+            new FavouritePropListSerializer(
+                Path.Combine(BepInEx.Paths.ConfigPath, Plugin.PluginName),
+                propModelSchemaBuilder,
+                propSchemaMapper));
+
         // TODO: This is kinda stupid tbf. Maybe look into writing a code generator and attributes to create these
         // "schema" things instead of manually building it.
         // Would that even be possible? idk.
@@ -482,9 +489,10 @@ public partial class PluginCore : MonoBehaviour
                             iconCache),
                         [PropsPane.PropCategory.MyRoom] = new MyRoomPropsPane(
                             propService, myRoomPropRepository, iconCache),
+                        [PropsPane.PropCategory.Favourite] = new FavouritePropsPane(propService, favouritePropRepository, iconCache),
                     },
+                    new PropManagerPane(propService, favouritePropRepository, propDragHandleService, propSelectionController, new()),
                     new PropShapeKeyPane(propSelectionController),
-                    new PropManagerPane(propService, propDragHandleService, propSelectionController, new()),
                     new AttachPropPane(characterService, propAttachmentService, propSelectionController),
                 },
             [Constants.Window.Settings] = new SettingsWindowPane(inputConfiguration, inputRemapper),
@@ -519,6 +527,8 @@ public partial class PluginCore : MonoBehaviour
         transformWatcher.enabled = true;
         gizmoClickHandler.enabled = true;
         screenSizeChecker.enabled = true;
+
+        favouritePropRepository.Refresh();
 
         // TODO: Move all this activation/deactivation stuff.
         backgroundRepository.Refresh();
@@ -667,6 +677,7 @@ public partial class PluginCore : MonoBehaviour
             Modal.Close();
 
             configuration.Save();
+            favouritePropRepository.Save();
 
             if (customMaidSceneService.EditScene)
                 return;
