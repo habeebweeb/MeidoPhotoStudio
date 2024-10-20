@@ -111,6 +111,22 @@ public class FaceController : INotifyPropertyChanged
             Maid.FaceAnime(blendSet.BlendSetName, 0f);
 
             BackupBlendSet();
+
+            // NOTE: Maid.FaceAnime indirectly calls TMorph.MulBlendValues which essentially does what this loop does
+            // but directly calls TMorph.SetBlendValues. This is required for maid ijiri support.
+            foreach (var key in Face.hash.Keys)
+            {
+                var index = (int)Face.hash[key];
+                var value = Face.dicBlendSet[Maid.ActiveFace][index];
+
+                if (key is "nosefook")
+                    Maid.boNoseFook = Convert.ToBoolean(value);
+
+                Face.SetBlendValues(index, value);
+            }
+
+            Face.FixBlendValues();
+            Face.FixBlendValues_Face();
         }
 
         void ApplyCustomBlendSet(IBlendSetModel blendSet)
@@ -151,9 +167,6 @@ public class FaceController : INotifyPropertyChanged
             return;
 
         var index = (int)Face.hash[Face.GP01FbFaceHashKey(key)];
-
-        if (value == Face.dicBlendSet[Maid.ActiveFace][index])
-            return;
 
         Face.dicBlendSet[Maid.ActiveFace][index] = value;
 
