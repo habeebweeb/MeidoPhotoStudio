@@ -218,6 +218,7 @@
   "expressionPane": {
     "header": "Facial Expression",
     "editShapeKeysToggle": "Edit",
+    "refreshShapeKeyRangeButton": "Refresh Slider Range",
     "noShapeKeys": "No shape keys",
     "blinkToggle": "Blink",
     "baseTab": "Base Game",

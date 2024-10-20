@@ -240,6 +240,9 @@ public partial class PluginCore : MonoBehaviour
         var faceShapeKeyConfiguration = new FaceShapeKeyConfiguration(configuration);
         var facialExpressionBuilder = new FacialExpressionBuilder(faceShapeKeyConfiguration);
 
+        var faceShapekeyRangeConfiguration = new ShapeKeyRangeConfiguration(
+            new ShapeKeyRangeSerializer(Path.Combine(databasePath, "face_shapekey_range.json")));
+
         messageWindowManager = new();
         messageWindowManager.Activate();
 
@@ -431,7 +434,7 @@ public partial class PluginCore : MonoBehaviour
                     customBlendSetRepository,
                     facialExpressionBuilder,
                     characterSelectionController),
-                new ExpressionPane(characterSelectionController, faceShapeKeyConfiguration),
+                new ExpressionPane(characterSelectionController, faceShapeKeyConfiguration, faceShapekeyRangeConfiguration),
             ],
         };
 

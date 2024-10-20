@@ -1,0 +1,137 @@
+/*
+  This file contains the ranges for face shape key sliders.
+
+  By default the range is 0 to 1 if not defined.
+*/
+{
+  // Eye Shut
+  "eyeclose": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Eye Smile
+  "eyeclose2": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Glare
+  "eyeclose3": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Wide Eyes
+  "eyebig": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Wink 1
+  "eyeclose6": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Wink 2
+  "eyeclose5": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Wink R 1
+  "eyeclose8": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Wink R 2
+  "eyeclose7": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Highlight
+  "hitomih": {
+    "lower": 0,
+    "upper": 2
+  },
+  // Pupil Size
+  "hitomis": {
+    "lower": 0,
+    "upper": 3
+  },
+  // Brow 1
+  "mayuha": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Brow 2
+  "mayuw": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Brow Up
+  "mayuup": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Brow Down 1
+  "mayuv": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Brow Down 2
+  "mayuvhalf": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Mouth Open 1
+  "moutha": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Mouth Open 2
+  "mouths": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Mouth Narrow
+  "mouthc": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Mouth Widen
+  "mouthi": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Smile
+  "mouthup": {
+    "lower": 0,
+    "upper": 1.4
+  },
+  // Frown
+  "mouthdw": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Mouth Pucker
+  "mouthhe": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Grin
+  "mouthuphalf": {
+    "lower": 0,
+    "upper": 2
+  },
+  // Tongue Out
+  "tangout": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Tongue Up
+  "tangup": {
+    "lower": 0,
+    "upper": 1
+  },
+  // Tongue Base
+  "tangopen": {
+    "lower": 0,
+    "upper": 1
+  }
+}

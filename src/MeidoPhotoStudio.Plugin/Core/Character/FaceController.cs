@@ -122,7 +122,7 @@ public class FaceController : INotifyPropertyChanged
             ApplyBackupBlendSet();
 
             foreach (var (key, value) in facialExpressionSet.Where(kvp => ContainsExpressionKey(kvp.Key)))
-                SetBlendValue(key, Mathf.Clamp(value, 0f, 1f), false);
+                SetBlendValue(key, value, false);
         }
     }
 

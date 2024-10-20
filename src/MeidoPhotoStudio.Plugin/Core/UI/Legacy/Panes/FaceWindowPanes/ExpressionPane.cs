@@ -34,9 +34,11 @@ public class ExpressionPane : BasePane
 
     private readonly SelectionController<CharacterController> characterSelectionController;
     private readonly FaceShapeKeyConfiguration faceShapeKeyConfiguration;
+    private readonly ShapeKeyRangeConfiguration shapeKeyRangeConfiguration;
     private readonly Dictionary<string, BaseControl> controls = new(StringComparer.Ordinal);
     private readonly SelectionGrid keySourceGrid;
     private readonly Toggle blinkToggle;
+    private readonly Button refreshRangeButton;
     private readonly Toggle editShapeKeysToggle;
     private readonly PaneHeader paneHeader;
     private readonly Dropdown<string> addShapeKeyDropdown;
@@ -48,11 +50,14 @@ public class ExpressionPane : BasePane
 
     public ExpressionPane(
         SelectionController<CharacterController> characterSelectionController,
-        FaceShapeKeyConfiguration faceShapeKeyConfiguration)
+        FaceShapeKeyConfiguration faceShapeKeyConfiguration,
+        ShapeKeyRangeConfiguration shapeKeyRangeConfiguration)
     {
         this.characterSelectionController = characterSelectionController ?? throw new ArgumentNullException(nameof(characterSelectionController));
         this.faceShapeKeyConfiguration = faceShapeKeyConfiguration ?? throw new ArgumentNullException(nameof(faceShapeKeyConfiguration));
+        this.shapeKeyRangeConfiguration = shapeKeyRangeConfiguration ?? throw new ArgumentNullException(nameof(shapeKeyRangeConfiguration));
 
+        this.shapeKeyRangeConfiguration.Refreshed += OnFaceShapeKeyRangeConfigurationRefreshed;
         this.characterSelectionController.Selecting += OnCharacterSelectionChanging;
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
@@ -67,7 +72,10 @@ public class ExpressionPane : BasePane
 
         foreach (var hashKey in EyeHashes.Concat(MouthHashes).Concat(shapeKeys))
         {
-            var slider = new Slider(Translation.Get("faceBlendValues", hashKey, false), 0f, 1f);
+            if (!shapeKeyRangeConfiguration.TryGetRange(hashKey, out var range))
+                range = new(0f, 1f);
+
+            var slider = new Slider(Translation.Get("faceBlendValues", hashKey, false), range.Lower, range.Upper);
 
             slider.ControlEvent += OnControlChanged(hashKey);
 
@@ -85,6 +93,9 @@ public class ExpressionPane : BasePane
 
         blinkToggle = new(Translation.Get("expressionPane", "blinkToggle"), true);
         blinkToggle.ControlEvent += OnBlinkToggleChanged;
+
+        refreshRangeButton = new(Translation.Get("expressionPane", "refreshShapeKeyRangeButton"));
+        refreshRangeButton.ControlEvent += OnRefreshRangeButtonPushed;
 
         keySourceGrid = new(Translation.GetArray("expressionPane", KeySourceGridTranslationKeys));
 
@@ -105,7 +116,13 @@ public class ExpressionPane : BasePane
         if (!paneHeader.Enabled)
             return;
 
+        GUILayout.BeginHorizontal();
+
         blinkToggle.Draw();
+
+        refreshRangeButton.Draw(GUILayout.ExpandWidth(false));
+
+        GUILayout.EndHorizontal();
 
         MpsGui.BlackLine();
 
@@ -250,6 +267,7 @@ public class ExpressionPane : BasePane
         blinkToggle.Label = Translation.Get("expressionPane", "blinkToggle");
         keySourceGrid.SetItemsWithoutNotify(Translation.GetArray("expressionPane", KeySourceGridTranslationKeys));
         paneHeader.Label = Translation.Get("expressionPane", "header");
+        refreshRangeButton.Label = Translation.Get("expressionPane", "refreshShapeKeyRangeButton");
     }
 
     private EventHandler OnControlChanged(string hashKey) =>
@@ -268,6 +286,9 @@ public class ExpressionPane : BasePane
             CurrentFace[hashKey] = value;
         };
 
+    private void OnRefreshRangeButtonPushed(object sender, EventArgs e) =>
+        shapeKeyRangeConfiguration.Refresh();
+
     private void OnBlinkToggleChanged(object sender, EventArgs e)
     {
         if (CurrentFace is null)
@@ -280,7 +301,10 @@ public class ExpressionPane : BasePane
     {
         if (!controls.TryGetValue(e.ChangedShapeKey, out var control))
         {
-            control = new Slider(e.ChangedShapeKey, 0f, 1f);
+            if (!shapeKeyRangeConfiguration.TryGetRange(e.ChangedShapeKey, out var range))
+                range = new(0f, 1f);
+
+            control = new Slider(e.ChangedShapeKey, range.Lower, range.Upper);
 
             control.ControlEvent += OnControlChanged(e.ChangedShapeKey);
 
@@ -297,6 +321,18 @@ public class ExpressionPane : BasePane
         UpdateShapekeyList();
 
         shapeKeys = [.. faceShapeKeyConfiguration.CustomShapeKeys];
+    }
+
+    private void OnFaceShapeKeyRangeConfigurationRefreshed(object sender, EventArgs e)
+    {
+        foreach (var (key, slider) in controls.Where(kvp => kvp.Value is Slider).Select(kvp => (kvp.Key, (Slider)kvp.Value)))
+        {
+            if (!shapeKeyRangeConfiguration.TryGetRange(key, out var range))
+                range = new(0f, 1f);
+
+            slider.Left = range.Lower;
+            slider.Right = range.Upper;
+        }
     }
 
     private void OnShapeKeyRemoved(object sender, FaceShapeKeyConfigurationEventArgs e)
