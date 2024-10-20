@@ -20,7 +20,6 @@ public class SearchBar<T> : DropdownBase<T>
 
         textField = new() { HasClearButton = true };
         textField.GainedFocus += OnFocusGained;
-        textField.ControlEvent += OnSearchSubmitted;
         textField.ChangedValue += OnSearchQueryChanged;
     }
 
@@ -80,16 +79,6 @@ public class SearchBar<T> : DropdownBase<T>
 
     protected override void OnDropdownClosed(bool clickedButton) =>
         clickedWhileOpen = clickedButton;
-
-    private void OnSearchSubmitted(object sender, EventArgs e)
-    {
-        if (Count is 0)
-            return;
-
-        DropdownHelper.CloseDropdown();
-
-        SelectedValue?.Invoke(this, new(SelectedItem));
-    }
 
     private void OnSearchQueryChanged(object sender, EventArgs e) =>
         Search(textField.Value);
