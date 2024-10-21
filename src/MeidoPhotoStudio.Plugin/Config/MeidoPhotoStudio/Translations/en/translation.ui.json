@@ -16,6 +16,7 @@
     "header": "Call Characters"
   },
   "characterSortTypeDropdown": {
+    "none": "No Sorting",
     "default": "Default",
     "defaultNoSchedule": "Default (No Schedule)",
     "firstName": "First Name",

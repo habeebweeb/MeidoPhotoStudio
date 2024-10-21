@@ -21,6 +21,7 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
     private static readonly IComparer<CharacterModel> LastNameComparer =
         ComparisonComparer<CharacterModel>.Create(CompareLastName);
 
+    private readonly IComparer<CharacterModel> noSortingComparer;
     private readonly CharacterRepository characterRepository;
     private readonly CharacterService characterService;
     private readonly CustomMaidSceneService customMaidSceneService;
@@ -28,6 +29,7 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
     private readonly List<CharacterModel> selectedCharacters = [];
     private readonly HashSet<CharacterModel> selectedCharactersSet = [];
     private readonly List<CharacterModel> characters = [];
+    private readonly Dictionary<CharacterModel, int> noSortingMap = [];
 
     private string searchQuery;
     private bool activeOnly;
@@ -47,12 +49,15 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
         this.editModeMaidService = editModeMaidService ?? throw new ArgumentNullException(nameof(editModeMaidService));
 
         this.characterService.CalledCharacters += OnCharactersCalled;
+
+        noSortingComparer = ComparisonComparer<CharacterModel>.Create(CompareNoSorting);
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
 
     public enum SortType
     {
+        None,
         Default,
         DefaultNoSchedule,
         FirstName,
@@ -90,6 +95,7 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
 
             sortComparer = currentSortType switch
             {
+                SortType.None => noSortingComparer,
                 SortType.Default => DefaultComparer,
                 SortType.DefaultNoSchedule => DefaultNoScheduleComparer,
                 SortType.FirstName => FirstNameComparer,
@@ -209,10 +215,15 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
         ClearSelected();
 
         searchQuery = string.Empty;
-        currentSortType = SortType.Default;
-        sortComparer = DefaultComparer;
+        currentSortType = SortType.None;
+        sortComparer = noSortingComparer;
         descending = false;
         activeOnly = false;
+
+        noSortingMap.Clear();
+
+        for (var i = 0; i < characterRepository.Count; i++)
+            noSortingMap[characterRepository[i]] = i;
 
         characters.Clear();
         characters.AddRange(characterRepository.OrderBy(sortComparer));
@@ -237,6 +248,9 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
     private static int CompareLastName(CharacterModel a, CharacterModel b) =>
         string.Compare(a.LastName, b.LastName);
 
+    private int CompareNoSorting(CharacterModel a, CharacterModel b) =>
+        noSortingMap[a].CompareTo(noSortingMap[b]);
+
     private void UpdateCharacterList()
     {
         characters.Clear();
@@ -245,17 +259,13 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
             ? characterService.ActiveCharacterModels
             : characterRepository;
 
-        if (string.IsNullOrEmpty(searchQuery))
-        {
-            characters.AddRange(characterList.OrderBy(sortComparer, Descending));
+        var filteredCharacters = characterList;
 
-            return;
-        }
+        if (!string.IsNullOrEmpty(searchQuery))
+            filteredCharacters = filteredCharacters
+                .Where(character => character.FullName().Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase));
 
-        characters.AddRange(
-            characterList
-                .Where(character => character.FullName().Contains(searchQuery, StringComparison.CurrentCultureIgnoreCase))
-                .OrderBy(sortComparer, Descending));
+        characters.AddRange(filteredCharacters.OrderBy(sortComparer, Descending));
     }
 
     private void OnCharactersCalled(object sender, CharacterServiceEventArgs e)
