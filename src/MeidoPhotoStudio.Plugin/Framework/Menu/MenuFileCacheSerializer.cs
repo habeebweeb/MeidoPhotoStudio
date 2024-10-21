@@ -5,7 +5,7 @@ namespace MeidoPhotoStudio.Plugin.Framework.Menu;
 
 public class MenuFileCacheSerializer : IMenuFileCacheSerializer
 {
-    private const int CacheVersion = 2;
+    private const int CacheVersion = 3;
 
     private readonly string cacheDirectory;
 
@@ -68,7 +68,7 @@ public class MenuFileCacheSerializer : IMenuFileCacheSerializer
 
             var builder = new MenuFilePropModel.Builder(menuFilename, gameMenu)
                 .WithName(reader.ReadNullableString())
-                .WithMpn((MPN)reader.ReadInt32())
+                .WithMpn((MPN)Enum.Parse(typeof(MPN), reader.ReadString(), true))
                 .WithIconFilename(reader.ReadNullableString())
                 .WithPriority(reader.ReadSingle())
                 .WithModelFilename(reader.ReadNullableString());
@@ -128,7 +128,7 @@ public class MenuFileCacheSerializer : IMenuFileCacheSerializer
             writer.Write(menuFile.Filename);
             writer.Write(menuFile.GameMenu);
             writer.WriteNullableString(menuFile.Name);
-            writer.Write((int)menuFile.CategoryMpn);
+            writer.Write(menuFile.CategoryMpn.ToString());
             writer.WriteNullableString(menuFile.IconFilename);
             writer.Write(menuFile.Priority);
             writer.WriteNullableString(menuFile.ModelFilename);
