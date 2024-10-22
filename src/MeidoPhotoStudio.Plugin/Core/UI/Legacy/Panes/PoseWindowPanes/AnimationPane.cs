@@ -19,8 +19,8 @@ public class AnimationPane : BasePane
 
     private readonly Slider animationSlider;
     private readonly Toggle playPauseButton;
-    private readonly Button stepLeftButton;
-    private readonly Button stepRightButton;
+    private readonly RepeatButton stepLeftButton;
+    private readonly RepeatButton stepRightButton;
     private readonly NumericalTextField stepAmountField;
     private readonly SelectionController<CharacterController> characterSelectionController;
     private readonly CharacterUndoRedoService characterUndoRedoService;
@@ -48,10 +48,10 @@ public class AnimationPane : BasePane
         playPauseButton = new(PauseIcon, true);
         playPauseButton.ControlEvent += OnPlayPauseButtonPushed;
 
-        stepLeftButton = new("<");
+        stepLeftButton = new("<", 3f);
         stepLeftButton.ControlEvent += OnStepLeftButtonPushed;
 
-        stepRightButton = new(">");
+        stepRightButton = new(">", 3f);
         stepRightButton.ControlEvent += OnStepRightButtonPushed;
 
         stepAmountField = new(0.01f);

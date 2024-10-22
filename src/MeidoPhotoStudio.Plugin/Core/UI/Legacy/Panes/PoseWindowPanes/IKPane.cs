@@ -19,6 +19,8 @@ public class IKPane : BasePane
     private readonly Toggle customFloorHeightToggle;
     private readonly NumericalTextField floorHeightTextfield;
     private readonly Button flipButton;
+    private readonly RepeatButton decreaseFloorHeightButton;
+    private readonly RepeatButton increaseFloorHeightButton;
     private readonly Header customFloorHeightHeader;
 
     public IKPane(
@@ -51,6 +53,12 @@ public class IKPane : BasePane
 
         customFloorHeightToggle = new(Translation.Get("maidPoseWindow", "customFloorHeightEnabledToggle"), false);
         customFloorHeightToggle.ControlEvent += OnCustomFloorHeightToggleChanged;
+
+        decreaseFloorHeightButton = new("<", 3f);
+        decreaseFloorHeightButton.ControlEvent += OnDecreaseFloorHeightButtonPushed;
+
+        increaseFloorHeightButton = new(">", 3f);
+        increaseFloorHeightButton.ControlEvent += OnIncreaseFloorHeightButtonPushed;
 
         floorHeightTextfield = new(0f);
         floorHeightTextfield.ControlEvent += OnFloorHeightChanged;
@@ -125,11 +133,8 @@ public class IKPane : BasePane
 
             GUI.enabled = enabled && customFloorHeightToggle.Value;
 
-            if (GUILayout.Button("<", noExpandWidth))
-                floorHeightTextfield.Value -= 0.01f;
-
-            if (GUILayout.Button(">", noExpandWidth))
-                floorHeightTextfield.Value += 0.01f;
+            decreaseFloorHeightButton.Draw(noExpandWidth);
+            increaseFloorHeightButton.Draw(noExpandWidth);
 
             floorHeightTextfield.Draw(GUILayout.Width(70f));
 
@@ -284,6 +289,28 @@ public class IKPane : BasePane
             return;
 
         CurrentCharacter.Clothing.CustomFloorHeight = customFloorHeightToggle.Value;
+    }
+
+    private void OnIncreaseFloorHeightButtonPushed(object sender, EventArgs e)
+    {
+        if (CurrentCharacter is null)
+            return;
+
+        if (!CurrentCharacter.Clothing.CustomFloorHeight)
+            return;
+
+        CurrentCharacter.Clothing.FloorHeight += 0.01f;
+    }
+
+    private void OnDecreaseFloorHeightButtonPushed(object sender, EventArgs e)
+    {
+        if (CurrentCharacter is null)
+            return;
+
+        if (!CurrentCharacter.Clothing.CustomFloorHeight)
+            return;
+
+        CurrentCharacter.Clothing.FloorHeight -= 0.01f;
     }
 
     private void OnFloorHeightChanged(object sender, EventArgs e)
