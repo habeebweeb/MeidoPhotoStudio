@@ -1,6 +1,7 @@
 using System.ComponentModel;
 
 using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
+using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
@@ -113,9 +114,7 @@ public class IKDragHandleService : INotifyPropertyChanged
             return;
         }
 
-        var bodyMpn = (MPN)Enum.Parse(typeof(MPN), nameof(MPN.body));
-
-        if (!e.ChangingSlots.Contains(bodyMpn))
+        if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
             return;
 
         DestroyController(controllers[character]);

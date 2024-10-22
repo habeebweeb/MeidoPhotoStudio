@@ -428,9 +428,7 @@ public class IKController : INotifyPropertyChanged
 
     private void OnCharacterProcessing(object sender, CharacterProcessingEventArgs e)
     {
-        var bodyMpn = (MPN)Enum.Parse(typeof(MPN), nameof(MPN.body));
-
-        if (!e.ChangingSlots.Contains(bodyMpn))
+        if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
             return;
 
         foreach (var rotationLimit in rotationLimitCache.Values)

@@ -68,7 +68,7 @@ public class MenuFileCacheSerializer : IMenuFileCacheSerializer
 
             var builder = new MenuFilePropModel.Builder(menuFilename, gameMenu)
                 .WithName(reader.ReadNullableString())
-                .WithMpn((MPN)Enum.Parse(typeof(MPN), reader.ReadString(), true))
+                .WithMpn(SafeMpn.GetValue(reader.ReadString()))
                 .WithIconFilename(reader.ReadNullableString())
                 .WithPriority(reader.ReadSingle())
                 .WithModelFilename(reader.ReadNullableString());

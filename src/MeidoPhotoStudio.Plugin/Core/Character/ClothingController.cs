@@ -13,6 +13,10 @@ public class ClothingController(CharacterController characterController, Transfo
 {
     private const float DefaultFloorHeight = -1000f;
 
+    private static readonly MPN KousokuUpper = SafeMpn.GetValue(nameof(MPN.kousoku_upper));
+    private static readonly MPN KousokuLower = SafeMpn.GetValue(nameof(MPN.kousoku_lower));
+    private static readonly MPN[] AttachedAccessoryMpn = [KousokuUpper, KousokuLower];
+
     private readonly CharacterController characterController = characterController
         ?? throw new ArgumentNullException(nameof(characterController));
 
@@ -181,41 +185,47 @@ public class ClothingController(CharacterController characterController, Transfo
     {
         _ = accessoryModel ?? throw new ArgumentNullException(nameof(accessoryModel));
 
-        if (accessoryModel.CategoryMpn is not (MPN.kousoku_lower or MPN.kousoku_upper))
+        if (!IsAccessory(accessoryModel.CategoryMpn))
             return;
 
         Maid.SetProp(accessoryModel.CategoryMpn, accessoryModel.Filename, 0, true);
         Maid.AllProcProp();
 
-        if (accessoryModel.CategoryMpn is MPN.kousoku_lower)
+        if (accessoryModel.CategoryMpn == KousokuLower)
             AttachedLowerAccessory = accessoryModel;
         else
             AttachedUpperAccessory = accessoryModel;
     }
 
-    public void DetachAccessory(MPN category)
-    {
-        if (category is not (MPN.kousoku_lower or MPN.kousoku_upper))
-            throw new ArgumentException($"'{nameof(category)}' is not a valid accessory category");
+    public void DetachLowerAccessory() =>
+        DetachAccessory(KousokuLower);
 
-        Maid.ResetProp(category, false);
-        Maid.AllProcProp();
-
-        if (category is MPN.kousoku_lower)
-            AttachedLowerAccessory = null;
-        else
-            AttachedUpperAccessory = null;
-    }
+    public void DetachUpperAccessory() =>
+        DetachAccessory(KousokuUpper);
 
     public void DetachAllAccessories()
     {
-        Maid.ResetProp(MPN.kousoku_upper, false);
-        Maid.ResetProp(MPN.kousoku_lower, false);
+        Maid.ResetProp(KousokuLower, false);
+        Maid.ResetProp(KousokuUpper, false);
 
         Maid.AllProcProp();
 
         AttachedLowerAccessory = null;
         AttachedUpperAccessory = null;
+    }
+
+    private static bool IsAccessory(MPN value) =>
+        AttachedAccessoryMpn.Any(mpn => mpn == value);
+
+    private void DetachAccessory(MPN category)
+    {
+        Maid.ResetProp(category, false);
+        Maid.AllProcProp();
+
+        if (category == KousokuLower)
+            AttachedLowerAccessory = null;
+        else
+            AttachedUpperAccessory = null;
     }
 
     private CostumeType CurlingToCostumeType(Curling curling) =>

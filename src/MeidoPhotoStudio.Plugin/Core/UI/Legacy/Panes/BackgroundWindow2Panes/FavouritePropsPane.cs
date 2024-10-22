@@ -1,6 +1,7 @@
 using MeidoPhotoStudio.Plugin.Core.Database.Props;
 using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core.Props;
+using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
@@ -8,6 +9,8 @@ namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
 public class FavouritePropsPane : BasePane, IVirtualListHandler
 {
+    private static readonly MPN[] IgnoredMpn = [.. SafeMpn.GetValues(nameof(MPN.handitem), nameof(MPN.kousoku_lower), nameof(MPN.kousoku_upper))];
+
     private readonly PropService propService;
     private readonly FavouritePropRepository favouritePropRepository;
     private readonly IconCache iconCache;
@@ -300,7 +303,7 @@ public class FavouritePropsPane : BasePane, IVirtualListHandler
 
         var icon = favouriteProp.PropModel switch
         {
-            MenuFilePropModel model when model.CategoryMpn is not (MPN.handitem or MPN.kousoku_lower or MPN.kousoku_upper) => iconCache.GetMenuIcon(model),
+            MenuFilePropModel model when !IgnoredMpn.Any(mpn => model.CategoryMpn == mpn) => iconCache.GetMenuIcon(model),
             MyRoomPropModel model => iconCache.GetMyRoomIcon(model),
             _ => null,
         };
@@ -326,10 +329,8 @@ public class FavouritePropsPane : BasePane, IVirtualListHandler
 
         var itemHeight = favouriteProps[index].PropModel switch
         {
-            MenuFilePropModel menuFile when menuFile.CategoryMpn is not (MPN.handitem or MPN.kousoku_lower or MPN.kousoku_upper) =>
-                iconHeight,
-            MyRoomPropModel =>
-                iconHeight,
+            MenuFilePropModel menuFile when !IgnoredMpn.Any(mpn => menuFile.CategoryMpn == mpn) => iconHeight,
+            MyRoomPropModel => iconHeight,
             _ => favouritePropButtonStyle.Style.CalcHeight(GetContent(index), buttonWidth),
         };
 

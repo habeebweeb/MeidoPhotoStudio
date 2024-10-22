@@ -1,6 +1,7 @@
 using MeidoPhotoStudio.Plugin.Core.Database.Props;
 using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;
+using MeidoPhotoStudio.Plugin.Framework;
 
 namespace MeidoPhotoStudio.Plugin.Core.Props;
 
@@ -61,7 +62,7 @@ public class PropSchemaToPropModelMapper(
 
                 var menuFile = new MenuFileParser().ParseMenuFile(menuFilePropModelSchema.Filename, false);
 
-                if (menuFile.CategoryMpn is MPN.handitem)
+                if (menuFile.CategoryMpn == SafeMpn.GetValue(nameof(MPN.handitem)))
                     menuFile.Name = Translation.Get("propNames", menuFile.Filename);
 
                 return menuFile;

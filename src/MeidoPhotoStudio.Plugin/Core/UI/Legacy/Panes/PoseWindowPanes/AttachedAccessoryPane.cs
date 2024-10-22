@@ -3,6 +3,7 @@ using System.ComponentModel;
 using MeidoPhotoStudio.Plugin.Core.Character;
 using MeidoPhotoStudio.Plugin.Core.Database.Props;
 using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
+using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
@@ -13,8 +14,11 @@ public class AttachedAccessoryPane : BasePane
     private const int NoAccessoryIndex = 0;
     private const string NoAccessoryTranslationKey = "noAccessory";
 
+    private static readonly MPN KousokuUpper = SafeMpn.GetValue(nameof(MPN.kousoku_upper));
+    private static readonly MPN KousokuLower = SafeMpn.GetValue(nameof(MPN.kousoku_lower));
+    private static readonly MPN[] AccessoryCategory = [KousokuUpper, KousokuLower];
+
     private static readonly string[] AccessoryCategoryTranslationKeys = ["upperAccessoryTab", "lowerAccessoryTab"];
-    private static readonly MPN[] AccessoryCategory = [MPN.kousoku_upper, MPN.kousoku_lower];
 
     private readonly MenuPropRepository menuPropRepository;
     private readonly SelectionController<CharacterController> characterSelectionController;
@@ -138,9 +142,16 @@ public class AttachedAccessoryPane : BasePane
             return;
 
         if (accessoryDropdown.SelectedItemIndex is NoAccessoryIndex)
-            CurrentClothing.DetachAccessory(CurrentCategory);
+        {
+            if (CurrentCategory == SafeMpn.GetValue(nameof(MPN.kousoku_lower)))
+                CurrentClothing.DetachLowerAccessory();
+            else
+                CurrentClothing.DetachUpperAccessory();
+        }
         else
+        {
             CurrentClothing.AttachAccessory(accessoryDropdown.SelectedItem);
+        }
     }
 
     private void OnDetachAllButtonPressed(object sender, EventArgs e)
@@ -177,8 +188,8 @@ public class AttachedAccessoryPane : BasePane
 
         (var changedCategory, var changedAccessory) = e.PropertyName switch
         {
-            nameof(ClothingController.AttachedLowerAccessory) => (MPN.kousoku_lower, controller.AttachedLowerAccessory),
-            nameof(ClothingController.AttachedUpperAccessory) => (MPN.kousoku_upper, controller.AttachedUpperAccessory),
+            nameof(ClothingController.AttachedLowerAccessory) => (KousokuLower, controller.AttachedLowerAccessory),
+            nameof(ClothingController.AttachedUpperAccessory) => (KousokuUpper, controller.AttachedUpperAccessory),
             _ => (MPN.null_mpn, null),
         };
 
@@ -209,7 +220,7 @@ public class AttachedAccessoryPane : BasePane
         if (CurrentClothing is null)
             return;
 
-        var currentAccessory = CurrentCategory is MPN.kousoku_lower
+        var currentAccessory = CurrentCategory == KousokuLower
             ? CurrentClothing.AttachedLowerAccessory
             : CurrentClothing.AttachedUpperAccessory;
 

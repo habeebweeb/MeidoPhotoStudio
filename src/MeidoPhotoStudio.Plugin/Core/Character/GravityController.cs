@@ -6,6 +6,9 @@ public abstract class GravityController : INotifyPropertyChanged
 {
     protected readonly CharacterController character;
 
+    private static readonly MPN GravityMpnStart = (MPN)Enum.Parse(typeof(MPN_TYPE_RANGE), nameof(MPN_TYPE_RANGE.BODY_RELOAD_START)) - 1;
+    private static readonly MPN GravityMpnEnd = (MPN)Enum.Parse(typeof(MPN_TYPE_RANGE), nameof(MPN_TYPE_RANGE.WEAR_END));
+
     private readonly TransformWatcher transformWatcher;
 
     private GravityTransformControl transformControl;
@@ -88,10 +91,7 @@ public abstract class GravityController : INotifyPropertyChanged
         if (transformControl == null)
             return;
 
-        var mpnStart = (MPN)Enum.Parse(typeof(MPN_TYPE_RANGE), nameof(MPN_TYPE_RANGE.BODY_RELOAD_START)) - 1;
-        var mpnEnd = (MPN)Enum.Parse(typeof(MPN_TYPE_RANGE), nameof(MPN_TYPE_RANGE.WEAR_END));
-
-        if (!e.ChangingSlots.Any(slot => slot >= mpnStart || slot <= mpnEnd))
+        if (!e.ChangingSlots.Any(slot => slot >= GravityMpnStart || slot <= GravityMpnEnd))
             return;
 
         transformWatcher.Unsubscribe(Transform);

@@ -104,15 +104,40 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
             IMenuPropsConfiguration menuPropsConfiguration,
             IMenuFileCacheSerializer menuFileCacheSerializer)
         {
-            var validMpn = new HashSet<MPN>()
-            {
-                MPN.acchat, MPN.headset, MPN.wear, MPN.skirt, MPN.onepiece, MPN.mizugi, MPN.bra, MPN.panz, MPN.stkg,
-                MPN.shoes, MPN.acckami, MPN.megane, MPN.acchead, MPN.acchana, MPN.accmimi, MPN.glove, MPN.acckubi,
-                MPN.acckubiwa, MPN.acckamisub, MPN.accnip, MPN.accude, MPN.accheso, MPN.accashi, MPN.accsenaka,
-                MPN.accshippo, MPN.accxxx, MPN.handitem, MPN.kousoku_lower, MPN.kousoku_upper,
-            };
+            var validMpn = new HashSet<MPN>(
+                SafeMpn.GetValues(
+                    nameof(MPN.acchat),
+                    nameof(MPN.headset),
+                    nameof(MPN.wear),
+                    nameof(MPN.skirt),
+                    nameof(MPN.onepiece),
+                    nameof(MPN.mizugi),
+                    nameof(MPN.bra),
+                    nameof(MPN.panz),
+                    nameof(MPN.stkg),
+                    nameof(MPN.shoes),
+                    nameof(MPN.acckami),
+                    nameof(MPN.megane),
+                    nameof(MPN.acchead),
+                    nameof(MPN.acchana),
+                    nameof(MPN.accmimi),
+                    nameof(MPN.glove),
+                    nameof(MPN.acckubi),
+                    nameof(MPN.acckubiwa),
+                    nameof(MPN.acckamisub),
+                    nameof(MPN.accnip),
+                    nameof(MPN.accude),
+                    nameof(MPN.accheso),
+                    nameof(MPN.accashi),
+                    nameof(MPN.accsenaka),
+                    nameof(MPN.accshippo),
+                    nameof(MPN.accxxx),
+                    nameof(MPN.handitem),
+                    nameof(MPN.kousoku_lower),
+                    nameof(MPN.kousoku_upper)));
 
-            var alwaysValidMpn = new HashSet<MPN>() { MPN.handitem, MPN.kousoku_lower, MPN.kousoku_upper, };
+            var alwaysValidMpn = new HashSet<MPN>(
+                SafeMpn.GetValues(nameof(MPN.handitem), nameof(MPN.kousoku_lower), nameof(MPN.kousoku_upper)));
 
             var menuFileCache = new ConcurrentDictionary<string, MenuFilePropModel>(menuFileCacheSerializer.Deserialize());
             var menuFileParser = new MenuFileParser();
@@ -145,7 +170,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                     menuFileCache.TryAdd(menuFilename, menuFile);
                 }
 
-                if (menuFile.CategoryMpn is MPN.handitem)
+                if (menuFile.CategoryMpn == SafeMpn.GetValue(nameof(MPN.handitem)))
                     menuFile.Name = Translation.Get("propNames", menuFile.Filename);
 
                 models.Add(menuFile);
@@ -211,7 +236,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 
         void ApplyTranslation()
         {
-            foreach (var prop in this[MPN.handitem])
+            foreach (var prop in this[SafeMpn.GetValue(nameof(MPN.handitem))])
                 prop.Name = Translation.Get("propNames", prop.Filename);
         }
     }

@@ -2,6 +2,7 @@ using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Database.Props;
 using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core.Props;
+using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
@@ -9,6 +10,8 @@ namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
 public class MenuPropsPane : BasePane, IVirtualListHandler
 {
+    private static readonly MPN[] IgnoredMpn = [.. SafeMpn.GetValues(nameof(MPN.handitem), nameof(MPN.kousoku_lower), nameof(MPN.kousoku_upper))];
+
     private readonly LazyStyle propButtonStyle = new(
         11,
         () => new(GUI.skin.button)
@@ -89,7 +92,7 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
             menuDatabaseBusy
                 ? []
                 : menuPropRepository
-                    .Where(model => model.CategoryMpn is not (MPN.handitem or MPN.kousoku_lower or MPN.kousoku_upper))
+                    .Where(model => !IgnoredMpn.Any(mpn => model.CategoryMpn == mpn))
                     .Where(model => modFilterToggle.Value ? !model.GameMenu : !baseFilterToggle.Value || model.GameMenu)
                     .Where(model => model.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                         Path.GetFileNameWithoutExtension(model.Filename).Replace("_i_", string.Empty).Contains(query, StringComparison.OrdinalIgnoreCase));
@@ -111,7 +114,7 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
             categories =
             [
                 MPN.null_mpn, .. menuPropRepository.CategoryMpn
-                    .Where(mpn => mpn is not (MPN.handitem or MPN.kousoku_lower or MPN.kousoku_upper))
+                    .Where(value => !IgnoredMpn.Any(mpn => mpn == value))
                     .OrderBy(mpn => mpn),
             ];
 

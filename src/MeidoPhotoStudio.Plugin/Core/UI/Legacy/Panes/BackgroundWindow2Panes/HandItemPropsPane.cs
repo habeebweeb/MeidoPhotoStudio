@@ -1,6 +1,7 @@
 using MeidoPhotoStudio.Plugin.Core.Database.Props;
 using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core.Props;
+using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
@@ -8,6 +9,8 @@ namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
 public class HandItemPropsPane : BasePane
 {
+    private static readonly MPN HandItem = SafeMpn.GetValue(nameof(MPN.handitem));
+
     private readonly PropService propService;
     private readonly MenuPropRepository menuPropRepository;
     private readonly Dropdown<MenuFilePropModel> propDropdown;
@@ -45,7 +48,7 @@ public class HandItemPropsPane : BasePane
         }
         else
         {
-            propDropdown.SetItems(menuPropRepository[MPN.handitem]);
+            propDropdown.SetItems(menuPropRepository[HandItem]);
         }
 
         static LabelledDropdownItem PropFormatter(MenuFilePropModel prop, int index) =>
@@ -53,7 +56,7 @@ public class HandItemPropsPane : BasePane
 
         void OnMenuDatabaseIndexed(object sender, EventArgs e)
         {
-            propDropdown.SetItems(menuPropRepository[MPN.handitem]);
+            propDropdown.SetItems(menuPropRepository[HandItem]);
 
             menuDatabaseBusy = false;
             menuPropRepository.InitializedProps -= OnMenuDatabaseIndexed;
@@ -62,7 +65,7 @@ public class HandItemPropsPane : BasePane
         IEnumerable<MenuFilePropModel> SearchSelector(string query) =>
             menuPropRepository.Busy
                 ? []
-                : menuPropRepository[MPN.handitem].Where(model =>
+                : menuPropRepository[HandItem].Where(model =>
                     model.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                     Path.GetFileNameWithoutExtension(model.Filename).Contains(query, StringComparison.OrdinalIgnoreCase));
     }

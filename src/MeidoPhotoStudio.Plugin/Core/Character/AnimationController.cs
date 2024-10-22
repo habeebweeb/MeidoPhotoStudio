@@ -1,6 +1,7 @@
 using System.ComponentModel;
 
 using MeidoPhotoStudio.Plugin.Core.Database.Character;
+using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
@@ -175,7 +176,7 @@ public class AnimationController : INotifyPropertyChanged
 
     private void OnCharacterProcessed(object sender, CharacterProcessingEventArgs e)
     {
-        if (!e.ChangingSlots.Contains(MPN.body))
+        if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
             return;
 
         Apply(Animation);
