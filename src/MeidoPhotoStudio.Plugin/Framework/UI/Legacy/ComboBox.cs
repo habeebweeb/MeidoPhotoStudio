@@ -1,3 +1,5 @@
+using MeidoPhotoStudio.Plugin.Framework.Extensions;
+
 namespace MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 public class ComboBox : DropdownBase<string>
@@ -7,27 +9,41 @@ public class ComboBox : DropdownBase<string>
 
     private static readonly LazyStyle ButtonStyle = new(13, () => new(GUI.skin.button));
 
-    private readonly TextField textField;
+    private readonly SearchBar<string> searchBar;
 
     private bool clickedWhileOpen;
     private bool buttonClicked;
 
-    public ComboBox(IEnumerable<string> items, string value = null, Func<string, int, IDropdownItem> formatter = null)
+    public ComboBox(IEnumerable<string> items, Func<string, int, IDropdownItem> formatter = null)
     {
         _ = items ?? throw new ArgumentNullException(nameof(items));
 
-        textField = new()
-        {
-            Value = value ?? string.Empty,
-        };
+        base.Formatter = formatter ?? DefaultFormatter;
 
-        Formatter = formatter ?? DefaultFormatter;
+        searchBar = new(SearchSelector, formatter ?? DefaultFormatter);
+        searchBar.SelectedValue += OnValueSelected;
 
         SetItems(items);
+
+        IEnumerable<string> SearchSelector(string query) =>
+            this.Where(item => item.Contains(query, StringComparison.OrdinalIgnoreCase));
     }
 
-    public string Value =>
-        textField.Value;
+    public override Func<string, int, IDropdownItem> Formatter
+    {
+        get => base.Formatter;
+        set
+        {
+            base.Formatter = value;
+            searchBar.Formatter = value;
+        }
+    }
+
+    public string Value
+    {
+        get => searchBar.Query;
+        set => searchBar.Query = value;
+    }
 
     public override void Draw(params GUILayoutOption[] layoutOptions) =>
         Draw(TextField.Style, ButtonStyle, layoutOptions);
@@ -36,7 +52,7 @@ public class ComboBox : DropdownBase<string>
     {
         GUILayout.BeginHorizontal();
 
-        textField.Draw(textFieldStyle, layoutOptions);
+        searchBar.Draw(textFieldStyle, layoutOptions);
 
         var clicked = GUILayout.Button("v", buttonStyle, GUILayout.MaxWidth(20));
 
@@ -60,7 +76,7 @@ public class ComboBox : DropdownBase<string>
     {
         base.OnItemSelected(index);
 
-        textField.Value = this[SelectedItemIndex];
+        searchBar.Query = this[SelectedItemIndex];
     }
 
     protected override void OnDropdownClosed(bool clickedButton)
@@ -70,6 +86,9 @@ public class ComboBox : DropdownBase<string>
         if (!clickedButton)
             return;
 
-        textField.Value = this[SelectedItemIndex];
+        searchBar.Query = this[SelectedItemIndex];
     }
+
+    private void OnValueSelected(object sender, SearchBarSelectionEventArgs<string> e) =>
+        searchBar.Query = e.Item;
 }
