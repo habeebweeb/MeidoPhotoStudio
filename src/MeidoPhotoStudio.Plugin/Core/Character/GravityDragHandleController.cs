@@ -9,6 +9,7 @@ public class GravityDragHandleController : DragHandleControllerBase
     private readonly GravityController gravityController;
     private readonly TransformBackup transformBackup;
 
+    private TransformBackup startingTransform;
     private MoveWorldXZMode moveWorldXZ;
     private MoveWorldYMode moveWorldY;
     private IgnoreMode ignore;
@@ -45,6 +46,12 @@ public class GravityDragHandleController : DragHandleControllerBase
 
         public override void OnModeEnter() =>
             controller.DragHandleActive = controller.gravityController.Enabled;
+
+        public override void OnClicked() =>
+            controller.startingTransform = new(controller.gravityController.Transform, Space.Self);
+
+        public override void OnCancelled() =>
+            controller.startingTransform.Apply(controller.gravityController.Transform);
 
         public override void OnDoubleClicked() =>
             controller.transformBackup.ApplyPosition(controller.gravityController.Transform);
