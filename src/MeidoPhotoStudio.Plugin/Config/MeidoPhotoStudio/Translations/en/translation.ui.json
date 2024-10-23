@@ -92,6 +92,8 @@
     "categoryHeader": "Category",
     "noAnimations": "No Animations",
     "nameHeader": "Name",
+    "categorySearchBarPlaceholder": "Animation Category",
+    "nameTextFieldPlaceholder": "Animation Name",
     "saveToggle": "Save Pose",
     "refreshButton": "Refresh",
     "saveButton": "Save Pose",
@@ -185,6 +187,8 @@
     "refreshButton": "Refresh",
     "categoryHeader": "Category",
     "nameHeader": "Name",
+    "categorySearchBarPlaceholder": "Hand Preset Category",
+    "nameTextFieldPlaceholder": "Hand Preset Name",
     "saveLeftButton": "Save Left",
     "saveRightButton": "Save Right",
     "rightHand": "Right",
@@ -214,6 +218,8 @@
     "customTab": "Custom",
     "directoryHeader": "Category",
     "filenameHeader": "Name",
+    "categorySearchBarPlaceholder": "Blend Set Category",
+    "nameTextFieldPlaceholder": "Blend Set Name",
     "savedBlendSetLabel": "Saved blendset!"
   },
   "expressionPane": {

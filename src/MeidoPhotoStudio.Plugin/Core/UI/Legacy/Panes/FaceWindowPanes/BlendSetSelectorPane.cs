@@ -78,8 +78,16 @@ public class BlendSetSelectorPane : BasePane
         paneHeader = new(Translation.Get("maidFaceWindow", "header"), true);
 
         saveBlendSetToggle = new(Translation.Get("maidFaceWindow", "savePaneToggle"), false);
-        blendSetCategoryComboBox = new(this.customBlendSetRepository.Categories);
-        blendSetNameTextField = new();
+        blendSetCategoryComboBox = new(this.customBlendSetRepository.Categories)
+        {
+            Placeholder = Translation.Get("maidFaceWindow", "categorySearchBarPlaceholder"),
+        };
+
+        blendSetNameTextField = new()
+        {
+            Placeholder = Translation.Get("maidFaceWindow", "nameTextFieldPlaceholder"),
+        };
+
         saveBlendSetButton = new(Translation.Get("maidFaceWindow", "saveButton"));
         saveBlendSetButton.ControlEvent += OnSaveBlendSetButtonPushed;
 
@@ -198,6 +206,8 @@ public class BlendSetSelectorPane : BasePane
         saveBlendSetButton.Label = Translation.Get("maidFaceWindow", "saveButton");
         refreshButton.Label = Translation.Get("maidFaceWindow", "refreshButton");
         noBlendSetsLabel.Text = Translation.Get("maidFaceWindow", "noBlendSets");
+        blendSetCategoryComboBox.Placeholder = Translation.Get("maidFaceWindow", "categorySearchBarPlaceholder");
+        blendSetNameTextField.Placeholder = Translation.Get("maidFaceWindow", "nameTextFieldPlaceholder");
         blendSetDirectoryHeader.Text = Translation.Get("maidFaceWindow", "directoryHeader");
         blendSetFilenameHeader.Text = Translation.Get("maidFaceWindow", "filenameHeader");
         savedBlendSetLabel.Text = Translation.Get("maidFaceWindow", "savedBlendSetLabel");

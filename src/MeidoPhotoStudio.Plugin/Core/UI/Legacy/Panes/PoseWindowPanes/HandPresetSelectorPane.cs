@@ -69,8 +69,15 @@ public class HandPresetSelectorPane : BasePane
         swapHandsButton.ControlEvent += OnSwapButtonPushed;
 
         savePresetToggle = new(Translation.Get("handPane", "saveToggle"));
-        handPresetCategoryComboBox = new(this.handPresetRepository.Categories);
-        handPresetNameTextField = new();
+        handPresetCategoryComboBox = new(this.handPresetRepository.Categories)
+        {
+            Placeholder = Translation.Get("handPane", "categorySearchBarPlaceholder"),
+        };
+
+        handPresetNameTextField = new()
+        {
+            Placeholder = Translation.Get("handPane", "nameTextFieldPlaceholder"),
+        };
 
         saveLeftPresetButton = new(Translation.Get("handPane", "saveLeftButton"));
         saveLeftPresetButton.ControlEvent += OnSaveLeftPresetButtonPushed;
@@ -205,6 +212,8 @@ public class HandPresetSelectorPane : BasePane
         refreshButton.Label = Translation.Get("handPane", "refreshButton");
         handPresetDirectoryHeader.Text = Translation.Get("handPane", "categoryHeader");
         handPresetFilenameHeader.Text = Translation.Get("handPane", "nameHeader");
+        handPresetCategoryComboBox.Placeholder = Translation.Get("handPane", "categorySearchBarPlaceholder");
+        handPresetNameTextField.Placeholder = Translation.Get("handPane", "nameTextFieldPlaceholder");
         noPresetsLabel.Text = Translation.Get("handPane", "noPresetsMessage");
         savedHandPresetLabel.Text = Translation.Get("handPane", "savedHandPresetLabel");
         searchBar.Placeholder = Translation.Get("handPane", "searchBarPlaceholder");

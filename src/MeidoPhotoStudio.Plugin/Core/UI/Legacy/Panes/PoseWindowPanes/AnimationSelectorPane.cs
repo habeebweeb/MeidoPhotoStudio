@@ -77,8 +77,16 @@ public class AnimationSelectorPane : BasePane
         paneHeader = new(Translation.Get("posePane", "header"), true);
 
         saveAnimationToggle = new(Translation.Get("posePane", "saveToggle"), false);
-        animationCategoryComboBox = new(this.customAnimationRepository.Categories);
-        animationNameTextField = new();
+        animationCategoryComboBox = new(this.customAnimationRepository.Categories)
+        {
+            Placeholder = Translation.Get("posePane", "categorySearchBarPlaceholder"),
+        };
+
+        animationNameTextField = new()
+        {
+            Placeholder = Translation.Get("posePane", "nameTextFieldPlaceholder"),
+        };
+
         savePoseButton = new(Translation.Get("posePane", "saveButton"));
         savePoseButton.ControlEvent += OnSavePoseButtonPushed;
 
@@ -239,6 +247,8 @@ public class AnimationSelectorPane : BasePane
         saveAnimationToggle.Label = Translation.Get("posePane", "saveToggle");
         savePoseButton.Label = Translation.Get("posePane", "saveButton");
         refreshButton.Label = Translation.Get("posePane", "refreshButton");
+        animationCategoryComboBox.Placeholder = Translation.Get("posePane", "categorySearchBarPlaceholder");
+        animationNameTextField.Placeholder = Translation.Get("posePane", "nameTextFieldPlaceholder");
         animationDirectoryHeader.Text = Translation.Get("posePane", "categoryHeader");
         animationFilenameHeader.Text = Translation.Get("posePane", "nameHeader");
         initializingLabel.Text = Translation.Get("systemMessage", "initializing");
