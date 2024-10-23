@@ -3,13 +3,15 @@ namespace MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 public class LazyStyle
 {
     private readonly Func<GUIStyle> styleProvider;
+    private readonly Action<GUIStyle> styleUpdater;
 
     private int fontSize;
     private GUIStyle style;
 
-    public LazyStyle(int fontSize, Func<GUIStyle> styleProvider)
+    public LazyStyle(int fontSize, Func<GUIStyle> styleProvider, Action<GUIStyle> styleUpdater = null)
     {
         this.styleProvider = styleProvider ?? throw new ArgumentNullException(nameof(styleProvider));
+        this.styleUpdater = styleUpdater;
         this.fontSize = fontSize;
 
         ScreenSizeChecker.ScreenSizeChanged += OnScreenSizeChanged;
@@ -70,5 +72,7 @@ public class LazyStyle
             return;
 
         style.fontSize = Utility.GetPix(fontSize);
+
+        styleUpdater?.Invoke(style);
     }
 }
