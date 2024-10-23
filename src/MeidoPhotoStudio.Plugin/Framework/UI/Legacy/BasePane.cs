@@ -69,12 +69,12 @@ public abstract class BasePane
 
     protected void DrawTextFieldMaxWidth(BaseControl textField) =>
         textField.Draw(
-            GUILayout.MaxWidth(parent.WindowRect.width - 10f),
+            GUILayout.Width(parent.WindowRect.width - 10f),
             GUILayout.Height(Utility.GetPix(22f)));
 
     protected void DrawTextFieldWithScrollBarOffset(BaseControl textField) =>
         textField.Draw(
-            GUILayout.MaxWidth(parent.WindowRect.width - 25f),
+            GUILayout.Width(parent.WindowRect.width - 35f),
             GUILayout.Height(Utility.GetPix(22f)));
 
     private void OnReloadTranslation(object sender, EventArgs args) =>

@@ -69,7 +69,6 @@ public class FavouritePropsPane : BasePane, IVirtualListHandler
         searchBar = new()
         {
             Placeholder = Translation.Get("favouritePropsPane", "searchBarPlaceholder"),
-            HasClearButton = true,
         };
 
         searchBar.ChangedValue += OnSearchChanged;

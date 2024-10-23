@@ -36,7 +36,9 @@ public class TextField : BaseControl
         () => new(GUI.skin.textField)
         {
             alignment = TextAnchor.MiddleLeft,
-        });
+            padding = new(5, Utility.GetPix(22), 5, 5),
+        },
+        style => style.padding.right = Utility.GetPix(22));
 
     public string Value { get; set; } = string.Empty;
 
@@ -62,8 +64,6 @@ public class TextField : BaseControl
             }
         }
     }
-
-    public bool HasClearButton { get; set; }
 
     public bool HasFocus { get; private set; }
 
@@ -114,7 +114,7 @@ public class TextField : BaseControl
             GUI.Label(textFieldRect, placeholderContent, placeholderStyle);
         }
 
-        if (HasClearButton && Value.Length is not 0)
+        if (Value.Length is not 0)
         {
             var textFieldRect = GUILayoutUtility.GetLastRect();
             var clearButtonRect = textFieldRect with { x = textFieldRect.xMax - Utility.GetPix(25f), width = Utility.GetPix(20f), };

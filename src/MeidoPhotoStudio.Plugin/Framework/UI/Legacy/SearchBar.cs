@@ -18,7 +18,7 @@ public class SearchBar<T> : DropdownBase<T>
 
         Formatter = formatter ?? DefaultFormatter;
 
-        textField = new() { HasClearButton = true };
+        textField = new();
         textField.GainedFocus += OnFocusGained;
         textField.ChangedValue += OnSearchQueryChanged;
     }
