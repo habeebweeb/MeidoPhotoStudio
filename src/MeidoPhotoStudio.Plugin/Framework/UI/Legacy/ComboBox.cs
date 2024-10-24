@@ -29,6 +29,12 @@ public class ComboBox : DropdownBase<string>
             this.Where(item => item.Contains(query, StringComparison.OrdinalIgnoreCase));
     }
 
+    public event EventHandler ChangedValue
+    {
+        add => searchBar.ChangedValue += value;
+        remove => searchBar.ChangedValue -= value;
+    }
+
     public override Func<string, int, IDropdownItem> Formatter
     {
         get => base.Formatter;
@@ -93,7 +99,6 @@ public class ComboBox : DropdownBase<string>
             return;
 
         searchBar.SetQueryWithoutShowingResults(this[SelectedItemIndex]);
-        searchBar.Query = this[SelectedItemIndex];
     }
 
     private void OnValueSelected(object sender, SearchBarSelectionEventArgs<string> e) =>

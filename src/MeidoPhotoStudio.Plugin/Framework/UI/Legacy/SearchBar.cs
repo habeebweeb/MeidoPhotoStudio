@@ -25,6 +25,8 @@ public class SearchBar<T> : DropdownBase<T>
 
     public event EventHandler<SearchBarSelectionEventArgs<T>> SelectedValue;
 
+    public event EventHandler ChangedValue;
+
     public string Placeholder
     {
         get => textField.Placeholder;
@@ -67,6 +69,7 @@ public class SearchBar<T> : DropdownBase<T>
     public void SetQueryWithoutShowingResults(string query)
     {
         textField.SetValueWithoutNotify(query);
+        ChangedValue?.Invoke(this, EventArgs.Empty);
         Search(query, false);
         DropdownHelper.CloseDropdown();
     }
@@ -83,8 +86,11 @@ public class SearchBar<T> : DropdownBase<T>
     protected override void OnDropdownClosed(bool clickedButton) =>
         clickedWhileOpen = clickedButton;
 
-    private void OnSearchQueryChanged(object sender, EventArgs e) =>
+    private void OnSearchQueryChanged(object sender, EventArgs e)
+    {
         Search(textField.Value);
+        ChangedValue?.Invoke(this, EventArgs.Empty);
+    }
 
     private void Search(string query, bool openDropdown = true)
     {
