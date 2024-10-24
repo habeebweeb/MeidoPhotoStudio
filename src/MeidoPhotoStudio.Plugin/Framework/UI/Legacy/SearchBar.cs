@@ -61,10 +61,13 @@ public class SearchBar<T> : DropdownBase<T>
         }
     }
 
-    public void ClearQuery()
-    {
-        textField.Value = string.Empty;
+    public void ClearQuery() =>
+        SetQueryWithoutShowingResults(string.Empty);
 
+    public void SetQueryWithoutShowingResults(string query)
+    {
+        textField.SetValueWithoutNotify(query);
+        Search(query, false);
         DropdownHelper.CloseDropdown();
     }
 
@@ -83,7 +86,7 @@ public class SearchBar<T> : DropdownBase<T>
     private void OnSearchQueryChanged(object sender, EventArgs e) =>
         Search(textField.Value);
 
-    private void Search(string query)
+    private void Search(string query, bool openDropdown = true)
     {
         if (string.Equals(query, searchQuery, StringComparison.OrdinalIgnoreCase))
             return;
@@ -110,7 +113,7 @@ public class SearchBar<T> : DropdownBase<T>
 
         SelectedItemIndex = 0;
 
-        openDropdown = true;
+        this.openDropdown = openDropdown;
     }
 
     private void OnFocusGained(object sender, EventArgs e)

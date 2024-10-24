@@ -136,6 +136,8 @@ internal static class DropdownHelper
             {
                 dropdownHandler.OnItemSelected(index);
                 CloseDropdown();
+
+                break;
             }
         }
 

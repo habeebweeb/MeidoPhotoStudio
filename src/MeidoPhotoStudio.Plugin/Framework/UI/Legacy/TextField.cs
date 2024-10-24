@@ -24,6 +24,7 @@ public class TextField : BaseControl
     private GUIContent placeholderContent = GUIContent.none;
     private bool hasPlacholder = false;
     private string placeholder = string.Empty;
+    private string value = string.Empty;
 
     public event EventHandler GainedFocus;
 
@@ -40,7 +41,11 @@ public class TextField : BaseControl
         },
         style => style.padding.right = Utility.GetPix(22));
 
-    public string Value { get; set; } = string.Empty;
+    public string Value
+    {
+        get => value;
+        set => SetValue(value);
+    }
 
     public string Placeholder
     {
@@ -107,6 +112,9 @@ public class TextField : BaseControl
 
         var value = GUILayout.TextField(Value, textFieldStyle, layoutOptions);
 
+        if (!string.Equals(value, Value, StringComparison.Ordinal))
+            SetValue(value);
+
         if (hasPlacholder && value.Length is 0)
         {
             var textFieldRect = GUILayoutUtility.GetLastRect();
@@ -122,18 +130,7 @@ public class TextField : BaseControl
             GUI.Box(clearButtonRect, ClearButtonIcon, ClearButtonStyle);
 
             if (UnityEngine.Input.GetMouseButtonDown(0) && clearButtonRect.Contains(Event.current.mousePosition))
-            {
-                Value = value = string.Empty;
-
-                ChangedValue?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        if (!string.Equals(value, Value, StringComparison.Ordinal))
-        {
-            Value = value;
-
-            ChangedValue?.Invoke(this, EventArgs.Empty);
+                SetValue(string.Empty);
         }
 
         var focusedControl = GUI.GetNameOfFocusedControl();
@@ -155,6 +152,9 @@ public class TextField : BaseControl
             OnControlEvent(EventArgs.Empty);
     }
 
+    public void SetValueWithoutNotify(string value) =>
+        SetValue(value, false);
+
     private static Texture2D LoadIconFromBase64(string base64)
     {
         var icon = new Texture2D(16, 16, TextureFormat.RGB24, false);
@@ -164,5 +164,18 @@ public class TextField : BaseControl
         icon.Apply();
 
         return icon;
+    }
+
+    private void SetValue(string value, bool notify = true)
+    {
+        if (string.Equals(value, this.value, StringComparison.Ordinal))
+            return;
+
+        this.value = value ?? string.Empty;
+
+        if (!notify)
+            return;
+
+        ChangedValue?.Invoke(this, EventArgs.Empty);
     }
 }

@@ -82,7 +82,7 @@ public class ComboBox : DropdownBase<string>
     {
         base.OnItemSelected(index);
 
-        searchBar.Query = this[SelectedItemIndex];
+        searchBar.SetQueryWithoutShowingResults(this[SelectedItemIndex]);
     }
 
     protected override void OnDropdownClosed(bool clickedButton)
@@ -92,9 +92,10 @@ public class ComboBox : DropdownBase<string>
         if (!clickedButton)
             return;
 
+        searchBar.SetQueryWithoutShowingResults(this[SelectedItemIndex]);
         searchBar.Query = this[SelectedItemIndex];
     }
 
     private void OnValueSelected(object sender, SearchBarSelectionEventArgs<string> e) =>
-        searchBar.Query = e.Item;
+        searchBar.SetQueryWithoutShowingResults(e.Item);
 }
