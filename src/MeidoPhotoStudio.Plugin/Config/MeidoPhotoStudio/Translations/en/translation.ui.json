@@ -224,12 +224,15 @@
   },
   "expressionPane": {
     "header": "Facial Expression",
-    "editShapeKeysToggle": "Edit",
+    "deleteShapeKeysToggle": "Delete",
     "refreshShapeKeyRangeButton": "Refresh Slider Range",
     "noShapeKeys": "No shape keys",
     "blinkToggle": "Blink",
-    "baseTab": "Base Game",
-    "shapeKeyTab": "Shape Key"
+    "modifyShapeKeysToggle": "Edit Shape Keys",
+    "addShapeKeyButton": "Add Shape Key",
+    "searchShapeKeyPlaceholder": "Search Shape Keys",
+    "baseGameExpressionKeys": "Base Expression Keys",
+    "customExpressionKeys": "Custom Expression Keys",
   },
   "faceBlendValues": {
     "eyeclose": "Eye Shut",

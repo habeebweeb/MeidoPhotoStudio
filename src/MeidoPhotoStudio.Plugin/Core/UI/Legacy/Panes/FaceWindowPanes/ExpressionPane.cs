@@ -10,10 +10,6 @@ namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
 public class ExpressionPane : BasePane
 {
-    private const int BaseGameIndex = 0;
-
-    private static readonly string[] KeySourceGridTranslationKeys = ["baseTab", "shapeKeyTab"];
-
     private static readonly string[] EyeHashes =
     [
         "eyeclose", "eyeclose2", "eyeclose3", "eyebig", "eyeclose6", "eyeclose5", "eyeclose8", "eyeclose7", "hitomih",
@@ -36,15 +32,20 @@ public class ExpressionPane : BasePane
     private readonly FaceShapeKeyConfiguration faceShapeKeyConfiguration;
     private readonly ShapeKeyRangeConfiguration shapeKeyRangeConfiguration;
     private readonly Dictionary<string, BaseControl> controls = new(StringComparer.Ordinal);
-    private readonly SelectionGrid keySourceGrid;
+    private readonly HashSet<string> customShapeKeys = new(StringComparer.Ordinal);
     private readonly Toggle blinkToggle;
+    private readonly Toggle modifyShapeKeysToggle;
     private readonly Button refreshRangeButton;
-    private readonly Toggle editShapeKeysToggle;
+    private readonly Toggle deleteShapeKeysToggle;
     private readonly PaneHeader paneHeader;
-    private readonly Dropdown<string> addShapeKeyDropdown;
+    private readonly Framework.UI.Legacy.ComboBox addShapeKeyComboBox;
+    private readonly Button addShapeKeyButton;
+    private readonly PaneHeader baseGameShapeKeyHeader;
+    private readonly PaneHeader customShapeKeyHeader;
     private readonly LazyStyle deleteShapeKeyButtonStyle = new(13, () => new(GUI.skin.button));
     private readonly LazyStyle shapeKeyLabelStyle = new(13, () => new(GUI.skin.label));
 
+    private bool validCustomShapeKey;
     private string[] shapeKeys;
     private bool hasShapeKeys;
 
@@ -64,11 +65,25 @@ public class ExpressionPane : BasePane
         this.faceShapeKeyConfiguration.AddedCustomShapeKey += OnShapeKeyAdded;
         this.faceShapeKeyConfiguration.RemovedCustomShapeKey += OnShapeKeyRemoved;
 
-        editShapeKeysToggle = new(Translation.Get("expressionPane", "editShapeKeysToggle"));
-
-        addShapeKeyDropdown = new();
+        deleteShapeKeysToggle = new(Translation.Get("expressionPane", "deleteShapeKeysToggle"));
 
         shapeKeys = [.. this.faceShapeKeyConfiguration.CustomShapeKeys];
+
+        modifyShapeKeysToggle = new(Translation.Get("expressionPane", "modifyShapeKeysToggle"));
+        modifyShapeKeysToggle.ControlEvent += OnModifyShapeKeysToggleChanged;
+
+        addShapeKeyComboBox = new(shapeKeys)
+        {
+            Placeholder = Translation.Get("expressionPane", "searchShapeKeyPlaceholder"),
+        };
+
+        addShapeKeyComboBox.ChangedValue += OnAddShapeKeyComboBoxValueChanged;
+
+        addShapeKeyButton = new(Translation.Get("expressionPane", "addShapeKeyButton"));
+        addShapeKeyButton.ControlEvent += OnAddShapeKeyButtonPushed;
+
+        baseGameShapeKeyHeader = new(Translation.Get("expressionPane", "baseGameExpressionKeys"));
+        customShapeKeyHeader = new(Translation.Get("expressionPane", "customExpressionKeys"));
 
         foreach (var hashKey in EyeHashes.Concat(MouthHashes).Concat(shapeKeys))
         {
@@ -97,8 +112,6 @@ public class ExpressionPane : BasePane
         refreshRangeButton = new(Translation.Get("expressionPane", "refreshShapeKeyRangeButton"));
         refreshRangeButton.ControlEvent += OnRefreshRangeButtonPushed;
 
-        keySourceGrid = new(Translation.GetArray("expressionPane", KeySourceGridTranslationKeys));
-
         paneHeader = new(Translation.Get("expressionPane", "header"), true);
     }
 
@@ -124,19 +137,23 @@ public class ExpressionPane : BasePane
 
         GUILayout.EndHorizontal();
 
-        MpsGui.BlackLine();
-
-        keySourceGrid.Draw();
-
-        MpsGui.BlackLine();
-
         if (!guiEnabled)
             return;
 
-        if (keySourceGrid.SelectedItemIndex is BaseGameIndex)
+        MpsGui.BlackLine();
+
+        baseGameShapeKeyHeader.Draw();
+
+        if (baseGameShapeKeyHeader.Enabled)
             DrawBuiltinTab();
-        else
-            DrawShapeKeyTab();
+
+        if (hasShapeKeys)
+        {
+            customShapeKeyHeader.Draw();
+
+            if (customShapeKeyHeader.Enabled)
+                DrawShapeKeyTab();
+        }
 
         void DrawBuiltinTab()
         {
@@ -190,30 +207,40 @@ public class ExpressionPane : BasePane
 
         void DrawShapeKeyTab()
         {
-            GUILayout.BeginHorizontal();
+            modifyShapeKeysToggle.Draw();
 
-            GUI.enabled = guiEnabled && hasShapeKeys;
+            if (modifyShapeKeysToggle.Value)
+            {
+                MpsGui.BlackLine();
 
-            addShapeKeyDropdown.Draw(GUILayout.Width(150f));
+                GUI.enabled = guiEnabled && hasShapeKeys && !deleteShapeKeysToggle.Value;
 
-            if (GUILayout.Button("+", GUILayout.ExpandWidth(false)))
-                faceShapeKeyConfiguration.AddCustomShapeKey(addShapeKeyDropdown.SelectedItem);
+                DrawComboBox(addShapeKeyComboBox);
 
-            GUI.enabled = guiEnabled;
+                GUILayout.BeginHorizontal();
 
-            editShapeKeysToggle.Draw();
+                GUI.enabled = guiEnabled;
 
-            GUILayout.EndHorizontal();
+                deleteShapeKeysToggle.Draw();
+
+                GUI.enabled = guiEnabled && hasShapeKeys && !deleteShapeKeysToggle.Value && validCustomShapeKey;
+
+                addShapeKeyButton.Draw(GUILayout.ExpandWidth(false));
+
+                GUILayout.EndHorizontal();
+            }
 
             MpsGui.BlackLine();
 
-            if (editShapeKeysToggle.Value)
-                DrawEditShapeKeys();
+            if (deleteShapeKeysToggle.Value)
+                DrawDeleteShapeKeys();
             else
                 DrawShapeKeySliders();
 
-            void DrawEditShapeKeys()
+            void DrawDeleteShapeKeys()
             {
+                GUI.enabled = guiEnabled;
+
                 var noExpandWidth = GUILayout.ExpandWidth(false);
                 var maxWidth = GUILayout.MaxWidth(parent.WindowRect.width);
 
@@ -221,10 +248,10 @@ public class ExpressionPane : BasePane
                 {
                     GUILayout.BeginHorizontal(maxWidth);
 
+                    GUILayout.Label(shapeKey, shapeKeyLabelStyle);
+
                     if (GUILayout.Button("X", deleteShapeKeyButtonStyle, noExpandWidth))
                         faceShapeKeyConfiguration.RemoveCustomShapeKey(shapeKey);
-
-                    GUILayout.Label(shapeKey, shapeKeyLabelStyle);
 
                     GUILayout.EndHorizontal();
                 }
@@ -232,6 +259,8 @@ public class ExpressionPane : BasePane
 
             void DrawShapeKeySliders()
             {
+                GUI.enabled = guiEnabled;
+
                 const int SliderColumnCount = 2;
 
                 var maxWidth = GUILayout.MaxWidth(parent.WindowRect.width - 10f);
@@ -252,7 +281,7 @@ public class ExpressionPane : BasePane
 
     protected override void ReloadTranslation()
     {
-        editShapeKeysToggle.Label = Translation.Get("expressionPane", "editShapeKeysToggle");
+        deleteShapeKeysToggle.Label = Translation.Get("expressionPane", "deleteShapeKeysToggle");
 
         foreach (var (hashKey, control) in EyeHashes.Concat(MouthHashes).Concat(FaceHashes).Select(hashKey => (hashKey, controls[hashKey])))
         {
@@ -265,9 +294,12 @@ public class ExpressionPane : BasePane
         }
 
         blinkToggle.Label = Translation.Get("expressionPane", "blinkToggle");
-        keySourceGrid.SetItemsWithoutNotify(Translation.GetArray("expressionPane", KeySourceGridTranslationKeys));
         paneHeader.Label = Translation.Get("expressionPane", "header");
         refreshRangeButton.Label = Translation.Get("expressionPane", "refreshShapeKeyRangeButton");
+        addShapeKeyComboBox.Placeholder = Translation.Get("expressionPane", "searchShapeKeyPlaceholder");
+        addShapeKeyButton.Label = Translation.Get("expressionPane", "addShapeKeyButton");
+        baseGameShapeKeyHeader.Label = Translation.Get("expressionPane", "baseGameExpressionKeys");
+        customShapeKeyHeader.Label = Translation.Get("expressionPane", "customExpressionKeys");
     }
 
     private EventHandler OnControlChanged(string hashKey) =>
@@ -397,6 +429,33 @@ public class ExpressionPane : BasePane
             UpdateControls();
     }
 
+    private void OnAddShapeKeyComboBoxValueChanged(object sender, EventArgs e)
+    {
+        if (CurrentFace is null)
+            return;
+
+        validCustomShapeKey = customShapeKeys.Contains(addShapeKeyComboBox.Value);
+    }
+
+    private void OnAddShapeKeyButtonPushed(object sender, EventArgs e)
+    {
+        if (CurrentFace is null)
+            return;
+
+        if (string.IsNullOrEmpty(addShapeKeyComboBox.Value))
+            return;
+
+        if (!customShapeKeys.Contains(addShapeKeyComboBox.Value))
+            return;
+
+        faceShapeKeyConfiguration.AddCustomShapeKey(addShapeKeyComboBox.Value);
+
+        addShapeKeyComboBox.Value = string.Empty;
+    }
+
+    private void OnModifyShapeKeysToggleChanged(object sender, EventArgs e) =>
+        deleteShapeKeysToggle.Value = false;
+
     private void UpdateShapekeyList()
     {
         var shapeKeyList = CurrentFace.ExpressionKeys
@@ -406,7 +465,12 @@ public class ExpressionPane : BasePane
 
         hasShapeKeys = shapeKeyList.Length is not 0;
 
-        addShapeKeyDropdown.SetItems(shapeKeyList);
+        customShapeKeys.Clear();
+        customShapeKeys.UnionWith(shapeKeyList);
+
+        validCustomShapeKey = customShapeKeys.Contains(addShapeKeyComboBox.Value);
+
+        addShapeKeyComboBox.SetItems(shapeKeyList);
     }
 
     private void UpdateControls()
