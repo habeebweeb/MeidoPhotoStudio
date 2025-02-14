@@ -421,7 +421,10 @@
   },
   "cameraPane": {
     "zRotation": "Z Rotation",
-    "fov": "FOV"
+    "fov": "FOV",
+    "quickSaveButton": "Quick Save",
+    "quickLoadButton": "Quick Load",
+    "resetButton": "Reset"
   },
   "lightsPane": {
     "add": "+",

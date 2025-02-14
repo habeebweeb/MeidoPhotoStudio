@@ -11,6 +11,9 @@ public class CameraPane : BasePane
     private readonly Toggle.Group cameraGroup;
     private readonly Slider zRotationSlider;
     private readonly Slider fovSlider;
+    private readonly Button quickSaveButton;
+    private readonly Button quickLoadButton;
+    private readonly Button resetButton;
 
     public CameraPane(
         Translation translation, CameraController cameraController, CameraSaveSlotController cameraSaveSlotController)
@@ -66,6 +69,15 @@ public class CameraPane : BasePane
                     };
             })
         ];
+
+        quickSaveButton = new(new LocalizableGUIContent(translation, "cameraPane", "quickSaveButton"));
+        quickSaveButton.ControlEvent += OnQuickSaveButtonPushed;
+
+        quickLoadButton = new(new LocalizableGUIContent(translation, "cameraPane", "quickLoadButton"));
+        quickLoadButton.ControlEvent += OnQuickLoadButtonPushed;
+
+        resetButton = new(new LocalizableGUIContent(translation, "cameraPane", "resetButton"));
+        resetButton.ControlEvent += OnResetButtonPushed;
     }
 
     public override void Draw()
@@ -77,8 +89,23 @@ public class CameraPane : BasePane
 
         GUILayout.EndHorizontal();
 
+        UIUtility.DrawBlackLine();
+
         zRotationSlider.Draw();
         fovSlider.Draw();
+
+        UIUtility.DrawBlackLine();
+
+        GUILayout.BeginHorizontal();
+
+        quickSaveButton.Draw();
+        quickLoadButton.Draw();
+
+        GUILayout.EndHorizontal();
+
+        UIUtility.DrawBlackLine();
+
+        resetButton.Draw();
     }
 
     public override void UpdatePane()
@@ -101,6 +128,15 @@ public class CameraPane : BasePane
 
     private void OnFieldOfViewSliderChanged(object sender, EventArgs e) =>
         GameMain.Instance.MainCamera.camera.fieldOfView = fovSlider.Value;
+
+    private void OnQuickSaveButtonPushed(object sender, EventArgs e) =>
+        cameraSaveSlotController.SaveTemporaryCameraInfo();
+
+    private void OnQuickLoadButtonPushed(object sender, EventArgs e) =>
+        cameraSaveSlotController.LoadTemporaryCameraInfo();
+
+    private void OnResetButtonPushed(object sender, EventArgs e) =>
+        cameraController.ResetCamera();
 
     private void OnCameraChanged(object sender, EventArgs e) =>
         UpdatePane();
