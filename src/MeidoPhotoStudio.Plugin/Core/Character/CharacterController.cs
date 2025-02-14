@@ -181,6 +181,8 @@ public class CharacterController(CharacterModel characterModel, TransformWatcher
             Body.ResetAllShapeKeys();
 
             initialized = true;
+
+            Maid.m_MotionLoad = 0;
         }
     }
 
