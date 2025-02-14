@@ -33,7 +33,7 @@ public class TextField : BaseControl
     }
 
     public TextField(GUIContent placeholderContent) =>
-        this.placeholderContent = placeholderContent;
+        PlaceholderContent = placeholderContent ?? new();
 
     public event EventHandler GainedFocus;
 
