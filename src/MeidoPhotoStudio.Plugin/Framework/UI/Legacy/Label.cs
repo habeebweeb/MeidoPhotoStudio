@@ -2,7 +2,7 @@ namespace MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 public class Label(GUIContent content) : BaseControl
 {
-    private GUIContent content = content;
+    private GUIContent content = content ?? new();
 
     public Label(string text)
         : this(new GUIContent(text ?? string.Empty))

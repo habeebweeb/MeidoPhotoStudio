@@ -17,7 +17,7 @@ public class PaneGroup : BasePane
     }
 
     public PaneGroup(string label, bool open = true, HeaderGroup group = null)
-        : this(new GUIContent(label), open, group)
+        : this(new GUIContent(label ?? string.Empty), open, group)
     {
     }
 

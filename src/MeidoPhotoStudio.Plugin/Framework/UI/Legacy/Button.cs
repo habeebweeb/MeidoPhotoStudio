@@ -2,7 +2,7 @@ namespace MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 public class Button(GUIContent content) : BaseControl
 {
-    private GUIContent content = content;
+    private GUIContent content = content ?? new();
 
     public Button(string label)
         : this(new GUIContent(label ?? string.Empty))

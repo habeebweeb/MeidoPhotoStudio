@@ -44,10 +44,10 @@ public class SubPaneHeader(GUIContent content, bool open = true) : BaseControl
     private static readonly GUIContent ClosedArrow = new(UIUtility.LoadTextureFromBase64(16, 16, ClosedArrowBase64));
     private static readonly GUIContent OpenedArrow = new(UIUtility.LoadTextureFromBase64(16, 16, OpenedArrowBase64));
 
-    private GUIContent content = content;
+    private GUIContent content = content ?? new();
 
     public SubPaneHeader(string label, bool open = true)
-        : this(new GUIContent(label), open)
+        : this(new GUIContent(label ?? string.Empty), open)
     {
     }
 

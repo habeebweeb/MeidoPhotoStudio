@@ -40,7 +40,7 @@ public class PaneHeader(GUIContent content, bool open = true) : BaseControl
         static style => style.padding = new(UIUtility.Scaled(16), UIUtility.Scaled(16), UIUtility.Scaled(5), UIUtility.Scaled(5)));
 
     private HeaderGroup groupController;
-    private GUIContent content = content;
+    private GUIContent content = content ?? new();
     private bool enabled = open;
 
     public PaneHeader(string label, bool open = true)
