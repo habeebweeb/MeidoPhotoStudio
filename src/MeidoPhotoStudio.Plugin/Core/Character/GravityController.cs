@@ -96,10 +96,21 @@ public abstract class GravityController : INotifyPropertyChanged
         if (!e.ChangingSlots.Any(static slot => slot >= GravityMpnStart || slot <= GravityMpnEnd))
             return;
 
+        var state = (Enabled, Position);
+
         transformWatcher.Unsubscribe(Transform);
 
-        Enabled = false;
+        TransformControl.isEnabled = false;
         transformControl = null;
+
+        character.ProcessedCharacterProps += OnCharacterProcessed;
+
+        void OnCharacterProcessed(object sender, CharacterProcessingEventArgs e)
+        {
+            (TransformControl.isEnabled, Position) = state;
+
+            character.ProcessedCharacterProps -= OnCharacterProcessed;
+        }
     }
 
     private void OnControlMoved()

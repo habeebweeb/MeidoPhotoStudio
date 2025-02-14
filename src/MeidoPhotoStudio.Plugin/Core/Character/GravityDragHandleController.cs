@@ -29,7 +29,7 @@ public class GravityDragHandleController : DragHandleControllerBase
 
         this.gravityController.EnabledChanged += OnEnabledChanged;
 
-        transformBackup = new(gravityController.Transform, Space.Self);
+        transformBackup = new(Space.Self, Vector3.zero, Quaternion.identity, Vector3.zero);
 
         CurrentMode = MoveWorldXZ;
     }

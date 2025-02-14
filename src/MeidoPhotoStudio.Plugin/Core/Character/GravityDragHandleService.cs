@@ -113,13 +113,19 @@ public class GravityDragHandleService
         if (!e.ChangingSlots.Any(slot => slot >= mpnStart || slot <= mpnEnd))
             return;
 
+        var (hair, clothing) = dragHandleSets[character];
+        var (hairEnabled, clothingEnabled) = (hair.Enabled, clothing.Enabled);
+
         DestroyDragHandleSet(dragHandleSets[character]);
 
         character.ProcessedCharacterProps += OnCharacterProcessed;
 
         void OnCharacterProcessed(object sender, CharacterProcessingEventArgs e)
         {
-            dragHandleSets[character] = InitializeDragHandleSet(character);
+            var (hair, clothing) = dragHandleSets[character] = InitializeDragHandleSet(character);
+
+            hair.Enabled = hairEnabled;
+            clothing.Enabled = clothingEnabled;
 
             character.ProcessedCharacterProps -= OnCharacterProcessed;
         }
