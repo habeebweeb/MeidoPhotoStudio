@@ -26,7 +26,17 @@ public class HeadController : INotifyPropertyChanged
             if (FreeLook == value)
                 return;
 
-            Body.trsLookTarget = value ? null : GameMain.Instance.MainCamera.transform;
+            Transform target = null;
+
+            if (!value)
+            {
+                if (GameMain.Instance.VRMode && GameMain.Instance.OvrMgr)
+                    target = GameMain.Instance.OvrMgr.EyeAnchor;
+                else if (GameMain.Instance.MainCamera)
+                    target = GameMain.Instance.MainCamera.transform;
+            }
+
+            Body.trsLookTarget = target;
 
             RaisePropertyChanged(nameof(FreeLook));
         }
