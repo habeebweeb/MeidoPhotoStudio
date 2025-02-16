@@ -126,9 +126,6 @@ internal static class DropdownHelper
             return;
 
         dropdownWindow = GUI.Window(765, dropdownWindow, DropdownWindow, string.Empty, windowStyle);
-
-        if (Visible && UInput.mouseScrollDelta.y is not 0f && dropdownWindow.Contains(Event.current.mousePosition))
-            UInput.ResetInputAxes();
     }
 
     internal static Vector2 CalculateItemDimensions(string value)
@@ -204,6 +201,9 @@ internal static class DropdownHelper
             return dimensions;
         }
     }
+
+    internal static bool MouseOverDropdown(Vector3 mousePosition) =>
+        Visible && dropdownWindow.Contains(mousePosition);
 
     private static void DropdownWindow(int windowId)
     {

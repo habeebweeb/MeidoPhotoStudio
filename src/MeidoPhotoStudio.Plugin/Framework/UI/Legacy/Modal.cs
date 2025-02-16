@@ -32,17 +32,6 @@ public static class Modal
         currentModal = null;
     }
 
-    internal static void Update()
-    {
-        if (UnityEngine.Input.mouseScrollDelta.y is 0f || !Visible)
-            return;
-
-        var mousePos = new Vector2(UnityEngine.Input.mousePosition.x, Screen.height - UnityEngine.Input.mousePosition.y);
-
-        if (currentModal.WindowRect.Contains(mousePos))
-            UnityEngine.Input.ResetInputAxes();
-    }
-
     internal static void Draw() =>
         Draw(WindowStyle);
 
@@ -57,13 +46,6 @@ public static class Modal
         GUI.BringWindowToFront(currentModal.ID);
     }
 
-    internal static bool MouseOverModal()
-    {
-        if (!Visible)
-            return false;
-
-        var mousePosition = new Vector2(UnityEngine.Input.mousePosition.x, Screen.height - UnityEngine.Input.mousePosition.y);
-
-        return currentModal.WindowRect.Contains(mousePosition);
-    }
+    internal static bool MouseOverModal(Vector3 mousePosition) =>
+        Visible && currentModal.WindowRect.Contains(mousePosition);
 }

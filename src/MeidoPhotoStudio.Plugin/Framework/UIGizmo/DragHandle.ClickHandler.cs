@@ -107,9 +107,6 @@ public partial class DragHandle
                 if (WindowManager && WindowManager.MouseOverAnyWindow())
                     return false;
 
-                if (UI.Legacy.Modal.MouseOverModal())
-                    return false;
-
                 var currentEvent = EventSystem.current;
 
                 if (currentEvent && currentEvent.IsPointerOverGameObject())

@@ -74,18 +74,19 @@ public class WindowManager : MonoBehaviour, IActivateable
 
     public bool MouseOverAnyWindow()
     {
+        var mousePosition = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
+
         foreach (var window in windows.Values.Where(static window => window.Visible))
-            if (MouseOverWindow(window))
+            if (window.WindowRect.Contains(mousePosition))
                 return true;
 
+        if (Modal.MouseOverModal(mousePosition))
+            return true;
+
+        if (DropdownHelper.MouseOverDropdown(mousePosition))
+            return true;
+
         return false;
-
-        static bool MouseOverWindow(BaseWindow window)
-        {
-            var mousePosition = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
-
-            return window.WindowRect.Contains(mousePosition);
-        }
     }
 
     void IActivateable.Activate()
@@ -164,11 +165,8 @@ public class WindowManager : MonoBehaviour, IActivateable
 
     private void Update()
     {
-        foreach (var window in windows.Values)
-            window.Update();
-
-        if (Modal.Visible)
-            Modal.Update();
+        if (Input.mouseScrollDelta.y is not 0f && MouseOverAnyWindow())
+            Input.ResetInputAxes();
     }
 
     private void OnScreenSizeChanged(object sender, EventArgs e)

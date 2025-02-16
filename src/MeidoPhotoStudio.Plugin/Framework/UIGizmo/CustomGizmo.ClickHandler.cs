@@ -43,9 +43,6 @@ public partial class CustomGizmo
                 if (WindowManager && WindowManager.MouseOverAnyWindow())
                     return false;
 
-                if (UI.Legacy.Modal.MouseOverModal())
-                    return false;
-
                 var currentEvent = EventSystem.current;
 
                 if (currentEvent && currentEvent.IsPointerOverGameObject())

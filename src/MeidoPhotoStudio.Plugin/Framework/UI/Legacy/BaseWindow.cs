@@ -58,15 +58,4 @@ public abstract class BaseWindow
     public virtual void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
     {
     }
-
-    internal void Update()
-    {
-        if (!Visible || UnityEngine.Input.mouseScrollDelta.y is 0f)
-            return;
-
-        var mousePos = new Vector2(UnityEngine.Input.mousePosition.x, Screen.height - UnityEngine.Input.mousePosition.y);
-
-        if (WindowRect.Contains(mousePos))
-            UnityEngine.Input.ResetInputAxes();
-    }
 }
