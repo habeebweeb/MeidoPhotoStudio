@@ -1,6 +1,7 @@
 using MeidoPhotoStudio.Plugin.Core.Character;
 using MeidoPhotoStudio.Plugin.Framework.UI;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
+using UnityEngine.UI;
 
 namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
@@ -46,6 +47,9 @@ public class WindowManager : MonoBehaviour, IActivateable
 
     private readonly Dictionary<Window, BaseWindow> windows = [];
 
+    private GameObject blockerCanvasContainer;
+    private Graphic uguiBlocker;
+    private bool blockingOtherUIs;
     private bool visible = true;
 
     public enum Window
@@ -91,6 +95,8 @@ public class WindowManager : MonoBehaviour, IActivateable
 
     void IActivateable.Activate()
     {
+        BlockOtherUIs(false);
+
         foreach (var window in windows.Values)
             window.Activate();
 
@@ -99,6 +105,8 @@ public class WindowManager : MonoBehaviour, IActivateable
 
     void IActivateable.Deactivate()
     {
+        BlockOtherUIs(false);
+
         foreach (var window in windows.Values)
             window.Deactivate();
 
@@ -121,7 +129,49 @@ public class WindowManager : MonoBehaviour, IActivateable
 
         CharacterService.CallingCharacters += OnCallingCharacters;
 
+        (blockerCanvasContainer, uguiBlocker) = InitializeBlocker();
+
         enabled = false;
+
+        static (GameObject BlockerCanvas, Graphic BlockerGraphic) InitializeBlocker()
+        {
+            var blockerCanvas = new GameObject("[MPS Click Blocker Canvas]", typeof(RectTransform))
+            {
+                layer = 5,
+            };
+
+            var canvas = blockerCanvas.AddComponent<Canvas>();
+
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = short.MaxValue;
+
+            DontDestroyOnLoad(blockerCanvas);
+            blockerCanvas.AddComponent<GraphicRaycaster>();
+
+            var blockerGameObject = new GameObject("Blocker Graphic", typeof(RectTransform))
+            {
+                layer = 5,
+            };
+
+            blockerGameObject.transform.SetParent(blockerCanvas.transform, true);
+
+            var rectTransform = (RectTransform)blockerGameObject.transform;
+
+            rectTransform.sizeDelta = Vector2.zero;
+            rectTransform.anchoredPosition = new(0f, 0f);
+            rectTransform.anchorMin = new(0f, 0f);
+            rectTransform.anchorMax = new(1f, 1f);
+            rectTransform.pivot = new(0f, 1f);
+
+            var blockerGraphic = blockerGameObject.AddComponent<RaycastTarget>();
+
+            blockerGraphic.color = Color.black with { a = 0.6f };
+            blockerGraphic.raycastTarget = true;
+
+            blockerGraphic.enabled = false;
+
+            return (blockerCanvas, blockerGraphic);
+        }
     }
 
     private void OnDestroy()
@@ -132,6 +182,11 @@ public class WindowManager : MonoBehaviour, IActivateable
             return;
 
         CharacterService.CallingCharacters -= OnCallingCharacters;
+
+        BlockOtherUIs(false);
+
+        if (blockerCanvasContainer)
+            Destroy(blockerCanvasContainer);
     }
 
     private void OnGUI()
@@ -157,6 +212,16 @@ public class WindowManager : MonoBehaviour, IActivateable
         if (DropdownHelper.Visible)
             DropdownHelper.DrawDropdown(DropdownWindowStyle);
 
+        if (Event.current.type is EventType.Repaint)
+        {
+            var mouseOverUI = MouseOverAnyWindow();
+
+            if (!blockingOtherUIs && mouseOverUI)
+                BlockOtherUIs(true);
+            else if (blockingOtherUIs && !mouseOverUI)
+                BlockOtherUIs(false);
+        }
+
         GUIStyle GetStyleForWindow(Rect windowRect) =>
             windowRect.Contains(mousePosition)
                 ? HoverWindowStyle
@@ -165,8 +230,53 @@ public class WindowManager : MonoBehaviour, IActivateable
 
     private void Update()
     {
+        if (!Visible)
+        {
+            if (blockingOtherUIs)
+                BlockOtherUIs(false);
+
+            return;
+        }
+
         if (Input.mouseScrollDelta.y is not 0f && MouseOverAnyWindow())
             Input.ResetInputAxes();
+    }
+
+    private void BlockOtherUIs(bool block)
+    {
+        if (blockingOtherUIs == block)
+            return;
+
+        blockingOtherUIs = block;
+
+        BlockNGUI(block);
+        uguiBlocker.enabled = block;
+
+        static void BlockNGUI(bool block)
+        {
+            foreach (var camera in UICamera.list)
+            {
+                if (!camera.enabled || !NGUITools.GetActive(camera.gameObject) || !camera.EnableProcess)
+                    continue;
+
+                if (block && UICamera.mHover)
+                    camera.Hover = false;
+
+                camera.useMouse = !block;
+            }
+
+            if (block && UICamera.mHover)
+            {
+                UICamera.Notify(UICamera.mHover, "OnHover", false);
+                UICamera.mHover = null;
+
+                for (var i = 0; i < UICamera.mMouse.Length; i++)
+                {
+                    UICamera.mMouse[i].last = UICamera.mHover;
+                    UICamera.mMouse[i].current = UICamera.fallThrough;
+                }
+            }
+        }
     }
 
     private void OnScreenSizeChanged(object sender, EventArgs e)
@@ -198,4 +308,19 @@ public class WindowManager : MonoBehaviour, IActivateable
 
     private void OnCalledCharacters(object sender, CharacterServiceEventArgs e) =>
         Visible = true;
+
+    private class RaycastTarget : Graphic
+    {
+        public override void UpdateGeometry()
+        {
+        }
+
+        public override void SetMaterialDirty()
+        {
+        }
+
+        public override void SetVerticesDirty()
+        {
+        }
+    }
 }

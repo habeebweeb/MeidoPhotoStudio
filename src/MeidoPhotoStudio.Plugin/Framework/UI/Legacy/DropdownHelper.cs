@@ -126,6 +126,19 @@ internal static class DropdownHelper
             return;
 
         dropdownWindow = GUI.Window(765, dropdownWindow, DropdownWindow, string.Empty, windowStyle);
+
+        GUI.BringWindowToFront(765);
+
+        if (AnyMouseDown() && Event.current.type is EventType.Repaint)
+        {
+            var mousePosition = new Vector2(UInput.mousePosition.x, Screen.height - UInput.mousePosition.y);
+
+            if (!dropdownWindow.Contains(mousePosition))
+                CloseDropdown(buttonRect.Contains(mousePosition));
+        }
+
+        static bool AnyMouseDown() =>
+            UInput.GetMouseButtonDown(0) || UInput.GetMouseButtonDown(1) || UInput.GetMouseButtonDown(2);
     }
 
     internal static Vector2 CalculateItemDimensions(string value)
@@ -232,17 +245,6 @@ internal static class DropdownHelper
         }
 
         GUI.EndScrollView();
-
-        if (AnyMouseDown() && Event.current.type is EventType.Repaint)
-        {
-            var mousePosition = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
-
-            if (!dropdownWindow.Contains(mousePosition))
-                CloseDropdown(buttonRect.Contains(mousePosition));
-        }
-
-        static bool AnyMouseDown() =>
-            UInput.GetMouseButtonDown(0) || UInput.GetMouseButtonDown(1) || UInput.GetMouseButtonDown(2);
     }
 
     private static void CloseDropdown(bool clickedButton = false)
