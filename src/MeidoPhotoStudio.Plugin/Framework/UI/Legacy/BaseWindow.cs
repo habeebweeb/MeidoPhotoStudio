@@ -2,7 +2,7 @@ namespace MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 public abstract class BaseWindow
 {
-    private static int id = 765;
+    private static int id = 876;
 
     private Rect rect;
     private bool enabled = true;
