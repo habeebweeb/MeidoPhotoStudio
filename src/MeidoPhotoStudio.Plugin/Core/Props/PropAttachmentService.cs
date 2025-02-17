@@ -166,5 +166,7 @@ public class PropAttachmentService
     {
         foreach (var prop in attachedProps.Keys.Select(static prop => prop.GameObject.transform))
             prop.SetParent(null, true);
+
+        attachedProps.Clear();
     }
 }
