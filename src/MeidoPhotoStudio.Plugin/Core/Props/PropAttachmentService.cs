@@ -89,14 +89,9 @@ public class PropAttachmentService
         if (!attachedProps.TryGetValue(prop, out var attachPointInfo))
             return;
 
-        var propTransform = prop.GameObject.transform;
-        var originalScale = propTransform.localScale;
+        Detach(prop);
 
-        propTransform.SetParent(null, true);
-
-        propTransform.localScale = originalScale;
-
-        SceneManager.MoveGameObjectToScene(propTransform.gameObject, SceneManager.GetActiveScene());
+        SceneManager.MoveGameObjectToScene(prop.GameObject, SceneManager.GetActiveScene());
 
         attachedProps.Remove(prop);
 
@@ -131,10 +126,19 @@ public class PropAttachmentService
         propTransform.localScale = localScale;
     }
 
+    private void Detach(PropController prop)
+    {
+        var scale = prop.Transform.localScale;
+
+        prop.Transform.SetParent(null, true);
+
+        prop.Transform.localScale = scale;
+    }
+
     private void OnCallingCharacters(object sender, CharacterServiceEventArgs e)
     {
-        foreach (var attachedProp in attachedProps.Keys.Select(static prop => prop.GameObject.transform))
-            attachedProp.SetParent(null, true);
+        foreach (var attachedProp in attachedProps.Keys)
+            Detach(attachedProp);
     }
 
     private void OnCalledCharacters(object sender, CharacterServiceEventArgs e)
@@ -164,8 +168,8 @@ public class PropAttachmentService
 
     private void OnDeactivating(object sender, EventArgs e)
     {
-        foreach (var prop in attachedProps.Keys.Select(static prop => prop.GameObject.transform))
-            prop.SetParent(null, true);
+        foreach (var prop in attachedProps.Keys)
+            Detach(prop);
 
         attachedProps.Clear();
     }
