@@ -91,17 +91,23 @@ public class EditModeMaidService : IActivateable
 
         // NOTE: Changing the edit maid's position to 0 is required to get parts of the edit mode functionality to work,
         // most notably the parts colouring feature.
-        static void UpdateCharacterMgr(Maid maid)
+        static void UpdateCharacterMgr(Maid newEditingMaid)
         {
             var activeMaids = GameMain.Instance.CharacterMgr.m_gcActiveMaid;
-            var currentEditingMaid = SceneEdit.Instance.m_maid;
-            var currentEditingMaidIndex = Array.IndexOf(activeMaids, maid);
+            var activeGameObjects = GameMain.Instance.CharacterMgr.m_objActiveMaid;
+            var previousEditingMaid = SceneEdit.Instance.m_maid;
+            var newEditingMaidCurrentIndex = Array.IndexOf(activeMaids, newEditingMaid);
 
-            maid.ActiveSlotNo = 0;
-            currentEditingMaid.ActiveSlotNo = currentEditingMaidIndex;
+            (newEditingMaid.ActiveSlotNo, previousEditingMaid.ActiveSlotNo) = (previousEditingMaid.ActiveSlotNo, newEditingMaid.ActiveSlotNo);
 
-            activeMaids[0] = maid;
-            activeMaids[currentEditingMaidIndex] = currentEditingMaid;
+            activeMaids[0] = newEditingMaid;
+            activeGameObjects[0] = newEditingMaid.gameObject;
+
+            if (newEditingMaidCurrentIndex >= 0)
+            {
+                activeMaids[newEditingMaidCurrentIndex] = previousEditingMaid;
+                activeGameObjects[newEditingMaidCurrentIndex] = previousEditingMaid.gameObject;
+            }
         }
 
         static void UpdateEditModeUI(Maid maid)
