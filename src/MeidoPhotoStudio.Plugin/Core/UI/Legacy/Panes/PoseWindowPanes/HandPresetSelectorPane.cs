@@ -29,6 +29,8 @@ public class HandPresetSelectorPane : BasePane
     private readonly Button refreshButton;
     private readonly Label savedHandPresetLabel;
     private readonly SearchBar<HandPresetModel> searchBar;
+    private readonly Toggle autoApplyLeftToggle;
+    private readonly Toggle autoApplyRightToggle;
     private readonly LazyStyle noPresetsLabelStyle = new(
         StyleSheet.TextSize,
         static () => new(GUI.skin.label)
@@ -66,6 +68,7 @@ public class HandPresetSelectorPane : BasePane
         presetCategoryDropdown.SelectionChanged += OnPresetCategoryChanged;
 
         presetDropdown = new(PresetList(), formatter: Formatter);
+        presetDropdown.SelectionChanged += OnPresetSelectionChanged;
 
         applyLeftHandButton = new(new LocalizableGUIContent(translation, "handPane", "leftHand"));
         applyLeftHandButton.ControlEvent += OnApplyLeftButtonPushed;
@@ -101,6 +104,9 @@ public class HandPresetSelectorPane : BasePane
 
         noPresetsLabel = new(new LocalizableGUIContent(translation, "handPane", "noPresetsMessage"));
         savedHandPresetLabel = new(new LocalizableGUIContent(translation, "handPane", "savedHandPresetLabel"));
+
+        autoApplyLeftToggle = new(new LocalizableGUIContent(translation, "handPane", "autoApplyLeft"));
+        autoApplyRightToggle = new(new LocalizableGUIContent(translation, "handPane", "autoApplyRight"));
 
         IDropdownItem Formatter(HandPresetModel preset, int index) =>
             new LabelledDropdownItem($"{index + 1}: {preset.Name}");
@@ -147,6 +153,14 @@ public class HandPresetSelectorPane : BasePane
         UIUtility.DrawBlackLine();
 
         GUI.enabled = enabled && presetDropdown.Any();
+
+        GUILayout.BeginHorizontal();
+
+        autoApplyRightToggle.Draw();
+        autoApplyLeftToggle.Draw();
+
+        GUILayout.EndHorizontal();
+
         GUILayout.BeginHorizontal();
 
         applyRightHandButton.Draw();
@@ -219,7 +233,7 @@ public class HandPresetSelectorPane : BasePane
         if (presetIndex < 0)
             return;
 
-        presetDropdown.SetSelectedIndexWithoutNotify(presetIndex);
+        presetDropdown.SelectedItemIndex = presetIndex;
     }
 
     private void OnHandPresetAdded(object sender, AddedHandPresetEventArgs e)
@@ -283,6 +297,15 @@ public class HandPresetSelectorPane : BasePane
         {
             presetCategoryDropdown.SetItemsWithoutNotify(newCategories, 0);
         }
+    }
+
+    private void OnPresetSelectionChanged(object sender, DropdownEventArgs<HandPresetModel> e)
+    {
+        if (autoApplyLeftToggle.Value)
+            ApplyPreset(HandOrFootType.HandLeft);
+
+        if (autoApplyRightToggle.Value)
+            ApplyPreset(HandOrFootType.HandRight);
     }
 
     private void OnRefreshButtonPushed(object sender, EventArgs e) =>

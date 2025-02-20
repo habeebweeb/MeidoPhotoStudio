@@ -116,7 +116,9 @@
     "leftHand": "Left",
     "swapHands": "Swap",
     "noPresetsMessage": "No Hand Presets",
-    "savedHandPresetLabel": "Saved hand preset!"
+    "savedHandPresetLabel": "Saved hand preset!",
+    "autoApplyLeft": "Auto Apply",
+    "autoApplyRight": "Auto Apply"
   },
   "posingSubPaneGroup": {
     "freeLook": "Free Look",
