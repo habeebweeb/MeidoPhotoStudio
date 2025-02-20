@@ -1,12 +1,15 @@
 using System.ComponentModel;
 
+using MeidoPhotoStudio.Plugin.Framework;
+
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
 public class HeadController : INotifyPropertyChanged
 {
     private readonly CharacterController character;
-    private readonly Quaternion initialLeftEyeRotation;
-    private readonly Quaternion initialRightEyeRotation;
+
+    private Quaternion initialLeftEyeRotation;
+    private Quaternion initialRightEyeRotation;
 
     public HeadController(CharacterController characterController)
     {
@@ -14,6 +17,8 @@ public class HeadController : INotifyPropertyChanged
 
         initialLeftEyeRotation = character.Maid.body0.quaDefEyeL;
         initialRightEyeRotation = character.Maid.body0.quaDefEyeR;
+
+        character.ProcessedCharacterProps += OnCharacterPropsProcessed;
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
@@ -167,6 +172,15 @@ public class HeadController : INotifyPropertyChanged
 
     public void ResetRightEyeRotation() =>
         Body.quaDefEyeR = initialRightEyeRotation;
+
+    private void OnCharacterPropsProcessed(object sender, CharacterProcessingEventArgs e)
+    {
+        if (!e.ChangingSlots.Any(static slot => slot == SafeMpn.GetValue(nameof(MPN.head)) || slot == SafeMpn.GetValue(nameof(MPN.body))))
+            return;
+
+        initialLeftEyeRotation = character.Maid.body0.quaDefEyeL;
+        initialRightEyeRotation = character.Maid.body0.quaDefEyeR;
+    }
 
     private void RaisePropertyChanged(string name)
     {
