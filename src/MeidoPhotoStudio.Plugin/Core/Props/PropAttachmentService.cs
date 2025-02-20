@@ -1,6 +1,7 @@
 using System.ComponentModel;
 
 using MeidoPhotoStudio.Plugin.Core.Character;
+using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using UnityEngine.SceneManagement;
 
@@ -137,12 +138,18 @@ public class PropAttachmentService
 
     private void OnCallingCharacters(object sender, CharacterServiceEventArgs e)
     {
+        foreach (var character in characterService)
+            character.ProcessingCharacterProps -= OnCharacterPropsProcessing;
+
         foreach (var attachedProp in attachedProps.Keys)
             Detach(attachedProp);
     }
 
     private void OnCalledCharacters(object sender, CharacterServiceEventArgs e)
     {
+        foreach (var character in e.LoadedCharacters)
+            character.ProcessingCharacterProps += OnCharacterPropsProcessing;
+
         foreach (var (prop, attachInfo) in attachedProps.ToArray())
         {
             var character = characterService.GetCharacterControllerByID(attachInfo.MaidGuid);
@@ -155,6 +162,31 @@ public class PropAttachmentService
             }
 
             AttachProp(prop, character, attachInfo.AttachPoint, true);
+        }
+    }
+
+    private void OnCharacterPropsProcessing(object sender, CharacterProcessingEventArgs e)
+    {
+        if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
+            return;
+
+        var character = (CharacterController)sender;
+
+        var characterAttachments = attachedProps
+            .Where(kvp => string.Equals(kvp.Value.MaidGuid, character.ID))
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        foreach (var prop in characterAttachments.Keys)
+            Detach(prop);
+
+        character.ProcessedCharacterProps += OnCharacterPropsProcessed;
+
+        void OnCharacterPropsProcessed(object sender, CharacterProcessingEventArgs e)
+        {
+            character.ProcessedCharacterProps -= OnCharacterPropsProcessed;
+
+            foreach (var (prop, attachInfo) in characterAttachments)
+                AttachProp(prop, character, attachInfo.AttachPoint, true);
         }
     }
 
