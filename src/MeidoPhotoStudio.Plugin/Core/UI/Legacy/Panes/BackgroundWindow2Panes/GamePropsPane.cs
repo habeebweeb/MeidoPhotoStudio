@@ -15,6 +15,12 @@ public class GamePropsPane : BasePane
     private readonly Button addPropButton;
     private readonly Label noPropsLabel;
     private readonly SearchBar<PhotoBgPropModel> searchBar;
+    private readonly LazyStyle noPropsLabelStyle = new(
+        StyleSheet.TextSize,
+        static () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.MiddleCenter,
+        });
 
     public GamePropsPane(Translation translation, PropService propService, PhotoBgPropRepository gamePropRepository)
     {
@@ -68,7 +74,7 @@ public class GamePropsPane : BasePane
 
         if (gamePropRepository[propCategoryDropdown.SelectedItem].Count is 0)
         {
-            noPropsLabel.Draw();
+            noPropsLabel.Draw(noPropsLabelStyle);
 
             return;
         }

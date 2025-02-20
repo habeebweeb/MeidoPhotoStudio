@@ -18,6 +18,12 @@ public class HandItemPropsPane : BasePane
     private readonly Label initializingLabel;
     private readonly Label noHandItemsLabel;
     private readonly SearchBar<MenuFilePropModel> searchBar;
+    private readonly LazyStyle noPropsLabelStyle = new(
+        StyleSheet.TextSize,
+        static () => new(Label.Style)
+        {
+            alignment = TextAnchor.MiddleCenter,
+        });
 
     private bool menuDatabaseBusy = false;
     private bool hasHandItems;
@@ -105,7 +111,7 @@ public class HandItemPropsPane : BasePane
 
         if (!hasHandItems)
         {
-            noHandItemsLabel.Draw();
+            noHandItemsLabel.Draw(noPropsLabelStyle);
 
             return;
         }

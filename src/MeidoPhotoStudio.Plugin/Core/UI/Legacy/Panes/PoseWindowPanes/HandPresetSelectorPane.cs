@@ -29,6 +29,12 @@ public class HandPresetSelectorPane : BasePane
     private readonly Button refreshButton;
     private readonly Label savedHandPresetLabel;
     private readonly SearchBar<HandPresetModel> searchBar;
+    private readonly LazyStyle noPresetsLabelStyle = new(
+        StyleSheet.TextSize,
+        static () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.MiddleCenter,
+        });
 
     private bool showSaveHandPresetLabel;
     private float saveTime;
@@ -120,7 +126,7 @@ public class HandPresetSelectorPane : BasePane
 
         if (!presetCategoryDropdown.Any())
         {
-            noPresetsLabel.Draw();
+            noPresetsLabel.Draw(noPresetsLabelStyle);
         }
         else if (!presetDropdown.Any())
         {
@@ -128,7 +134,7 @@ public class HandPresetSelectorPane : BasePane
 
             DrawDropdown(presetCategoryDropdown);
 
-            noPresetsLabel.Draw();
+            noPresetsLabel.Draw(noPresetsLabelStyle);
         }
         else
         {

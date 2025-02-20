@@ -15,6 +15,12 @@ public class DeskPropsPane : BasePane
     private readonly Button addPropButton;
     private readonly Label noPropsLabel;
     private readonly SearchBar<DeskPropModel> searchBar;
+    private readonly LazyStyle noPropsLabelStyle = new(
+        StyleSheet.TextSize,
+        static () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.MiddleCenter,
+        });
 
     public DeskPropsPane(Translation translation, PropService propService, DeskPropRepository deskPropRepository)
     {
@@ -70,7 +76,7 @@ public class DeskPropsPane : BasePane
 
         if (deskPropRepository[propCategoryDropdown.SelectedItem].Count is 0)
         {
-            noPropsLabel.Draw();
+            noPropsLabel.Draw(noPropsLabelStyle);
 
             return;
         }

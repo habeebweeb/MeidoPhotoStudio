@@ -37,6 +37,12 @@ public class LightsPane : BasePane
     private readonly Button resetPropertiesButton;
     private readonly Header resetHeader;
     private readonly Label noLightsLabel;
+    private readonly LazyStyle noLightsLabelStyle = new(
+        StyleSheet.TextSize,
+        static () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.MiddleCenter,
+        });
 
     private bool sliderChangedTransform;
 
@@ -219,7 +225,7 @@ public class LightsPane : BasePane
 
         if (CurrentLightController == null)
         {
-            noLightsLabel.Draw();
+            noLightsLabel.Draw(noLightsLabelStyle);
 
             return;
         }

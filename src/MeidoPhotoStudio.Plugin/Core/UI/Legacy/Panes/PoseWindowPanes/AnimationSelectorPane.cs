@@ -31,6 +31,12 @@ public class AnimationSelectorPane : BasePane
     private readonly Button refreshButton;
     private readonly Label savedAnimationLabel;
     private readonly SearchBar<IAnimationModel> searchBar;
+    private readonly LazyStyle noAnimationsLabelStyle = new(
+        StyleSheet.TextSize,
+        static () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.MiddleCenter,
+        });
 
     private AnimationSource currentAnimationSource = AnimationSource.Game;
     private bool showSavedAnimationLabel;
@@ -228,13 +234,13 @@ public class AnimationSelectorPane : BasePane
         {
             if (!animationCategoryDropdown.Any())
             {
-                noAnimationsLabel.Draw();
+                noAnimationsLabel.Draw(noAnimationsLabelStyle);
             }
             else if (!animationDropdown.Any())
             {
                 DrawDropdown(animationCategoryDropdown);
 
-                noAnimationsLabel.Draw();
+                noAnimationsLabel.Draw(noAnimationsLabelStyle);
             }
             else
             {

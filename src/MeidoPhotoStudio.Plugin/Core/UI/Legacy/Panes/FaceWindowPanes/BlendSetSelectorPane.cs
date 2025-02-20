@@ -30,6 +30,12 @@ public class BlendSetSelectorPane : BasePane
     private readonly Button refreshButton;
     private readonly Label savedBlendSetLabel;
     private readonly SearchBar<IBlendSetModel> searchBar;
+    private readonly LazyStyle noBlendSetsLabelStyle = new(
+        StyleSheet.TextSize,
+        static () => new(GUI.skin.label)
+        {
+            alignment = TextAnchor.MiddleCenter,
+        });
 
     private BlendSetSource currentBlendSetSource = BlendSetSource.Game;
     private bool showSaveBlendSetLabel;
@@ -168,14 +174,14 @@ public class BlendSetSelectorPane : BasePane
 
         if (!blendSetCategoryDropdown.Any())
         {
-            noBlendSetsLabel.Draw();
+            noBlendSetsLabel.Draw(noBlendSetsLabelStyle);
         }
         else if (!blendSetDropdown.Any())
         {
             DrawTextFieldWithScrollBarOffset(searchBar);
 
             DrawDropdown(blendSetCategoryDropdown);
-            noBlendSetsLabel.Draw();
+            noBlendSetsLabel.Draw(noBlendSetsLabelStyle);
         }
         else
         {
