@@ -82,7 +82,7 @@ public class LegacyDeserializer : ISceneSerializer
                 Character = ReadCharactersSchema(reader, metadata),
                 MessageWindow = ReadMessageWindowSchema(reader, metadata),
                 Camera = ReadCameraSchema(reader, metadata),
-                Lights = ReadLightRepositorySchema(reader, metadata),
+                Lights = ReadLightsSchema(reader, metadata),
                 Effects = ReadEffectsSchema(reader, metadata),
                 Background = ReadBackgroundSchema(reader, metadata),
                 Props = ReadPropSchema(reader, metadata),
@@ -378,7 +378,7 @@ public class LegacyDeserializer : ISceneSerializer
                 }
             }
 
-            static LightRepositorySchema ReadLightRepositorySchema(BinaryReader reader, SceneSchemaMetadata metadata)
+            static LightsSchema ReadLightsSchema(BinaryReader reader, SceneSchemaMetadata metadata)
             {
                 _ = reader.ReadString();
 

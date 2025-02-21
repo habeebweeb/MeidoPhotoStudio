@@ -7,7 +7,7 @@ namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 public class LightDragHandleController : GeneralDragHandleController
 {
     private readonly bool isMainLight;
-    private readonly LightRepository lightRepository;
+    private readonly LightService lightService;
     private readonly SelectionController<LightController> lightSelectionController;
     private readonly TabSelectionController tabSelectionController;
 
@@ -25,13 +25,13 @@ public class LightDragHandleController : GeneralDragHandleController
     public LightDragHandleController(
         DragHandle dragHandle,
         LightController lightController,
-        LightRepository lightRepository,
+        LightService lightService,
         SelectionController<LightController> lightSelectionController,
         TabSelectionController tabSelectionController)
         : base(dragHandle, LightControllerTransform(lightController))
     {
         LightController = lightController ?? throw new ArgumentNullException(nameof(lightController));
-        this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
+        this.lightService = lightService ?? throw new ArgumentNullException(nameof(lightService));
         this.lightSelectionController = lightSelectionController ?? throw new ArgumentNullException(nameof(lightSelectionController));
         this.tabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
         isMainLight = LightController.Light == GameMain.Instance.MainLight.GetComponent<Light>();
@@ -199,7 +199,7 @@ public class LightDragHandleController : GeneralDragHandleController
     private class LightDeleteMode(LightDragHandleController controller) : DeleteMode<LightDragHandleController>(controller)
     {
         public override void OnClicked() =>
-            Controller.lightRepository.RemoveLight(Controller.LightController);
+            Controller.lightService.RemoveLight(Controller.LightController);
 
         public override void OnCancelled()
         {

@@ -13,7 +13,7 @@ public class SceneSchemaBuilder(
     ISceneSchemaAspectBuilder<CharactersSchema> charactersSchemaBuilder,
     ISceneSchemaAspectBuilder<MessageWindowSchema> messageWindowSchemaBuilder,
     ISceneSchemaAspectBuilder<CameraSchema> cameraSchemaBuilder,
-    ISceneSchemaAspectBuilder<LightRepositorySchema> lightRepositorySchemaBuilder,
+    ISceneSchemaAspectBuilder<LightsSchema> lightsSchemaBuilder,
     ISceneSchemaAspectBuilder<EffectsSchema> effectsSchemaBuilder,
     ISceneSchemaAspectBuilder<BackgroundSchema> backgroundSchemaBuilder,
     ISceneSchemaAspectBuilder<PropsSchema> propsSchemaBuilder)
@@ -27,8 +27,8 @@ public class SceneSchemaBuilder(
     private readonly ISceneSchemaAspectBuilder<CameraSchema> cameraSchemaBuilder = cameraSchemaBuilder
         ?? throw new ArgumentNullException(nameof(cameraSchemaBuilder));
 
-    private readonly ISceneSchemaAspectBuilder<LightRepositorySchema> lightRepositorySchemaBuilder = lightRepositorySchemaBuilder
-        ?? throw new ArgumentNullException(nameof(lightRepositorySchemaBuilder));
+    private readonly ISceneSchemaAspectBuilder<LightsSchema> lightsSchemaBuilder = lightsSchemaBuilder
+        ?? throw new ArgumentNullException(nameof(lightsSchemaBuilder));
 
     private readonly ISceneSchemaAspectBuilder<EffectsSchema> effectsSchemaBuilder = effectsSchemaBuilder
         ?? throw new ArgumentNullException(nameof(effectsSchemaBuilder));
@@ -45,7 +45,7 @@ public class SceneSchemaBuilder(
             Character = charactersSchemaBuilder.Build(),
             MessageWindow = messageWindowSchemaBuilder.Build(),
             Camera = cameraSchemaBuilder.Build(),
-            Lights = lightRepositorySchemaBuilder.Build(),
+            Lights = lightsSchemaBuilder.Build(),
             Effects = effectsSchemaBuilder.Build(),
             Background = backgroundSchemaBuilder.Build(),
             Props = propsSchemaBuilder.Build(),

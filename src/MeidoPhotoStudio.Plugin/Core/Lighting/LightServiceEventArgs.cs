@@ -1,6 +1,6 @@
 namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 
-public class LightRepositoryEventArgs(LightController lightController, int lightIndex) : EventArgs
+public class LightServiceEventArgs(LightController lightController, int lightIndex) : EventArgs
 {
     public LightController LightController { get; } = lightController
         ?? throw new ArgumentNullException(nameof(lightController));

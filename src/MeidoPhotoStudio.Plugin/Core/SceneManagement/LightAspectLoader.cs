@@ -4,38 +4,38 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Light;
 
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
-public class LightAspectLoader(LightRepository lightRepository, BackgroundService backgroundService)
-    : ISceneAspectLoader<LightRepositorySchema>
+public class LightAspectLoader(LightService lightService, BackgroundService backgroundService)
+    : ISceneAspectLoader<LightsSchema>
 {
-    private readonly LightRepository lightRepository = lightRepository
-        ?? throw new ArgumentNullException(nameof(lightRepository));
+    private readonly LightService lightService = lightService
+        ?? throw new ArgumentNullException(nameof(lightService));
 
     private readonly BackgroundService backgroundService = backgroundService
         ?? throw new ArgumentNullException(nameof(backgroundService));
 
-    public void Load(LightRepositorySchema lightRepositorySchema, LoadOptions loadOptions)
+    public void Load(LightsSchema lightsSchema, LoadOptions loadOptions)
     {
         if (!loadOptions.Lights)
             return;
 
-        lightRepository.RemoveAllLights();
+        lightService.RemoveAllLights();
 
-        lightRepository.AddedLight += ApplyLightSchema;
+        lightService.AddedLight += ApplyLightSchema;
 
-        for (var i = 0; i < lightRepositorySchema.Lights.Count; i++)
+        for (var i = 0; i < lightsSchema.Lights.Count; i++)
         {
             if (i == 0)
-                lightRepository.AddLight(GameMain.Instance.MainLight.GetComponent<Light>());
+                lightService.AddLight(GameMain.Instance.MainLight.GetComponent<Light>());
             else
-                lightRepository.AddLight();
+                lightService.AddLight();
         }
 
-        lightRepository.AddedLight -= ApplyLightSchema;
+        lightService.AddedLight -= ApplyLightSchema;
 
-        void ApplyLightSchema(object sender, LightRepositoryEventArgs e)
+        void ApplyLightSchema(object sender, LightServiceEventArgs e)
         {
             var light = e.LightController;
-            var lightSchema = lightRepositorySchema.Lights[e.LightIndex];
+            var lightSchema = lightsSchema.Lights[e.LightIndex];
 
             light.Position = lightSchema.Position;
             light.Type = lightSchema.Type;

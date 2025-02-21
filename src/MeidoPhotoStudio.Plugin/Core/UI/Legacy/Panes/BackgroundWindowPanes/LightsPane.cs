@@ -12,7 +12,7 @@ public class LightsPane : BasePane
 {
     private static Light mainLight;
     private readonly Translation translation;
-    private readonly LightRepository lightRepository;
+    private readonly LightService lightService;
     private readonly SelectionController<LightController> lightSelectionController;
     private readonly Dropdown<LightController> lightDropdown;
     private readonly Dictionary<LightController, string> lightNames = [];
@@ -48,17 +48,17 @@ public class LightsPane : BasePane
 
     public LightsPane(
         Translation translation,
-        LightRepository lightRepository,
+        LightService lightService,
         SelectionController<LightController> lightSelectionController,
         TransformClipboard transformClipboard)
     {
         this.translation = translation ?? throw new ArgumentNullException(nameof(translation));
-        this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
+        this.lightService = lightService ?? throw new ArgumentNullException(nameof(lightService));
         this.lightSelectionController = lightSelectionController ?? throw new ArgumentNullException(nameof(lightSelectionController));
         _ = transformClipboard ?? throw new ArgumentNullException(nameof(transformClipboard));
 
-        lightRepository.AddedLight += OnAddedLight;
-        lightRepository.RemovedLight += OnRemovedLight;
+        lightService.AddedLight += OnAddedLight;
+        lightService.RemovedLight += OnRemovedLight;
 
         lightSelectionController.Selecting += OnSelectingLight;
         lightSelectionController.Selected += OnSelectedLight;
@@ -258,7 +258,7 @@ public class LightsPane : BasePane
 
         void DrawTopBar()
         {
-            GUI.enabled = enabled && lightRepository.Count > 0;
+            GUI.enabled = enabled && lightService.Count > 0;
 
             GUILayout.BeginHorizontal();
 
@@ -270,7 +270,7 @@ public class LightsPane : BasePane
 
             addLightButton.Draw(noExpandWidth);
 
-            GUI.enabled = enabled && lightRepository.Count > 0;
+            GUI.enabled = enabled && lightService.Count > 0;
 
             GUILayout.FlexibleSpace();
 
@@ -369,9 +369,9 @@ public class LightsPane : BasePane
         UpdateControls();
     }
 
-    private void OnRemovedLight(object sender, LightRepositoryEventArgs e)
+    private void OnRemovedLight(object sender, LightServiceEventArgs e)
     {
-        if (lightRepository.Count is 0)
+        if (lightService.Count is 0)
         {
             lightDropdown.Clear();
             lightNames.Clear();
@@ -379,18 +379,18 @@ public class LightsPane : BasePane
             return;
         }
 
-        var lightIndex = lightDropdown.SelectedItemIndex >= lightRepository.Count
-            ? lightRepository.Count - 1
+        var lightIndex = lightDropdown.SelectedItemIndex >= lightService.Count
+            ? lightService.Count - 1
             : lightDropdown.SelectedItemIndex;
 
         lightNames.Remove(e.LightController);
-        lightDropdown.SetItems(lightRepository, lightIndex);
+        lightDropdown.SetItems(lightService, lightIndex);
     }
 
-    private void OnAddedLight(object sender, LightRepositoryEventArgs e)
+    private void OnAddedLight(object sender, LightServiceEventArgs e)
     {
         lightNames[e.LightController] = GetNewLightName(e.LightController);
-        lightDropdown.SetItems(lightRepository, lightRepository.Count - 1);
+        lightDropdown.SetItems(lightService, lightService.Count - 1);
 
         string GetNewLightName(LightController lightController)
         {
@@ -484,7 +484,7 @@ public class LightsPane : BasePane
 
     private void LightDropdownSelectionChanged(object sender, EventArgs e)
     {
-        if (lightRepository.Count is 0)
+        if (lightService.Count is 0)
             return;
 
         lightSelectionController.Select(lightDropdown.SelectedItem);
@@ -499,11 +499,11 @@ public class LightsPane : BasePane
     }
 
     private void OnAddLightButtonPressed(object sender, EventArgs e) =>
-        lightRepository.AddLight();
+        lightService.AddLight();
 
     private void OnDeleteButtonPressed(object sender, EventArgs e)
     {
-        if (lightRepository.Count is 0)
+        if (lightService.Count is 0)
             return;
 
         if (CurrentLightController is null)
@@ -512,13 +512,13 @@ public class LightsPane : BasePane
         if (CurrentLightController.Light == GameMain.Instance.MainLight.GetComponent<Light>())
             return;
 
-        lightRepository.RemoveLight(lightRepository.IndexOf(CurrentLightController));
+        lightService.RemoveLight(lightService.IndexOf(CurrentLightController));
     }
 
     private void OnClearButtonPressed(object sender, EventArgs e)
     {
-        for (var i = lightRepository.Count - 1; i > 0; i--)
-            lightRepository.RemoveLight(i);
+        for (var i = lightService.Count - 1; i > 0; i--)
+            lightService.RemoveLight(i);
     }
 
     private void OnLightOnToggleChanged(object sender, EventArgs e)

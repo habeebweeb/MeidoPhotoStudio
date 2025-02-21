@@ -1,6 +1,6 @@
 namespace MeidoPhotoStudio.Plugin.Core.Schema.Light;
 
-public class LightRepositorySchema(short version = LightRepositorySchema.SchemaVersion)
+public class LightsSchema(short version = LightsSchema.SchemaVersion)
 {
     public const short SchemaVersion = 1;
 

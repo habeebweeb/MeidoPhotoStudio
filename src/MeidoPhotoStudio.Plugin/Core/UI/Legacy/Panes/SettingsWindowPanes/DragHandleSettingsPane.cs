@@ -15,7 +15,7 @@ public class DragHandleSettingsPane : BasePane
     private readonly IKDragHandleService ikDragHandleService;
     private readonly PropDragHandleService propDragHandleService;
     private readonly GravityDragHandleService gravityDragHandleService;
-    private readonly LightDragHandleRepository lightDragHandleRepository;
+    private readonly LightDragHandleService lightDragHandleRepository;
     private readonly BackgroundDragHandleService backgroundDragHandleService;
     private readonly Toggle smallDragHandleToggle;
     private readonly Toggle characterTransformDragHandleToggle;
@@ -27,7 +27,7 @@ public class DragHandleSettingsPane : BasePane
         IKDragHandleService ikDragHandleService,
         PropDragHandleService propDragHandleService,
         GravityDragHandleService gravityDragHandleService,
-        LightDragHandleRepository lightDragHandleRepository,
+        LightDragHandleService lightDragHandleRepository,
         BackgroundDragHandleService backgroundDragHandleService)
     {
         _ = translation ?? throw new ArgumentNullException(nameof(translation));

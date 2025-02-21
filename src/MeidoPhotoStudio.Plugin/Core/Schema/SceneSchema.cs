@@ -10,7 +10,7 @@ public class SceneSchema
 
     public Camera.CameraSchema Camera { get; init; }
 
-    public Light.LightRepositorySchema Lights { get; init; }
+    public Light.LightsSchema Lights { get; init; }
 
     public Effects.EffectsSchema Effects { get; init; }
 

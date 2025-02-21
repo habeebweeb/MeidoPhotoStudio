@@ -4,12 +4,12 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 
-public class LightDragHandleRepository
+public class LightDragHandleService
 {
     private static readonly (float Small, float Normal) HandleSize = (0.5f, 1f);
 
     private readonly GeneralDragHandleInputHandler generalDragHandleInputService;
-    private readonly LightRepository lightRepository;
+    private readonly LightService lightService;
     private readonly SelectionController<LightController> lightSelectionController;
     private readonly TabSelectionController tabSelectionController;
     private readonly Dictionary<LightController, LightDragHandleController> lightDragHandleControllers = [];
@@ -17,18 +17,18 @@ public class LightDragHandleRepository
     private bool smallHandle;
     private bool autoSelect;
 
-    public LightDragHandleRepository(
+    public LightDragHandleService(
         GeneralDragHandleInputHandler generalDragHandleInputService,
-        LightRepository lightRepository,
+        LightService lightService,
         SelectionController<LightController> lightSelectionController,
         TabSelectionController tabSelectionController)
     {
         this.generalDragHandleInputService = generalDragHandleInputService ?? throw new ArgumentNullException(nameof(generalDragHandleInputService));
-        this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
+        this.lightService = lightService ?? throw new ArgumentNullException(nameof(lightService));
         this.lightSelectionController = lightSelectionController ?? throw new ArgumentNullException(nameof(lightSelectionController));
         this.tabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
-        this.lightRepository.AddedLight += OnAddedLight;
-        this.lightRepository.RemovingLight += OnRemovingLight;
+        this.lightService.AddedLight += OnAddedLight;
+        this.lightService.RemovingLight += OnRemovingLight;
     }
 
     public bool SmallHandle
@@ -61,7 +61,7 @@ public class LightDragHandleRepository
         }
     }
 
-    private void OnAddedLight(object sender, LightRepositoryEventArgs e)
+    private void OnAddedLight(object sender, LightServiceEventArgs e)
     {
         var lightDragHandleController = BuildDragHandle(e.LightController);
 
@@ -84,7 +84,7 @@ public class LightDragHandleRepository
             }.Build();
 
             var lightDragHandleController = new LightDragHandleController(
-                    dragHandle, lightController, lightRepository, lightSelectionController, tabSelectionController)
+                    dragHandle, lightController, lightService, lightSelectionController, tabSelectionController)
             {
                 AutoSelect = AutoSelect,
             };
@@ -93,7 +93,7 @@ public class LightDragHandleRepository
         }
     }
 
-    private void OnRemovingLight(object sender, LightRepositoryEventArgs e)
+    private void OnRemovingLight(object sender, LightServiceEventArgs e)
     {
         if (!lightDragHandleControllers.ContainsKey(e.LightController))
             return;

@@ -2,7 +2,7 @@ using MeidoPhotoStudio.Plugin.Framework.Service;
 
 namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 
-public class LightRepository(TransformWatcher transformWatcher) : IEnumerable<LightController>, IIndexableCollection<LightController>, IActivateable
+public class LightService(TransformWatcher transformWatcher) : IEnumerable<LightController>, IIndexableCollection<LightController>, IActivateable
 {
     private static GameObject lightParent;
 
@@ -12,11 +12,11 @@ public class LightRepository(TransformWatcher transformWatcher) : IEnumerable<Li
 
     private LightProperties initialMainLightProperties;
 
-    public event EventHandler<LightRepositoryEventArgs> AddedLight;
+    public event EventHandler<LightServiceEventArgs> AddedLight;
 
-    public event EventHandler<LightRepositoryEventArgs> RemovingLight;
+    public event EventHandler<LightServiceEventArgs> RemovingLight;
 
-    public event EventHandler<LightRepositoryEventArgs> RemovedLight;
+    public event EventHandler<LightServiceEventArgs> RemovedLight;
 
     public int Count =>
         lightControllers.Count;

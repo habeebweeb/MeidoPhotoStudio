@@ -5,7 +5,7 @@ namespace MeidoPhotoStudio.Plugin.Core.Lighting;
 
 public class LightUndoRedoService
 {
-    private readonly LightRepository lightRepository;
+    private readonly LightService lightService;
     private readonly UndoRedoService undoRedoService;
     private readonly Dictionary<int, LightController> lightControllers = [];
     private readonly Dictionary<int, LightUndoRedoController> undoRedoControllerByID = [];
@@ -15,13 +15,13 @@ public class LightUndoRedoService
     private bool changeFromUndoRedo;
     private LightState undoRedoState;
 
-    public LightUndoRedoService(LightRepository lightRepository, UndoRedoService undoRedoService)
+    public LightUndoRedoService(LightService lightService, UndoRedoService undoRedoService)
     {
-        this.lightRepository = lightRepository ?? throw new ArgumentNullException(nameof(lightRepository));
+        this.lightService = lightService ?? throw new ArgumentNullException(nameof(lightService));
         this.undoRedoService = undoRedoService ?? throw new ArgumentNullException(nameof(undoRedoService));
 
-        this.lightRepository.AddedLight += OnLightAdded;
-        this.lightRepository.RemovingLight += OnLightRemoving;
+        this.lightService.AddedLight += OnLightAdded;
+        this.lightService.RemovingLight += OnLightRemoving;
 
         lightResolver = new(this);
     }
@@ -31,7 +31,7 @@ public class LightUndoRedoService
             ? throw new ArgumentNullException(nameof(lightController))
             : undoRedoControllers[lightController];
 
-    private void OnLightAdded(object sender, LightRepositoryEventArgs e)
+    private void OnLightAdded(object sender, LightServiceEventArgs e)
     {
         if (changeFromUndoRedo)
             ApplyUndoRedoState(e.LightController, undoRedoState);
@@ -69,7 +69,7 @@ public class LightUndoRedoService
 
                 var controller = lightControllers[id];
 
-                lightRepository.RemoveLight(controller);
+                lightService.RemoveLight(controller);
 
                 changeFromUndoRedo = false;
             }
@@ -80,14 +80,14 @@ public class LightUndoRedoService
 
                 undoRedoState = lightState;
 
-                lightRepository.AddLight();
+                lightService.AddLight();
 
                 changeFromUndoRedo = false;
             }
         }
     }
 
-    private void OnLightRemoving(object sender, LightRepositoryEventArgs e)
+    private void OnLightRemoving(object sender, LightServiceEventArgs e)
     {
         if (changeFromUndoRedo)
             return;
@@ -115,7 +115,7 @@ public class LightUndoRedoService
 
                 undoRedoState = lightState;
 
-                lightRepository.AddLight();
+                lightService.AddLight();
 
                 changeFromUndoRedo = false;
             }
@@ -126,7 +126,7 @@ public class LightUndoRedoService
 
                 var controller = lightControllers[id];
 
-                lightRepository.RemoveLight(controller);
+                lightService.RemoveLight(controller);
 
                 changeFromUndoRedo = false;
             }

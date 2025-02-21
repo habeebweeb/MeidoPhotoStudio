@@ -66,7 +66,7 @@ public partial class PluginCore : MonoBehaviour
         iconCache.Destroy();
 
         DragHandle.Builder.DestroyParent();
-        LightRepository.DestroyParent();
+        LightService.DestroyParent();
         Framework.CoroutineRunner.DestroyParent();
         IKController.DestroyParent();
         WfCameraMoveSupportUtility.Destroy();
@@ -242,12 +242,12 @@ public partial class PluginCore : MonoBehaviour
         };
 
         // Lights
-        var lightRepository = new LightRepository(transformWatcher);
+        var lightService = new LightService(transformWatcher);
 
-        var lightSelectionController = new SelectionController<LightController>(lightRepository);
+        var lightSelectionController = new SelectionController<LightController>(lightService);
 
-        var lightDragHandleRepository = new LightDragHandleRepository(
-            generalDragHandleInputService, lightRepository, lightSelectionController, tabSelectionController)
+        var lightDragHandleRepository = new LightDragHandleService(
+            generalDragHandleInputService, lightService, lightSelectionController, tabSelectionController)
         {
             SmallHandle = dragHandleConfiguration.SmallTransformCube.Value,
             AutoSelect = dragHandleConfiguration.AutomaticSelection.Value,
@@ -325,8 +325,8 @@ public partial class PluginCore : MonoBehaviour
                 new GlobalGravitySchemaBuilder()),
             new MessageWindowSchemaBuilder(messageWindowManager),
             new CameraSchemaBuilder(cameraSaveSlotController, new CameraInfoSchemaBuilder()),
-            new LightRepositorySchemaBuilder(
-                lightRepository, new LightSchemaBuilder(new LightPropertiesSchemaBuilder())),
+            new LightsSchemaBuilder(
+                lightService, new LightSchemaBuilder(new LightPropertiesSchemaBuilder())),
             new EffectsSchemaBuilder(
                 bloomController,
                 depthOfFieldController,
@@ -369,7 +369,7 @@ public partial class PluginCore : MonoBehaviour
                 bodyShapeKeyConfiguration),
             new MessageAspectLoader(messageWindowManager),
             new CameraAspectLoader(cameraSaveSlotController),
-            new LightAspectLoader(lightRepository, backgroundService),
+            new LightAspectLoader(lightService, backgroundService),
             new EffectsAspectLoader(
                 bloomController,
                 depthOfFieldController,
@@ -610,7 +610,7 @@ public partial class PluginCore : MonoBehaviour
                     new LocalizableGUIContent(translation, "environmentTabPaneGroups", "lights"),
                     group: environmentHeaderGroup)
                 {
-                    new LightsPane(translation, lightRepository, lightSelectionController, transformClipboard),
+                    new LightsPane(translation, lightService, lightSelectionController, transformClipboard),
                 },
                 new PaneGroup(
                     new LocalizableGUIContent(translation, "environmentTabPaneGroups", "effects"),
@@ -707,7 +707,7 @@ public partial class PluginCore : MonoBehaviour
         AddActivateable(backgroundRepository);
         AddActivateable(backgroundService);
 
-        AddActivateable(lightRepository);
+        AddActivateable(lightService);
 
         AddActivateable(bloomController);
         AddActivateable(depthOfFieldController);

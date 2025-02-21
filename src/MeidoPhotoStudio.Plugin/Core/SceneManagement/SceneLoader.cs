@@ -15,7 +15,7 @@ public class SceneLoader(
     ISceneAspectLoader<CharactersSchema> characterAspectLoader,
     ISceneAspectLoader<MessageWindowSchema> messageAspectLoader,
     ISceneAspectLoader<CameraSchema> cameraAspectLoader,
-    ISceneAspectLoader<LightRepositorySchema> lightingAspectLoader,
+    ISceneAspectLoader<LightsSchema> lightingAspectLoader,
     ISceneAspectLoader<EffectsSchema> effectsAspectLoader,
     ISceneAspectLoader<BackgroundSchema> backgroundAspectLoader,
     ISceneAspectLoader<PropsSchema> propsAspectLoader)
@@ -32,7 +32,7 @@ public class SceneLoader(
     private readonly ISceneAspectLoader<CameraSchema> cameraAspectLoader = cameraAspectLoader
         ?? throw new ArgumentNullException(nameof(cameraAspectLoader));
 
-    private readonly ISceneAspectLoader<LightRepositorySchema> lightingAspectLoader = lightingAspectLoader
+    private readonly ISceneAspectLoader<LightsSchema> lightingAspectLoader = lightingAspectLoader
         ?? throw new ArgumentNullException(nameof(lightingAspectLoader));
 
     private readonly ISceneAspectLoader<EffectsSchema> effectsAspectLoader = effectsAspectLoader
