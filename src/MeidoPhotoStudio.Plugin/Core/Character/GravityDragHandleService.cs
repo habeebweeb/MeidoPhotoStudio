@@ -114,7 +114,7 @@ public class GravityDragHandleService
             return;
 
         var (hair, clothing) = dragHandleSets[character];
-        var (hairEnabled, clothingEnabled) = (hair.Enabled, clothing.Enabled);
+        var (hairEnabled, clothingEnabled) = (hair.DragHandleEnabled, clothing.DragHandleEnabled);
 
         DestroyDragHandleSet(dragHandleSets[character]);
 
@@ -124,8 +124,8 @@ public class GravityDragHandleService
         {
             var (hair, clothing) = dragHandleSets[character] = InitializeDragHandleSet(character);
 
-            hair.Enabled = hairEnabled;
-            clothing.Enabled = clothingEnabled;
+            hair.DragHandleEnabled = hairEnabled;
+            clothing.DragHandleEnabled = clothingEnabled;
 
             character.ProcessedCharacterProps -= OnCharacterProcessed;
         }
@@ -177,7 +177,7 @@ public class GravityDragHandleService
 
             return new GravityDragHandleController(dragHandle, gravityController, character, selectionController)
             {
-                Enabled = false,
+                DragHandleEnabled = false,
                 AutoSelect = AutoSelect,
             };
         }

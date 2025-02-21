@@ -76,7 +76,7 @@ public class PropsAspectLoader(
             {
                 var propDragHandle = propDragHandleService[propController];
 
-                propDragHandle.Enabled = dragHandleSchema.HandleEnabled;
+                propDragHandle.DragHandleEnabled = dragHandleSchema.HandleEnabled;
                 propDragHandle.GizmoEnabled = dragHandleSchema.GizmoEnabled;
                 propDragHandle.GizmoMode = dragHandleSchema.GizmoSpace;
             }

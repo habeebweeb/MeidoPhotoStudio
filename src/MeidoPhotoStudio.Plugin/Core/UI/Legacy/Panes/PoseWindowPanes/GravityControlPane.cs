@@ -107,7 +107,7 @@ public class GravityControlPane : BasePane
             return;
 
         CurrentClothing.HairGravityController.Enabled = hairGravityEnabledToggle.Value;
-        CurrentDragHandleSet.HairDragHandle.Enabled = hairGravityEnabledToggle.Value;
+        CurrentDragHandleSet.HairDragHandle.DragHandleEnabled = hairGravityEnabledToggle.Value;
         hairGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(hairGravityEnabledToggle.Value);
     }
 
@@ -119,7 +119,7 @@ public class GravityControlPane : BasePane
         if (!CurrentClothing.HairGravityController.Valid)
             return;
 
-        CurrentDragHandleSet.HairDragHandle.Enabled = hairGravityDragHandleEnabledToggle.Value;
+        CurrentDragHandleSet.HairDragHandle.DragHandleEnabled = hairGravityDragHandleEnabledToggle.Value;
     }
 
     private void OnClothingGravityEnabledChanged(object sender, EventArgs e)
@@ -128,7 +128,7 @@ public class GravityControlPane : BasePane
             return;
 
         CurrentClothing.ClothingGravityController.Enabled = clothingGravityEnabledToggle.Value;
-        CurrentDragHandleSet.ClothingDragHandle.Enabled = clothingGravityEnabledToggle.Value;
+        CurrentDragHandleSet.ClothingDragHandle.DragHandleEnabled = clothingGravityEnabledToggle.Value;
         clothingGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(clothingGravityEnabledToggle.Value);
     }
 
@@ -140,7 +140,7 @@ public class GravityControlPane : BasePane
         if (!CurrentClothing.ClothingGravityController.Valid)
             return;
 
-        CurrentDragHandleSet.ClothingDragHandle.Enabled = clothingGravityDragHandleEnabledToggle.Value;
+        CurrentDragHandleSet.ClothingDragHandle.DragHandleEnabled = clothingGravityDragHandleEnabledToggle.Value;
     }
 
     private void OnGlobalGravityEnabledToggleChanged(object sender, EventArgs e)
@@ -183,9 +183,9 @@ public class GravityControlPane : BasePane
         dragHandles.ClothingDragHandle.PropertyChanged -= OnClothingDragHandlePropertyChanged;
 
         hairGravityEnabledToggle.SetEnabledWithoutNotify(CurrentClothing.HairGravityController.Enabled);
-        hairGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(CurrentDragHandleSet.HairDragHandle.Enabled);
+        hairGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(CurrentDragHandleSet.HairDragHandle.DragHandleEnabled);
         clothingGravityEnabledToggle.SetEnabledWithoutNotify(CurrentClothing.ClothingGravityController.Enabled);
-        clothingGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(CurrentDragHandleSet.ClothingDragHandle.Enabled);
+        clothingGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(CurrentDragHandleSet.ClothingDragHandle.DragHandleEnabled);
     }
 
     private void OnGravityPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -205,22 +205,22 @@ public class GravityControlPane : BasePane
 
     private void OnHairDragHandlePropertyChanged(object sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is not nameof(GravityDragHandleController.Enabled))
+        if (e.PropertyName is not nameof(GravityDragHandleController.DragHandleEnabled))
             return;
 
         var controller = (GravityDragHandleController)sender;
 
-        hairGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(controller.Enabled);
+        hairGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(controller.DragHandleEnabled);
     }
 
     private void OnClothingDragHandlePropertyChanged(object sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is not nameof(GravityDragHandleController.Enabled))
+        if (e.PropertyName is not nameof(GravityDragHandleController.DragHandleEnabled))
             return;
 
         var controller = (GravityDragHandleController)sender;
 
-        clothingGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(controller.Enabled);
+        clothingGravityDragHandleEnabledToggle.SetEnabledWithoutNotify(controller.DragHandleEnabled);
     }
 
     private void OnGlobalGravityPropertyChanged(object sender, PropertyChangedEventArgs e)

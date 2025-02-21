@@ -26,7 +26,7 @@ public class HeadDragHandleController(
     private RotateMode rotate;
     private RotateEyesMode rotateEyes;
 
-    public override bool Enabled
+    public override bool DragHandleEnabled
     {
         set
         {

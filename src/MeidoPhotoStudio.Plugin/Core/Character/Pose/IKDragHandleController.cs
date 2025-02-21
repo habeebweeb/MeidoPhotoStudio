@@ -33,13 +33,13 @@ public class IKDragHandleController : IEnumerable<ICharacterDragHandleController
 
     public bool CubeEnabled
     {
-        get => Cube.Enabled;
+        get => Cube.DragHandleEnabled;
         set
         {
-            if (value == Cube.Enabled)
+            if (value == Cube.DragHandleEnabled)
                 return;
 
-            Cube.Enabled = value;
+            Cube.DragHandleEnabled = value;
             Cube.GizmoEnabled = value;
 
             RaisePropertyChanged(nameof(CubeEnabled));
@@ -59,7 +59,7 @@ public class IKDragHandleController : IEnumerable<ICharacterDragHandleController
             foreach (var controller in this.Except(new[] { Cube }))
             {
                 controller.IKEnabled = ikEnabled;
-                controller.Enabled = ikEnabled;
+                controller.DragHandleEnabled = ikEnabled;
                 controller.GizmoEnabled = ikEnabled;
             }
 

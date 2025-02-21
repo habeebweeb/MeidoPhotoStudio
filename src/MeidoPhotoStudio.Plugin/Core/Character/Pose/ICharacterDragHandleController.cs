@@ -4,7 +4,7 @@ namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
 public interface ICharacterDragHandleController : IDragHandleController
 {
-    bool Enabled { get; set; }
+    bool DragHandleEnabled { get; set; }
 
     bool GizmoEnabled { get; set; }
 

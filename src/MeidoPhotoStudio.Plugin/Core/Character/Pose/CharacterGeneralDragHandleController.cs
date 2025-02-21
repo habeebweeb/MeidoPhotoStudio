@@ -55,15 +55,15 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
         TransformBackup = new(Space.World, Vector3.zero, Quaternion.identity, Vector3.one);
     }
 
-    public override bool Enabled
+    public override bool DragHandleEnabled
     {
-        get => !IsCube || base.Enabled;
+        get => !IsCube || base.DragHandleEnabled;
         set
         {
             if (!IsCube)
                 return;
 
-            base.Enabled = value;
+            base.DragHandleEnabled = value;
         }
     }
 

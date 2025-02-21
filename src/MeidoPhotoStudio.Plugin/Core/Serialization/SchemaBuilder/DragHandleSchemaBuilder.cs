@@ -8,7 +8,7 @@ public class DragHandleSchemaBuilder : ISchemaBuilder<DragHandleSchema, DragHand
     public DragHandleSchema Build(DragHandleControllerBase value) =>
         new()
         {
-            HandleEnabled = value.Enabled,
+            HandleEnabled = value.DragHandleEnabled,
             GizmoEnabled = value.GizmoEnabled,
             GizmoSpace = value.GizmoMode,
         };

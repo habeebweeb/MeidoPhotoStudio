@@ -256,7 +256,7 @@ public class IKDragHandleService : INotifyPropertyChanged
 
             return new(dragHandle, gizmo, characterTransform, character, selectionController, tabSelectionController)
             {
-                Enabled = cubeEnabled,
+                DragHandleEnabled = cubeEnabled,
                 IsCube = true,
             };
         }

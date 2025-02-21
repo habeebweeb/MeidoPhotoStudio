@@ -29,8 +29,7 @@ public abstract class DragHandleControllerBase : IDragHandleController, INotifyP
 
     public event PropertyChangedEventHandler PropertyChanged;
 
-    // TODO: Rename to DragHandleEnabled or something
-    public virtual bool Enabled
+    public virtual bool DragHandleEnabled
     {
         get =>
             Destroyed
@@ -51,7 +50,7 @@ public abstract class DragHandleControllerBase : IDragHandleController, INotifyP
             else
                 DragHandle.gameObject.SetActive(false);
 
-            RaisePropertyChanged(nameof(Enabled));
+            RaisePropertyChanged(nameof(DragHandleEnabled));
         }
     }
 
@@ -151,13 +150,13 @@ public abstract class DragHandleControllerBase : IDragHandleController, INotifyP
 
     protected bool DragHandleActive
     {
-        get => DragHandle && Enabled && DragHandle.isActiveAndEnabled;
+        get => DragHandle && DragHandleEnabled && DragHandle.isActiveAndEnabled;
         set
         {
             if (!DragHandle)
                 return;
 
-            if (!Enabled)
+            if (!DragHandleEnabled)
                 return;
 
             DragHandle.gameObject.SetActive(value);

@@ -33,7 +33,7 @@ public class BackgroundDragHandleService
             if (backgroundDragHandleController is null)
                 return;
 
-            backgroundDragHandleController.Enabled = enabled;
+            backgroundDragHandleController.DragHandleEnabled = enabled;
         }
     }
 
@@ -71,10 +71,10 @@ public class BackgroundDragHandleService
 
         backgroundDragHandleController = new(dragHandle, backgroundTransform)
         {
-            Enabled = Enabled,
+            DragHandleEnabled = Enabled,
         };
 
-        backgroundDragHandleController.Enabled = Enabled;
+        backgroundDragHandleController.DragHandleEnabled = Enabled;
         generalDragHandleInputService.AddController(backgroundDragHandleController);
     }
 
