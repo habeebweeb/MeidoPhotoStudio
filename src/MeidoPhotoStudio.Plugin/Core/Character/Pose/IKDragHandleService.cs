@@ -5,6 +5,8 @@ using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
+using HandleType = MeidoPhotoStudio.Plugin.Core.Character.Pose.IKDragHandleController.HandleType;
+
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
 public class IKDragHandleService : INotifyPropertyChanged
@@ -149,45 +151,41 @@ public class IKDragHandleService : INotifyPropertyChanged
     {
         var undoRedoController = characterUndoRedoService[character];
 
-        var ikDragHandleController = new IKDragHandleController.Builder()
+        var ikDragHandleController = new IKDragHandleController()
         {
-            Cube = MakeCube(character, selectionController, tabSelectionController, CubeEnabled),
-            Body = MakeBody(character, selectionController, tabSelectionController),
-            UpperArmLeft = MakeUpperLimb(character, undoRedoController, selectionController, "Bip01 L UpperArm"),
-            UpperArmRight = MakeUpperLimb(character, undoRedoController, selectionController, "Bip01 R UpperArm"),
-            ForearmLeft = MakeMiddleLimb(character, undoRedoController, selectionController, "Bip01 L Forearm"),
-            ForearmRight = MakeMiddleLimb(character, undoRedoController, selectionController, "Bip01 R Forearm"),
-            CalfLeft = MakeMiddleLimb(character, undoRedoController, selectionController, "Bip01 L Calf"),
-            CalfRight = MakeMiddleLimb(character, undoRedoController, selectionController, "Bip01 R Calf"),
-            HandLeft = MakeLowerLimb(character, undoRedoController, selectionController, "Bip01 L Hand"),
-            HandRight = MakeLowerLimb(character, undoRedoController, selectionController, "Bip01 R Hand"),
-            FootLeft = MakeLowerLimb(character, undoRedoController, selectionController, "Bip01 L Foot"),
-            FootRight = MakeLowerLimb(character, undoRedoController, selectionController, "Bip01 R Foot"),
-            Torso = MakeTorso(character, undoRedoController, selectionController),
-            Head = MakeHead(character, undoRedoController, selectionController, tabSelectionController),
-            Pelvis = MakePelvis(character, undoRedoController, selectionController),
-            Spine = MakeSpine(
-                character,
-                undoRedoController,
-                selectionController,
-                "Bip01 Head",
-                "Bip01 Neck",
-                "Bip01 Spine",
-                "Bip01 Spine0a",
-                "Bip01 Spine1",
-                "Bip01 Spine1a"),
-            Hip = MakeHip(character, undoRedoController, selectionController),
-            ThighLeft = MakeThigh(character, undoRedoController, selectionController, "Bip01 L Thigh"),
-            ThighRight = MakeThigh(character, undoRedoController, selectionController, "Bip01 R Thigh"),
-            ChestLeft = MakeChest(character, undoRedoController, selectionController, "Mune_L"),
-            ChestRight = MakeChest(character, undoRedoController, selectionController, "Mune_R"),
-            ChestSubLeft = MakeChestSub(character, undoRedoController, selectionController, "Mune_L_sub"),
-            ChestSubRight = MakeChestSub(character, undoRedoController, selectionController, "Mune_R_sub"),
-            DigitBases = MakeDigitBases(character, undoRedoController, selectionController),
-            Digits = MakeNoLimitDigits(character, undoRedoController, selectionController),
-            LeftEye = MakeEye(character, undoRedoController, selectionController, left: true),
-            RightEye = MakeEye(character, undoRedoController, selectionController, left: false),
-        }.Build();
+            [HandleType.Cube] = MakeCube(character, selectionController, tabSelectionController, CubeEnabled),
+            [HandleType.Body] = MakeBody(character, selectionController, tabSelectionController),
+            [HandleType.Head] = MakeHead(character, undoRedoController, selectionController, tabSelectionController),
+            [HandleType.EyeL] = MakeEye(character, undoRedoController, selectionController, left: true),
+            [HandleType.EyeR] = MakeEye(character, undoRedoController, selectionController, left: false),
+            [HandleType.UpperArmL] = MakeUpperLimb(character, undoRedoController, selectionController, "Bip01 L UpperArm"),
+            [HandleType.UpperArmR] = MakeUpperLimb(character, undoRedoController, selectionController, "Bip01 R UpperArm"),
+            [HandleType.ForearmL] = MakeMiddleLimb(character, undoRedoController, selectionController, "Bip01 L Forearm"),
+            [HandleType.ForearmR] = MakeMiddleLimb(character, undoRedoController, selectionController, "Bip01 R Forearm"),
+            [HandleType.HandL] = MakeLowerLimb(character, undoRedoController, selectionController, "Bip01 L Hand"),
+            [HandleType.HandR] = MakeLowerLimb(character, undoRedoController, selectionController, "Bip01 R Hand"),
+            [HandleType.ChestL] = MakeChest(character, undoRedoController, selectionController, "Mune_L"),
+            [HandleType.ChestR] = MakeChest(character, undoRedoController, selectionController, "Mune_R"),
+            [HandleType.ChestSubL] = MakeChestSub(character, undoRedoController, selectionController, "Mune_L_sub"),
+            [HandleType.ChestSubR] = MakeChestSub(character, undoRedoController, selectionController, "Mune_R_sub"),
+            [HandleType.Torso] = MakeTorso(character, undoRedoController, selectionController),
+            [HandleType.HeadBase] = MakeSpine(character, undoRedoController, selectionController, "Bip01 Head"),
+            [HandleType.Neck] = MakeSpine(character, undoRedoController, selectionController, "Bip01 Neck"),
+            [HandleType.Spine] = MakeSpine(character, undoRedoController, selectionController, "Bip01 Spine"),
+            [HandleType.Spine0a] = MakeSpine(character, undoRedoController, selectionController, "Bip01 Spine0a"),
+            [HandleType.Spine1] = MakeSpine(character, undoRedoController, selectionController, "Bip01 Spine1"),
+            [HandleType.Spine1a] = MakeSpine(character, undoRedoController, selectionController, "Bip01 Spine1a"),
+            [HandleType.Hip] = MakePelvis(character, undoRedoController, selectionController),
+            [HandleType.ThighL] = MakeThigh(character, undoRedoController, selectionController, "Bip01 L Thigh"),
+            [HandleType.ThighR] = MakeThigh(character, undoRedoController, selectionController, "Bip01 R Thigh"),
+            [HandleType.CalfL] = MakeMiddleLimb(character, undoRedoController, selectionController, "Bip01 L Calf"),
+            [HandleType.CalfR] = MakeMiddleLimb(character, undoRedoController, selectionController, "Bip01 R Calf"),
+            [HandleType.FootL] = MakeLowerLimb(character, undoRedoController, selectionController, "Bip01 L Foot"),
+            [HandleType.FootR] = MakeLowerLimb(character, undoRedoController, selectionController, "Bip01 R Foot"),
+            [HandleType.Root] = MakeHip(character, undoRedoController, selectionController),
+        };
+
+        InitializeHandsAndFeet(ikDragHandleController, character, undoRedoController, selectionController);
 
         foreach (var dragHandleController in ikDragHandleController)
             characterDragHandleInputService.AddController(dragHandleController);
@@ -390,42 +388,29 @@ public class IKDragHandleService : INotifyPropertyChanged
             return new(dragHandle, gizmo, character, undoRedoController, selectionController, pelvis);
         }
 
-        static SpineDragHandleController[] MakeSpine(
-            CharacterController character, CharacterUndoRedoController undoRedoController, SelectionController<CharacterController> selectionController, params string[] boneNames)
+        static SpineDragHandleController MakeSpine(
+            CharacterController character, CharacterUndoRedoController undoRedoController, SelectionController<CharacterController> selectionController, string boneName)
         {
-            var dragHandleBuilder = new DragHandle.Builder()
+            var bone = character.IK.GetBone(boneName);
+
+            var dragHandle = new DragHandle.Builder()
             {
                 Shape = PrimitiveType.Sphere,
                 Scale = Vector3.one * 0.04f,
-            };
+                Target = bone,
+                Name = DragHandleName(character, bone),
+                PositionDelegate = () => bone.position,
+            }.Build();
 
-            var gizmoBuilder = new CustomGizmo.Builder()
+            var gizmo = new CustomGizmo.Builder()
             {
                 Size = 0.25f,
                 Mode = CustomGizmo.GizmoMode.Local,
-            };
+                Target = bone,
+                Name = GizmoName(character, bone),
+            }.Build();
 
-            var controllers = new SpineDragHandleController[boneNames.Length];
-
-            foreach (var (index, boneName) in boneNames.WithIndex())
-            {
-                var bone = character.IK.GetBone(boneName);
-
-                var dragHandle = dragHandleBuilder
-                    .WithTarget(bone)
-                    .WithName(DragHandleName(character, bone))
-                    .WithPositionDelegate(() => bone.position)
-                    .Build();
-
-                var gizmo = gizmoBuilder
-                    .WithName(GizmoName(character, bone))
-                    .WithTarget(bone)
-                    .Build();
-
-                controllers[index] = new(dragHandle, gizmo, character, undoRedoController, selectionController, bone);
-            }
-
-            return controllers;
+            return new(dragHandle, gizmo, character, undoRedoController, selectionController, bone);
         }
 
         static HipDragHandleController MakeHip(CharacterController character, CharacterUndoRedoController undoRedoController, SelectionController<CharacterController> selectionController)
@@ -519,23 +504,85 @@ public class IKDragHandleService : INotifyPropertyChanged
             return new(gizmo, character, undoRedoController, selectionController, bone);
         }
 
-        static DigitBaseDragHandleController[] MakeDigitBases(CharacterController character, CharacterUndoRedoController undoRedoController, SelectionController<CharacterController> selectionController)
+        static void InitializeHandsAndFeet(
+            IKDragHandleController controller, CharacterController character, CharacterUndoRedoController undoRedoController, SelectionController<CharacterController> selectionController)
         {
-            return new[]
+            var handleToBoneMap = new Dictionary<HandleType, string>()
             {
-                "Bip01 ? Finger0", "Bip01 ? Finger1", "Bip01 ? Finger2", "Bip01 ? Finger3", "Bip01 ? Finger4",
-                "Bip01 ? Toe0", "Bip01 ? Toe1", "Bip01 ? Toe2",
-            }
-                .SelectMany(digit => new[] { digit.Replace('?', 'L'), digit.Replace('?', 'R') })
-                .Select(boneName => MakeDigitBase(character, undoRedoController, selectionController, boneName))
-                .ToArray();
+                [HandleType.Finger0L] = "Bip01 L Finger0",
+                [HandleType.Finger01L] = "Bip01 L Finger01",
+                [HandleType.Finger02L] = "Bip01 L Finger02",
+                [HandleType.Finger0NubL] = "Bip01 L Finger0Nub",
+                [HandleType.Finger1L] = "Bip01 L Finger1",
+                [HandleType.Finger11L] = "Bip01 L Finger11",
+                [HandleType.Finger12L] = "Bip01 L Finger12",
+                [HandleType.Finger1NubL] = "Bip01 L Finger1Nub",
+                [HandleType.Finger2L] = "Bip01 L Finger2",
+                [HandleType.Finger21L] = "Bip01 L Finger21",
+                [HandleType.Finger22L] = "Bip01 L Finger22",
+                [HandleType.Finger2NubL] = "Bip01 L Finger2Nub",
+                [HandleType.Finger3L] = "Bip01 L Finger3",
+                [HandleType.Finger31L] = "Bip01 L Finger31",
+                [HandleType.Finger32L] = "Bip01 L Finger32",
+                [HandleType.Finger3NubL] = "Bip01 L Finger3Nub",
+                [HandleType.Finger4L] = "Bip01 L Finger4",
+                [HandleType.Finger41L] = "Bip01 L Finger41",
+                [HandleType.Finger42L] = "Bip01 L Finger42",
+                [HandleType.Finger4NubL] = "Bip01 L Finger4Nub",
+                [HandleType.Finger0R] = "Bip01 R Finger0",
+                [HandleType.Finger01R] = "Bip01 R Finger01",
+                [HandleType.Finger02R] = "Bip01 R Finger02",
+                [HandleType.Finger0NubR] = "Bip01 R Finger0Nub",
+                [HandleType.Finger1R] = "Bip01 R Finger1",
+                [HandleType.Finger11R] = "Bip01 R Finger11",
+                [HandleType.Finger12R] = "Bip01 R Finger12",
+                [HandleType.Finger1NubR] = "Bip01 R Finger1Nub",
+                [HandleType.Finger2R] = "Bip01 R Finger2",
+                [HandleType.Finger21R] = "Bip01 R Finger21",
+                [HandleType.Finger22R] = "Bip01 R Finger22",
+                [HandleType.Finger2NubR] = "Bip01 R Finger2Nub",
+                [HandleType.Finger3R] = "Bip01 R Finger3",
+                [HandleType.Finger31R] = "Bip01 R Finger31",
+                [HandleType.Finger32R] = "Bip01 R Finger32",
+                [HandleType.Finger3NubR] = "Bip01 R Finger3Nub",
+                [HandleType.Finger4R] = "Bip01 R Finger4",
+                [HandleType.Finger41R] = "Bip01 R Finger41",
+                [HandleType.Finger42R] = "Bip01 R Finger42",
+                [HandleType.Finger4NubR] = "Bip01 R Finger4Nub",
+                [HandleType.Toe0L] = "Bip01 L Toe0",
+                [HandleType.Toe01L] = "Bip01 L Toe01",
+                [HandleType.Toe0NubL] = "Bip01 L Toe0Nub",
+                [HandleType.Toe1L] = "Bip01 L Toe1",
+                [HandleType.Toe11L] = "Bip01 L Toe11",
+                [HandleType.Toe1NubL] = "Bip01 L Toe1Nub",
+                [HandleType.Toe2L] = "Bip01 L Toe2",
+                [HandleType.Toe21L] = "Bip01 L Toe21",
+                [HandleType.Toe2NubL] = "Bip01 L Toe2Nub",
+                [HandleType.Toe0R] = "Bip01 R Toe0",
+                [HandleType.Toe01R] = "Bip01 R Toe01",
+                [HandleType.Toe0NubR] = "Bip01 R Toe0Nub",
+                [HandleType.Toe1R] = "Bip01 R Toe1",
+                [HandleType.Toe11R] = "Bip01 R Toe11",
+                [HandleType.Toe1NubR] = "Bip01 R Toe1Nub",
+                [HandleType.Toe2R] = "Bip01 R Toe2",
+                [HandleType.Toe21R] = "Bip01 R Toe21",
+                [HandleType.Toe2NubR] = "Bip01 R Toe2Nub",
+            };
 
-            static DigitBaseDragHandleController MakeDigitBase(
-                CharacterController character, CharacterUndoRedoController undoRedoController, SelectionController<CharacterController> selectionController, string boneName)
+            foreach (var (type, bone) in handleToBoneMap)
+            {
+                var finger = bone.Contains("Finger", StringComparison.OrdinalIgnoreCase);
+                var joint = bone.Split(' ')[2];
+                var baseJoint = finger ? joint.Length is 7 : joint.Length is 4;
+
+                controller[type] = baseJoint ? MakeDigitBase(bone) : MakeNoLimitDigit(bone);
+            }
+
+            DigitBaseDragHandleController MakeDigitBase(string boneName)
             {
                 var bone = character.IK.GetBone(boneName);
                 var realBone = character.IK.GetBone($"{boneName}1");
-                var positionNode = character.IK.GetMeshNode(bone.name);
+                var positionNode = character.IK.GetMeshNode(boneName);
 
                 if (!positionNode)
                     positionNode = bone;
@@ -562,40 +609,11 @@ public class IKDragHandleService : INotifyPropertyChanged
 
                 return new(dragHandle, gizmo, character, undoRedoController, selectionController, realBone, ikTarget);
             }
-        }
 
-        static DigitDragHandleController[] MakeNoLimitDigits(CharacterController character, CharacterUndoRedoController undoRedoController, SelectionController<CharacterController> selectionController)
-        {
-            var digits = new[]
+            DigitDragHandleController MakeNoLimitDigit(string boneName)
             {
-                "Bip01 ? Finger0Nub", "Bip01 ? Finger1Nub", "Bip01 ? Finger2Nub", "Bip01 ? Finger3Nub", "Bip01 ? Finger4Nub",
-                "Bip01 ? Toe0Nub", "Bip01 ? Toe1Nub", "Bip01 ? Toe2Nub",
-            };
-
-            var digitControllers = new List<DigitDragHandleController>();
-
-            foreach (var digit in digits)
-            {
-                var leftJoint = character.IK.GetBone(digit.Replace('?', 'L'));
-                var rightJoint = character.IK.GetBone(digit.Replace('?', 'R'));
-                var jointCount = digit.Contains("Finger") ? 2 : 1;
-
-                for (var i = jointCount; i > 0; --i)
-                {
-                    digitControllers.Add(MakeDigit(character, undoRedoController, selectionController, leftJoint));
-                    digitControllers.Add(MakeDigit(character, undoRedoController, selectionController, rightJoint));
-
-                    leftJoint = leftJoint.parent;
-                    rightJoint = rightJoint.parent;
-                }
-            }
-
-            return [.. digitControllers];
-
-            static DigitDragHandleController MakeDigit(
-                CharacterController character, CharacterUndoRedoController undoRedoController, SelectionController<CharacterController> selectionController, Transform digit)
-            {
-                var realJoint = digit.parent;
+                var bone = character.IK.GetBone(boneName);
+                var realJoint = bone.parent;
                 var positionNode = character.IK.GetMeshNode(realJoint.name);
 
                 if (!positionNode)
@@ -605,7 +623,7 @@ public class IKDragHandleService : INotifyPropertyChanged
 
                 var dragHandle = new DragHandle.Builder()
                 {
-                    Name = DragHandleName(character, digit),
+                    Name = DragHandleName(character, bone),
                     Shape = PrimitiveType.Sphere,
                     Visible = true,
                     Target = ikTarget,
@@ -622,7 +640,7 @@ public class IKDragHandleService : INotifyPropertyChanged
                     PositionTarget = positionNode,
                 }.Build();
 
-                return new(dragHandle, gizmo, character, undoRedoController, selectionController, digit, ikTarget);
+                return new(dragHandle, gizmo, character, undoRedoController, selectionController, bone, ikTarget);
             }
         }
 

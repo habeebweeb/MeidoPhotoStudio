@@ -6,13 +6,128 @@ public class IKDragHandleController : IEnumerable<ICharacterDragHandleController
 {
     private readonly (float Small, float Normal) handleSize = (0.5f, 1f);
     private readonly (float Small, float Normal) gizmoSize = (0.225f, 0.45f);
+    private readonly Dictionary<HandleType, ICharacterDragHandleController> controllers = [];
 
     private bool smallHandle;
     private bool ikEnabled = true;
     private bool boneModeEnabled;
     private bool autoSelect;
 
+    internal IKDragHandleController()
+    {
+    }
+
     public event PropertyChangedEventHandler PropertyChanged;
+
+    public enum HandleType
+    {
+        Cube,
+        Body,
+
+        Head,
+
+        EyeL,
+        EyeR,
+
+        UpperArmL,
+        UpperArmR,
+
+        ForearmL,
+        ForearmR,
+
+        HandL,
+        HandR,
+
+        Finger0L,
+        Finger01L,
+        Finger02L,
+        Finger0NubL,
+        Finger1L,
+        Finger11L,
+        Finger12L,
+        Finger1NubL,
+        Finger2L,
+        Finger21L,
+        Finger22L,
+        Finger2NubL,
+        Finger3L,
+        Finger31L,
+        Finger32L,
+        Finger3NubL,
+        Finger4L,
+        Finger41L,
+        Finger42L,
+        Finger4NubL,
+        Finger0R,
+        Finger01R,
+        Finger02R,
+        Finger0NubR,
+        Finger1R,
+        Finger11R,
+        Finger12R,
+        Finger1NubR,
+        Finger2R,
+        Finger21R,
+        Finger22R,
+        Finger2NubR,
+        Finger3R,
+        Finger31R,
+        Finger32R,
+        Finger3NubR,
+        Finger4R,
+        Finger41R,
+        Finger42R,
+        Finger4NubR,
+
+        ChestL,
+        ChestR,
+
+        ChestSubL,
+        ChestSubR,
+
+        // all spine bones
+        Torso,
+
+        // Spine
+        HeadBase,
+        Neck,
+        Spine,
+        Spine0a,
+        Spine1,
+        Spine1a,
+
+        Hip,
+
+        ThighL,
+        ThighR,
+
+        CalfL,
+        CalfR,
+
+        FootL,
+        FootR,
+
+        Toe0L,
+        Toe01L,
+        Toe0NubL,
+        Toe1L,
+        Toe11L,
+        Toe1NubL,
+        Toe2L,
+        Toe21L,
+        Toe2NubL,
+        Toe0R,
+        Toe01R,
+        Toe0NubR,
+        Toe1R,
+        Toe11R,
+        Toe1NubR,
+        Toe2R,
+        Toe21R,
+        Toe2NubR,
+
+        Root,
+    }
 
     public bool SmallHandle
     {
@@ -101,12 +216,22 @@ public class IKDragHandleController : IEnumerable<ICharacterDragHandleController
         }
     }
 
-    private CharacterGeneralDragHandleController Cube { get; init; }
+    private CharacterGeneralDragHandleController Cube { get; set; }
 
-    private List<ICharacterDragHandleController> Controllers { get; init; }
+    public ICharacterDragHandleController this[HandleType type]
+    {
+        get => controllers[type];
+        internal set
+        {
+            controllers[type] = value;
+
+            if (type is HandleType.Cube && value is CharacterGeneralDragHandleController { IsCube: true } cube)
+                Cube = cube;
+        }
+    }
 
     public IEnumerator<ICharacterDragHandleController> GetEnumerator() =>
-        Controllers.GetEnumerator();
+        controllers.Values.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();
@@ -117,97 +242,5 @@ public class IKDragHandleController : IEnumerable<ICharacterDragHandleController
             throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
 
         PropertyChanged?.Invoke(this, new(name));
-    }
-
-    public class Builder
-    {
-        public CharacterGeneralDragHandleController Cube { get; init; }
-
-        public CharacterGeneralDragHandleController Body { get; init; }
-
-        public UpperLimbDragHandleController UpperArmLeft { get; init; }
-
-        public UpperLimbDragHandleController UpperArmRight { get; init; }
-
-        public MiddleLimbDragHandleController ForearmLeft { get; init; }
-
-        public MiddleLimbDragHandleController ForearmRight { get; init; }
-
-        public MiddleLimbDragHandleController CalfLeft { get; init; }
-
-        public MiddleLimbDragHandleController CalfRight { get; init; }
-
-        public LowerLimbDragHandleController HandLeft { get; init; }
-
-        public LowerLimbDragHandleController HandRight { get; init; }
-
-        public LowerLimbDragHandleController FootLeft { get; init; }
-
-        public LowerLimbDragHandleController FootRight { get; init; }
-
-        public TorsoDragHandleController Torso { get; init; }
-
-        public HeadDragHandleController Head { get; init; }
-
-        public PelvisDragHandleController Pelvis { get; init; }
-
-        public IEnumerable<SpineDragHandleController> Spine { get; init; }
-
-        public HipDragHandleController Hip { get; init; }
-
-        public ThighGizmoController ThighLeft { get; init; }
-
-        public ThighGizmoController ThighRight { get; init; }
-
-        public ChestDragHandleController ChestLeft { get; init; }
-
-        public ChestDragHandleController ChestRight { get; init; }
-
-        public ChestSubGizmoController ChestSubLeft { get; init; }
-
-        public ChestSubGizmoController ChestSubRight { get; init; }
-
-        public IEnumerable<DigitBaseDragHandleController> DigitBases { get; init; }
-
-        public IEnumerable<DigitDragHandleController> Digits { get; init; }
-
-        public EyeDragHandleController LeftEye { get; init; }
-
-        public EyeDragHandleController RightEye { get; init; }
-
-        public IKDragHandleController Build() =>
-            new()
-            {
-                Cube = Cube,
-                Controllers = [
-                    Cube,
-                    Body,
-                    UpperArmLeft,
-                    UpperArmRight,
-                    ForearmLeft,
-                    ForearmRight,
-                    CalfLeft,
-                    CalfRight,
-                    HandLeft,
-                    HandRight,
-                    FootLeft,
-                    FootRight,
-                    Torso,
-                    Head,
-                    Pelvis,
-                    ..Spine,
-                    Hip,
-                    ThighLeft,
-                    ThighRight,
-                    ChestLeft,
-                    ChestRight,
-                    ChestSubLeft,
-                    ChestSubRight,
-                    ..DigitBases,
-                    ..Digits,
-                    LeftEye,
-                    RightEye,
-                ],
-            };
     }
 }
