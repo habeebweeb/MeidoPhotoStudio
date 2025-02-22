@@ -121,6 +121,10 @@ public abstract class DragHandleControllerBase : IDragHandleController, INotifyP
 
     public bool Destroyed { get; private set; }
 
+    public bool DragHandleDragging { get; private set; }
+
+    public bool GizmoDragging { get; private set; }
+
     protected DragHandle DragHandle
     {
         get => dragHandle;
@@ -206,8 +210,11 @@ public abstract class DragHandleControllerBase : IDragHandleController, INotifyP
         PropertyChanged?.Invoke(this, new(name));
     }
 
-    private void OnDragging() =>
+    private void OnDragging()
+    {
+        DragHandleDragging = true;
         CurrentMode.OnDragging();
+    }
 
     private void OnClicked() =>
         CurrentMode.OnClicked();
@@ -215,20 +222,29 @@ public abstract class DragHandleControllerBase : IDragHandleController, INotifyP
     private void OnDoubleClicked() =>
         CurrentMode.OnDoubleClicked();
 
-    private void OnReleased() =>
+    private void OnReleased()
+    {
+        DragHandleDragging = false;
         CurrentMode.OnReleased();
+    }
 
     private void OnCancelled() =>
         CurrentMode.OnCancelled();
 
-    private void OnGizmoDragging() =>
+    private void OnGizmoDragging()
+    {
+        GizmoDragging = true;
         CurrentMode.OnGizmoDragging();
+    }
 
     private void OnGizmoClicked() =>
         CurrentMode.OnGizmoClicked();
 
-    private void OnGizmoReleased() =>
+    private void OnGizmoReleased()
+    {
+        GizmoDragging = false;
         CurrentMode.OnGizmoReleased();
+    }
 
     private void OnGizmoCancelled() =>
         CurrentMode.OnGizmoCancelled();

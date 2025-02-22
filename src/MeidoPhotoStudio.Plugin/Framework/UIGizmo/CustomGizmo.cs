@@ -106,6 +106,7 @@ public partial class CustomGizmo : GizmoRender
             {
                 is_drag_ = false;
                 Cancelled.Invoke();
+                Released.Invoke();
             }
             else
             {
