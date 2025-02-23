@@ -2,7 +2,7 @@ using MeidoPhotoStudio.Plugin.Framework.Menu;
 
 namespace MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 
-internal class MenuFileParser
+public class MenuFileParser
 {
     public MenuFilePropModel ParseMenuFile(string menuFilename, bool gameMenu)
     {
