@@ -20,23 +20,25 @@ public class LightAspectLoader(LightService lightService, BackgroundService back
 
         lightService.RemoveAllLights();
 
-        lightService.AddedLight += ApplyLightSchema;
+        lightService.AddedLight += OnLightAdded;
 
-        for (var i = 0; i < lightsSchema.Lights.Count; i++)
-        {
-            if (i == 0)
-                lightService.AddLight(GameMain.Instance.MainLight.GetComponent<Light>());
-            else
-                lightService.AddLight();
-        }
+        for (var i = 1; i < lightsSchema.Lights.Count; i++)
+            lightService.AddLight();
 
-        lightService.AddedLight -= ApplyLightSchema;
+        lightService.AddedLight -= OnLightAdded;
 
-        void ApplyLightSchema(object sender, LightServiceEventArgs e)
+        ApplyLightSchema(lightService[0], lightsSchema.Lights[0]);
+
+        void OnLightAdded(object sender, LightServiceEventArgs e)
         {
             var light = e.LightController;
             var lightSchema = lightsSchema.Lights[e.LightIndex];
 
+            ApplyLightSchema(light, lightSchema);
+        }
+
+        void ApplyLightSchema(LightController light, LightSchema lightSchema)
+        {
             light.Position = lightSchema.Position;
             light.Type = lightSchema.Type;
             light.Enabled = lightSchema.Enabled;

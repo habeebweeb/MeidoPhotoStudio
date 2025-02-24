@@ -112,11 +112,8 @@ public class LightService(TransformWatcher transformWatcher) : IEnumerable<Light
         RemoveLight(lightIndex);
     }
 
-    public void RemoveAllLights()
-    {
-        for (var i = lightControllers.Count - 1; i >= 0; i--)
-            RemoveLight(i);
-    }
+    public void RemoveAllLights() =>
+        RemoveAllLights(true);
 
     public IEnumerator<LightController> GetEnumerator() =>
         lightControllers.GetEnumerator();
@@ -128,7 +125,7 @@ public class LightService(TransformWatcher transformWatcher) : IEnumerable<Light
         AddLight(GameMain.Instance.MainLight.GetComponent<Light>());
 
     void IActivateable.Deactivate() =>
-        RemoveAllLights();
+        RemoveAllLights(false);
 
     internal static void DestroyParent()
     {
@@ -148,6 +145,12 @@ public class LightService(TransformWatcher transformWatcher) : IEnumerable<Light
         light.enabled = true;
         light.type = LightType.Directional;
         light.transform.position = LightController.DefaultPosition;
+    }
+
+    private void RemoveAllLights(bool keepMain)
+    {
+        for (var i = lightControllers.Count - 1; i >= (keepMain ? 1 : 0); i--)
+            RemoveLight(i);
     }
 
     private void BackupMainLight(LightController lightController)

@@ -515,11 +515,8 @@ public class LightsPane : BasePane
         lightService.RemoveLight(lightService.IndexOf(CurrentLightController));
     }
 
-    private void OnClearButtonPressed(object sender, EventArgs e)
-    {
-        for (var i = lightService.Count - 1; i > 0; i--)
-            lightService.RemoveLight(i);
-    }
+    private void OnClearButtonPressed(object sender, EventArgs e) =>
+        lightService.RemoveAllLights();
 
     private void OnLightOnToggleChanged(object sender, EventArgs e)
     {
