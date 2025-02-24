@@ -182,26 +182,35 @@ public class CharacterService(
 
                 yield return new WaitForEndOfFrame();
 
-                calling = false;
-
                 var wait = new WaitForSeconds(0.2f);
 
-                while (Busy)
+                while (activeCharacters.Any(static character => character.Busy))
                     yield return wait;
 
                 yield return new WaitForEndOfFrame();
 
+                try
+                {
 #if DEBUG
-                EmitCharactersCalled();
+                    EmitCharactersCalled();
 #else
-                GameMain.Instance.MainCamera.FadeIn(0.2f);
-                EmitCharactersCalled();
+                    GameMain.Instance.MainCamera.FadeIn(0.2f);
+                    EmitCharactersCalled();
 #endif
+                }
+                catch
+                {
+                }
+                finally
+                {
+                    calling = false;
+                }
 
                 void EmitCharactersCalled()
                 {
 #if DEBUG
                     SafeInvoke(PreCalledCharacters);
+                    calling = false;
                     SafeInvoke(CalledCharacters);
 
                     void SafeInvoke(EventHandler<CharacterServiceEventArgs> @event)
@@ -225,6 +234,7 @@ public class CharacterService(
                     }
 #else
                     PreCalledCharacters?.Invoke(this, new CharacterServiceEventArgs(charactersToCall));
+                    calling = false;
                     CalledCharacters?.Invoke(this, new CharacterServiceEventArgs(charactersToCall));
 #endif
                 }
