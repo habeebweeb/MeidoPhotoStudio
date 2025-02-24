@@ -24,6 +24,7 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
     private readonly IComparer<CharacterModel> noSortingComparer;
     private readonly CharacterRepository characterRepository;
     private readonly CharacterService characterService;
+    private readonly SelectionController<CharacterController> characterSelectionController;
     private readonly CustomMaidSceneService customMaidSceneService;
     private readonly EditModeMaidService editModeMaidService;
     private readonly List<CharacterModel> selectedCharacters = [];
@@ -31,6 +32,7 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
     private readonly List<CharacterModel> characters = [];
     private readonly Dictionary<CharacterModel, int> noSortingMap = [];
 
+    private CharacterController preCallCharacter;
     private string searchQuery;
     private bool activeOnly;
     private SortType currentSortType;
@@ -40,14 +42,17 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
     public CallController(
         CharacterRepository characterRepository,
         CharacterService characterService,
+        SelectionController<CharacterController> characterSelectionController,
         CustomMaidSceneService customMaidSceneService,
         EditModeMaidService editModeMaidService)
     {
         this.characterRepository = characterRepository ?? throw new ArgumentNullException(nameof(characterRepository));
         this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
+        this.characterSelectionController = characterSelectionController ?? throw new ArgumentNullException(nameof(characterSelectionController));
         this.customMaidSceneService = customMaidSceneService ?? throw new ArgumentNullException(nameof(customMaidSceneService));
         this.editModeMaidService = editModeMaidService ?? throw new ArgumentNullException(nameof(editModeMaidService));
 
+        this.characterService.CallingCharacters += OnCharactersCalling;
         this.characterService.CalledCharacters += OnCharactersCalled;
 
         noSortingComparer = ComparisonComparer<CharacterModel>.Create(CompareNoSorting);
@@ -272,12 +277,27 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
         characters.AddRange(filteredCharacters.OrderBy(sortComparer, Descending));
     }
 
+    private void OnCharactersCalling(object sender, CharacterServiceEventArgs e) =>
+        preCallCharacter = characterSelectionController.Current;
+
     private void OnCharactersCalled(object sender, CharacterServiceEventArgs e)
     {
         if (e.LoadedCharacters.Length is 0)
             ActiveOnly = false;
         else
             UpdateCharacterList();
+
+        if (e.LoadedCharacters.Length is 0)
+            return;
+
+        if (preCallCharacter is null || !e.LoadedCharacters.Contains(preCallCharacter))
+        {
+            characterSelectionController.Select(0);
+        }
+        else
+        {
+            characterSelectionController.Select(preCallCharacter);
+        }
     }
 
     private void RaisePropertyChanged(string name)

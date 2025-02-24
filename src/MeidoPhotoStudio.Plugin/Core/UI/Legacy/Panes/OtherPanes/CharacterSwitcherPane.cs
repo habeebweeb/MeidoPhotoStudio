@@ -28,8 +28,6 @@ public class CharacterSwitcherPane : BasePane
     private readonly Button focusBodyButton;
     private readonly Button focusFaceButton;
 
-    private CharacterController preCallCharacter;
-
     public CharacterSwitcherPane(
         Translation translation,
         CharacterService characterService,
@@ -43,7 +41,6 @@ public class CharacterSwitcherPane : BasePane
         this.customMaidSceneService = customMaidSceneService ?? throw new ArgumentNullException(nameof(customMaidSceneService));
         this.editModeMaidService = editModeMaidService ?? throw new ArgumentNullException(nameof(editModeMaidService));
 
-        this.characterService.CallingCharacters += OnCallingCharacters;
         this.characterService.CalledCharacters += OnCharactersCalled;
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
 
@@ -179,27 +176,8 @@ public class CharacterSwitcherPane : BasePane
     private void OnSelectionChanged(object sender, DropdownEventArgs<CharacterController> e) =>
         characterSelectionController.Select(e.Item);
 
-    private void OnCallingCharacters(object sender, CharacterServiceEventArgs e) =>
-        preCallCharacter = characterSelectionController.Current;
-
-    private void OnCharactersCalled(object sender, CharacterServiceEventArgs e)
-    {
-        if (e.LoadedCharacters.Length is 0)
-            return;
-
+    private void OnCharactersCalled(object sender, CharacterServiceEventArgs e) =>
         characterDropdown.SetItemsWithoutNotify(characterService);
-
-        if (preCallCharacter is null || !e.LoadedCharacters.Contains(preCallCharacter))
-        {
-            characterSelectionController.Select(0);
-            characterDropdown.SetSelectedIndexWithoutNotify(0);
-        }
-        else
-        {
-            characterSelectionController.Select(preCallCharacter);
-            characterDropdown.SetSelectedIndexWithoutNotify(characterSelectionController.CurrentIndex);
-        }
-    }
 
     private class CharacterDropdownItem(CharacterController characterController) : IDropdownItem
     {

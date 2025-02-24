@@ -163,8 +163,14 @@ public partial class PluginCore : MonoBehaviour
 
         windowManager.CharacterService = characterService;
 
-        var characterCallController = new CallController(characterRepository, characterService, customMaidSceneService, editModeMaidService);
         var characterSelectionController = new SelectionController<CharacterController>(characterService);
+        var characterCallController = new CallController(
+            characterRepository,
+            characterService,
+            characterSelectionController,
+            customMaidSceneService,
+            editModeMaidService);
+
         var facialExpressionBuilder = new FacialExpressionBuilder(faceShapeKeyConfiguration);
 
         AddPluginActiveInputHandler(new CharacterDressingCycler(characterService, inputConfiguration));
