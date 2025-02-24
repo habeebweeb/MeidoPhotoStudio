@@ -79,33 +79,24 @@ public class LightService(TransformWatcher transformWatcher) : IEnumerable<Light
         if ((uint)index >= lightControllers.Count)
             throw new ArgumentOutOfRangeException(nameof(index));
 
-        var lightController = lightControllers[index];
+        if (IsMainLight(lightControllers[index]))
+            throw new InvalidOperationException("Main light cannot be removed");
 
-        if (IsMainLight(lightController))
-        {
-            RestoreMainLight(lightController);
-            ResetMainLight();
-        }
-
-        RemovingLight?.Invoke(this, new(lightController, index));
-
-        lightControllers.RemoveAt(index);
-
-        RemovedLight?.Invoke(this, new(lightController, index));
-
-        lightController.Destroy();
-
-        if (!IsMainLight(lightController) && lightController.Light)
-            Object.Destroy(lightController.Light.gameObject);
+        DoRemoveLight(index);
     }
 
     public void RemoveLight(LightController lightController)
     {
+        _ = lightController ?? throw new ArgumentNullException(nameof(lightController));
+
+        if (IsMainLight(lightController))
+            throw new InvalidOperationException("Main light cannot be removed");
+
         var lightIndex = lightControllers.IndexOf(lightController);
 
         if (lightIndex is -1)
         {
-            // TODO: log light not found.
+            Plugin.Logger.LogWarning("Could not find light");
             return;
         }
 
@@ -150,7 +141,32 @@ public class LightService(TransformWatcher transformWatcher) : IEnumerable<Light
     private void RemoveAllLights(bool keepMain)
     {
         for (var i = lightControllers.Count - 1; i >= (keepMain ? 1 : 0); i--)
-            RemoveLight(i);
+            DoRemoveLight(i);
+    }
+
+    private void DoRemoveLight(int index)
+    {
+        if ((uint)index >= lightControllers.Count)
+            throw new ArgumentOutOfRangeException(nameof(index));
+
+        var lightController = lightControllers[index];
+
+        if (IsMainLight(lightController))
+        {
+            RestoreMainLight(lightController);
+            ResetMainLight();
+        }
+
+        RemovingLight?.Invoke(this, new(lightController, index));
+
+        lightControllers.RemoveAt(index);
+
+        RemovedLight?.Invoke(this, new(lightController, index));
+
+        lightController.Destroy();
+
+        if (!IsMainLight(lightController) && lightController.Light)
+            Object.Destroy(lightController.Light.gameObject);
     }
 
     private void BackupMainLight(LightController lightController)
