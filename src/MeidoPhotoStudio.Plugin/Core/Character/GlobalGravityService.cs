@@ -13,7 +13,7 @@ public class GlobalGravityService : INotifyPropertyChanged
         this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
 
         this.characterService.CallingCharacters += OnCharactersCalling;
-        this.characterService.CalledCharacters += OnCharactersCalled;
+        this.characterService.PreCalledCharacters += OnCharactersCalled;
     }
 
     public event PropertyChangedEventHandler PropertyChanged;

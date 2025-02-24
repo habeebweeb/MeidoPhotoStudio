@@ -39,6 +39,8 @@ public class CharacterService(
 
     public event EventHandler Deactivating;
 
+    internal event EventHandler<CharacterServiceEventArgs> PreCalledCharacters;
+
     public bool Busy =>
         calling || activeCharacters.Any(static character => character.Busy);
 
@@ -199,23 +201,30 @@ public class CharacterService(
                 void EmitCharactersCalled()
                 {
 #if DEBUG
-                    if (CalledCharacters is null)
-                        return;
+                    SafeInvoke(PreCalledCharacters);
+                    SafeInvoke(CalledCharacters);
 
-                    var args = new CharacterServiceEventArgs(charactersToCall);
-
-                    foreach (var callback in CalledCharacters.GetInvocationList())
+                    void SafeInvoke(EventHandler<CharacterServiceEventArgs> @event)
                     {
-                        try
+                        if (@event is null)
+                            return;
+
+                        var args = new CharacterServiceEventArgs(charactersToCall);
+
+                        foreach (var callback in @event.GetInvocationList())
                         {
-                            callback.DynamicInvoke(this, args);
-                        }
-                        catch (Exception e)
-                        {
-                            Plugin.Logger.LogError(e);
+                            try
+                            {
+                                callback.DynamicInvoke(this, args);
+                            }
+                            catch (Exception e)
+                            {
+                                Plugin.Logger.LogError(e);
+                            }
                         }
                     }
 #else
+                    PreCalledCharacters?.Invoke(this, new CharacterServiceEventArgs(charactersToCall));
                     CalledCharacters?.Invoke(this, new CharacterServiceEventArgs(charactersToCall));
 #endif
                 }

@@ -23,7 +23,7 @@ public class GravityDragHandleService
         this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
         this.selectionController = selectionController ?? throw new ArgumentNullException(nameof(selectionController));
 
-        this.characterService.CalledCharacters += OnCharactersCalled;
+        this.characterService.PreCalledCharacters += OnCharactersCalled;
         this.characterService.Deactivating += OnDeactivating;
     }
 

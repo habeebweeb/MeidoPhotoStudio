@@ -13,7 +13,7 @@ public class CharacterUndoRedoService
         this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
         this.undoRedoService = undoRedoService ?? throw new ArgumentNullException(nameof(undoRedoService));
 
-        this.characterService.CalledCharacters += OnCharactersCalled;
+        this.characterService.PreCalledCharacters += OnCharactersCalled;
     }
 
     public CharacterUndoRedoController this[CharacterController characterController] =>

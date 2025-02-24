@@ -18,7 +18,7 @@ public class CharacterDressingCycler : IInputHandler
         this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
         this.inputConfiguration = inputConfiguration ?? throw new ArgumentNullException(nameof(inputConfiguration));
 
-        this.characterService.CalledCharacters += OnCharactersCalled;
+        this.characterService.PreCalledCharacters += OnCharactersCalled;
     }
 
     public bool Active =>

@@ -43,7 +43,7 @@ public class AnimationCyclingService
         else
             gameAnimationCategoryCache.AddRange(gameAnimationRepository.Categories);
 
-        this.characterService.CalledCharacters += OnCalledCharacters;
+        this.characterService.PreCalledCharacters += OnCalledCharacters;
 
         void OnGameAnimationRepositoryReady(object sender, EventArgs e)
         {

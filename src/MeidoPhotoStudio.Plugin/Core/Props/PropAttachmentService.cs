@@ -45,7 +45,7 @@ public class PropAttachmentService
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
 
         this.characterService.CallingCharacters += OnCallingCharacters;
-        this.characterService.CalledCharacters += OnCalledCharacters;
+        this.characterService.PreCalledCharacters += OnCalledCharacters;
         this.characterService.Deactivating += OnDeactivating;
 
         this.propService.RemovedProp += OnPropRemoved;

@@ -35,7 +35,7 @@ public class IKDragHandleService : INotifyPropertyChanged
         this.selectionController = selectionController ?? throw new ArgumentNullException(nameof(selectionController));
         this.tabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
 
-        this.characterService.CalledCharacters += OnCharactersCalled;
+        this.characterService.PreCalledCharacters += OnCharactersCalled;
         this.characterService.Deactivating += OnDeactivating;
     }
 
