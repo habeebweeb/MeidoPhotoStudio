@@ -203,17 +203,31 @@ public class CharacterController(CharacterModel characterModel, TransformWatcher
 
         Head?.ResetBothEyeRotations();
 
-        if (Clothing?.HairGravityController is GravityController hairGravityController)
-            hairGravityController.Enabled = false;
+        if (Clothing is ClothingController clothing)
+        {
+            clothing.DressingMode = TBody.MaskMode.None;
 
-        if (Clothing?.ClothingGravityController is GravityController clothingGravityController)
-            clothingGravityController.Enabled = false;
+            clothing.DetachAllAccessories();
+
+            if (clothing.HairGravityController is GravityController hairGravityController)
+                hairGravityController.Enabled = false;
+
+            if (clothing.ClothingGravityController is GravityController clothingGravityController)
+                clothingGravityController.Enabled = false;
+        }
 
         if (IK is IKController ik)
         {
             ik.MuneLEnabled = true;
             ik.MuneREnabled = true;
         }
+
+        Body?.ResetAllShapeKeys();
+        Face?.ApplyBlendSet(new GameBlendSetModel(PhotoFaceData.data[0]));
+
+        Maid.FaceBlend("無し");
+        Maid.OpenMouth(f_bOpen: false);
+        Maid.EyeToReset();
 
         if (Maid.body0)
             Maid.body0.BoneHitHeightY = 0f;
