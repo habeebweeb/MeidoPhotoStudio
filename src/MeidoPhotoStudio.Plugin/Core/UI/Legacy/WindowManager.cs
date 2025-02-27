@@ -265,14 +265,16 @@ public class WindowManager : MonoBehaviour, IActivateable
                 camera.useMouse = !block;
             }
 
-            if (block && UICamera.mHover)
+            if (block && UICamera.mHover != UICamera.fallThrough)
             {
                 UICamera.Notify(UICamera.mHover, "OnHover", false);
-                UICamera.mHover = null;
+
+                var lastHover = UICamera.mHover;
+                UICamera.mHover = UICamera.fallThrough;
 
                 for (var i = 0; i < UICamera.mMouse.Length; i++)
                 {
-                    UICamera.mMouse[i].last = UICamera.mHover;
+                    UICamera.mMouse[i].last = lastHover;
                     UICamera.mMouse[i].current = UICamera.fallThrough;
                 }
             }
