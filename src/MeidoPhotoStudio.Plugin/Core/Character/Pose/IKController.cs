@@ -258,6 +258,12 @@ public class IKController : INotifyPropertyChanged
         }
     }
 
+    public bool SetLimbRotationLimitsEnabled(bool enabled) =>
+        SetLimits(enabled, digits: false);
+
+    public bool SetDigitRotationLimitsEnabled(bool enabled) =>
+        SetLimits(enabled, digits: true);
+
     public void Flip()
     {
         StopAnimation();

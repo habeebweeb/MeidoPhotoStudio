@@ -196,16 +196,12 @@ public class IKPane : BasePane
         if (CurrentCharacter is not CharacterController character)
             return;
 
-        if (character.IK.Dirty)
-        {
-            CharacterUndoRedo.StartPoseChange();
-            character.IK.LimitLimbRotations = limitLimbRotationsToggle.Value;
+        CharacterUndoRedo.StartPoseChange();
+
+        if (character.IK.SetLimbRotationLimitsEnabled(limitLimbRotationsToggle.Value))
             CharacterUndoRedo.EndPoseChange();
-        }
         else
-        {
-            character.IK.LimitLimbRotations = limitLimbRotationsToggle.Value;
-        }
+            CharacterUndoRedo.CancelPoseChange();
     }
 
     private void OnLimitDigitRotationsChanged(object sender, EventArgs e)
@@ -213,16 +209,12 @@ public class IKPane : BasePane
         if (CurrentCharacter is not CharacterController character)
             return;
 
-        if (character.IK.Dirty)
-        {
-            CharacterUndoRedo.StartPoseChange();
-            character.IK.LimitDigitRotations = limitDigitRotationsToggle.Value;
+        CharacterUndoRedo.StartPoseChange();
+
+        if (character.IK.SetDigitRotationLimitsEnabled(limitDigitRotationsToggle.Value))
             CharacterUndoRedo.EndPoseChange();
-        }
         else
-        {
-            character.IK.LimitDigitRotations = limitDigitRotationsToggle.Value;
-        }
+            CharacterUndoRedo.CancelPoseChange();
     }
 
     private void OnFlipButtonPushed(object sender, EventArgs e)
