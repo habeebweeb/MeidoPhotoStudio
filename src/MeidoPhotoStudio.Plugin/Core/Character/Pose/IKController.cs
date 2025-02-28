@@ -575,7 +575,8 @@ public class IKController : INotifyPropertyChanged
                 change |= hinge.Apply();
         }
 
-        Dirty = false;
+        if (change && !character.Animation.Playing)
+            Dirty = true;
 
         RaisePropertyChanged(digits ? nameof(LimitDigitRotations) : nameof(LimitLimbRotations));
 
