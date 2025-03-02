@@ -62,11 +62,7 @@ public class WindowManager : MonoBehaviour, IActivateable
         Settings,
     }
 
-    internal PluginCore PluginCore { get; set; }
-
-    internal CharacterService CharacterService { get; set; }
-
-    private bool Visible
+    public bool Visible
 #if DEBUG
     { get; set; } = true;
 #else
@@ -75,6 +71,10 @@ public class WindowManager : MonoBehaviour, IActivateable
         set => visible = value;
     }
 #endif
+
+    internal PluginCore PluginCore { get; set; }
+
+    internal CharacterService CharacterService { get; set; }
 
     public BaseWindow this[Window id]
     {
