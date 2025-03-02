@@ -146,7 +146,7 @@ public class ScreenshotService : MonoBehaviour
             GizmoRender.UIVisible = visible;
 
             if (WindowManager)
-                WindowManager.enabled = visible;
+                WindowManager.Visible = visible;
 
             if (DragHandleParent)
                 DragHandleParent.SetActive(visible);
