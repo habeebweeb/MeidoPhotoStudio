@@ -50,7 +50,9 @@ public class WindowManager : MonoBehaviour, IActivateable
     private GameObject blockerCanvasContainer;
     private Graphic uguiBlocker;
     private bool blockingOtherUIs;
+#if !DEBUG
     private bool visible = true;
+#endif
 
     public enum Window
     {
@@ -65,10 +67,14 @@ public class WindowManager : MonoBehaviour, IActivateable
     internal CharacterService CharacterService { get; set; }
 
     private bool Visible
+#if DEBUG
+    { get; set; } = true;
+#else
     {
-        get => visible && GameMain.Instance.SysDlg.IsDecided;
+        get => visible && PluginCore.Active && GameMain.Instance.SysDlg.IsDecided && !CharacterService.Busy;
         set => visible = value;
     }
+#endif
 
     public BaseWindow this[Window id]
     {
@@ -127,8 +133,6 @@ public class WindowManager : MonoBehaviour, IActivateable
         if (CharacterService is null)
             throw new InvalidOperationException($"{nameof(CharacterService)} cannot be null");
 
-        CharacterService.CallingCharacters += OnCallingCharacters;
-
         (blockerCanvasContainer, uguiBlocker) = InitializeBlocker();
 
         enabled = false;
@@ -180,8 +184,6 @@ public class WindowManager : MonoBehaviour, IActivateable
 
         if (CharacterService is null)
             return;
-
-        CharacterService.CallingCharacters -= OnCallingCharacters;
 
         BlockOtherUIs(false);
 
@@ -286,30 +288,6 @@ public class WindowManager : MonoBehaviour, IActivateable
         foreach (var window in windows.Values)
             window.OnScreenDimensionsChanged(new(Screen.width, Screen.height));
     }
-
-    private void OnCallingCharacters(object sender, CharacterServiceEventArgs e)
-    {
-#if DEBUG
-        return;
-#else
-        if (!PluginCore.Active)
-            return;
-
-        visible = false;
-
-        CharacterService.CalledCharacters += OnCharactersCalled;
-
-        void OnCharactersCalled(object sender, CharacterServiceEventArgs e)
-        {
-            visible = true;
-
-            CharacterService.CalledCharacters -= OnCharactersCalled;
-        }
-#endif
-    }
-
-    private void OnCalledCharacters(object sender, CharacterServiceEventArgs e) =>
-        Visible = true;
 
     private class RaycastTarget : Graphic
     {
