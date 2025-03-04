@@ -10,13 +10,12 @@ namespace MeidoPhotoStudio.Plugin;
 [BepInDependency("org.bepinex.plugins.unityinjectorloader", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
 {
+    public const string PluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
     public const string PluginName = "MeidoPhotoStudio";
     public const string PluginVersion = "1.0.0";
     public const string PluginSubVersion = "beta.5.1";
 
     public static readonly string PluginString = $"{PluginName} {PluginVersion}";
-
-    private const string PluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
 
     private HarmonyLib.Harmony harmony;
 
