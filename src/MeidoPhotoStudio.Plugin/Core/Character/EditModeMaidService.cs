@@ -24,6 +24,10 @@ public class EditModeMaidService : IActivateable
         IntegrateWithOkButton();
     }
 
+    public event EventHandler<EditModeMaidServiceEventArgs> ChangingEditMaid;
+
+    public event EventHandler<EditModeMaidServiceEventArgs> ChangedEditMaid;
+
     public CharacterModel EditingCharacter { get; private set; }
 
     public CharacterModel OriginalEditingCharacter { get; private set; }
@@ -38,9 +42,13 @@ public class EditModeMaidService : IActivateable
 
         _ = character ?? throw new ArgumentNullException(nameof(character));
 
+        ChangingEditMaid?.Invoke(this, new(character.Maid, character));
+
         EditingCharacter = character;
 
         SetEditingMaid(character.Maid);
+
+        ChangedEditMaid?.Invoke(this, new(character.Maid, character));
     }
 
     public void RestoreOriginalEditingMaid()
@@ -55,7 +63,13 @@ public class EditModeMaidService : IActivateable
         {
             Plugin.Logger.LogDebug($"Setting editing maid back to '{OriginalEditingCharacter.FullName()}'");
 
+            ChangingEditMaid?.Invoke(this, new(OriginalEditingCharacter.Maid, OriginalEditingCharacter));
+
+            EditingCharacter = OriginalEditingCharacter;
+
             SetEditingMaid(OriginalEditingCharacter.Maid);
+
+            ChangedEditMaid?.Invoke(this, new(OriginalEditingCharacter.Maid, OriginalEditingCharacter));
         }
         catch (Exception e)
         {
