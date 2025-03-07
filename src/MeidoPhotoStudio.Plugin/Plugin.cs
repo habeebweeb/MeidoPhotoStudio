@@ -25,11 +25,11 @@ public class Plugin : BaseUnityPlugin
             PluginString += $"-{PluginSubVersion}";
     }
 
-    public static Core.PluginCore Instance { get; private set; }
-
     internal static string BuildVersion { get; private set; }
 
     internal static new ManualLogSource Logger { get; private set; }
+
+    private static Core.PluginCore Core { get; set; }
 
     private void Awake()
     {
@@ -57,14 +57,14 @@ public class Plugin : BaseUnityPlugin
             hideFlags = HideFlags.HideAndDontSave,
         };
 
-        Instance = coreGameObject.AddComponent<Core.PluginCore>();
+        Core = coreGameObject.AddComponent<Core.PluginCore>();
     }
 
     private void OnDestroy()
     {
         harmony.UnpatchSelf();
 
-        if (Instance)
-            Destroy(Instance.gameObject);
+        if (Core)
+            Destroy(Core.gameObject);
     }
 }
