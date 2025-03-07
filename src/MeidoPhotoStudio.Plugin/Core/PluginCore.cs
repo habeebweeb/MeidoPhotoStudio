@@ -45,7 +45,9 @@ public partial class PluginCore : MonoBehaviour
     private Translation translation;
     private ScreenSizeChecker screenSizeChecker;
 
-    public bool Active { get; private set; }
+    public Api.Api Api { get; private set; }
+
+    internal bool Active { get; private set; }
 
     private void Awake()
     {
@@ -312,6 +314,7 @@ public partial class PluginCore : MonoBehaviour
                 propSchemaMapper));
 
         // Scenes
+        var extensionSchemaBuilder = new ExtensionSchemaBuilder();
         var transformSchemaBuilder = new TransformSchemaBuilder();
 
         // TODO: This is kinda stupid tbf. Maybe look into writing a code generator and attributes to create these
@@ -357,7 +360,9 @@ public partial class PluginCore : MonoBehaviour
                 new PropControllerSchemaBuilder(propModelSchemaBuilder, transformSchemaBuilder),
                 new DragHandleSchemaBuilder(),
                 new AttachPointSchemaBuilder()),
-            new ExtensionSchemaBuilder());
+            extensionSchemaBuilder);
+
+        var extensionAspectLoader = new ExtensionAspectLoader();
 
         var sceneLoader = new SceneLoader(
             undoRedoService,
@@ -391,9 +396,10 @@ public partial class PluginCore : MonoBehaviour
                 propAttachmentService,
                 characterService,
                 propSchemaMapper),
-            new ExtensionAspectLoader());
+            extensionAspectLoader);
 
-        var sceneSerializer = new WrappedSerializer(new([new ExtensionDataConverter()]), new());
+        var extensionDataConverter = new ExtensionDataConverter();
+        var sceneSerializer = new WrappedSerializer(new([extensionDataConverter]), new());
         var quickSaveService = new QuickSaveService(configRoot, characterService, sceneSchemaBuilder, sceneSerializer, sceneLoader);
 
         AddPluginActiveInputHandler(new QuickSaveInputHandler(
@@ -730,6 +736,23 @@ public partial class PluginCore : MonoBehaviour
         AddActivateable(autoSaveService);
 
         AddActivateable(windowManager);
+
+        Api = new(
+            this,
+            new(
+                this,
+                characterService,
+                editModeMaidService,
+                ikDragHandleService,
+                characterSelectionController),
+            new(
+                this,
+                propService,
+                propAttachmentService,
+                propSelectionController),
+            new(this, lightService, lightSelectionController),
+            new(this, windowManager),
+            new(extensionSchemaBuilder, extensionAspectLoader, extensionDataConverter));
 
         void AddPluginActiveInputHandler<T>(T inputHandler)
             where T : IInputHandler =>

@@ -25,6 +25,9 @@ public class Plugin : BaseUnityPlugin
             PluginString += $"-{PluginSubVersion}";
     }
 
+    public static Api.Api Api =>
+        Core ? Core.Api : null;
+
     internal static string BuildVersion { get; private set; }
 
     internal static new ManualLogSource Logger { get; private set; }
