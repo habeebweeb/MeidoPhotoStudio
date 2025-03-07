@@ -12,18 +12,10 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "com.habeebweeb.com3d2.meidophotostudio";
     public const string PluginName = "MeidoPhotoStudio";
-    public const string PluginVersion = "1.0.0";
-    public const string PluginSubVersion = "beta.5.1";
-
-    public static readonly string PluginString = $"{PluginName} {PluginVersion}";
+    public const string PluginVersion = "0.6.0";
+    public const string PluginString = $"{PluginName} {PluginVersion}";
 
     private HarmonyLib.Harmony harmony;
-
-    static Plugin()
-    {
-        if (!string.IsNullOrEmpty(PluginSubVersion))
-            PluginString += $"-{PluginSubVersion}";
-    }
 
     public static Api.Api Api =>
         Core ? Core.Api : null;
