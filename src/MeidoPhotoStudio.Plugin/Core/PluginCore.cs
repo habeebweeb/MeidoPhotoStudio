@@ -356,7 +356,8 @@ public partial class PluginCore : MonoBehaviour
                 propAttachmentService,
                 new PropControllerSchemaBuilder(propModelSchemaBuilder, transformSchemaBuilder),
                 new DragHandleSchemaBuilder(),
-                new AttachPointSchemaBuilder()));
+                new AttachPointSchemaBuilder()),
+            new ExtensionSchemaBuilder());
 
         var sceneLoader = new SceneLoader(
             undoRedoService,
@@ -389,9 +390,10 @@ public partial class PluginCore : MonoBehaviour
                 propDragHandleService,
                 propAttachmentService,
                 characterService,
-                propSchemaMapper));
+                propSchemaMapper),
+            new ExtensionAspectLoader());
 
-        var sceneSerializer = new WrappedSerializer(new(), new());
+        var sceneSerializer = new WrappedSerializer(new([new ExtensionDataConverter()]), new());
         var quickSaveService = new QuickSaveService(configRoot, characterService, sceneSchemaBuilder, sceneSerializer, sceneLoader);
 
         AddPluginActiveInputHandler(new QuickSaveInputHandler(

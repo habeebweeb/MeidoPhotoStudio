@@ -6,12 +6,26 @@ using Newtonsoft.Json.Serialization;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
-public class SceneSerializer : ISceneSerializer
+public class SceneSerializer(IEnumerable<JsonConverter> additionalConverters = null) : ISceneSerializer
 {
     private const string SceneMagic = "MPSSCENE";
 
-    private static JsonSerializer Serializer =>
-        JsonSerializer.Create(new()
+    private readonly JsonConverterCollection converters =
+    [
+        new ColorConverter(),
+        new Vector3Converter(),
+        new Vector2Converter(),
+        new QuaternionConverter(),
+        new PropModelSchemaConverter(),
+        new AnimationModelSchemaConverter(),
+        new BlendSetModelSchemaConverter(),
+        .. additionalConverters ?? [],
+    ];
+
+    private JsonSerializer serializer;
+
+    private JsonSerializer Serializer =>
+        serializer ??= JsonSerializer.Create(new()
         {
             ContractResolver = new DefaultContractResolver
             {
@@ -20,18 +34,9 @@ public class SceneSerializer : ISceneSerializer
                     ProcessDictionaryKeys = false,
                 },
             },
-            Converters = new JsonConverterCollection()
-            {
-                new ColorConverter(),
-                new Vector3Converter(),
-                new Vector2Converter(),
-                new QuaternionConverter(),
-                new PropModelSchemaConverter(),
-                new AnimationModelSchemaConverter(),
-                new BlendSetModelSchemaConverter(),
-            },
+            Converters = converters,
             NullValueHandling = NullValueHandling.Ignore,
-            Formatting = Formatting.Indented,
+            Formatting = Formatting.None,
         });
 
     public void SerializeScene(Stream stream, SceneSchema sceneSchema)

@@ -3,6 +3,7 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Background;
 using MeidoPhotoStudio.Plugin.Core.Schema.Camera;
 using MeidoPhotoStudio.Plugin.Core.Schema.Character;
 using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
+using MeidoPhotoStudio.Plugin.Core.Schema.Extension;
 using MeidoPhotoStudio.Plugin.Core.Schema.Light;
 using MeidoPhotoStudio.Plugin.Core.Schema.Message;
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;
@@ -18,7 +19,8 @@ public class SceneLoader(
     ISceneAspectLoader<LightsSchema> lightingAspectLoader,
     ISceneAspectLoader<EffectsSchema> effectsAspectLoader,
     ISceneAspectLoader<BackgroundSchema> backgroundAspectLoader,
-    ISceneAspectLoader<PropsSchema> propsAspectLoader)
+    ISceneAspectLoader<PropsSchema> propsAspectLoader,
+    ISceneAspectLoader<ExtensionSchema> extensionAspectLoader)
 {
     private readonly UndoRedoService undoRedoService = undoRedoService
         ?? throw new ArgumentNullException(nameof(undoRedoService));
@@ -44,6 +46,9 @@ public class SceneLoader(
     private readonly ISceneAspectLoader<PropsSchema> propsAspectLoader = propsAspectLoader
         ?? throw new ArgumentNullException(nameof(propsAspectLoader));
 
+    private readonly ISceneAspectLoader<ExtensionSchema> extensionAspectLoader = extensionAspectLoader
+        ?? throw new ArgumentNullException(nameof(extensionAspectLoader));
+
     public void LoadScene(SceneSchema sceneSchema, LoadOptions loadOptions)
     {
         if (sceneSchema is null)
@@ -56,6 +61,7 @@ public class SceneLoader(
         backgroundAspectLoader.Load(sceneSchema.Background, loadOptions);
         lightingAspectLoader.Load(sceneSchema.Lights, loadOptions);
         propsAspectLoader.Load(sceneSchema.Props, loadOptions);
+        extensionAspectLoader.Load(sceneSchema.Extension, loadOptions);
 
         undoRedoService.Clear();
     }

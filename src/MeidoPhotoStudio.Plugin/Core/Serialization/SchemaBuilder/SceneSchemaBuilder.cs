@@ -3,6 +3,7 @@ using MeidoPhotoStudio.Plugin.Core.Schema.Background;
 using MeidoPhotoStudio.Plugin.Core.Schema.Camera;
 using MeidoPhotoStudio.Plugin.Core.Schema.Character;
 using MeidoPhotoStudio.Plugin.Core.Schema.Effects;
+using MeidoPhotoStudio.Plugin.Core.Schema.Extension;
 using MeidoPhotoStudio.Plugin.Core.Schema.Light;
 using MeidoPhotoStudio.Plugin.Core.Schema.Message;
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;
@@ -16,7 +17,8 @@ public class SceneSchemaBuilder(
     ISceneSchemaAspectBuilder<LightsSchema> lightsSchemaBuilder,
     ISceneSchemaAspectBuilder<EffectsSchema> effectsSchemaBuilder,
     ISceneSchemaAspectBuilder<BackgroundSchema> backgroundSchemaBuilder,
-    ISceneSchemaAspectBuilder<PropsSchema> propsSchemaBuilder)
+    ISceneSchemaAspectBuilder<PropsSchema> propsSchemaBuilder,
+    ISceneSchemaAspectBuilder<ExtensionSchema> extensionSchemaBuilder)
 {
     private readonly ISceneSchemaAspectBuilder<CharactersSchema> charactersSchemaBuilder = charactersSchemaBuilder
         ?? throw new ArgumentNullException(nameof(charactersSchemaBuilder));
@@ -39,6 +41,9 @@ public class SceneSchemaBuilder(
     private readonly ISceneSchemaAspectBuilder<PropsSchema> propsSchemaBuilder = propsSchemaBuilder
         ?? throw new ArgumentNullException(nameof(propsSchemaBuilder));
 
+    private readonly ISceneSchemaAspectBuilder<ExtensionSchema> extensionSchemaBuilder = extensionSchemaBuilder
+        ?? throw new ArgumentNullException(nameof(extensionSchemaBuilder));
+
     public SceneSchema Build() =>
         new()
         {
@@ -49,5 +54,6 @@ public class SceneSchemaBuilder(
             Effects = effectsSchemaBuilder.Build(),
             Background = backgroundSchemaBuilder.Build(),
             Props = propsSchemaBuilder.Build(),
+            Extension = extensionSchemaBuilder.Build(),
         };
 }
