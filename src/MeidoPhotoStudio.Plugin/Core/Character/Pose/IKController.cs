@@ -25,6 +25,7 @@ public class IKController : INotifyPropertyChanged
     private HandController rightHand;
     private HandController leftFoot;
     private HandController rightFoot;
+    private Dictionary<Transform, Vector3> initialChainBonePositions = [];
     private bool limitLimbRotations = true;
     private bool limitDigitRotations = true;
     private bool dirty = false;
@@ -204,6 +205,9 @@ public class IKController : INotifyPropertyChanged
         _ = chain ?? throw new ArgumentNullException(nameof(chain));
         Solver.SetChain(EmptyChain, Solver.GetRoot());
         Solver.SetChain(chain, Solver.GetRoot());
+
+        foreach (var bone in chain.Where(bone => !initialChainBonePositions.ContainsKey(bone)))
+            initialChainBonePositions[bone] = bone.localPosition;
     }
 
     public void LockSolver() =>
@@ -218,7 +222,15 @@ public class IKController : INotifyPropertyChanged
             return;
 
         foreach (var bone in Solver.bones)
-            bone.transform.localPosition = bone.defaultLocalPosition;
+        {
+            if (!initialChainBonePositions.TryGetValue(bone.transform, out var localPosition))
+                continue;
+
+            if (bone.transform.localPosition == localPosition)
+                continue;
+
+            bone.transform.localPosition = localPosition;
+        }
     }
 
     public void ApplyHandOrFootPreset(HandPresetModel presetModel, HandOrFootType type)
@@ -442,6 +454,7 @@ public class IKController : INotifyPropertyChanged
 
         boneCache = [];
 
+        initialChainBonePositions = [];
         rotationLimitCache = [];
         digitRotationLimits = [];
         limbRotationLimits = [];
