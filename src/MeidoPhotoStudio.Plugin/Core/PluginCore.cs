@@ -772,6 +772,8 @@ public partial class PluginCore : MonoBehaviour
         if (!GameMain.Instance.SysDlg.IsDecided)
             return;
 
+        Api.RaiseActivating();
+
         dragHandleClickHandler.enabled = true;
         transformWatcher.enabled = true;
         gizmoClickHandler.enabled = true;
@@ -783,6 +785,8 @@ public partial class PluginCore : MonoBehaviour
         SetDailyPanelActive(false);
 
         Active = true;
+
+        Api.RaiseActivated();
     }
 
     private void Deactivate(bool force = false)
@@ -806,6 +810,8 @@ public partial class PluginCore : MonoBehaviour
         void Exit()
         {
             GameMain.Instance.SysDlg.Close();
+
+            Api.RaiseDeactivating();
 
             dragHandleClickHandler.enabled = false;
             transformWatcher.enabled = false;
@@ -841,6 +847,8 @@ public partial class PluginCore : MonoBehaviour
             SetDailyPanelActive(true);
 
             Active = false;
+
+            Api.RaiseDeactivated();
         }
     }
 

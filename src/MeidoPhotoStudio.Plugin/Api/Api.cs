@@ -13,6 +13,14 @@ public class Api(
 {
     private readonly PluginCore pluginCore = pluginCore ? pluginCore : throw new ArgumentNullException(nameof(pluginCore));
 
+    public event EventHandler Activating;
+
+    public event EventHandler Activated;
+
+    public event EventHandler Deactivating;
+
+    public event EventHandler Deactivated;
+
     public bool Active =>
         pluginCore.Active;
 
@@ -25,4 +33,16 @@ public class Api(
     public UIApi UI { get; } = uiApi ?? throw new ArgumentNullException(nameof(uiApi));
 
     public ExtensionApi Extension { get; } = extensionApi ?? throw new ArgumentNullException(nameof(extensionApi));
+
+    internal void RaiseActivating() =>
+        Activating?.Invoke(this, EventArgs.Empty);
+
+    internal void RaiseActivated() =>
+        Activated?.Invoke(this, EventArgs.Empty);
+
+    internal void RaiseDeactivating() =>
+        Deactivating?.Invoke(this, EventArgs.Empty);
+
+    internal void RaiseDeactivated() =>
+        Deactivated?.Invoke(this, EventArgs.Empty);
 }
