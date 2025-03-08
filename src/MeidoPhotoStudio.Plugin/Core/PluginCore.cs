@@ -787,15 +787,8 @@ public partial class PluginCore : MonoBehaviour
 
     private void Deactivate(bool force = false)
     {
-        if (characterService.Busy)
+        if (characterService.Busy || !GameMain.Instance.SysDlg.IsDecided && !force)
             return;
-
-        var sysDialog = GameMain.Instance.SysDlg;
-
-        if (!sysDialog.IsDecided && !force)
-            return;
-
-        Active = false;
 
         if (force)
         {
@@ -804,21 +797,15 @@ public partial class PluginCore : MonoBehaviour
             return;
         }
 
-        sysDialog.Show(
+        GameMain.Instance.SysDlg.Show(
             string.Format(translation["systemMessage", "exitConfirm"], Plugin.PluginName),
             SystemDialog.TYPE.OK_CANCEL,
             Exit,
-            Resume);
-
-        void Resume()
-        {
-            sysDialog.Close();
-            Active = true;
-        }
+            GameMain.Instance.SysDlg.Close);
 
         void Exit()
         {
-            sysDialog.Close();
+            GameMain.Instance.SysDlg.Close();
 
             dragHandleClickHandler.enabled = false;
             transformWatcher.enabled = false;
@@ -852,6 +839,8 @@ public partial class PluginCore : MonoBehaviour
             configuration.Save();
 
             SetDailyPanelActive(true);
+
+            Active = false;
         }
     }
 
