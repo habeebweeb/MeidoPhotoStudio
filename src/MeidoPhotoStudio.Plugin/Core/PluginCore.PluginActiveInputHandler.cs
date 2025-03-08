@@ -24,7 +24,7 @@ public partial class PluginCore
         }
 
         public bool Active =>
-            pluginCore.Active && inputHandler.Active;
+            pluginCore.Active && GameMain.Instance.SysDlg.IsDecided && inputHandler.Active;
 
         public void CheckInput() =>
             inputHandler.CheckInput();
