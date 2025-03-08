@@ -1,5 +1,5 @@
-lib/
-lib
+**/lib/
+**/lib
 
 # Ignore asciidoc output
 [Dd]ocumentation/[Oo]ut/
