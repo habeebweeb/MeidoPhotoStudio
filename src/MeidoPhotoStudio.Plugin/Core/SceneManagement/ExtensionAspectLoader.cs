@@ -32,7 +32,7 @@ public class ExtensionAspectLoader : ISceneAspectLoader<ExtensionSchema>
 
     public void Load(ExtensionSchema sceneAspectSchema, LoadOptions loadOptions)
     {
-        foreach (var data in sceneAspectSchema.ExtensionData)
+        foreach (var data in sceneAspectSchema?.ExtensionData ?? [])
         {
             if (data is null)
                 continue;
