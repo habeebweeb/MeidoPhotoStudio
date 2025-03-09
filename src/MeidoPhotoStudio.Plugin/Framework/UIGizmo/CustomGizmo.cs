@@ -189,6 +189,7 @@ public partial class CustomGizmo : GizmoRender
         if (beSelectedType is not MOVETYPE.NONE && local_control_lock_)
             local_control_lock_ = false;
 
+        // TODO: lol
         if (clicked)
             Released.Invoke();
     }
@@ -217,22 +218,31 @@ public partial class CustomGizmo : GizmoRender
     {
         if (Mode is GizmoMode.Local)
         {
-            target.position += target.transform.TransformVector(deltaLocalPosition).normalized
-                * deltaLocalPosition.magnitude;
-            target.rotation *= deltaLocalRotation;
+            if (eAxis)
+                target.position += target.transform.TransformVector(deltaLocalPosition).normalized
+                    * deltaLocalPosition.magnitude;
+
+            if (eRotate)
+                target.rotation *= deltaLocalRotation;
         }
         else if (Mode is GizmoMode.World or GizmoMode.Global)
         {
-            target.position += deltaPosition;
-            target.rotation = deltaRotation * target.rotation;
+            if (eAxis)
+                target.position += deltaPosition;
+
+            if (eRotate)
+                target.rotation = deltaRotation * target.rotation;
         }
 
-        var newScale = target.localScale + deltaScale;
+        if (eScal)
+        {
+            var newScale = target.localScale + deltaScale;
 
-        if (newScale.x < 0f || newScale.y < 0f || newScale.z < 0f)
-            return;
+            if (newScale.x < 0f || newScale.y < 0f || newScale.z < 0f)
+                return;
 
-        target.localScale = newScale;
+            target.localScale = newScale;
+        }
     }
 
     private void CheckDragged()
