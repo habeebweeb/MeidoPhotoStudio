@@ -36,7 +36,8 @@
     "v": "V",
     "vInverse": "^",
     "wave": "M",
-    "waveInverse": "W"
+    "waveInverse": "W",
+    "parabolic": "Parabolic"
   },
   "characterSwitcher": {
     "editToggle": "Edit",

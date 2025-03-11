@@ -26,6 +26,7 @@ public class PlacementService(CharacterService characterService)
         CircleOuter,
         FanInner,
         FanOuter,
+        Parabolic,
     }
 
     private IEnumerable<(int Index, Transform Transform)> Transforms =>
@@ -57,6 +58,8 @@ public class PlacementService(CharacterService characterService)
             FanPlacement(outer: false);
         else if (placement is Placement.FanOuter)
             FanPlacement(outer: true);
+        else if (placement is Placement.Parabolic)
+            ParabolicPlacement();
         else
             throw new InvalidEnumArgumentException(nameof(placement), (int)placement, typeof(Placement));
     }
@@ -157,6 +160,24 @@ public class PlacementService(CharacterService characterService)
 
         static void SetPositionAndRotation(Transform transform, Vector3 position, Quaternion rotation)
         {
+            transform.localPosition = position;
+            transform.localRotation = rotation;
+        }
+    }
+
+    private void ParabolicPlacement()
+    {
+        var offset = characterService.Count % 2 is 0 ? 0.5f : 0f;
+
+        foreach (var (i, transform) in Transforms)
+        {
+            var p = (AlternatingSequence(i) + offset) / 1.5f;
+            var z = Mathf.Pow(p, 2) / 8f;
+            var angle = -Mathf.Atan(2 * p / 4f) * Mathf.Rad2Deg;
+
+            var position = new Vector3(p, 0, z);
+            var rotation = Quaternion.Euler(0, angle, 0);
+
             transform.localPosition = position;
             transform.localRotation = rotation;
         }
