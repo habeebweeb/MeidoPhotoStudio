@@ -66,9 +66,11 @@ public class PlacementService(CharacterService characterService)
 
     private void RowPlacement(bool vertical = false)
     {
+        var xOffset = (characterService.Count % 2 is 0 && !vertical) ? 0.5f : 0f;
+
         foreach (var (i, transform) in Transforms)
         {
-            var a = AlternatingSequence(i) * 0.5f;
+            var a = (AlternatingSequence(i) + xOffset) * 0.5f;
 
             transform.localPosition = vertical ? new(0f, 0f, a) : new(a, 0f, 0f);
             transform.localRotation = Quaternion.identity;
@@ -77,9 +79,11 @@ public class PlacementService(CharacterService characterService)
 
     private void DiagonalPlacement(bool inverse = false)
     {
+        var xOffset = characterService.Count % 2 is 0 ? 0.5f : 0f;
+
         foreach (var (i, transform) in Transforms)
         {
-            var a = AlternatingSequence(i) * 0.5f;
+            var a = (AlternatingSequence(i) + xOffset) * 0.5f;
 
             transform.localPosition = inverse ? new(a, 0f, -a) : new(a, 0, a);
             transform.localRotation = Quaternion.identity;
@@ -88,9 +92,11 @@ public class PlacementService(CharacterService characterService)
 
     private void WavePlacement(bool inverse = false)
     {
+        var xOffset = characterService.Count % 2 is 0 ? 0.5f : 0f;
+
         foreach (var (i, transform) in Transforms)
         {
-            var x = AlternatingSequence(i) * 0.4f;
+            var x = (AlternatingSequence(i) + xOffset) * 0.4f;
             var z = (inverse ? -1 : 1) * Mathf.Cos(AlternatingSequence(i) * Pi) * 0.35f;
 
             transform.localPosition = new(x, 0f, z);
