@@ -1,10 +1,10 @@
 using MeidoPhotoStudio.Plugin.Core.Localization;
-using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Framework.Service;
+using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 using TransformType = MeidoPhotoStudio.Plugin.Framework.Service.TransformClipboard.TransformType;
 
-namespace MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
+namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
 public class TransformInputPane : BasePane
 {
