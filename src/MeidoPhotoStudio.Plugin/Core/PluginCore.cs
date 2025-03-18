@@ -370,6 +370,7 @@ public partial class PluginCore : MonoBehaviour
                 characterService,
                 characterRepository,
                 editModeMaidService,
+                characterCallController,
                 customMaidSceneService,
                 globalGravityService,
                 gameAnimationRepository,

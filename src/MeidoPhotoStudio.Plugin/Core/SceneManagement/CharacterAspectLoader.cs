@@ -15,6 +15,7 @@ public class CharacterAspectLoader(
     CharacterService characterService,
     CharacterRepository characterRepository,
     EditModeMaidService editModeMaidService,
+    CallController characterCallController,
     CustomMaidSceneService customMaidSceneService,
     GlobalGravityService globalGravityService,
     GameAnimationRepository gameAnimationRepository,
@@ -47,6 +48,9 @@ public class CharacterAspectLoader(
 
     private readonly EditModeMaidService editModeMaidService = editModeMaidService
         ?? throw new ArgumentNullException(nameof(editModeMaidService));
+
+    private readonly CallController characterCallController = characterCallController
+        ?? throw new ArgumentNullException(nameof(characterCallController));
 
     private readonly CustomMaidSceneService customMaidSceneService = customMaidSceneService
         ?? throw new ArgumentNullException(nameof(editModeMaidService));
@@ -105,6 +109,11 @@ public class CharacterAspectLoader(
                 if (!charactersToLoad.Contains(editModeMaidService.OriginalEditingCharacter))
                     charactersToLoad.Insert(0, editModeMaidService.OriginalEditingCharacter);
             }
+
+            characterCallController.ClearSelected();
+
+            foreach (var character in charactersToLoad)
+                characterCallController.Select(character);
 
             characterService.Call(charactersToLoad);
             characterService.CalledCharacters += OnCharactersCalled;
