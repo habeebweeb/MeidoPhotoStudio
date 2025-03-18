@@ -201,7 +201,11 @@ public class CharacterController(CharacterModel characterModel, TransformWatcher
 
         subscribedToSequenceEvents = false;
 
-        Head?.ResetBothEyeRotations();
+        if (Head is HeadController head)
+        {
+            head.ResetBothEyeRotations();
+            head.OffsetLookTarget = Vector2.zero;
+        }
 
         if (Clothing is ClothingController clothing)
         {
