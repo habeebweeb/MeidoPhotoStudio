@@ -219,11 +219,7 @@ public class AnimationSelectorPane : BasePane
         saveAnimationToggle.Draw();
 
         if (currentAnimationSource is AnimationSource.Custom)
-        {
-            GUILayout.FlexibleSpace();
-
-            refreshButton.Draw();
-        }
+            refreshButton.Draw(GUILayout.ExpandWidth(false));
 
         GUILayout.EndHorizontal();
 

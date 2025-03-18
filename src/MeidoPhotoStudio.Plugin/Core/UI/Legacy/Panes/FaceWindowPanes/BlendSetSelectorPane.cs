@@ -198,11 +198,7 @@ public class BlendSetSelectorPane : BasePane
         saveBlendSetToggle.Draw();
 
         if (currentBlendSetSource is BlendSetSource.Custom)
-        {
-            GUILayout.FlexibleSpace();
-
-            refreshButton.Draw();
-        }
+            refreshButton.Draw(GUILayout.ExpandWidth(false));
 
         GUILayout.EndHorizontal();
 
