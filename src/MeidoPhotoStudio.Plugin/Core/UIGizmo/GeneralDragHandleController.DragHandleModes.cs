@@ -212,6 +212,8 @@ public abstract partial class GeneralDragHandleController
             Controller.DragHandleActive = true;
             DragHandle.MovementType = DragHandle.MoveType.None;
             DragHandle.Color = SelectColour;
+
+            Controller.GizmoActive = false;
         }
     }
 
