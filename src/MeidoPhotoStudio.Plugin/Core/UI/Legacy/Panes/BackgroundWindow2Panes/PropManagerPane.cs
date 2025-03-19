@@ -232,7 +232,7 @@ public class PropManagerPane : BasePane
 
         var dragHandleController = propDragHandleService[CurrentProp];
 
-        dragPointToggle.SetEnabledWithoutNotify(dragHandleController.DragHandleEnabled);
+        dragPointToggle.SetEnabledWithoutNotify(dragHandleController.CubeEnabled);
         gizmoToggle.SetEnabledWithoutNotify(dragHandleController.GizmoEnabled);
         gizmoModeToggles[dragHandleController.GizmoMode].SetEnabledWithoutNotify(true);
     }
@@ -240,7 +240,7 @@ public class PropManagerPane : BasePane
     private void OnToggleAllDragHandlesChanged(object sender, EventArgs e)
     {
         foreach (var controller in propDragHandleService)
-            controller.DragHandleEnabled = toggleAllDragHandles.Value;
+            controller.CubeEnabled = toggleAllDragHandles.Value;
     }
 
     private void OnToggleAllGizmosChanged(object sender, EventArgs e)
@@ -335,8 +335,8 @@ public class PropManagerPane : BasePane
     {
         var controller = (PropDragHandleController)sender;
 
-        if (e.PropertyName is nameof(PropDragHandleController.DragHandleEnabled))
-            dragPointToggle.SetEnabledWithoutNotify(controller.DragHandleEnabled);
+        if (e.PropertyName is nameof(PropDragHandleController.CubeEnabled))
+            dragPointToggle.SetEnabledWithoutNotify(controller.CubeEnabled);
         else if (e.PropertyName is nameof(PropDragHandleController.GizmoMode))
             gizmoModeToggles[controller.GizmoMode].SetEnabledWithoutNotify(true);
         else if (e.PropertyName is nameof(PropDragHandleController.GizmoEnabled))
@@ -355,7 +355,7 @@ public class PropManagerPane : BasePane
     {
         var controller = propDragHandleService[CurrentProp];
 
-        controller.DragHandleEnabled = dragPointToggle.Value;
+        controller.CubeEnabled = dragPointToggle.Value;
     }
 
     private void OnGizmoToggleChanged(object sender, EventArgs e)

@@ -19,6 +19,7 @@ public class PropDragHandleController : GeneralDragHandleController
     private DragHandleMode rotateWorldY;
     private DragHandleMode rotateLocalY;
     private DragHandleMode scale;
+    private bool dragHandleEnabled = true;
 
     public PropDragHandleController(
         DragHandle dragHandle,
@@ -35,7 +36,34 @@ public class PropDragHandleController : GeneralDragHandleController
         this.propSelectionController = propSelectionController ?? throw new ArgumentNullException(nameof(propSelectionController));
         this.tabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
 
-        Gizmo.gameObject.SetActive(false);
+        GizmoActive = false;
+        base.DragHandleEnabled = true;
+    }
+
+    public override bool DragHandleEnabled
+    {
+        set
+        {
+        }
+    }
+
+    public bool CubeEnabled
+    {
+        get => dragHandleEnabled;
+        set
+        {
+            if (dragHandleEnabled == value)
+                return;
+
+            dragHandleEnabled = value;
+
+            if (dragHandleEnabled)
+                CurrentMode.OnModeEnter();
+            else if (CurrentMode != Select && CurrentMode != Delete)
+                DragHandleActive = false;
+
+            RaisePropertyChanged(nameof(CubeEnabled));
+        }
     }
 
     public override DragHandleMode Select =>
@@ -82,6 +110,13 @@ public class PropDragHandleController : GeneralDragHandleController
         DragHandleMode originalMode)
         : WrapperDragHandleMode<DragHandleMode>(originalMode)
     {
+        public override void OnModeEnter()
+        {
+            base.OnModeEnter();
+
+            controller.DragHandleActive = controller.CubeEnabled;
+        }
+
         public override void OnClicked()
         {
             base.OnClicked();
