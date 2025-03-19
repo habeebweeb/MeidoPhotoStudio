@@ -136,6 +136,13 @@ public class PropDragHandleController : GeneralDragHandleController
 
     private class PropSelectMode(PropDragHandleController controller) : SelectMode<PropDragHandleController>(controller)
     {
+        public override void OnModeEnter()
+        {
+            base.OnModeEnter();
+
+            Controller.DragHandle.Priority = 20;
+        }
+
         public override void OnClicked()
         {
             base.OnClicked();
@@ -146,11 +153,32 @@ public class PropDragHandleController : GeneralDragHandleController
 
         public override void OnDoubleClicked() =>
             Controller.propController.Focus();
+
+        public override void OnModeExit()
+        {
+            base.OnModeExit();
+
+            Controller.DragHandle.Priority = 0;
+        }
     }
 
     private class PropDeleteMode(PropDragHandleController controller) : DeleteMode<PropDragHandleController>(controller)
     {
+        public override void OnModeEnter()
+        {
+            base.OnModeEnter();
+
+            Controller.DragHandle.Priority = 20;
+        }
+
         public override void OnClicked() =>
             Controller.propService.Remove(Controller.propController);
+
+        public override void OnModeExit()
+        {
+            base.OnModeExit();
+
+            Controller.DragHandle.Priority = 0;
+        }
     }
 }
