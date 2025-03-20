@@ -27,10 +27,14 @@ public class TextField : BaseControl
     {
     }
 
-    public TextField(string placeholder)
-        : this(new GUIContent(placeholder ?? string.Empty))
+    public TextField(string text)
+        : this(text, string.Empty)
     {
     }
+
+    public TextField(string text, string placeholder)
+        : this(new GUIContent(placeholder ?? string.Empty)) =>
+        value = text ?? string.Empty;
 
     public TextField(GUIContent placeholderContent) =>
         PlaceholderContent = placeholderContent ?? new();
