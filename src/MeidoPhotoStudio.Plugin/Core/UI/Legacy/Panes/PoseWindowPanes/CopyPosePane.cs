@@ -8,6 +8,7 @@ public class CopyPosePane : BasePane
 {
     private readonly Dropdown<CharacterController> otherCharacterDropdown;
     private readonly Button copyPoseButton;
+    private readonly Button copyPoseToEveryoneElseButton;
     private readonly Button copyBothHandsButton;
     private readonly Button copyLeftHandToLeftButton;
     private readonly Button copyLeftHandToRightButton;
@@ -35,6 +36,11 @@ public class CopyPosePane : BasePane
 
         copyPoseButton = new(new LocalizableGUIContent(translation, "copyPosePane", "copyButton"));
         copyPoseButton.ControlEvent += OnCopyPoseButtonPushed;
+
+        copyPoseToEveryoneElseButton = new(
+            new LocalizableGUIContent(translation, "copyPosePane", "copyToEveryoneButton"));
+
+        copyPoseToEveryoneElseButton.ControlEvent += OnCopyPoseToEveryoneElseButtonPushed;
 
         copyBothHandsButton = new(new LocalizableGUIContent(translation, "copyPosePane", "copyBothHands"));
         copyBothHandsButton.ControlEvent += OnCopyBothHandsButtonPushed;
@@ -71,11 +77,14 @@ public class CopyPosePane : BasePane
 
         DrawDropdown(otherCharacterDropdown);
 
-        if (CurrentCharacter != OtherCharacter)
+        if (CurrentCharacter != OtherCharacter || characterService.Count > 1)
         {
             UIUtility.DrawBlackLine();
 
-            copyPoseButton.Draw();
+            if (CurrentCharacter != OtherCharacter)
+                copyPoseButton.Draw();
+            else if (characterService.Count > 1)
+                copyPoseToEveryoneElseButton.Draw();
 
             UIUtility.DrawBlackLine();
         }
@@ -122,6 +131,21 @@ public class CopyPosePane : BasePane
         characterUndoRedoService[CurrentCharacter].StartPoseChange();
         CurrentCharacter.IK.CopyPoseFrom(OtherCharacter);
         characterUndoRedoService[CurrentCharacter].EndPoseChange();
+    }
+
+    private void OnCopyPoseToEveryoneElseButtonPushed(object sender, EventArgs e)
+    {
+        if (CurrentCharacter is not CharacterController current)
+            return;
+
+        var pose = CurrentCharacter.IK.GetAnimationFrameData();
+
+        foreach (var character in characterService.Where(character => character is not null && character != current))
+        {
+            characterUndoRedoService[character].StartPoseChange();
+            character.IK.ApplyAnimationFrameBinary(pose);
+            characterUndoRedoService[character].EndPoseChange();
+        }
     }
 
     private void OnCopyBothHandsButtonPushed(object sender, EventArgs e)

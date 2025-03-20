@@ -211,6 +211,7 @@
   "copyPosePane": {
     "copyHandHeader": "Copy Hands",
     "copyButton": "Copy Pose",
+    "copyToEveryoneButton": "Copy Pose to Everyone",
     "copyBothHands": "Copy Both Hands",
     "copyLeftHandToLeft": "L > L",
     "copyLeftHandToRight": "L > R",
