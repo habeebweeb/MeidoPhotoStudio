@@ -694,29 +694,36 @@ public class IKDragHandleService : INotifyPropertyChanged
 
             DigitBaseDragHandleController MakeDigitBase(string boneName)
             {
-                var bone = character.IK.GetBone(boneName);
-                var realBone = character.IK.GetBone($"{boneName}1");
+                var targetBone = character.IK.GetBone(boneName);
+                var ikBone = character.IK.GetBone($"{boneName}1");
                 var positionNode = character.IK.GetMeshNode(boneName);
 
                 if (!positionNode)
-                    positionNode = bone;
+                    positionNode = targetBone;
+
+                var childPositionNode = character.IK.GetMeshNode($"{boneName}1");
+
+                if (!childPositionNode)
+                    childPositionNode = ikBone;
 
                 var ikTarget = character.IK.CreateIKSolverTarget();
+                var distance = Vector3.Distance(positionNode.position, childPositionNode.position);
 
                 var dragHandle = new DragHandle.Builder()
                 {
-                    Name = DragHandleName(character, bone),
-                    Shape = PrimitiveType.Sphere,
+                    Name = DragHandleName(character, targetBone),
+                    Shape = PrimitiveType.Cylinder,
                     Target = ikTarget,
-                    Scale = Vector3.one * 0.01f,
-                    PositionDelegate = () => positionNode.position,
+                    Scale = new(0.0075f, distance / 2f, 0.0075f),
+                    PositionDelegate = () => positionNode.position - positionNode.right * (distance / 2f),
+                    RotationDelegate = AxisRotation(targetBone, 90f, Vector3.forward),
                 }.Build();
 
                 var gizmo = new CustomGizmo.Builder()
                 {
-                    Name = GizmoName(character, bone),
+                    Name = GizmoName(character, targetBone),
                     Size = 0.15f,
-                    Target = bone,
+                    Target = targetBone,
                     Mode = CustomGizmo.GizmoMode.Local,
                     PositionTarget = positionNode,
                 }.Build();
@@ -728,38 +735,45 @@ public class IKDragHandleService : INotifyPropertyChanged
                     undoRedoController,
                     selectionController,
                     tabSelectionController,
-                    realBone,
+                    ikBone,
                     ikTarget);
             }
 
             DigitDragHandleController MakeNoLimitDigit(string boneName)
             {
-                var bone = character.IK.GetBone(boneName);
-                var realJoint = bone.parent;
-                var positionNode = character.IK.GetMeshNode(realJoint.name);
+                var ikBone = character.IK.GetBone(boneName);
+                var targetBone = ikBone.parent;
+                var targetNode = character.IK.GetMeshNode(targetBone.name);
 
-                if (!positionNode)
-                    positionNode = realJoint;
+                if (!targetNode)
+                    targetNode = targetBone;
+
+                var ikNode = character.IK.GetMeshNode(boneName);
+
+                if (!ikNode)
+                    ikNode = ikBone;
 
                 var ikTarget = character.IK.CreateIKSolverTarget();
+                var distance = Vector3.Distance(ikNode.position, targetNode.position);
 
                 var dragHandle = new DragHandle.Builder()
                 {
-                    Name = DragHandleName(character, bone),
-                    Shape = PrimitiveType.Sphere,
+                    Name = DragHandleName(character, ikBone),
+                    Shape = PrimitiveType.Cylinder,
                     Visible = true,
                     Target = ikTarget,
-                    Scale = Vector3.one * 0.01f,
-                    PositionDelegate = () => positionNode.position,
+                    Scale = new(0.0075f, distance / 2f, 0.0075f),
+                    PositionDelegate = () => targetNode.position - targetNode.right * (distance / 2f),
+                    RotationDelegate = AxisRotation(targetBone, 90f, Vector3.forward),
                 }.Build();
 
                 var gizmo = new CustomGizmo.Builder()
                 {
-                    Name = GizmoName(character, realJoint),
+                    Name = GizmoName(character, targetBone),
                     Size = 0.15f,
-                    Target = realJoint,
+                    Target = targetBone,
                     Mode = CustomGizmo.GizmoMode.Local,
-                    PositionTarget = positionNode,
+                    PositionTarget = targetNode,
                 }.Build();
 
                 return new(
@@ -769,7 +783,7 @@ public class IKDragHandleService : INotifyPropertyChanged
                     undoRedoController,
                     selectionController,
                     tabSelectionController,
-                    bone,
+                    ikBone,
                     ikTarget);
             }
         }
