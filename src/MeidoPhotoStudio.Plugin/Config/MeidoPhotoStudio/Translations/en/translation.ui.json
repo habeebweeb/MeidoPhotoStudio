@@ -646,6 +646,16 @@
   "mainWindow": {
     "settingsButton": "Settings"
   },
+  "colourPickerModal": {
+    "header": "Pick Colour",
+    "redSliderLabel": "Red",
+    "greenSliderLabel": "Green",
+    "blueSliderLabel": "Blue",
+    "alphaSliderLabel": "Alpha",
+    "okButton": "OK",
+    "cancelButton": "Cancel",
+    "hexLabel": "#"
+  },
   "settingTypes": {
     "controls": "Controls",
     "dragHandle": "Drag Handles",

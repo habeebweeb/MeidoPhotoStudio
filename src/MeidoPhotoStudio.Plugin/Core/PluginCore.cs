@@ -140,6 +140,8 @@ public partial class PluginCore : MonoBehaviour
 
         AddPluginActiveInputHandler(generalDragHandleInputService);
 
+        ColourPickerButton.ColourPickerModal = new ColourPickerModal(translation);
+
         // Screenshot
         var screenshotService = gameObject.AddComponent<ScreenshotService>();
 
