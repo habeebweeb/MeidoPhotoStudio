@@ -159,7 +159,9 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
         {
             controller.UndoRedoController.StartPoseChange();
             controller.BackupBoneRotations();
-            controller.SelectionController.Select(controller.CharacterController);
+
+            if (controller.AutoSelect)
+                controller.SelectionController.Select(controller.CharacterController);
         }
 
         public override void OnGizmoReleased() =>
