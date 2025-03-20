@@ -97,6 +97,7 @@ public partial class PluginCore : MonoBehaviour
         var menuPropsConfiguration = new MenuPropsConfiguration(configuration);
         var autoSaveConfiguration = new AutoSaveConfiguration(configuration);
         var uiConfiguration = new UIConfiguration(configuration);
+        var characterConfiguration = new CharacterConfiguration(configuration);
 
         // Translation
         translation = new Translation(
@@ -230,6 +231,15 @@ public partial class PluginCore : MonoBehaviour
             new AnimationCyclingService(
                 characterService, characterUndoRedoService, gameAnimationRepository, customAnimationRepository, customAnimationRepositorySorter),
             inputConfiguration));
+
+        var characterPlacementService = new PlacementService(characterService);
+
+        var automaticCharacterPlacementController = new AutomaticCharacterPlacementController(
+            customMaidSceneService, characterService, characterPlacementService)
+        {
+            Enabled = characterConfiguration.AutomaticallyApplyPlacement.Value,
+            PlacementType = characterConfiguration.PlacementPreset.Value,
+        };
 
         // Message
         var messageWindowManager = new MessageWindowManager();
@@ -458,6 +468,8 @@ public partial class PluginCore : MonoBehaviour
             [SettingsWindow.SettingType.AutoSave] = new AutoSaveSettingsPane(
                 translation, autoSaveConfiguration, autoSaveService),
             [SettingsWindow.SettingType.Translation] = new TranslationSettingsPane(translationConfiguration, translation),
+            [SettingsWindow.SettingType.Character] = new CharacterSettingsPane(
+                translation, characterConfiguration, automaticCharacterPlacementController),
         };
 
         TransformClipboard transformClipboard = new();
@@ -474,7 +486,7 @@ public partial class PluginCore : MonoBehaviour
 
             [MainWindow.Tab.Call] = new CallWindowPane()
             {
-                new CharacterPlacementPane(translation, new(characterService)),
+                new CharacterPlacementPane(translation, characterPlacementService),
                 new CharacterCallPane(translation, characterCallController),
             },
             [MainWindow.Tab.Character] = new CharacterWindowPane()
@@ -718,6 +730,7 @@ public partial class PluginCore : MonoBehaviour
         AddActivateable(editModeMaidService);
         AddActivateable(characterService);
         AddActivateable(characterCallController);
+        AddActivateable(automaticCharacterPlacementController);
 
         AddActivateable(cameraSaveSlotController);
         AddActivateable(cameraSpeedController);

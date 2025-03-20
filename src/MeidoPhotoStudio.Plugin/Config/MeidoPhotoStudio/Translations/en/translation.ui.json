@@ -643,7 +643,8 @@
     "autoSave": "Auto-Save",
     "translation": "Translation",
     "ui": "User Interface",
-    "shapeKeys": "Shape Keys"
+    "shapeKeys": "Shape Keys",
+    "character": "Character"
   },
   "translationSettingsPane": {
     "reloadTranslationButton": "Reload Translation",
@@ -694,5 +695,10 @@
     "saveChangesButton": "Save Changes",
     "resetChangesButton": "Reset Changes",
     "noShapeKeysLabel": "No shape keys"
+  },
+  "characterSettingsPane": {
+    "automaticPlacementHeader": "Automatically Apply Placement Preset",
+    "automaticPlacementExplanation": "Placement preset to apply to the initial characters called after plugin activation",
+    "automaticPlacementEnabledToggle": "Enabled"
   }
 }

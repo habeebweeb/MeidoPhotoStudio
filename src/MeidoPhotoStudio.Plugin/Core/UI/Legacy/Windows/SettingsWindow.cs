@@ -66,6 +66,7 @@ public class SettingsWindow : BaseWindow
         AutoSave,
         Translation,
         UI,
+        Character,
     }
 
     public override bool Enabled =>
