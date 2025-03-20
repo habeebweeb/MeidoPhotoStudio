@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
@@ -20,9 +21,18 @@ public class DigitBaseDragHandleController : CharacterIKDragHandleController
         CharacterController characterController,
         CharacterUndoRedoController undoRedoController,
         SelectionController<CharacterController> selectionController,
+        TabSelectionController tabSelectionController,
         Transform bone,
         Transform ikTarget)
-        : base(dragHandle, gizmo, characterController, undoRedoController, selectionController, bone, ikTarget)
+        : base(
+            dragHandle,
+            gizmo,
+            characterController,
+            undoRedoController,
+            selectionController,
+            tabSelectionController,
+            bone,
+            ikTarget)
     {
         var baseBone = Bone.parent;
 

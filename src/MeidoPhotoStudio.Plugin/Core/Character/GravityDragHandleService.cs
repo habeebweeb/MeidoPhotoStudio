@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
@@ -9,19 +10,23 @@ public class GravityDragHandleService
     private readonly GravityDragHandleInputService gravityDragHandleInputService;
     private readonly CharacterService characterService;
     private readonly SelectionController<CharacterController> selectionController;
+    private readonly TabSelectionController tabSelectionController;
     private readonly Dictionary<CharacterController, GravityDragHandleSet> dragHandleSets = [];
 
     private bool smallHandle;
     private bool autoSelect;
+    private bool autoSelectTab;
 
     public GravityDragHandleService(
         GravityDragHandleInputService gravityDragHandleInputService,
         CharacterService characterService,
-        SelectionController<CharacterController> selectionController)
+        SelectionController<CharacterController> selectionController,
+        TabSelectionController tabSelectionController)
     {
         this.gravityDragHandleInputService = gravityDragHandleInputService ?? throw new ArgumentNullException(nameof(gravityDragHandleInputService));
         this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
         this.selectionController = selectionController ?? throw new ArgumentNullException(nameof(selectionController));
+        this.tabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
 
         this.characterService.PreCalledCharacters += OnCharactersCalled;
         this.characterService.Deactivating += OnDeactivating;
@@ -61,6 +66,24 @@ public class GravityDragHandleService
             {
                 hair.AutoSelect = autoSelect;
                 clothing.AutoSelect = autoSelect;
+            }
+        }
+    }
+
+    public bool AutoSelectTab
+    {
+        get => autoSelectTab;
+        set
+        {
+            if (autoSelectTab == value)
+                return;
+
+            autoSelectTab = value;
+
+            foreach (var (hair, clothing) in dragHandleSets.Values)
+            {
+                hair.AutoSelectTab = autoSelectTab;
+                clothing.AutoSelectTab = autoSelectTab;
             }
         }
     }
@@ -142,12 +165,14 @@ public class GravityDragHandleService
         var clothingDragHandle = BuildDragHandle(
             character.Clothing.ClothingGravityController,
             character,
-            selectionController);
+            selectionController,
+            tabSelectionController);
 
         var hairDraghandle = BuildDragHandle(
             character.Clothing.HairGravityController,
             character,
-            selectionController);
+            selectionController,
+            tabSelectionController);
 
         gravityDragHandleInputService.AddController(clothingDragHandle);
         gravityDragHandleInputService.AddController(hairDraghandle);
@@ -161,7 +186,8 @@ public class GravityDragHandleService
         GravityDragHandleController BuildDragHandle(
             GravityController gravityController,
             CharacterController character,
-            SelectionController<CharacterController> selectionController)
+            SelectionController<CharacterController> selectionController,
+            TabSelectionController tabSelectionController)
         {
             var gravityControl = gravityController.Transform;
 
@@ -175,10 +201,11 @@ public class GravityDragHandleService
                 Size = SmallHandle ? HandleSize.Small : HandleSize.Normal,
             }.Build();
 
-            return new GravityDragHandleController(dragHandle, gravityController, character, selectionController)
+            return new(dragHandle, gravityController, character, selectionController, tabSelectionController)
             {
                 DragHandleEnabled = false,
                 AutoSelect = AutoSelect,
+                AutoSelectTab = AutoSelectTab,
             };
         }
     }

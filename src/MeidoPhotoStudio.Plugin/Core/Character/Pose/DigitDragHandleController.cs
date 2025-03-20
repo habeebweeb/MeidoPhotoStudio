@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
@@ -20,9 +21,18 @@ public class DigitDragHandleController : CharacterIKDragHandleController
         CharacterController characterController,
         CharacterUndoRedoController undoRedoController,
         SelectionController<CharacterController> selectionController,
+        TabSelectionController tabSelectionController,
         Transform digit,
         Transform ikTarget)
-        : base(dragHandle, gizmo, characterController, undoRedoController, selectionController, digit, ikTarget)
+        : base(
+            dragHandle,
+            gizmo,
+            characterController,
+            undoRedoController,
+            selectionController,
+            tabSelectionController,
+            digit,
+            ikTarget)
     {
         var digitNumberIndex = digit.name.EndsWith("Nub") ? 4 : 2;
 

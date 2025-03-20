@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
@@ -10,8 +11,10 @@ public class PelvisDragHandleController(
     CharacterController characterController,
     CharacterUndoRedoController undoRedoController,
     SelectionController<CharacterController> selectionController,
+    TabSelectionController tabSelectionController,
     Transform pelvisBone)
-    : CharacterDragHandleController(dragHandle, gizmo, characterController, undoRedoController, selectionController)
+    : CharacterDragHandleController(
+        dragHandle, gizmo, characterController, undoRedoController, selectionController, tabSelectionController)
 {
     private readonly Transform pelvisBone = pelvisBone;
 

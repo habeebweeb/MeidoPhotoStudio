@@ -16,6 +16,7 @@ public class LightDragHandleService
 
     private bool smallHandle;
     private bool autoSelect;
+    private bool autoSelectTab;
 
     public LightDragHandleService(
         GeneralDragHandleInputHandler generalDragHandleInputService,
@@ -61,6 +62,21 @@ public class LightDragHandleService
         }
     }
 
+    public bool AutoSelectTab
+    {
+        get => autoSelectTab;
+        set
+        {
+            if (autoSelectTab == value)
+                return;
+
+            autoSelectTab = value;
+
+            foreach (var controller in lightDragHandleControllers.Values)
+                controller.AutoSelectTab = autoSelectTab;
+        }
+    }
+
     private void OnAddedLight(object sender, LightServiceEventArgs e)
     {
         var lightDragHandleController = BuildDragHandle(e.LightController);
@@ -87,6 +103,7 @@ public class LightDragHandleService
                     dragHandle, lightController, lightService, lightSelectionController, tabSelectionController)
             {
                 AutoSelect = AutoSelect,
+                AutoSelectTab = AutoSelectTab,
             };
 
             return lightDragHandleController;

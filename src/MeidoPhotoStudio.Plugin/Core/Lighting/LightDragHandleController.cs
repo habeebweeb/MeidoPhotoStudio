@@ -72,6 +72,8 @@ public class LightDragHandleController : GeneralDragHandleController
 
     public bool AutoSelect { get; set; }
 
+    public bool AutoSelectTab { get; set; }
+
     private LightController LightController { get; }
 
     private static Transform LightControllerTransform(LightController lightController) =>
@@ -124,6 +126,9 @@ public class LightDragHandleController : GeneralDragHandleController
 
             if (controller.AutoSelect)
                 controller.lightSelectionController.Select(controller.LightController);
+
+            if (controller.AutoSelectTab)
+                controller.tabSelectionController.SelectTab(MainWindow.Tab.Environment);
         }
 
         public override void OnCancelled()
@@ -198,8 +203,13 @@ public class LightDragHandleController : GeneralDragHandleController
 
     private class LightDeleteMode(LightDragHandleController controller) : DeleteMode<LightDragHandleController>(controller)
     {
-        public override void OnClicked() =>
+        public override void OnClicked()
+        {
             Controller.lightService.RemoveLight(Controller.LightController);
+
+            if (Controller.AutoSelectTab)
+                Controller.tabSelectionController.SelectTab(MainWindow.Tab.Environment);
+        }
 
         public override void OnCancelled()
         {

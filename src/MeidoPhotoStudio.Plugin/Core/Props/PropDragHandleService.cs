@@ -16,6 +16,7 @@ public class PropDragHandleService : IEnumerable<PropDragHandleController>
 
     private bool smallHandle;
     private bool autoSelect;
+    private bool autoSelectTab;
 
     public PropDragHandleService(
         GeneralDragHandleInputHandler generalDragHandleInputService,
@@ -62,6 +63,21 @@ public class PropDragHandleService : IEnumerable<PropDragHandleController>
 
             foreach (var controller in propDragHandleControllers.Values)
                 controller.AutoSelect = autoSelect;
+        }
+    }
+
+    public bool AutoSelectTab
+    {
+        get => autoSelectTab;
+        set
+        {
+            if (autoSelectTab == value)
+                return;
+
+            autoSelectTab = value;
+
+            foreach (var controller in propDragHandleControllers.Values)
+                controller.AutoSelectTab = autoSelectTab;
         }
     }
 
@@ -116,6 +132,7 @@ public class PropDragHandleService : IEnumerable<PropDragHandleController>
                 tabSelectionController)
             {
                 AutoSelect = AutoSelect,
+                AutoSelectTab = AutoSelectTab,
             };
 
             return propDragHandleController;

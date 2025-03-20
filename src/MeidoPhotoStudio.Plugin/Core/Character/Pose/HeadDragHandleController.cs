@@ -12,11 +12,9 @@ public class HeadDragHandleController(
     SelectionController<CharacterController> selectionController,
     TabSelectionController tabSelectionController,
     Transform neckBone)
-    : CharacterDragHandleController(dragHandle, characterController, undoRedoController, selectionController)
+    : CharacterDragHandleController(
+        dragHandle, characterController, undoRedoController, selectionController, tabSelectionController)
 {
-    private readonly TabSelectionController tabSelectionController = tabSelectionController
-        ?? throw new ArgumentNullException(nameof(tabSelectionController));
-
     private readonly Transform neckBone = neckBone ? neckBone : throw new ArgumentNullException(nameof(neckBone));
 
     private (Quaternion LeftEyeRotation, Quaternion RightEyeRotation) backupRotations;
@@ -93,7 +91,7 @@ public class HeadDragHandleController(
             base.OnClicked();
 
             controller.BackupEyeRotations();
-            controller.tabSelectionController.SelectTab(MainWindow.Tab.CharacterFace);
+            controller.TabSelectionController.SelectTab(MainWindow.Tab.CharacterFace);
         }
 
         public override void OnDoubleClicked() =>

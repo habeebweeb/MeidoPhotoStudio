@@ -20,6 +20,7 @@ public class DragHandleSettingsPane : BasePane
     private readonly Toggle smallDragHandleToggle;
     private readonly Toggle characterTransformDragHandleToggle;
     private readonly Toggle autoSelectToggle;
+    private readonly Toggle autoSelectTabToggle;
 
     public DragHandleSettingsPane(
         Translation translation,
@@ -59,6 +60,12 @@ public class DragHandleSettingsPane : BasePane
             this.configuration.AutomaticSelection.Value);
 
         autoSelectToggle.ControlEvent += OnAutoSelectToggleChanged;
+
+        autoSelectTabToggle = new(
+            new LocalizableGUIContent(translation, "dragHandleSettingsPane", "autoSelectTabToggle"),
+            this.configuration.AutomaticTabSelection.Value);
+
+        autoSelectTabToggle.ControlEvent += OnAutoSelectTabToggleChanged;
     }
 
     public override void Draw()
@@ -66,6 +73,7 @@ public class DragHandleSettingsPane : BasePane
         smallDragHandleToggle.Draw();
         characterTransformDragHandleToggle.Draw();
         autoSelectToggle.Draw();
+        autoSelectTabToggle.Draw();
     }
 
     private void OnSmallDragHandleToggleChanged(object sender, EventArgs e)
@@ -94,6 +102,16 @@ public class DragHandleSettingsPane : BasePane
         ikDragHandleService.AutoSelect = configuration.AutomaticSelection.Value;
         gravityDragHandleService.AutoSelect = configuration.AutomaticSelection.Value;
         lightDragHandleRepository.AutoSelect = configuration.AutomaticSelection.Value;
+    }
+
+    private void OnAutoSelectTabToggleChanged(object sender, EventArgs e)
+    {
+        configuration.AutomaticTabSelection.Value = autoSelectTabToggle.Value;
+
+        propDragHandleService.AutoSelectTab = configuration.AutomaticTabSelection.Value;
+        ikDragHandleService.AutoSelectTab = configuration.AutomaticTabSelection.Value;
+        gravityDragHandleService.AutoSelectTab = configuration.AutomaticTabSelection.Value;
+        lightDragHandleRepository.AutoSelectTab = configuration.AutomaticTabSelection.Value;
     }
 
     private void OnSettingsChanged(object sender, EventArgs e)

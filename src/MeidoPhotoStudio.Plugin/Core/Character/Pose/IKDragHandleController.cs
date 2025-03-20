@@ -12,6 +12,7 @@ public class IKDragHandleController : IEnumerable<ICharacterDragHandleController
     private bool ikEnabled = true;
     private bool boneModeEnabled;
     private bool autoSelect;
+    private bool autoSelectTab;
 
     internal IKDragHandleController()
     {
@@ -197,6 +198,21 @@ public class IKDragHandleController : IEnumerable<ICharacterDragHandleController
 
             foreach (var controller in this)
                 controller.AutoSelect = autoSelect;
+        }
+    }
+
+    public bool AutoSelectTab
+    {
+        get => autoSelectTab;
+        set
+        {
+            if (autoSelectTab == value)
+                return;
+
+            autoSelectTab = value;
+
+            foreach (var controller in this)
+                controller.AutoSelectTab = autoSelectTab;
         }
     }
 

@@ -181,10 +181,12 @@ public partial class PluginCore : MonoBehaviour
 
         AddPluginActiveInputHandler(gravityDragHandleInputService);
 
-        var gravityDragHandleService = new GravityDragHandleService(gravityDragHandleInputService, characterService, characterSelectionController)
+        var gravityDragHandleService = new GravityDragHandleService(
+            gravityDragHandleInputService, characterService, characterSelectionController, tabSelectionController)
         {
             SmallHandle = dragHandleConfiguration.SmallTransformCube.Value,
             AutoSelect = dragHandleConfiguration.AutomaticSelection.Value,
+            AutoSelectTab = dragHandleConfiguration.AutomaticTabSelection.Value,
         };
 
         var globalGravityService = new GlobalGravityService(characterService);
@@ -220,6 +222,7 @@ public partial class PluginCore : MonoBehaviour
             SmallHandle = dragHandleConfiguration.SmallTransformCube.Value,
             CubeEnabled = dragHandleConfiguration.CharacterTransformCube.Value,
             AutoSelect = dragHandleConfiguration.AutomaticSelection.Value,
+            AutoSelectTab = dragHandleConfiguration.AutomaticTabSelection.Value,
         };
 
         AddPluginActiveInputHandler(new AnimationCycler(
@@ -259,6 +262,7 @@ public partial class PluginCore : MonoBehaviour
         {
             SmallHandle = dragHandleConfiguration.SmallTransformCube.Value,
             AutoSelect = dragHandleConfiguration.AutomaticSelection.Value,
+            AutoSelectTab = dragHandleConfiguration.AutomaticTabSelection.Value,
         };
 
         // Effects
@@ -292,6 +296,7 @@ public partial class PluginCore : MonoBehaviour
         {
             SmallHandle = dragHandleConfiguration.SmallTransformCube.Value,
             AutoSelect = dragHandleConfiguration.AutomaticSelection.Value,
+            AutoSelectTab = dragHandleConfiguration.AutomaticTabSelection.Value,
         };
 
         var propAttachmentService = new PropAttachmentService(characterService, propService);

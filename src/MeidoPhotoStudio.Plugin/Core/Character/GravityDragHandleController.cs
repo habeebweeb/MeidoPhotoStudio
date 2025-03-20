@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
@@ -9,6 +10,7 @@ public class GravityDragHandleController : DragHandleControllerBase
     private readonly GravityController gravityController;
     private readonly CharacterController characterController;
     private readonly SelectionController<CharacterController> selectionController;
+    private readonly TabSelectionController tabSelectionController;
     private readonly TransformBackup transformBackup;
 
     private TransformBackup startingTransform;
@@ -20,12 +22,14 @@ public class GravityDragHandleController : DragHandleControllerBase
         DragHandle dragHandle,
         GravityController gravityController,
         CharacterController characterController,
-        SelectionController<CharacterController> selectionController)
+        SelectionController<CharacterController> selectionController,
+        TabSelectionController tabSelectionController)
         : base(dragHandle)
     {
         this.gravityController = gravityController ?? throw new ArgumentNullException(nameof(gravityController));
         this.characterController = characterController ?? throw new ArgumentNullException(nameof(characterController));
         this.selectionController = selectionController ?? throw new ArgumentNullException(nameof(selectionController));
+        this.tabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
 
         this.gravityController.EnabledChanged += OnEnabledChanged;
 
@@ -35,6 +39,8 @@ public class GravityDragHandleController : DragHandleControllerBase
     }
 
     public bool AutoSelect { get; set; }
+
+    public bool AutoSelectTab { get; set; }
 
     public DragHandleMode MoveWorldXZ =>
         moveWorldXZ ??= new MoveWorldXZMode(this);
@@ -70,6 +76,9 @@ public class GravityDragHandleController : DragHandleControllerBase
 
             if (controller.AutoSelect)
                 controller.selectionController.Select(controller.characterController);
+
+            if (controller.AutoSelectTab)
+                controller.tabSelectionController.SelectTab(MainWindow.Tab.Character);
         }
 
         public override void OnCancelled() =>

@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
@@ -9,8 +10,10 @@ public class EyeDragHandleController(
     CharacterController characterController,
     CharacterUndoRedoController undoRedoController,
     SelectionController<CharacterController> selectionController,
+    TabSelectionController tabSelectionController,
     bool left)
-    : CharacterDragHandleController(dragHandle, characterController, undoRedoController, selectionController)
+    : CharacterDragHandleController(
+        dragHandle, characterController, undoRedoController, selectionController, tabSelectionController)
 {
     private readonly bool left = left;
 

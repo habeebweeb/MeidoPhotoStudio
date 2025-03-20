@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 using RootMotion.FinalIK;
@@ -15,9 +16,16 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
         CharacterController characterController,
         CharacterUndoRedoController characterUndoRedoController,
         SelectionController<CharacterController> selectionController,
+        TabSelectionController tabSelectionController,
         Transform bone,
         Transform ikTarget)
-        : base(dragHandle, gizmo, characterController, characterUndoRedoController, selectionController)
+        : base(
+            dragHandle,
+            gizmo,
+            characterController,
+            characterUndoRedoController,
+            selectionController,
+            tabSelectionController)
     {
         Bone = bone ? bone : throw new ArgumentNullException(nameof(bone));
         IKTarget = ikTarget ? ikTarget : throw new ArgumentNullException(nameof(ikTarget));
@@ -30,9 +38,11 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
         CharacterController characterController,
         CharacterUndoRedoController characterUndoRedoController,
         SelectionController<CharacterController> selectionController,
+        TabSelectionController tabSelectionController,
         Transform bone,
         Transform ikTarget)
-        : base(dragHandle, characterController, characterUndoRedoController, selectionController)
+        : base(
+            dragHandle, characterController, characterUndoRedoController, selectionController, tabSelectionController)
     {
         Bone = bone ? bone : throw new ArgumentNullException(nameof(bone));
         IKTarget = ikTarget ? ikTarget : throw new ArgumentNullException(nameof(ikTarget));

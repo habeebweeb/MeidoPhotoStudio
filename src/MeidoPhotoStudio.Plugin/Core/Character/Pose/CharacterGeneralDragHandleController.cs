@@ -121,6 +121,8 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
 
     public bool AutoSelect { get; set; }
 
+    public bool AutoSelectTab { get; set; }
+
     public override DragHandleMode MoveWorldXZ =>
         IKEnabled ? moveWorldXZ ??= new TransformMode(this, base.MoveWorldXZ) : None;
 
@@ -180,6 +182,9 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
 
             if (controller.AutoSelect)
                 controller.selectionController.Select(controller.character);
+
+            if (controller.AutoSelectTab)
+                controller.tabSelectionController.SelectTab(MainWindow.Tab.Character);
         }
 
         public override void OnGizmoClicked()
@@ -188,6 +193,9 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
 
             if (controller.AutoSelect)
                 controller.selectionController.Select(controller.character);
+
+            if (controller.AutoSelectTab)
+                controller.tabSelectionController.SelectTab(MainWindow.Tab.Character);
         }
     }
 

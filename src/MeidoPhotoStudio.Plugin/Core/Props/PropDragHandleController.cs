@@ -105,6 +105,8 @@ public class PropDragHandleController : GeneralDragHandleController
 
     public bool AutoSelect { get; set; }
 
+    public bool AutoSelectTab { get; set; }
+
     private class TransformMode(
         PropDragHandleController controller,
         DragHandleMode originalMode)
@@ -123,6 +125,9 @@ public class PropDragHandleController : GeneralDragHandleController
 
             if (controller.AutoSelect)
                 controller.propSelectionController.Select(controller.propController);
+
+            if (controller.AutoSelectTab)
+                controller.tabSelectionController.SelectTab(MainWindow.Tab.Props);
         }
 
         public override void OnGizmoClicked()
@@ -131,6 +136,9 @@ public class PropDragHandleController : GeneralDragHandleController
 
             if (controller.AutoSelect)
                 controller.propSelectionController.Select(controller.propController);
+
+            if (controller.AutoSelectTab)
+                controller.tabSelectionController.SelectTab(MainWindow.Tab.Props);
         }
     }
 
@@ -171,8 +179,13 @@ public class PropDragHandleController : GeneralDragHandleController
             Controller.DragHandle.Priority = 20;
         }
 
-        public override void OnClicked() =>
+        public override void OnClicked()
+        {
             Controller.propService.Remove(Controller.propController);
+
+            if (Controller.AutoSelectTab)
+                Controller.tabSelectionController.SelectTab(MainWindow.Tab.Props);
+        }
 
         public override void OnModeExit()
         {

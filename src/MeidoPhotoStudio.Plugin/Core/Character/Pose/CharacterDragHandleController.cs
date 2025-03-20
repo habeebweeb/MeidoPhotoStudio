@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.Service;
@@ -18,24 +19,28 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
         CustomGizmo gizmo,
         CharacterController characterController,
         CharacterUndoRedoController characterUndoRedoController,
-        SelectionController<CharacterController> selectionController)
+        SelectionController<CharacterController> selectionController,
+        TabSelectionController tabSelectionController)
         : base(gizmo)
     {
         CharacterController = characterController ?? throw new ArgumentNullException(nameof(characterController));
         UndoRedoController = characterUndoRedoController ?? throw new ArgumentNullException(nameof(characterUndoRedoController));
         SelectionController = selectionController ?? throw new ArgumentNullException(nameof(selectionController));
+        TabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
     }
 
     public CharacterDragHandleController(
         DragHandle dragHandle,
         CharacterController characterController,
         CharacterUndoRedoController characterUndoRedoController,
-        SelectionController<CharacterController> selectionController)
+        SelectionController<CharacterController> selectionController,
+        TabSelectionController tabSelectionController)
         : base(dragHandle)
     {
         CharacterController = characterController ?? throw new ArgumentNullException(nameof(characterController));
         UndoRedoController = characterUndoRedoController ?? throw new ArgumentNullException(nameof(characterUndoRedoController));
         SelectionController = selectionController ?? throw new ArgumentNullException(nameof(selectionController));
+        TabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
     }
 
     public CharacterDragHandleController(
@@ -43,12 +48,14 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
         CustomGizmo gizmo,
         CharacterController characterController,
         CharacterUndoRedoController characterUndoRedoController,
-        SelectionController<CharacterController> selectionController)
+        SelectionController<CharacterController> selectionController,
+        TabSelectionController tabSelectionController)
         : base(dragHandle, gizmo)
     {
         CharacterController = characterController ?? throw new ArgumentNullException(nameof(characterController));
         UndoRedoController = characterUndoRedoController ?? throw new ArgumentNullException(nameof(characterUndoRedoController));
         SelectionController = selectionController ?? throw new ArgumentNullException(nameof(selectionController));
+        TabSelectionController = tabSelectionController ?? throw new ArgumentNullException(nameof(tabSelectionController));
     }
 
     public bool BoneMode
@@ -81,6 +88,8 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
 
     public bool AutoSelect { get; set; }
 
+    public bool AutoSelectTab { get; set; }
+
     public virtual DragHandleMode Ignore =>
         ignore ??= new IgnoreMode(this);
 
@@ -99,6 +108,8 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
     }
 
     protected SelectionController<CharacterController> SelectionController { get; set; }
+
+    protected TabSelectionController TabSelectionController { get; set; }
 
     protected AnimationController AnimationController =>
         CharacterController.Animation;
@@ -150,6 +161,9 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
 
             if (controller.AutoSelect)
                 controller.SelectionController.Select(controller.CharacterController);
+
+            if (controller.AutoSelectTab)
+                controller.TabSelectionController.SelectTab(MainWindow.Tab.Character);
         }
 
         public override void OnReleased() =>
@@ -162,6 +176,9 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
 
             if (controller.AutoSelect)
                 controller.SelectionController.Select(controller.CharacterController);
+
+            if (controller.AutoSelectTab)
+                controller.TabSelectionController.SelectTab(MainWindow.Tab.Character);
         }
 
         public override void OnGizmoReleased() =>

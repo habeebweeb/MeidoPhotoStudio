@@ -13,4 +13,6 @@ public interface ICharacterDragHandleController : IDragHandleController
     bool IKEnabled { get; set; }
 
     bool AutoSelect { get; set; }
+
+    bool AutoSelectTab { get; set; }
 }

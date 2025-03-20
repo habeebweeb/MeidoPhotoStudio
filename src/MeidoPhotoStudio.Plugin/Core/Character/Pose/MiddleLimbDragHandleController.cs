@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
@@ -10,9 +11,18 @@ public class MiddleLimbDragHandleController(
     CharacterController characterController,
     CharacterUndoRedoController undoRedoController,
     SelectionController<CharacterController> selectionController,
+    TabSelectionController tabSelectionController,
     Transform middleBone,
     Transform ikTarget)
-    : CharacterIKDragHandleController(dragHandle, gizmo, characterController, undoRedoController, selectionController, middleBone, ikTarget)
+    : CharacterIKDragHandleController(
+        dragHandle,
+        gizmo,
+        characterController,
+        undoRedoController,
+        selectionController,
+        tabSelectionController,
+        middleBone,
+        ikTarget)
 {
     private DragHandleMode drag;
     private RotateMode rotate;
