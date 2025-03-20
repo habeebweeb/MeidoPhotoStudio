@@ -593,6 +593,11 @@ public partial class PluginCore : MonoBehaviour
                                 customBlendSetRepository,
                                 facialExpressionBuilder,
                                 characterSelectionController),
+                            new SubPaneGroup(
+                                new LocalizableGUIContent(translation, "facePresetsSubPaneGroup", "copyFacialExpression"))
+                            {
+                                new CopyFacialExpressionPane(translation, facialExpressionBuilder, characterService, characterSelectionController),
+                            },
                         },
                         new PaneGroup(
                             new LocalizableGUIContent(translation, "characterTabFaceSubTabPaneGroups", "facialExpression"),

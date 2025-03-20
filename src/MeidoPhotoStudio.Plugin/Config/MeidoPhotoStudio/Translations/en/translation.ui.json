@@ -222,6 +222,9 @@
     "presets": "Blend Sets",
     "facialExpression": "Facial Expression"
   },
+  "facePresetsSubPaneGroup": {
+    "copyFacialExpression": "Copy Facial Expression"
+  },
   "maidFaceWindow": {
     "noBlendSets": "No Blend Sets",
     "searchBarPlaceholder": "Search blend sets",
@@ -281,6 +284,11 @@
     "hohos": "Blush 1",
     "hoho": "Blush 2",
     "hohol": "Blush 3"
+  },
+  "copyFacialExpressionPane": {
+    "noOtherCharactersLabel": "No other characters",
+    "copyExpressionButton": "Copy Facial Expression",
+    "copyExpressionToEveryoneButton": "Copy Expression to Everyone"
   },
   "characterTabBodySubTabPaneGroups": {
     "bodyShapeKeys": "Shape Keys"
