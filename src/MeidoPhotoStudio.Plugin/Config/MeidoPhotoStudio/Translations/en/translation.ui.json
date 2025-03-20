@@ -698,7 +698,14 @@
   },
   "characterSettingsPane": {
     "automaticPlacementHeader": "Automatically Apply Placement Preset",
-    "automaticPlacementExplanation": "Placement preset to apply to the initial characters called after plugin activation",
-    "automaticPlacementEnabledToggle": "Enabled"
+    "automaticPlacementExplanation": "Placement preset to apply to the initial characters called after plugin activation.",
+    "automaticPlacementEnabledToggle": "Enabled",
+    "initialSettingsHeader": "Initial Setting",
+    "initialSettingsExplanation": "Settings to use after characters are called.",
+    "precisePosingToggle": "Precise posing enabled",
+    "limitJointsToggle": "Joint limits enabled",
+    "limitDigitsToggle": "Digit limits enabled",
+    "freeLookToggle": "Free-look enabled",
+    "blinkToggle": "Blink enabled"
   }
 }

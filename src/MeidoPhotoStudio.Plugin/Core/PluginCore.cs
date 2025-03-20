@@ -232,6 +232,8 @@ public partial class PluginCore : MonoBehaviour
                 characterService, characterUndoRedoService, gameAnimationRepository, customAnimationRepository, customAnimationRepositorySorter),
             inputConfiguration));
 
+        _ = new CharacterConfigurationController(characterService, ikDragHandleService, characterConfiguration);
+
         var characterPlacementService = new PlacementService(characterService);
 
         var automaticCharacterPlacementController = new AutomaticCharacterPlacementController(
