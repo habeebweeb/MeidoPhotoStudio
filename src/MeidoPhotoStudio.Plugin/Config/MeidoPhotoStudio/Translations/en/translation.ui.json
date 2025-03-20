@@ -685,7 +685,19 @@
     "smallDragHandleToggle": "Small transform drag handles",
     "characterCubeDragHandleToggle": "Character transform cube drag handle",
     "autoSelectObjectToggle": "Automatically select object on interaction",
-    "autoSelectTabToggle": "Automatically select tab on interaction"
+    "autoSelectTabToggle": "Automatically select tab on interaction",
+    "resetDragHandleColourButton": "Reset",
+    "dragHandleColoursHeader": "Posing Drag Handle Colours",
+    "upperLimbColourLabel": "Upper limb Colour",
+    "middleLimbColourLabel": "Middle limb colour",
+    "lowerLimbColourLabel": "Lower limb colour",
+    "spineColourLabel": "Spine colour",
+    "rootColourLabel": "Root colour",
+    "baseDigitJointColourLabel": "Base digit joint colour",
+    "middleDigitJointColourLabel": "Middle digit joint colour",
+    "tipDigitJointColourLabel": "Tip digit joint colour",
+    "clothingGravityColourLabel": "Clothing gravity colour",
+    "hairGravityColourLabel": "Hair gravity colour"
   },
   "autoSaveSettingsPane": {
     "enabledToggle": "Automatically save scenes",

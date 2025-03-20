@@ -1,6 +1,7 @@
 using System.ComponentModel;
 
 using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
+using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
@@ -22,6 +23,14 @@ public class IKDragHandleService : INotifyPropertyChanged
     private bool smallHandle;
     private bool autoSelect;
     private bool autoSelectTab;
+    private Color upperBoneColour;
+    private Color middleBoneColour;
+    private Color lowerBoneColour;
+    private Color spineColour;
+    private Color rootColour;
+    private Color baseDigitJointColour;
+    private Color middleDigitJointColour;
+    private Color tipDigitJointColour;
 
     public IKDragHandleService(
         CharacterDragHandleInputService characterDragHandleInputService,
@@ -103,6 +112,123 @@ public class IKDragHandleService : INotifyPropertyChanged
 
             foreach (var controller in controllers.Values)
                 controller.AutoSelectTab = autoSelectTab;
+        }
+    }
+
+    public Color UpperBoneColour
+    {
+        get => upperBoneColour;
+        set
+        {
+            if (upperBoneColour == value)
+                return;
+
+            upperBoneColour = value;
+
+            foreach (var controller in controllers.Values.SelectMany(static controller => controller).OfType<UpperLimbDragHandleController>())
+                controller.DragHandleColour = upperBoneColour;
+        }
+    }
+
+    public Color MiddleBoneColour
+    {
+        get => middleBoneColour;
+        set
+        {
+            if (middleBoneColour == value)
+                return;
+
+            middleBoneColour = value;
+
+            foreach (var controller in controllers.Values.SelectMany(static controller => controller).OfType<MiddleLimbDragHandleController>())
+                controller.DragHandleColour = middleBoneColour;
+        }
+    }
+
+    public Color LowerBoneColour
+    {
+        get => lowerBoneColour;
+        set
+        {
+            if (lowerBoneColour == value)
+                return;
+
+            lowerBoneColour = value;
+
+            foreach (var controller in controllers.Values.SelectMany(static controller => controller).OfType<LowerLimbDragHandleController>())
+                controller.DragHandleColour = lowerBoneColour;
+        }
+    }
+
+    public Color SpineColour
+    {
+        get => spineColour;
+        set
+        {
+            if (spineColour == value)
+                return;
+
+            spineColour = value;
+
+            foreach (var controller in controllers.Values.SelectMany(static controller => controller).OfType<SpineDragHandleController>())
+                controller.DragHandleColour = spineColour;
+        }
+    }
+
+    public Color RootColour
+    {
+        get => rootColour;
+        set
+        {
+            if (rootColour == value)
+                return;
+
+            rootColour = value;
+
+            foreach (var controller in controllers.Values.Select(static controller => controller[HandleType.Root]).OfType<HipDragHandleController>())
+                controller.DragHandleColour = rootColour;
+        }
+    }
+
+    public Color BaseDigitJointColour
+    {
+        get => baseDigitJointColour;
+        set
+        {
+            if (baseDigitJointColour == value)
+                return;
+
+            baseDigitJointColour = value;
+
+            UpdateDigitColours();
+        }
+    }
+
+    public Color MiddleDigitJointColour
+    {
+        get => middleDigitJointColour;
+        set
+        {
+            if (middleDigitJointColour == value)
+                return;
+
+            middleDigitJointColour = value;
+
+            UpdateDigitColours();
+        }
+    }
+
+    public Color TipDigitJointColour
+    {
+        get => tipDigitJointColour;
+        set
+        {
+            if (tipDigitJointColour == value)
+                return;
+
+            tipDigitJointColour = value;
+
+            UpdateDigitColours();
         }
     }
 
@@ -238,6 +364,8 @@ public class IKDragHandleService : INotifyPropertyChanged
         ikDragHandleController.AutoSelect = AutoSelect;
         ikDragHandleController.AutoSelectTab = AutoSelectTab;
 
+        UpdateDigitColours(ikDragHandleController);
+
         return ikDragHandleController;
 
         static (DragHandle DragHandle, CustomGizmo Gizmo, Transform IKTarget) BuildIKDragHandleAndGizmo(
@@ -349,7 +477,10 @@ public class IKDragHandleService : INotifyPropertyChanged
                 selectionController,
                 tabSelectionController,
                 bone,
-                ikTarget);
+                ikTarget)
+            {
+                DragHandleColour = UpperBoneColour,
+            };
         }
 
         MiddleLimbDragHandleController MakeMiddleLimb(
@@ -375,7 +506,10 @@ public class IKDragHandleService : INotifyPropertyChanged
                 selectionController,
                 tabSelectionController,
                 bone,
-                ikTarget);
+                ikTarget)
+            {
+                DragHandleColour = MiddleBoneColour,
+            };
         }
 
         LowerLimbDragHandleController MakeLowerLimb(
@@ -397,7 +531,10 @@ public class IKDragHandleService : INotifyPropertyChanged
                 selectionController,
                 tabSelectionController,
                 bone,
-                ikTarget);
+                ikTarget)
+            {
+                DragHandleColour = LowerBoneColour,
+            };
         }
 
         static TorsoDragHandleController MakeTorso(
@@ -511,7 +648,10 @@ public class IKDragHandleService : INotifyPropertyChanged
             }.Build();
 
             return new(
-                dragHandle, gizmo, character, undoRedoController, selectionController, tabSelectionController, bone);
+                dragHandle, gizmo, character, undoRedoController, selectionController, tabSelectionController, bone)
+            {
+                DragHandleColour = SpineColour,
+            };
         }
 
         HipDragHandleController MakeHip(
@@ -541,7 +681,10 @@ public class IKDragHandleService : INotifyPropertyChanged
             }.Build();
 
             return new(
-                dragHandle, gizmo, character, undoRedoController, selectionController, tabSelectionController, bone);
+                dragHandle, gizmo, character, undoRedoController, selectionController, tabSelectionController, bone)
+            {
+                DragHandleColour = RootColour,
+            };
         }
 
         static ThighGizmoController MakeThigh(
@@ -850,6 +993,48 @@ public class IKDragHandleService : INotifyPropertyChanged
 
         static string DragHandleName(CharacterController character, object @object) =>
             $"[{@object} Drag Handle ({character})]";
+    }
+
+    private void UpdateDigitColours()
+    {
+        foreach (var controller in controllers.Values)
+            UpdateDigitColours(controller);
+    }
+
+    private void UpdateDigitColours(IKDragHandleController controller)
+    {
+        var colourMap = new Color[3]
+        {
+            BaseDigitJointColour,
+            MiddleDigitJointColour,
+            TipDigitJointColour,
+        };
+
+        var fingerOffset = HandleType.Finger0R - HandleType.Finger0L;
+
+        for (var type = HandleType.Finger0L; type <= HandleType.Finger4NubL; type++)
+        {
+            var colour = colourMap[(type - HandleType.Finger0L) % 3];
+
+            if (controller[type] is IColourableDragHandle leftDigit)
+                leftDigit.DragHandleColour = colour;
+
+            if (controller[type + fingerOffset] is IColourableDragHandle rightDigit)
+                rightDigit.DragHandleColour = colour;
+        }
+
+        var toeOffset = HandleType.Toe0R - HandleType.Toe0L;
+
+        for (var type = HandleType.Toe0L; type <= HandleType.Toe2NubL; type++)
+        {
+            var colour = colourMap[(type - HandleType.Toe0L) % 2];
+
+            if (controller[type] is IColourableDragHandle leftDigit)
+                leftDigit.DragHandleColour = colour;
+
+            if (controller[type + toeOffset] is IColourableDragHandle rightDigit)
+                rightDigit.DragHandleColour = colour;
+        }
     }
 
     private void DestroyController(IKDragHandleController controller)

@@ -16,6 +16,8 @@ public class GravityDragHandleService
     private bool smallHandle;
     private bool autoSelect;
     private bool autoSelectTab;
+    private Color clothingDragHandleColour;
+    private Color hairDragHandleColour;
 
     public GravityDragHandleService(
         GravityDragHandleInputService gravityDragHandleInputService,
@@ -85,6 +87,36 @@ public class GravityDragHandleService
                 hair.AutoSelectTab = autoSelectTab;
                 clothing.AutoSelectTab = autoSelectTab;
             }
+        }
+    }
+
+    public Color ClothingDragHandleColour
+    {
+        get => clothingDragHandleColour;
+        set
+        {
+            if (clothingDragHandleColour == value)
+                return;
+
+            clothingDragHandleColour = value;
+
+            foreach (var (_, clothing) in dragHandleSets.Values)
+                clothing.DragHandleColour = clothingDragHandleColour;
+        }
+    }
+
+    public Color HairDragHandleColour
+    {
+        get => hairDragHandleColour;
+        set
+        {
+            if (hairDragHandleColour == value)
+                return;
+
+            hairDragHandleColour = value;
+
+            foreach (var (hair, _) in dragHandleSets.Values)
+                hair.DragHandleColour = hairDragHandleColour;
         }
     }
 
@@ -168,19 +200,23 @@ public class GravityDragHandleService
             selectionController,
             tabSelectionController);
 
-        var hairDraghandle = BuildDragHandle(
+        clothingDragHandle.DragHandleColour = ClothingDragHandleColour;
+
+        var hairDragHandle = BuildDragHandle(
             character.Clothing.HairGravityController,
             character,
             selectionController,
             tabSelectionController);
 
+        hairDragHandle.DragHandleColour = HairDragHandleColour;
+
         gravityDragHandleInputService.AddController(clothingDragHandle);
-        gravityDragHandleInputService.AddController(hairDraghandle);
+        gravityDragHandleInputService.AddController(hairDragHandle);
 
         return new()
         {
             ClothingDragHandle = clothingDragHandle,
-            HairDragHandle = hairDraghandle,
+            HairDragHandle = hairDragHandle,
         };
 
         GravityDragHandleController BuildDragHandle(

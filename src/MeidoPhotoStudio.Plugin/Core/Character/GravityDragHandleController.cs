@@ -5,7 +5,7 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
-public class GravityDragHandleController : DragHandleControllerBase
+public class GravityDragHandleController : DragHandleControllerBase, IColourableDragHandle
 {
     private readonly GravityController gravityController;
     private readonly CharacterController characterController;
@@ -55,6 +55,12 @@ public class GravityDragHandleController : DragHandleControllerBase
     {
         get => DragHandle.Size;
         set => DragHandle.Size = value;
+    }
+
+    public Color DragHandleColour
+    {
+        get => DragHandle.Color;
+        set => DragHandle.Color = value;
     }
 
     protected override void OnDestroying() =>

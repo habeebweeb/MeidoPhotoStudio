@@ -22,7 +22,8 @@ public class UpperLimbDragHandleController(
         selectionController,
         tabSelectionController,
         bone,
-        ikTarget)
+        ikTarget),
+      IColourableDragHandle
 {
     private DragHandleMode drag;
     private RotateMode rotate;
@@ -35,6 +36,12 @@ public class UpperLimbDragHandleController(
         BoneMode
             ? rotateBone ??= new(this)
             : rotate ??= new(this);
+
+    public Color DragHandleColour
+    {
+        get => DragHandle.Color;
+        set => DragHandle.Color = value;
+    }
 
     protected override Transform[] Chain { get; } = [bone.parent, bone];
 

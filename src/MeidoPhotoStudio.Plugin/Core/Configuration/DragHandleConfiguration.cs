@@ -4,7 +4,8 @@ namespace MeidoPhotoStudio.Plugin.Core.Configuration;
 
 public class DragHandleConfiguration
 {
-    private const string Section = "Drag Handles";
+    private const string GeneralSection = "Drag Handles";
+    private const string ColourSection = $"{GeneralSection}.Colours";
 
     private readonly ConfigFile configFile;
 
@@ -12,10 +13,20 @@ public class DragHandleConfiguration
     {
         this.configFile = configFile ?? throw new ArgumentNullException(nameof(configFile));
 
-        AutomaticSelection = this.configFile.Bind(Section, "Automatically Select On Interaction", false);
-        AutomaticTabSelection = this.configFile.Bind(Section, "Automatically Change Tab On Interaction", false);
-        SmallTransformCube = this.configFile.Bind(Section, "Small Transform Drag Handles", false);
-        CharacterTransformCube = this.configFile.Bind(Section, "Character Transform Drag Handle", false);
+        AutomaticSelection = this.configFile.Bind(GeneralSection, "Automatically Select On Interaction", false);
+        AutomaticTabSelection = this.configFile.Bind(GeneralSection, "Automatically Change Tab On Interaction", false);
+        SmallTransformCube = this.configFile.Bind(GeneralSection, "Small Transform Drag Handles", false);
+        CharacterTransformCube = this.configFile.Bind(GeneralSection, "Character Transform Drag Handle", false);
+        UpperLimbDragHandleColour = this.configFile.Bind(ColourSection, "Upper Limb Drag Handle Colour", new Color(0f, 0f, 0f, 0.75f));
+        MiddleLimbDragHandleColour = this.configFile.Bind(ColourSection, "Middle Limb Drag Handle Colour", new Color(0f, 0f, 0f, 0.75f));
+        LowerLimbDragHandleColour = this.configFile.Bind(ColourSection, "Lower Limb Drag Handle Colour", new Color(0f, 0f, 0f, 0.75f));
+        SpineDragHandleColour = this.configFile.Bind(ColourSection, "Spine Drag Handle Colour", new Color(0f, 0f, 0f, 0.75f));
+        RootDragHandleColour = this.configFile.Bind(ColourSection, "Root Drag Handle Colour", new Color(0f, 0f, 0f, 0.75f));
+        BaseDigitJointColour = this.configFile.Bind(ColourSection, "Base Digit Joint Drag Handle Colour", new Color(0f, 0f, 0f, 0.75f));
+        MiddleDigitJointColour = this.configFile.Bind(ColourSection, "Middle Digit Joint Drag Handle Colour", new Color(0f, 0f, 0f, 0.75f));
+        TipDigitJointColour = this.configFile.Bind(ColourSection, "Tip Digit Joint Drag Handle Colour", new Color(0f, 0f, 0f, 0.75f));
+        ClothingDragHandleColour = this.configFile.Bind(ColourSection, "Clothing Gravity Drag Handle Colour", new Color(0f, 0f, 0f, 0.75f));
+        HairDragHandleColour = this.configFile.Bind(ColourSection, "Hair Gravity Drag Handle Colour", new Color(0f, 0f, 0f, 0.75f));
     }
 
     public ConfigEntry<bool> AutomaticSelection { get; }
@@ -25,4 +36,24 @@ public class DragHandleConfiguration
     public ConfigEntry<bool> SmallTransformCube { get; }
 
     public ConfigEntry<bool> CharacterTransformCube { get; }
+
+    public ConfigEntry<Color> UpperLimbDragHandleColour { get; }
+
+    public ConfigEntry<Color> MiddleLimbDragHandleColour { get; }
+
+    public ConfigEntry<Color> LowerLimbDragHandleColour { get; }
+
+    public ConfigEntry<Color> SpineDragHandleColour { get; }
+
+    public ConfigEntry<Color> RootDragHandleColour { get; }
+
+    public ConfigEntry<Color> BaseDigitJointColour { get; }
+
+    public ConfigEntry<Color> MiddleDigitJointColour { get; }
+
+    public ConfigEntry<Color> TipDigitJointColour { get; }
+
+    public ConfigEntry<Color> ClothingDragHandleColour { get; }
+
+    public ConfigEntry<Color> HairDragHandleColour { get; }
 }

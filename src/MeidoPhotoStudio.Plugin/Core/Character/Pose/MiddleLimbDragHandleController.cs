@@ -22,7 +22,8 @@ public class MiddleLimbDragHandleController(
         selectionController,
         tabSelectionController,
         middleBone,
-        ikTarget)
+        ikTarget),
+      IColourableDragHandle
 {
     private DragHandleMode drag;
     private RotateMode rotate;
@@ -36,6 +37,12 @@ public class MiddleLimbDragHandleController(
 
     public DragHandleMode RotateBone =>
         rotateBone ??= new RotateBoneMode(this);
+
+    public Color DragHandleColour
+    {
+        get => DragHandle.Color;
+        set => DragHandle.Color = value;
+    }
 
     protected override Transform[] Chain { get; } = [middleBone.parent, middleBone];
 

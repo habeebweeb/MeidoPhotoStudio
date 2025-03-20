@@ -5,7 +5,7 @@ using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
-public class DigitBaseDragHandleController : CharacterIKDragHandleController
+public class DigitBaseDragHandleController : CharacterIKDragHandleController, IColourableDragHandle
 {
     private readonly int digitIndex;
     private readonly bool isFoot;
@@ -39,6 +39,12 @@ public class DigitBaseDragHandleController : CharacterIKDragHandleController
         isFoot = bone.name.Contains("Toe");
         digitIndex = baseBone.name[baseBone.name.Length - 1] - '0';
         Chain = [baseBone, Bone];
+    }
+
+    public Color DragHandleColour
+    {
+        get => DragHandle.Color;
+        set => DragHandle.Color = value;
     }
 
     public DragHandleMode None =>

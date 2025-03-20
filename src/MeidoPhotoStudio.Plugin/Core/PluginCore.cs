@@ -190,6 +190,8 @@ public partial class PluginCore : MonoBehaviour
             SmallHandle = dragHandleConfiguration.SmallTransformCube.Value,
             AutoSelect = dragHandleConfiguration.AutomaticSelection.Value,
             AutoSelectTab = dragHandleConfiguration.AutomaticTabSelection.Value,
+            HairDragHandleColour = dragHandleConfiguration.HairDragHandleColour.Value,
+            ClothingDragHandleColour = dragHandleConfiguration.ClothingDragHandleColour.Value,
         };
 
         var globalGravityService = new GlobalGravityService(characterService);
@@ -226,6 +228,14 @@ public partial class PluginCore : MonoBehaviour
             CubeEnabled = dragHandleConfiguration.CharacterTransformCube.Value,
             AutoSelect = dragHandleConfiguration.AutomaticSelection.Value,
             AutoSelectTab = dragHandleConfiguration.AutomaticTabSelection.Value,
+            UpperBoneColour = dragHandleConfiguration.UpperLimbDragHandleColour.Value,
+            MiddleBoneColour = dragHandleConfiguration.MiddleLimbDragHandleColour.Value,
+            LowerBoneColour = dragHandleConfiguration.LowerLimbDragHandleColour.Value,
+            SpineColour = dragHandleConfiguration.SpineDragHandleColour.Value,
+            RootColour = dragHandleConfiguration.RootDragHandleColour.Value,
+            BaseDigitJointColour = dragHandleConfiguration.BaseDigitJointColour.Value,
+            MiddleDigitJointColour = dragHandleConfiguration.MiddleDigitJointColour.Value,
+            TipDigitJointColour = dragHandleConfiguration.TipDigitJointColour.Value,
         };
 
         AddPluginActiveInputHandler(new AnimationCycler(

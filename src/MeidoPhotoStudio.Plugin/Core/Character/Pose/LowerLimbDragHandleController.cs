@@ -22,7 +22,8 @@ public class LowerLimbDragHandleController(
         selectionController,
         tabSelectionController,
         bone,
-        ikTarget)
+        ikTarget),
+      IColourableDragHandle
 {
     private DragHandleMode drag;
     private RotateMode rotate;
@@ -43,6 +44,12 @@ public class LowerLimbDragHandleController(
 
     public DragHandleMode Constrained =>
         constrained ??= new DragMode(this, [Bone.parent, Bone]);
+
+    public Color DragHandleColour
+    {
+        get => DragHandle.Color;
+        set => DragHandle.Color = value;
+    }
 
     protected override Transform[] Chain { get; } = [bone.parent.parent, bone.parent, bone];
 

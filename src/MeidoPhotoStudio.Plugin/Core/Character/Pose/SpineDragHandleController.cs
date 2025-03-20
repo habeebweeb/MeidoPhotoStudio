@@ -14,7 +14,8 @@ public class SpineDragHandleController(
     TabSelectionController tabSelectionController,
     Transform spineSegment)
     : CharacterDragHandleController(
-        dragHandle, gizmo, characterController, undoRedoController, selectionController, tabSelectionController)
+        dragHandle, gizmo, characterController, undoRedoController, selectionController, tabSelectionController),
+      IColourableDragHandle
 {
     private readonly Transform spineSegment = spineSegment ? spineSegment : throw new ArgumentNullException(nameof(spineSegment));
     private readonly bool isHead = spineSegment.name.EndsWith("Head");
@@ -31,6 +32,12 @@ public class SpineDragHandleController(
 
     public DragHandleMode RotateAlternate =>
         rotateAlternate ??= new RotateAlternateMode(this);
+
+    public Color DragHandleColour
+    {
+        get => DragHandle.Color;
+        set => DragHandle.Color = value;
+    }
 
     protected override Transform[] Transforms { get; } = [spineSegment];
 
