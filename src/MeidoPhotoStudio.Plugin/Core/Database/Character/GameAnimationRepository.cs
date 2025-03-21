@@ -1,3 +1,4 @@
+using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using Newtonsoft.Json;
 
@@ -62,16 +63,30 @@ public class GameAnimationRepository : IEnumerable<GameAnimationModel>
 
         InitializingAnimations?.Invoke(this, EventArgs.Empty);
 
-        Task<Dictionary<string, IList<GameAnimationModel>>>.Factory
-            .StartNew(() => Initialize(databaseDirectory))
-            .ContinueWith(task =>
-            {
-                animations = task.Result;
+        new CoroutineRunner(Process)
+        {
+            Name = "[MPS Game Animation Processor]",
+        }.Start();
 
-                Busy = false;
+        IEnumerator Process()
+        {
+            var task = Task<Dictionary<string, IList<GameAnimationModel>>>.Factory
+                .StartNew(() => Initialize(databaseDirectory));
 
-                InitializedAnimations?.Invoke(this, EventArgs.Empty);
-            });
+            var wait = new WaitForSeconds(0.5f);
+
+            while (!task.IsCompleted)
+                yield return wait;
+
+            if (task.IsFaulted && task.Exception is not null)
+                Plugin.Logger.LogWarning($"Could not initialize game animations properly because:\n{task.Exception}");
+
+            animations = task.IsFaulted ? [] : task.Result ?? [];
+
+            Busy = false;
+
+            InitializedAnimations?.Invoke(this, EventArgs.Empty);
+        }
 
         static Dictionary<string, IList<GameAnimationModel>> Initialize(string databaseDirectory)
         {

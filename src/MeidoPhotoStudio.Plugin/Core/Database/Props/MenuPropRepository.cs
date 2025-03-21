@@ -93,19 +93,20 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                 while (!GameMain.Instance.MenuDataBase.JobFinished())
                     yield return wait;
 
-            Task<Dictionary<MPN, IList<MenuFilePropModel>>>.Factory.StartNew(
-                () => ProcessMenuFiles(menuPropsConfiguration, menuFileCacheSerializer))
-                .ContinueWith(task =>
-                {
-                    if (task.IsFaulted && task.Exception is not null)
-                        Plugin.Logger.LogWarning($"Could not initialize menu props because:\n{task.Exception}");
+            var task = Task<Dictionary<MPN, IList<MenuFilePropModel>>>.Factory
+                .StartNew(() => ProcessMenuFiles(menuPropsConfiguration, menuFileCacheSerializer));
 
-                    props = task.IsFaulted ? [] : task.Result ?? [];
+            while (!task.IsCompleted)
+                yield return wait;
 
-                    ProcessingProps = false;
+            if (task.IsFaulted && task.Exception is not null)
+                Plugin.Logger.LogWarning($"Could not initialize menu props because:\n{task.Exception}");
 
-                    InitializedProps?.Invoke(this, EventArgs.Empty);
-                });
+            props = task.IsFaulted ? [] : task.Result ?? [];
+
+            ProcessingProps = false;
+
+            InitializedProps?.Invoke(this, EventArgs.Empty);
         }
 
         Dictionary<MPN, IList<MenuFilePropModel>> ProcessMenuFiles(
