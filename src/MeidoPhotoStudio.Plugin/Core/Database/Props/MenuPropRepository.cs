@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 
 using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core.Localization;
@@ -12,8 +13,9 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
     private readonly Translation translation;
     private readonly IMenuPropsConfiguration menuPropsConfiguration;
     private readonly IMenuFileCacheSerializer menuFileCacheSerializer;
+    private readonly Dictionary<MPN, ReadOnlyCollection<MenuFilePropModel>> readOnlyProps = [];
 
-    private Dictionary<MPN, IList<MenuFilePropModel>> props;
+    private Dictionary<MPN, List<MenuFilePropModel>> props;
 
     public MenuPropRepository(
         Translation translation,
@@ -41,7 +43,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
             ? ProcessingProps
             : !GameMain.Instance.MenuDataBase.JobFinished() || ProcessingProps;
 
-    private Dictionary<MPN, IList<MenuFilePropModel>> Props =>
+    private Dictionary<MPN, List<MenuFilePropModel>> Props =>
         Busy
             ? throw new MenuPropRepositoryBusyException()
             : props;
@@ -49,10 +51,33 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
     private bool ProcessingProps { get; set; } = true;
 
     public IList<MenuFilePropModel> this[MPN category] =>
-        Props[category];
+        readOnlyProps.TryGetValue(category, out var readOnlyPropList)
+            ? readOnlyPropList
+            : (IList<MenuFilePropModel>)(readOnlyProps[category] = Props[category].AsReadOnly());
 
-    public bool TryGetPropList(MPN category, out IList<MenuFilePropModel> propList) =>
-        Props.TryGetValue(category, out propList);
+    public bool TryGetPropList(MPN category, out IList<MenuFilePropModel> propList)
+    {
+        propList = [];
+
+        if (Busy)
+            return false;
+
+        if (readOnlyProps.TryGetValue(category, out var readOnlyList))
+        {
+            propList = readOnlyList;
+
+            return true;
+        }
+
+        if (Props.TryGetValue(category, out var list))
+        {
+            propList = readOnlyProps[category] = list.AsReadOnly();
+
+            return true;
+        }
+
+        return false;
+    }
 
     public bool ContainsCategory(MPN category) =>
         Props.ContainsKey(category);
@@ -93,7 +118,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                 while (!GameMain.Instance.MenuDataBase.JobFinished())
                     yield return wait;
 
-            var task = Task<Dictionary<MPN, IList<MenuFilePropModel>>>.Factory
+            var task = Task<Dictionary<MPN, List<MenuFilePropModel>>>.Factory
                 .StartNew(() => ProcessMenuFiles(menuPropsConfiguration, menuFileCacheSerializer));
 
             while (!task.IsCompleted)
@@ -109,7 +134,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
             InitializedProps?.Invoke(this, EventArgs.Empty);
         }
 
-        Dictionary<MPN, IList<MenuFilePropModel>> ProcessMenuFiles(
+        Dictionary<MPN, List<MenuFilePropModel>> ProcessMenuFiles(
             IMenuPropsConfiguration menuPropsConfiguration,
             IMenuFileCacheSerializer menuFileCacheSerializer)
         {
@@ -223,7 +248,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 
             return models
                 .GroupBy(model => model.CategoryMpn, model => model)
-                .ToDictionary(group => group.Key, group => (IList<MenuFilePropModel>)group.ToList().AsReadOnly());
+                .ToDictionary(group => group.Key, group => group.ToList());
         }
     }
 
