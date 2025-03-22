@@ -259,7 +259,7 @@ public class AttachedAccessoryPane : BasePane
         var category = CurrentCategory;
         var accessories = !menuPropRepository.Busy && menuPropRepository.ContainsCategory(category)
             ? new MenuFilePropModel[] { null }
-                .Concat(menuPropRepository[category])
+                .Concat(menuPropRepository[category].OrderBy(static model => model.Filename))
             : [];
 
         hasAccessories = accessories.Any();

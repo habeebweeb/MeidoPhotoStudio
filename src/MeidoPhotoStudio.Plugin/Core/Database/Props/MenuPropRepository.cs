@@ -243,10 +243,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                 .GroupBy(model => model.CategoryMpn, model => model)
                 .ToDictionary(
                     group => group.Key,
-                    group => group
-                        .OrderByDescending(model => model.GameMenu)
-                        .ThenBy(model => model.Filename)
-                        .ToList());
+                    group => group.ToList());
         }
     }
 

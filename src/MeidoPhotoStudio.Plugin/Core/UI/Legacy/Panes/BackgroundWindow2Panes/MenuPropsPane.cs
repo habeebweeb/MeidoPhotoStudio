@@ -244,7 +244,8 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
                 propList = propList.Where(static prop => prop.GameMenu);
         }
 
-        currentPropList = [.. propList];
+        currentPropList =
+            [.. propList.OrderByDescending(static prop => prop.GameMenu).ThenBy(static prop => prop.Filename)];
     }
 
     private void OnPropCategoryDropdownChanged(object sender, EventArgs e) =>

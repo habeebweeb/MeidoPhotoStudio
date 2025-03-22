@@ -78,7 +78,7 @@ public class HandItemPropsPane : BasePane
         void Initialize()
         {
             var handItems = menuPropRepository.ContainsCategory(HandItem)
-                ? menuPropRepository[HandItem]
+                ? (IEnumerable<MenuFilePropModel>)menuPropRepository[HandItem].OrderBy(static model => model.Filename)
                 : [];
 
             propDropdown.SetItems(handItems);
