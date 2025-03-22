@@ -175,6 +175,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 
             var menuFileCache = new ConcurrentDictionary<string, MenuFilePropModel>(menuFileCacheSerializer.Deserialize());
             var menuFileParser = new MenuFileParser();
+            var menuFilesToProcess = new List<(string FileName, bool IsGame)>();
             var lockObject = new object();
             var models = new List<MenuFilePropModel>();
 
@@ -194,61 +195,58 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                 if (menuPropsConfiguration.ModMenuPropsOnly && !alwaysValidMpn.Contains(menuDatabase.GetMpn()))
                     continue;
 
-                if (!menuFileCache.TryGetValue(menuFilename, out var menuFile))
-                {
-                    menuFile = menuFileParser.ParseMenuFile(menuFilename, true);
-
-                    if (menuFile is null)
-                        continue;
-
-                    menuFileCache.TryAdd(menuFilename, menuFile);
-                }
-
-                if (menuFile.CategoryMpn == SafeMpn.GetValue(nameof(MPN.handitem)))
-                    menuFile.Name = translation["propNames", menuFile.Filename];
-
-                models.Add(menuFile);
+                menuFilesToProcess.Add((menuFilename, true));
             }
 
             Parallel.ForEach(
-                GameUty.ModOnlysMenuFiles,
+                GameUty.ModOnlysMenuFiles
+                .Select(fileName => (FileName: fileName, IsGame: false))
+                .Concat(menuFilesToProcess),
                 new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, (int)Math.Ceiling(Environment.ProcessorCount * 0.75)) },
-                menuFilename =>
+                menuFile =>
                 {
-                    if (string.IsNullOrEmpty(menuFilename))
+                    if (string.IsNullOrEmpty(menuFile.FileName))
                         return;
 
-                    if (!menuFileCache.TryGetValue(menuFilename, out var menuFile))
+                    if (!menuFileCache.TryGetValue(menuFile.FileName, out var model))
                     {
                         try
                         {
-                            menuFile = menuFileParser.ParseMenuFile(menuFilename, false);
+                            model = menuFileParser.ParseMenuFile(menuFile.FileName, menuFile.IsGame);
                         }
                         catch
                         {
-                            Plugin.Logger.LogDebug($"Could not parse {menuFilename}");
+                            Plugin.Logger.LogDebug($"Could not parse {menuFile.FileName}");
 
                             return;
                         }
 
-                        if (menuFile is null)
+                        if (model is null)
                             return;
 
-                        menuFileCache.TryAdd(menuFilename, menuFile);
+                        menuFileCache.TryAdd(menuFile.FileName, model);
                     }
 
-                    if (!validMpn.Contains(menuFile.CategoryMpn))
+                    if (!validMpn.Contains(model.CategoryMpn))
                         return;
 
+                    if (model.CategoryMpn == SafeMpn.GetValue(nameof(MPN.handitem)))
+                        model.Name = translation["propNames", model.Filename];
+
                     lock (lockObject)
-                        models.Add(menuFile);
+                        models.Add(model);
                 });
 
             menuFileCacheSerializer.Serialize(menuFileCache.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
             return models
                 .GroupBy(model => model.CategoryMpn, model => model)
-                .ToDictionary(group => group.Key, group => group.ToList());
+                .ToDictionary(
+                    group => group.Key,
+                    group => group
+                        .OrderByDescending(model => model.GameMenu)
+                        .ThenBy(model => model.Filename)
+                        .ToList());
         }
     }
 
