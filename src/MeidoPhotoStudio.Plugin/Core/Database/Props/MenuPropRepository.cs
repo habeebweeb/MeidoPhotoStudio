@@ -82,14 +82,6 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
     public bool ContainsCategory(MPN category) =>
         Props.ContainsKey(category);
 
-    public void Refresh()
-    {
-        if (Busy)
-            throw new MenuPropRepositoryBusyException();
-
-        InitializeMenuFiles(menuPropsConfiguration);
-    }
-
     public IEnumerator<MenuFilePropModel> GetEnumerator() =>
         Props.Values.SelectMany(static list => list).GetEnumerator();
 
