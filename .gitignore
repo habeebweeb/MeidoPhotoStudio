@@ -1,5 +1,7 @@
 **/lib/
 **/lib
+**/ref/
+**/ref
 
 # Ignore asciidoc output
 [Dd]ocumentation/[Oo]ut/
