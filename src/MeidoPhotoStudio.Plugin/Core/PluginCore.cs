@@ -8,6 +8,7 @@ using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Database.Background;
 using MeidoPhotoStudio.Plugin.Core.Database.Character;
 using MeidoPhotoStudio.Plugin.Core.Database.Props;
+using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core.Database.Scenes;
 using MeidoPhotoStudio.Plugin.Core.Effects;
 using MeidoPhotoStudio.Plugin.Core.Lighting;
@@ -44,6 +45,7 @@ public partial class PluginCore : MonoBehaviour
     private TransformWatcher transformWatcher;
     private Translation translation;
     private ScreenSizeChecker screenSizeChecker;
+    private MenuPropRepository menuPropRepository;
 
     public Api.Api Api { get; private set; }
 
@@ -73,6 +75,8 @@ public partial class PluginCore : MonoBehaviour
         IKController.DestroyParent();
         WfCameraMoveSupportUtility.Destroy();
         Framework.UI.Legacy.UIUtility.Destroy();
+
+        menuPropRepository?.Destroy();
     }
 
     private void Start()
@@ -303,10 +307,16 @@ public partial class PluginCore : MonoBehaviour
         var otherPropRepository = new OtherPropRepository(translation, backgroundRepository);
         var backgroundPropRepository = new BackgroundPropRepository(backgroundRepository);
         var myRoomPropRepository = new MyRoomPropRepository(translation);
-        var menuPropRepository = new MenuPropRepository(
+
+        IModRefreshHandler modRefreshHandler = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("COM3D2.MaidLoader")
+            ? new MaidLoaderModRefreshHandler()
+            : new EmptyModRefreshHandler();
+
+        menuPropRepository = new MenuPropRepository(
             translation,
             menuPropsConfiguration,
-            new MenuFileCacheSerializer(Path.Combine(BepInEx.Paths.ConfigPath, Plugin.PluginName)));
+            new MenuFileCacheSerializer(Path.Combine(BepInEx.Paths.ConfigPath, Plugin.PluginName)),
+            modRefreshHandler);
 
         var propService = new PropService(transformWatcher);
 

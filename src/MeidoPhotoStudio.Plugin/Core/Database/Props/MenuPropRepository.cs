@@ -13,6 +13,9 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
     private readonly Translation translation;
     private readonly IMenuPropsConfiguration menuPropsConfiguration;
     private readonly IMenuFileCacheSerializer menuFileCacheSerializer;
+    private readonly IModRefreshHandler modRefreshHandler;
+    private readonly HashSet<string> newMenuFiles = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> deletedMenuFiles = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<MPN, ReadOnlyCollection<MenuFilePropModel>> readOnlyProps = [];
 
     private Dictionary<MPN, List<MenuFilePropModel>> props;
@@ -20,13 +23,16 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
     public MenuPropRepository(
         Translation translation,
         IMenuPropsConfiguration menuPropsConfiguration,
-        IMenuFileCacheSerializer menuFileCacheSerializer)
+        IMenuFileCacheSerializer menuFileCacheSerializer,
+        IModRefreshHandler modRefreshHandler)
     {
         this.translation = translation ?? throw new ArgumentNullException(nameof(translation));
         this.menuPropsConfiguration = menuPropsConfiguration ?? throw new ArgumentNullException(nameof(menuPropsConfiguration));
         this.menuFileCacheSerializer = menuFileCacheSerializer ?? throw new ArgumentNullException(nameof(menuFileCacheSerializer));
+        this.modRefreshHandler = modRefreshHandler ?? throw new ArgumentNullException(nameof(modRefreshHandler));
 
         this.translation.Initialized += OnReloadedTranslation;
+        this.modRefreshHandler.RefreshedMods += OnModsRefreshed;
 
         InitializeMenuFiles(menuPropsConfiguration);
     }
@@ -34,6 +40,8 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
     public event EventHandler InitializingProps;
 
     public event EventHandler InitializedProps;
+
+    public event EventHandler<MenuPropRepositoryChangedEventArgs> ChangedProps;
 
     public IEnumerable<MPN> CategoryMpn =>
         Props.Keys;
@@ -90,6 +98,9 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 
     public MenuFilePropModel GetByID(string id) =>
         this.FirstOrDefault(model => string.Equals(model.ID, id, StringComparison.OrdinalIgnoreCase));
+
+    internal void Destroy() =>
+        modRefreshHandler.RefreshedMods -= OnModsRefreshed;
 
     private void InitializeMenuFiles(IMenuPropsConfiguration menuPropsConfiguration)
     {
@@ -259,6 +270,148 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
         {
             foreach (var prop in this[SafeMpn.GetValue(nameof(MPN.handitem))])
                 prop.Name = translation["propNames", prop.Filename];
+        }
+    }
+
+    private void OnModsRefreshed(object sender, ModRefreshEventArgs e)
+    {
+        if (Busy)
+        {
+            Plugin.Logger.LogDebug("Menu file prop repository is busy. Mods cannot be refreshed.");
+
+            newMenuFiles.ExceptWith(e.DeletedMenuFiles);
+            newMenuFiles.UnionWith(e.NewMenuFiles);
+            deletedMenuFiles.ExceptWith(e.NewMenuFiles);
+            deletedMenuFiles.UnionWith(e.DeletedMenuFiles);
+
+            InitializedProps -= OnInitialized;
+            InitializedProps += OnInitialized;
+
+            return;
+        }
+
+        UpdateMods(e.NewMenuFiles, e.DeletedMenuFiles);
+
+        void OnInitialized(object sender, EventArgs e)
+        {
+            InitializedProps -= OnInitialized;
+
+            UpdateMods(newMenuFiles, deletedMenuFiles);
+        }
+
+        void UpdateMods(IEnumerable<string> newMenuFiles, IEnumerable<string> deletedMenuFiles)
+        {
+            if (Busy)
+                return;
+
+            if (!newMenuFiles.Any() && !deletedMenuFiles.Any())
+                return;
+
+            var addedProps = AddProps(newMenuFiles);
+            var deletedProps = DeleteProps(deletedMenuFiles);
+
+            if (addedProps.Count is 0 && deletedProps.Count is 0)
+                return;
+
+            ChangedProps?.Invoke(this, new(addedProps, deletedProps));
+
+            List<MenuFilePropModel> AddProps(IEnumerable<string> menuFiles)
+            {
+                var validMpn = new HashSet<MPN>(SafeMpn.GetValues(
+                    nameof(MPN.acchat),
+                    nameof(MPN.headset),
+                    nameof(MPN.wear),
+                    nameof(MPN.skirt),
+                    nameof(MPN.onepiece),
+                    nameof(MPN.mizugi),
+                    nameof(MPN.bra),
+                    nameof(MPN.panz),
+                    nameof(MPN.stkg),
+                    nameof(MPN.shoes),
+                    nameof(MPN.acckami),
+                    nameof(MPN.megane),
+                    nameof(MPN.acchead),
+                    nameof(MPN.acchana),
+                    nameof(MPN.accmimi),
+                    nameof(MPN.glove),
+                    nameof(MPN.acckubi),
+                    nameof(MPN.acckubiwa),
+                    nameof(MPN.acckamisub),
+                    nameof(MPN.accnip),
+                    nameof(MPN.accude),
+                    nameof(MPN.accheso),
+                    nameof(MPN.accashi),
+                    nameof(MPN.accsenaka),
+                    nameof(MPN.accshippo),
+                    nameof(MPN.accxxx),
+                    nameof(MPN.handitem),
+                    nameof(MPN.kousoku_lower),
+                    nameof(MPN.kousoku_upper)));
+
+                var parser = new MenuFileParser();
+                var addedProps = new List<MenuFilePropModel>();
+
+                foreach (var filename in newMenuFiles)
+                {
+                    if (string.IsNullOrEmpty(filename))
+                        continue;
+
+                    MenuFilePropModel model = null;
+
+                    try
+                    {
+                        model = parser.ParseMenuFile(filename, false);
+                    }
+                    catch
+                    {
+                        Plugin.Logger.LogDebug($"Could not parse {filename}");
+
+                        continue;
+                    }
+
+                    if (model is null)
+                        continue;
+
+                    if (!validMpn.Contains(model.CategoryMpn))
+                        continue;
+
+                    if (Props[model.CategoryMpn].Exists(prop => prop.Equals(model)))
+                        continue;
+
+                    Props[model.CategoryMpn].Add(model);
+                    addedProps.Add(model);
+                }
+
+                return addedProps;
+            }
+
+            List<MenuFilePropModel> DeleteProps(IEnumerable<string> menuFiles)
+            {
+                var allMods = new Dictionary<string, MenuFilePropModel>(StringComparer.OrdinalIgnoreCase);
+                var deletedProps = new List<MenuFilePropModel>();
+
+                foreach (var prop in Props.Values.SelectMany(static props => props))
+                {
+                    if (allMods.ContainsKey(prop.Filename))
+                        continue;
+
+                    allMods[prop.Filename] = prop;
+                }
+
+                foreach (var filename in deletedMenuFiles)
+                {
+                    if (string.IsNullOrEmpty(filename))
+                        continue;
+
+                    if (!allMods.TryGetValue(filename, out var model))
+                        continue;
+
+                    Props[model.CategoryMpn].Remove(model);
+                    deletedProps.Add(model);
+                }
+
+                return deletedProps;
+            }
         }
     }
 }

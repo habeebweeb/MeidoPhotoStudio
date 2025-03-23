@@ -36,7 +36,7 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
     private Vector2 buttonSize;
     private MPN[] categories;
     private Vector2 scrollPosition;
-    private IList<MenuFilePropModel> currentPropList = [];
+    private List<MenuFilePropModel> currentPropList = [];
     private bool menuDatabaseBusy = false;
     private FilterType currentFilter;
 
@@ -53,6 +53,7 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
         this.menuPropsConfiguration = menuPropsConfiguration;
         this.iconCache = iconCache ?? throw new ArgumentNullException(nameof(iconCache));
 
+        this.menuPropRepository.ChangedProps += OnMenuPropRepositoryChanged;
         translation.Initialized += OnTranslationInitialized;
 
         propCategoryDropdown = new(formatter: CategoryFormatter);
@@ -211,11 +212,47 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
         }
     }
 
+    public override void Deactivate()
+    {
+        if (menuPropRepository.Busy)
+            return;
+
+        propCategoryDropdown.SelectedItemIndex = 0;
+    }
+
     Vector2 IVirtualListHandler.ItemDimensions(int index) =>
         buttonSize;
 
     private void OnSearchSelected(object sender, SearchBarSelectionEventArgs<MenuFilePropModel> e) =>
         propService.Add(e.Item);
+
+    private void OnMenuPropRepositoryChanged(object sender, MenuPropRepositoryChangedEventArgs e)
+    {
+        var changed = false;
+
+        foreach (var prop in e.AddedMenuFiles)
+        {
+            if (prop.CategoryMpn != propCategoryDropdown.SelectedItem)
+                continue;
+
+            changed = true;
+            currentPropList.Add(prop);
+        }
+
+        foreach (var prop in e.DeletedMenuFiles)
+        {
+            if (prop.CategoryMpn != propCategoryDropdown.SelectedItem)
+                continue;
+
+            changed = true;
+            currentPropList.Remove(prop);
+        }
+
+        if (!changed)
+            return;
+
+        currentPropList.Sort(static (a, b) => a.Filename.CompareTo(b.Filename));
+    }
 
     private void UpdateCurrentPropList(bool resetScrollPosition = true)
     {

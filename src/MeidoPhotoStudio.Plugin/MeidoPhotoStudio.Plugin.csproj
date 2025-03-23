@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <Reference Include="..\..\lib\Assembly-UnityScript-firstpass.dll" />
+    <Reference Include="../../ref/COM3D2.MaidLoader.dll" />
   </ItemGroup>
 
   <ItemGroup>
