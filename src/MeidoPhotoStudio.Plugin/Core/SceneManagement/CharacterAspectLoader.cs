@@ -220,10 +220,39 @@ public class CharacterAspectLoader(
                 ik.MuneLEnabled = !muneSetting.Left;
                 ik.MuneREnabled = !muneSetting.Right;
 
-                if (schema.Version >= 2)
+                if (schema.Version is >= 2 and < 4)
                 {
                     ik.GetBone("Mune_L_sub").localRotation = schema.MuneSubL;
                     ik.GetBone("Mune_R_sub").localRotation = schema.MuneSubR;
+                }
+                else if (schema.Version >= 4)
+                {
+                    ik.RunOnLateUpdateEnd(() =>
+                    {
+                        if (ik.MuneLEnabled)
+                        {
+                            ik.RestoreMuneLPositions();
+                        }
+                        else
+                        {
+                            var data = schema.LeftChest;
+
+                            ik.MuneLPosition = ik.InitialMuneLPosition + new ChestPositions(data.MunePositionDelta, data.MuneSubPositionDelta);
+                            ik.GetBone("Mune_L_sub").localRotation = schema.LeftChest.MuneSubRotation;
+                        }
+
+                        if (ik.MuneREnabled)
+                        {
+                            ik.RestoreMuneRPositions();
+                        }
+                        else
+                        {
+                            var data = schema.RightChest;
+
+                            ik.MuneRPosition = ik.InitialMuneRPosition + new ChestPositions(data.MunePositionDelta, data.MuneSubPositionDelta);
+                            ik.GetBone("Mune_R_sub").localRotation = schema.RightChest.MuneSubRotation;
+                        }
+                    });
                 }
             }
 

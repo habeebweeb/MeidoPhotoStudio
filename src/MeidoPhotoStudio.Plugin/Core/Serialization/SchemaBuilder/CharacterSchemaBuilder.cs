@@ -110,8 +110,8 @@ public class CharacterSchemaBuilder(
             {
                 AnimationFrameBinary = ik.GetAnimationFrameData(),
                 Animation = MakeAnimationSchema(character.Animation),
-                MuneSubL = ik.GetBone("Mune_L_sub").localRotation,
-                MuneSubR = ik.GetBone("Mune_R_sub").localRotation,
+                LeftChest = MakeChestSchema(ik, true),
+                RightChest = MakeChestSchema(ik, false),
                 LimbsLimited = ik.LimitLimbRotations,
                 DigitsLimited = ik.LimitDigitRotations,
             };
@@ -123,6 +123,21 @@ public class CharacterSchemaBuilder(
                     Time = animation.Time,
                     Playing = animation.Playing,
                 };
+
+            ChestSchema MakeChestSchema(IKController ik, bool left)
+            {
+                var subChest = left ? ik.GetBone("Mune_L_sub") : ik.GetBone("Mune_R_sub");
+                var (muneDelta, subMuneDelta) = left
+                    ? ik.MuneLPosition - ik.InitialMuneLPosition
+                    : ik.MuneRPosition - ik.InitialMuneRPosition;
+
+                return new()
+                {
+                    MuneSubRotation = subChest.localRotation,
+                    MunePositionDelta = muneDelta,
+                    MuneSubPositionDelta = subMuneDelta,
+                };
+            }
         }
 
         BodySchema MakeBodySchema(BodyController body) =>

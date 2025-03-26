@@ -2,15 +2,21 @@ using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
+using GizmoSize = (float RotateSize, float MoveSize);
+
 namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 
 public class ChestDragHandleController : CharacterIKDragHandleController
 {
+    private static readonly GizmoSize Sizes = (0.25f, 0.5f);
+
     private readonly bool left;
 
     private NoneMode none;
     private DragMode drag;
     private GizmoRotateMode rotateGizmo;
+    private MoveMode move;
+    private Vector3 backupPosition;
 
     public ChestDragHandleController(
         DragHandle dragHandle,
@@ -45,7 +51,24 @@ public class ChestDragHandleController : CharacterIKDragHandleController
     public DragHandleMode RotateGizmo =>
         rotateGizmo ??= new GizmoRotateMode(this);
 
+    public DragHandleMode Move =>
+        move ??= new MoveMode(this);
+
     protected override Transform[] Chain { get; }
+
+    protected override void BackupBoneRotations()
+    {
+        base.BackupBoneRotations();
+
+        backupPosition = Bone.parent.localPosition;
+    }
+
+    protected override void ApplyBackupBoneRotations()
+    {
+        base.ApplyBackupBoneRotations();
+
+        Bone.parent.localPosition = backupPosition;
+    }
 
     private void SetMuneEnabled(bool enabled)
     {
@@ -68,6 +91,8 @@ public class ChestDragHandleController : CharacterIKDragHandleController
     private new class DragMode(ChestDragHandleController controller, Transform[] chain)
         : CharacterIKDragHandleController.DragMode(controller, chain)
     {
+        protected override bool FixLocalPositions { get; } = false;
+
         public override void OnModeEnter()
         {
             base.OnModeEnter();
@@ -97,6 +122,31 @@ public class ChestDragHandleController : CharacterIKDragHandleController
         {
             controller.DragHandleActive = false;
             controller.GizmoActive = true;
+            controller.Gizmo.CurrentGizmoType = CustomGizmo.GizmoType.Rotate;
+            controller.GizmoMode = CustomGizmo.GizmoMode.Local;
+            controller.Gizmo.offsetScale = Sizes.RotateSize;
+        }
+
+        public override void OnGizmoClicked()
+        {
+            base.OnGizmoClicked();
+
+            controller.AnimationController.Playing = false;
+
+            controller.SetMuneEnabled(false);
+        }
+    }
+
+    private class MoveMode(ChestDragHandleController controller)
+        : PoseableMode(controller)
+    {
+        public override void OnModeEnter()
+        {
+            controller.DragHandleActive = false;
+            controller.GizmoActive = true;
+            controller.Gizmo.CurrentGizmoType = CustomGizmo.GizmoType.Move;
+            controller.GizmoMode = CustomGizmo.GizmoMode.World;
+            controller.Gizmo.offsetScale = Sizes.MoveSize;
         }
 
         public override void OnGizmoClicked()

@@ -83,6 +83,8 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
 
         private bool clicked = false;
 
+        protected virtual bool FixLocalPositions { get; } = true;
+
         public override void OnModeEnter()
         {
             clicked = false;
@@ -114,7 +116,8 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
             if (!clicked)
                 UpdateIKController();
 
-            controller.IKController.FixLocalPositions();
+            if (FixLocalPositions)
+                controller.IKController.FixLocalPositions();
         }
 
         public override void OnReleased()
@@ -123,7 +126,10 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
 
             clicked = false;
             controller.IKTarget.position = controller.Bone.position;
-            controller.IKController.FixLocalPositions();
+
+            if (FixLocalPositions)
+                controller.IKController.FixLocalPositions();
+
             controller.IKController.LockSolver();
         }
 

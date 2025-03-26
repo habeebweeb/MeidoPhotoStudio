@@ -26,6 +26,7 @@ public enum Hotkey
     RotateFinger5,
     RotateEyesChest,
     RotateEyesChestAlternate,
+    MoveChest,
     RotateBody,
     RotateBodyAlternate,
     DragLowerLimb,

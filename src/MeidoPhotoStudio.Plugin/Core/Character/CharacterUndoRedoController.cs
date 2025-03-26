@@ -91,8 +91,17 @@ public class CharacterUndoRedoController(CharacterController characterController
 
                 static void WriteMuneSetting(BinaryWriter writer, IKController ik)
                 {
-                    writer.Write(ik.MuneLEnabled);
-                    writer.Write(ik.MuneREnabled);
+                    new MuneBackup(
+                        ik.MuneLEnabled,
+                        ik.GetBone("Mune_L").localPosition,
+                        ik.GetBone("Mune_L_sub").localPosition)
+                    .Write(writer);
+
+                    new MuneBackup(
+                        ik.MuneREnabled,
+                        ik.GetBone("Mune_R").localPosition,
+                        ik.GetBone("Mune_R_sub").localPosition)
+                    .Write(writer);
                 }
 
                 static void WriteIKLimitSetting(BinaryWriter writer, IKController ik)
@@ -115,8 +124,31 @@ public class CharacterUndoRedoController(CharacterController characterController
             animation.Playing = animationSetting.Playing;
             animation.Time = animationSetting.Time;
 
-            ik.MuneLEnabled = muneSetting.MuneL;
-            ik.MuneREnabled = muneSetting.MuneR;
+            var (muneL, muneR) = muneSetting;
+
+            ik.MuneLEnabled = muneL.Enabled;
+
+            if (ik.MuneLEnabled)
+            {
+                ik.RestoreMuneLPositions();
+            }
+            else
+            {
+                ik.GetBone("Mune_L").localPosition = muneL.MunePosition;
+                ik.GetBone("Mune_L_sub").localPosition = muneL.MuneSubPosition;
+            }
+
+            ik.MuneREnabled = muneR.Enabled;
+
+            if (ik.MuneREnabled)
+            {
+                ik.RestoreMuneRPositions();
+            }
+            else
+            {
+                ik.GetBone("Mune_R").localPosition = muneR.MunePosition;
+                ik.GetBone("Mune_R_sub").localPosition = muneR.MuneSubPosition;
+            }
 
             ik.LimitLimbRotations = limitSetting.LimitLimbs;
             ik.LimitDigitRotations = limitSetting.LimitDigits;
@@ -324,8 +356,8 @@ public class CharacterUndoRedoController(CharacterController characterController
             static (bool Playing, float Time) ReadAnimationSetting(BinaryReader reader) =>
                 (reader.ReadBoolean(), reader.ReadSingle());
 
-            static (bool MuneL, bool MuneR) ReadMuneSetting(BinaryReader reader) =>
-                (reader.ReadBoolean(), reader.ReadBoolean());
+            static (MuneBackup MuneL, MuneBackup MuneR) ReadMuneSetting(BinaryReader reader) =>
+                (MuneBackup.Read(reader), MuneBackup.Read(reader));
 
             static (bool LimitLimbs, bool LimitDigits) ReadIKLimitSetting(BinaryReader reader) =>
                 (reader.ReadBoolean(), reader.ReadBoolean());
@@ -334,10 +366,23 @@ public class CharacterUndoRedoController(CharacterController characterController
         private readonly record struct BackupData(
             IAnimationModel AnimationModel,
             (bool Playing, float Time) AnimationSetting,
-            (bool MuneL, bool MuneR) MuneSetting,
+            (MuneBackup MuneL, MuneBackup MuneR) MuneSetting,
             (bool LimitLimbs, bool LimitDigits) LimitSetting,
             bool Dirty,
             IEnumerable<(string, Quaternion, Vector3)> IKData);
+    }
+
+    private readonly record struct MuneBackup(bool Enabled, Vector3 MunePosition, Vector3 MuneSubPosition)
+    {
+        public static MuneBackup Read(BinaryReader reader) =>
+             new(reader.ReadBoolean(), reader.ReadVector3(), reader.ReadVector3());
+
+        public void Write(BinaryWriter writer)
+        {
+            writer.Write(Enabled);
+            writer.Write(MunePosition);
+            writer.Write(MuneSubPosition);
+        }
     }
 
     private readonly record struct EyeRotationBackup(Quaternion LeftEyeDelta, Quaternion RightEyeDelta)

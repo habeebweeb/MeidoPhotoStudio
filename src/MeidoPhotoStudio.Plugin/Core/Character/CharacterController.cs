@@ -224,6 +224,8 @@ public class CharacterController(CharacterModel characterModel, TransformWatcher
         {
             ik.MuneLEnabled = true;
             ik.MuneREnabled = true;
+            ik.RestoreMuneLPositions();
+            ik.RestoreMuneRPositions();
         }
 
         Body?.ResetAllShapeKeys();

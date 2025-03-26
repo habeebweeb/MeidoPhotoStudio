@@ -35,6 +35,10 @@ public class IKController : INotifyPropertyChanged
         this.character = character ?? throw new ArgumentNullException(nameof(character));
 
         this.character.ProcessingCharacterProps += OnCharacterProcessing;
+        this.character.ProcessedCharacterProps += OnCharacterPropsProcessed;
+
+        InitialMuneLPosition = new(GetBone("Mune_L").localPosition, GetBone("Mune_L_sub").localPosition);
+        InitialMuneRPosition = new(GetBone("Mune_R").localPosition, GetBone("Mune_R_sub").localPosition);
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
@@ -73,6 +77,9 @@ public class IKController : INotifyPropertyChanged
 
             character.Maid.body0.SetMuneYureLWithEnable(value);
 
+            if (value)
+                RestoreMuneLPositions();
+
             RaisePropertyChanged(nameof(MuneLEnabled));
         }
     }
@@ -87,8 +94,27 @@ public class IKController : INotifyPropertyChanged
 
             character.Maid.body0.SetMuneYureRWithEnable(value);
 
+            if (value)
+                RestoreMuneRPositions();
+
             RaisePropertyChanged(nameof(MuneREnabled));
         }
+    }
+
+    public ChestPositions InitialMuneLPosition { get; private set; }
+
+    public ChestPositions InitialMuneRPosition { get; private set; }
+
+    public ChestPositions MuneLPosition
+    {
+        get => new(GetBone("Mune_L").localPosition, GetBone("Mune_L_sub").localPosition);
+        set => (GetBone("Mune_L").localPosition, GetBone("Mune_L_sub").localPosition) = value;
+    }
+
+    public ChestPositions MuneRPosition
+    {
+        get => new(GetBone("Mune_R").localPosition, GetBone("Mune_R_sub").localPosition);
+        set => (GetBone("Mune_R").localPosition, GetBone("Mune_R_sub").localPosition) = value;
     }
 
     private static GameObject IKSolverTargetParent =>
@@ -232,6 +258,12 @@ public class IKController : INotifyPropertyChanged
             bone.transform.localPosition = localPosition;
         }
     }
+
+    public void RestoreMuneLPositions() =>
+        MuneLPosition = InitialMuneLPosition;
+
+    public void RestoreMuneRPositions() =>
+        MuneRPosition = InitialMuneRPosition;
 
     public void ApplyHandOrFootPreset(HandPresetModel presetModel, HandOrFootType type)
     {
@@ -434,6 +466,9 @@ public class IKController : INotifyPropertyChanged
         Object.Destroy(ikTargetParent);
     }
 
+    internal void RunOnLateUpdateEnd(Action action) =>
+        character.Maid.body0.OnLateUpdateEnd += action;
+
     private static HandController GetControllerByType(IKController ikController, HandOrFootType type) =>
         type switch
         {
@@ -458,6 +493,15 @@ public class IKController : INotifyPropertyChanged
         rotationLimitCache = [];
         digitRotationLimits = [];
         limbRotationLimits = [];
+    }
+
+    private void OnCharacterPropsProcessed(object sender, CharacterProcessingEventArgs e)
+    {
+        if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
+            return;
+
+        InitialMuneLPosition = new(GetBone("Mune_L").localPosition, GetBone("Mune_L_sub").localPosition);
+        InitialMuneRPosition = new(GetBone("Mune_R").localPosition, GetBone("Mune_R_sub").localPosition);
     }
 
     private void InitializeRotationLimits()

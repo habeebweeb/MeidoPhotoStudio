@@ -125,15 +125,7 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
     protected override void OnDestroying() =>
         characterController.ChangedTransform -= ResizeDragHandle;
 
-    private void ResizeDragHandle(object sender, TransformChangeEventArgs e)
-    {
-        if (!DragHandle || e.Type is not TransformChangeEventArgs.TransformType.Scale)
-            return;
-
-        DragHandle.Size = CharacterController.GameObject.transform.localScale.x;
-    }
-
-    private void BackupBoneRotations()
+    protected virtual void BackupBoneRotations()
     {
         boneBackup ??= new Quaternion[Transforms.Length];
 
@@ -141,10 +133,18 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
             boneBackup[i] = Transforms[i].localRotation;
     }
 
-    private void ApplyBackupBoneRotations()
+    protected virtual void ApplyBackupBoneRotations()
     {
         foreach (var (bone, backup) in Transforms.Zip(boneBackup))
             bone.localRotation = backup;
+    }
+
+    private void ResizeDragHandle(object sender, TransformChangeEventArgs e)
+    {
+        if (!DragHandle || e.Type is not TransformChangeEventArgs.TransformType.Scale)
+            return;
+
+        DragHandle.Size = CharacterController.GameObject.transform.localScale.x;
     }
 
     protected abstract class PoseableMode(CharacterDragHandleController controller)

@@ -641,7 +641,8 @@
     "undo": "Undo",
     "redo": "Redo",
     "cycleNextAnimation": "Cycle Next Animation",
-    "cyclePreviousAnimation": "Cycle Previous Animation"
+    "cyclePreviousAnimation": "Cycle Previous Animation",
+    "moveChest": "Show Chest Translation Gizmos"
   },
   "mainWindow": {
     "settingsButton": "Settings"

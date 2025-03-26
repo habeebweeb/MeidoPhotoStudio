@@ -77,6 +77,7 @@ public class InputConfiguration
         BindHotkey(Hotkey.RotateFinger5, "Rotate Fifth Finger", new KeyboardHotkey(KeyCode.Space, KeyCode.LeftShift, KeyCode.Alpha5));
         BindHotkey(Hotkey.RotateEyesChest, "Rotate Eyes or Chest", new KeyboardHotkey(KeyCode.LeftControl, KeyCode.LeftAlt));
         BindHotkey(Hotkey.RotateEyesChestAlternate, "Alternate Rotate Eyes or Chest", new KeyboardHotkey(KeyCode.LeftControl, KeyCode.LeftAlt, KeyCode.LeftShift));
+        BindHotkey(Hotkey.MoveChest, "Move Chest", new KeyboardHotkey(KeyCode.LeftControl, KeyCode.LeftAlt, KeyCode.Z));
         BindHotkey(Hotkey.RotateBody, "Body Rotation", new KeyboardHotkey(KeyCode.LeftAlt));
         BindHotkey(Hotkey.RotateBodyAlternate, "Body Rotation Alternate", new KeyboardHotkey(KeyCode.LeftAlt, KeyCode.LeftShift));
         BindHotkey(Hotkey.DragLowerLimb, "Drag Lower Limb", new KeyboardHotkey(KeyCode.LeftControl));

@@ -14,6 +14,7 @@ public class ChestDragHandleInputHandler(InputConfiguration inputConfiguration)
         None,
         Drag,
         RotateGizmo,
+        Move,
     }
 
     void IDragHandleInputHandler<ICharacterDragHandleController>.AddController(ICharacterDragHandleController controller) =>
@@ -30,6 +31,8 @@ public class ChestDragHandleInputHandler(InputConfiguration inputConfiguration)
             newMode = ChestMode.Drag;
         else if (inputConfiguration[Hotkey.RotateEyesChestAlternate].IsPressed())
             newMode = ChestMode.RotateGizmo;
+        else if (inputConfiguration[Hotkey.MoveChest].IsPressed())
+            newMode = ChestMode.Move;
 
         UpdateDragHandleMode(newMode);
     }
@@ -54,6 +57,7 @@ public class ChestDragHandleInputHandler(InputConfiguration inputConfiguration)
             ChestMode.None => controller.None,
             ChestMode.Drag => controller.Drag,
             ChestMode.RotateGizmo => controller.RotateGizmo,
+            ChestMode.Move => controller.Move,
             _ => controller.None,
         };
 }
