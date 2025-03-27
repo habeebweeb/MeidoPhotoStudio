@@ -21,6 +21,7 @@ public class CharacterSettingsPane : BasePane
     private readonly Toggle limitDigitsToggle;
     private readonly Toggle freeLookToggle;
     private readonly Toggle blinkToggle;
+    private readonly Toggle posingToggle;
 
     public CharacterSettingsPane(
         Translation translation,
@@ -61,6 +62,12 @@ public class CharacterSettingsPane : BasePane
 
         initialSettingHeader = new(new LocalizableGUIContent(translation, "characterSettingsPane", "initialSettingsHeader"));
         settingExplanationLabel = new(new LocalizableGUIContent(translation, "characterSettingsPane", "initialSettingsExplanation"));
+
+        posingToggle = new(
+            new LocalizableGUIContent(translation, "characterSettingsPane", "posingEnabledToggle"),
+            this.characterConfiguration.PosingEnabled.Value);
+
+        posingToggle.ControlEvent += OnPosingToggleChanged;
 
         precisePosingToggle = new(
             new LocalizableGUIContent(translation, "characterSettingsPane", "precisePosingToggle"),
@@ -119,12 +126,16 @@ public class CharacterSettingsPane : BasePane
         initialSettingHeader.Draw();
         settingExplanationLabel.Draw();
 
+        posingToggle.Draw();
         precisePosingToggle.Draw();
         limitJointsToggle.Draw();
         limitDigitsToggle.Draw();
         freeLookToggle.Draw();
         blinkToggle.Draw();
     }
+
+    private void OnPosingToggleChanged(object sender, EventArgs e) =>
+        characterConfiguration.PosingEnabled.Value = posingToggle.Value;
 
     private void OnPrecisePosingToggleChanged(object sender, EventArgs e) =>
         characterConfiguration.PrecisePosingEnabled.Value = precisePosingToggle.Value;

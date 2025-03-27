@@ -738,6 +738,7 @@
     "limitJointsToggle": "Joint limits enabled",
     "limitDigitsToggle": "Digit limits enabled",
     "freeLookToggle": "Free-look enabled",
-    "blinkToggle": "Blink enabled"
+    "blinkToggle": "Blink enabled",
+    "posingEnabledToggle": "Posing enabled"
   }
 }

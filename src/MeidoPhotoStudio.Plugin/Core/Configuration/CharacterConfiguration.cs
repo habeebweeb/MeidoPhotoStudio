@@ -54,6 +54,12 @@ public class CharacterConfiguration
             "Initial Blink State",
             true,
             "Initial setting to use for blink after characters are called.");
+
+        PosingEnabled = this.configFile.Bind(
+            Section,
+            "Initial Posing State",
+            true,
+            "Initial setting to use for posing after characters are called.");
     }
 
     public ConfigEntry<bool> AutomaticallyApplyPlacement { get; }
@@ -69,4 +75,6 @@ public class CharacterConfiguration
     public ConfigEntry<bool> FreeLookEnabled { get; }
 
     public ConfigEntry<bool> BlinkEnabled { get; }
+
+    public ConfigEntry<bool> PosingEnabled { get; }
 }

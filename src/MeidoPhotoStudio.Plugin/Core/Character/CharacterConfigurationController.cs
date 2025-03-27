@@ -34,6 +34,7 @@ public class CharacterConfigurationController
         foreach (var character in e.LoadedCharacters.Except(currentCharacters))
         {
             ikDragHandleService[character].BoneMode = characterConfiguration.PrecisePosingEnabled.Value;
+            ikDragHandleService[character].IKEnabled = characterConfiguration.PosingEnabled.Value;
             character.IK.LimitLimbRotations = characterConfiguration.LimitJointsEnabled.Value;
             character.IK.LimitDigitRotations = characterConfiguration.LimitDigitsEnabled.Value;
             character.Head.FreeLook = characterConfiguration.FreeLookEnabled.Value;
