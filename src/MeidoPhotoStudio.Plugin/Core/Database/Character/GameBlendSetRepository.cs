@@ -48,7 +48,7 @@ public class GameBlendSetRepository : IEnumerable<GameBlendSetModel>
                 blendSets[category] = [];
 
             foreach (var faceData in faceDataList)
-                blendSets[category].Add(new(faceData, translation["faceBlendPresetsDropdown", faceData.name]));
+                blendSets[category].Add(new(faceData, translation["faceBlendPresetsDropdown", faceData.setting_name]));
         }
 
         return blendSets.ToDictionary(
