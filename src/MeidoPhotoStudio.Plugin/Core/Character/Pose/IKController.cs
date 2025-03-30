@@ -29,6 +29,7 @@ public class IKController : INotifyPropertyChanged
     private bool limitLimbRotations = true;
     private bool limitDigitRotations = true;
     private bool dirty = false;
+    private (Vector3 MuneL, Vector3 MuneR) backupMuneScales;
 
     public IKController(CharacterController character)
     {
@@ -481,6 +482,8 @@ public class IKController : INotifyPropertyChanged
 
     private void OnCharacterProcessing(object sender, CharacterProcessingEventArgs e)
     {
+        backupMuneScales = (GetBone("Mune_L").localScale, GetBone("Mune_R").localScale);
+
         if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
             return;
 
@@ -497,6 +500,12 @@ public class IKController : INotifyPropertyChanged
 
     private void OnCharacterPropsProcessed(object sender, CharacterProcessingEventArgs e)
     {
+        if (!MuneLEnabled)
+            GetBone("Mune_L").localScale = backupMuneScales.MuneL;
+
+        if (!MuneREnabled)
+            GetBone("Mune_R").localScale = backupMuneScales.MuneR;
+
         if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
             return;
 
