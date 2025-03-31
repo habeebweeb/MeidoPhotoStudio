@@ -29,7 +29,7 @@ public class IKController : INotifyPropertyChanged
     private bool limitLimbRotations = true;
     private bool limitDigitRotations = true;
     private bool dirty = false;
-    private (Vector3 MuneL, Vector3 MuneR) backupMuneScales;
+    private (ChestBackup MuneL, ChestBackup MuneR) chestBackup;
 
     public IKController(CharacterController character)
     {
@@ -482,7 +482,7 @@ public class IKController : INotifyPropertyChanged
 
     private void OnCharacterProcessing(object sender, CharacterProcessingEventArgs e)
     {
-        backupMuneScales = (GetBone("Mune_L").localScale, GetBone("Mune_R").localScale);
+        chestBackup = (ChestBackup.Create(GetBone("Mune_L_sub")), ChestBackup.Create(GetBone("Mune_R_sub")));
 
         if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
             return;
@@ -500,17 +500,17 @@ public class IKController : INotifyPropertyChanged
 
     private void OnCharacterPropsProcessed(object sender, CharacterProcessingEventArgs e)
     {
+        if (e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
+        {
+            InitialMuneLPosition = new(GetBone("Mune_L").localPosition, GetBone("Mune_L_sub").localPosition);
+            InitialMuneRPosition = new(GetBone("Mune_R").localPosition, GetBone("Mune_R_sub").localPosition);
+        }
+
         if (!MuneLEnabled)
-            GetBone("Mune_L").localScale = backupMuneScales.MuneL;
+            chestBackup.MuneL.Apply(GetBone("Mune_L_sub"));
 
         if (!MuneREnabled)
-            GetBone("Mune_R").localScale = backupMuneScales.MuneR;
-
-        if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
-            return;
-
-        InitialMuneLPosition = new(GetBone("Mune_L").localPosition, GetBone("Mune_L_sub").localPosition);
-        InitialMuneRPosition = new(GetBone("Mune_R").localPosition, GetBone("Mune_R_sub").localPosition);
+            chestBackup.MuneR.Apply(GetBone("Mune_R_sub"));
     }
 
     private void InitializeRotationLimits()
@@ -658,5 +658,21 @@ public class IKController : INotifyPropertyChanged
             throw new ArgumentException($"'{nameof(name)}' cannot be null or empty.", nameof(name));
 
         PropertyChanged?.Invoke(this, new(name));
+    }
+
+    private readonly record struct ChestBackup(Vector3 MunePosition, Vector3 MuneSubPosition, Vector3 MuneScale)
+    {
+        public static ChestBackup Create(Transform subChest) =>
+            subChest
+                ? new(subChest.parent.localPosition, subChest.localPosition, subChest.parent.localScale)
+                : new(Vector3.zero, Vector3.zero, Vector3.one);
+
+        public void Apply(Transform subChest)
+        {
+            if (!subChest)
+                return;
+
+            (subChest.parent.localPosition, subChest.localPosition, subChest.parent.localScale) = this;
+        }
     }
 }
