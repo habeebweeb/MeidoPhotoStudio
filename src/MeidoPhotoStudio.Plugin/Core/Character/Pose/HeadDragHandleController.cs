@@ -135,8 +135,12 @@ public class HeadDragHandleController(
             Drag();
         }
 
-        public override void OnReleased() =>
+        public override void OnReleased()
+        {
+            base.OnReleased();
+
             clicked = false;
+        }
 
         public override void OnDoubleClicked() =>
             controller.HeadController.FreeLook = !controller.HeadController.FreeLook;
