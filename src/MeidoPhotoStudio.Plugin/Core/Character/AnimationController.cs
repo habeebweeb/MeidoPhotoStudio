@@ -52,14 +52,13 @@ public class AnimationController : INotifyPropertyChanged
 
             AnimationState.time = newTime;
 
-            if (!AnimationState.enabled)
-            {
-                AnimationState.enabled = true;
+            var playing = AnimationState.enabled;
 
-                Body.GetAnimation().Sample();
+            AnimationState.enabled = true;
 
-                AnimationState.enabled = false;
-            }
+            Body.GetAnimation().Sample();
+
+            AnimationState.enabled = playing;
 
             RaisePropertyChanged(nameof(Time));
 
