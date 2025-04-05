@@ -1,8 +1,8 @@
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
-namespace MeidoPhotoStudio.Plugin.Core.Schema;
+namespace MeidoPhotoStudio.Plugin.Core.Schema.Props;
 
-public class DragHandleSchema(short version = DragHandleSchema.SchemaVersion)
+public class PropDragHandleSchema(short version = PropDragHandleSchema.SchemaVersion)
 {
     public const short SchemaVersion = 1;
 

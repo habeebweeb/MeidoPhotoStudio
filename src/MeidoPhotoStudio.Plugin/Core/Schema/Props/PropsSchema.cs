@@ -8,7 +8,7 @@ public class PropsSchema(short version = PropsSchema.SchemaVersion)
 
     public List<PropControllerSchema> Props { get; init; }
 
-    public List<DragHandleSchema> DragHandleSettings { get; init; }
+    public List<PropDragHandleSchema> DragHandleSettings { get; init; }
 
     public List<AttachPointSchema> PropAttachment { get; init; }
 }

@@ -705,7 +705,7 @@ public class LegacyDeserializer : ISceneSerializer
                     }
                 }
 
-                static DragHandleSchema ConvertDragHandleSettings(LegacyPropSchema propSchema) =>
+                static PropDragHandleSchema ConvertDragHandleSettings(LegacyPropSchema propSchema) =>
                     new()
                     {
                         HandleEnabled = propSchema.DragHandleEnabled,

@@ -1,7 +1,5 @@
 using MeidoPhotoStudio.Plugin.Core.Props;
-using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Schema.Props;
-using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 
 namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
@@ -10,7 +8,7 @@ public class PropsSchemaBuilder(
     PropDragHandleService propDragHandleService,
     PropAttachmentService propAttachmentService,
     ISchemaBuilder<PropControllerSchema, PropController> propControllerSchemaBuilder,
-    ISchemaBuilder<DragHandleSchema, DragHandleControllerBase> dragHandleSchemaBuilder,
+    ISchemaBuilder<PropDragHandleSchema, PropDragHandleController> dragHandleSchemaBuilder,
     ISchemaBuilder<AttachPointSchema, AttachPointInfo> propAttachmentSchemaBuilder)
     : ISceneSchemaAspectBuilder<PropsSchema>
 {
@@ -26,7 +24,7 @@ public class PropsSchemaBuilder(
     private readonly ISchemaBuilder<PropControllerSchema, PropController> propControllerSchemaBuilder = propControllerSchemaBuilder
         ?? throw new ArgumentNullException(nameof(propControllerSchemaBuilder));
 
-    private readonly ISchemaBuilder<DragHandleSchema, DragHandleControllerBase> dragHandleSchemaBuilder = dragHandleSchemaBuilder
+    private readonly ISchemaBuilder<PropDragHandleSchema, PropDragHandleController> dragHandleSchemaBuilder = dragHandleSchemaBuilder
         ?? throw new ArgumentNullException(nameof(dragHandleSchemaBuilder));
 
     private readonly ISchemaBuilder<AttachPointSchema, AttachPointInfo> propAttachmentSchemaBuilder = propAttachmentSchemaBuilder

@@ -72,7 +72,7 @@ public class PropsAspectLoader(
                 propController.ShadowCasting = propSchema.ShadowCasting;
             }
 
-            void ApplyDragHandleSettings(PropController propController, DragHandleSchema dragHandleSchema)
+            void ApplyDragHandleSettings(PropController propController, PropDragHandleSchema dragHandleSchema)
             {
                 var propDragHandle = propDragHandleService[propController];
 
