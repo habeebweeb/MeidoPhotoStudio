@@ -117,9 +117,8 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
         {
             var wait = new WaitForSeconds(0.5f);
 
-            if (!menuPropsConfiguration.ModMenuPropsOnly && !GameMain.Instance.MenuDataBase.JobFinished())
-                while (!GameMain.Instance.MenuDataBase.JobFinished())
-                    yield return wait;
+            while (!GameMain.Instance.MenuDataBase.JobFinished())
+                yield return wait;
 
             var task = Task<Dictionary<MPN, List<MenuFilePropModel>>>.Factory
                 .StartNew(() => ProcessMenuFiles(menuPropsConfiguration, menuFileCacheSerializer));
