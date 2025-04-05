@@ -10,7 +10,7 @@ public class MessageAspectLoader(MessageWindowManager messageWindowManager) : IS
 
     public void Load(MessageWindowSchema messageWindowSchema, LoadOptions loadOptions)
     {
-        if (!loadOptions.Message)
+        if (!loadOptions["message"].Enabled)
             return;
 
         if (messageWindowSchema is null)

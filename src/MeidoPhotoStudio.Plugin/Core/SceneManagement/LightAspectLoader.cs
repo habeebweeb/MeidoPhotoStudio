@@ -15,7 +15,7 @@ public class LightAspectLoader(LightService lightService, BackgroundService back
 
     public void Load(LightsSchema lightsSchema, LoadOptions loadOptions)
     {
-        if (!loadOptions.Lights)
+        if (!loadOptions["lights"].Enabled)
             return;
 
         lightService.RemoveAllLights();

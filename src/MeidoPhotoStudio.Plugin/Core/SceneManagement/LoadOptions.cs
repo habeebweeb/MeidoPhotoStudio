@@ -1,54 +1,68 @@
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
-public readonly record struct LoadOptions(
-    CharacterLoadOptions Characters, bool Message, bool Camera, bool Lights, EffectLoadOptions Effects, bool Background, bool Props)
+public class LoadOptions : IEnumerable<LoadOption>
 {
-    public static LoadOptions All =>
-        new()
-        {
-            Characters = new()
-            {
-                Load = true,
-                ByID = false,
-            },
-            Message = true,
-            Camera = true,
-            Lights = true,
-            Effects = new()
-            {
-                Load = true,
-                Bloom = true,
-                DepthOfField = true,
-                Vignette = true,
-                Fog = true,
-                SepiaTone = true,
-                Blur = true,
-            },
-            Background = true,
-            Props = true,
-        };
+    private readonly LoadOption[] optionsList;
+    private readonly Dictionary<string, LoadOption> options;
 
-    public static LoadOptions Environment =>
-        new()
+    public LoadOptions(params LoadOption[] options)
+    {
+        _ = options ?? throw new ArgumentNullException(nameof(options));
+
+        optionsList = new LoadOption[options.Length];
+        this.options = new(StringComparer.Ordinal);
+
+        for (var i = 0; i < options.Length; i++)
         {
-            Characters = new()
-            {
-                Load = false,
-                ByID = false,
-            },
-            Message = false,
-            Camera = false,
-            Lights = true,
-            Effects = new()
-            {
-                Bloom = true,
-                DepthOfField = true,
-                Vignette = true,
-                Fog = true,
-                SepiaTone = true,
-                Blur = true,
-            },
-            Background = true,
-            Props = true,
-        };
+            var option = options[i] ?? throw new InvalidLoadOptionException("Load options cannot be null");
+
+            if (this.options.ContainsKey(option.Tag))
+                throw new InvalidLoadOptionException("Duplicate load options are not allowed.");
+
+            optionsList[i] = option;
+            this.options[option.Tag] = option;
+        }
+    }
+
+    public static LoadOptions All =>
+        new(
+            new(
+                "characters",
+                true,
+                new LoadOption("byID", false)),
+            new("message", true),
+            new("camera", true),
+            new("lights", true),
+            new(
+                "effects",
+                true,
+                new("bloom", true),
+                new("depthOfField", true),
+                new("vignette", true),
+                new("fog", true),
+                new("sepiaTone", true),
+                new("blur", true)),
+            new("background", true),
+            new("props", true));
+
+    public LoadOption this[string tag] =>
+        string.IsNullOrEmpty(tag)
+            ? throw new ArgumentException($"'{nameof(tag)}' cannot be null or empty.", nameof(tag))
+            : options[tag];
+
+    public bool TryGetOption(string tag, out LoadOption option) =>
+        string.IsNullOrEmpty(tag)
+            ? throw new ArgumentException($"'{nameof(tag)}' cannot be null or empty.", nameof(tag))
+            : options.TryGetValue(tag, out option);
+
+    public bool OptionEnabled(string tag) =>
+        string.IsNullOrEmpty(tag)
+            ? throw new ArgumentException($"'{nameof(tag)}' cannot be null or empty.", nameof(tag))
+            : TryGetOption(tag, out var option) && option.Enabled;
+
+    public IEnumerator<LoadOption> GetEnumerator() =>
+        ((IEnumerable<LoadOption>)optionsList).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() =>
+        GetEnumerator();
 }

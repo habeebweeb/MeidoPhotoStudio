@@ -10,7 +10,7 @@ public class CameraAspectLoader(CameraSaveSlotController cameraSaveSlotControlle
 
     public void Load(CameraSchema cameraSchema, LoadOptions loadOptions)
     {
-        if (!loadOptions.Camera)
+        if (!loadOptions["camera"].Enabled)
             return;
 
         if (cameraSchema is null)

@@ -15,6 +15,8 @@ public class QuickSaveService(
         ? throw new ArgumentException($"'{nameof(quickSaveDirectory)}' cannot be null", nameof(quickSaveDirectory))
         : quickSaveDirectory;
 
+    private readonly LoadOptions loadOptions = LoadOptions.All;
+
     private readonly CharacterService characterService = characterService
         ?? throw new ArgumentNullException(nameof(characterService));
 
@@ -42,7 +44,7 @@ public class QuickSaveService(
         sceneSerializer.SerializeScene(fileStream, sceneSchemaBuilder.Build());
     }
 
-    public void QuickLoad(LoadOptions? loadOptions = null)
+    public void QuickLoad()
     {
         if (characterService.Busy)
             return;
@@ -56,7 +58,7 @@ public class QuickSaveService(
             if (scene is null)
                 return;
 
-            sceneLoader.LoadScene(scene, loadOptions ?? LoadOptions.All);
+            sceneLoader.LoadScene(scene, loadOptions);
         }
         catch (IOException e)
         {

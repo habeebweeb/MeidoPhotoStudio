@@ -31,7 +31,7 @@ public class PropsAspectLoader(
 
     public void Load(PropsSchema propsSchema, LoadOptions loadOptions)
     {
-        if (!loadOptions.Props)
+        if (!loadOptions["props"].Enabled)
             return;
 
         propService.Clear();

@@ -32,25 +32,25 @@ public class EffectsAspectLoader(
 
     public void Load(EffectsSchema effectsSchema, LoadOptions loadOptions)
     {
-        if (!loadOptions.Effects.Load)
+        if (!loadOptions.TryGetOption("effects", out var option) || !option.Enabled)
             return;
 
-        if (loadOptions.Effects.Bloom)
+        if (option["bloom"].Enabled)
             ApplyBloom(effectsSchema.Bloom);
 
-        if (loadOptions.Effects.DepthOfField)
+        if (option["depthOfField"].Enabled)
             ApplyDepthOfField(effectsSchema.DepthOfField);
 
-        if (loadOptions.Effects.Fog)
+        if (option["fog"].Enabled)
             ApplyFog(effectsSchema.Fog);
 
-        if (loadOptions.Effects.Vignette)
+        if (option["vignette"].Enabled)
             ApplyVignette(effectsSchema.Vignette);
 
-        if (loadOptions.Effects.SepiaTone)
+        if (option["sepiaTone"].Enabled)
             ApplySepiaTone(effectsSchema.SepiaTone);
 
-        if (loadOptions.Effects.Blur)
+        if (option["blur"].Enabled)
             ApplyBlur(effectsSchema.Blur);
     }
 

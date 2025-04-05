@@ -54,6 +54,9 @@ public class SceneLoader(
         if (sceneSchema is null)
             throw new ArgumentNullException(nameof(sceneSchema));
 
+        if (loadOptions is null)
+            throw new ArgumentNullException(nameof(loadOptions));
+
         characterAspectLoader.Load(sceneSchema.Character, loadOptions);
         messageAspectLoader.Load(sceneSchema.MessageWindow, loadOptions);
         cameraAspectLoader.Load(sceneSchema.Camera, loadOptions);

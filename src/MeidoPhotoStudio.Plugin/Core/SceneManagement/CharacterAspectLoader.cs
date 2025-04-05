@@ -81,13 +81,13 @@ public class CharacterAspectLoader(
 
     public void Load(CharactersSchema charactersSchema, LoadOptions loadOptions)
     {
-        if (!loadOptions.Characters.Load)
+        if (!loadOptions.TryGetOption("characters", out var option) || !option.Enabled)
             return;
 
         if (charactersSchema is null)
             return;
 
-        if (charactersSchema.Version >= 2 && loadOptions.Characters.ByID)
+        if (charactersSchema.Version >= 2 && option["byID"].Enabled)
             LoadCharactersByID(charactersSchema);
         else
             Apply();
