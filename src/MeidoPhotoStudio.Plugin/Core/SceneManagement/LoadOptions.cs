@@ -1,49 +1,32 @@
 namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
-public class LoadOptions : IEnumerable<LoadOption>
+public class LoadOptions : ILoadOptions
 {
-    private readonly LoadOption[] optionsList;
+    private readonly List<LoadOption> optionsList;
     private readonly Dictionary<string, LoadOption> options;
 
     public LoadOptions(params LoadOption[] options)
     {
         _ = options ?? throw new ArgumentNullException(nameof(options));
 
-        optionsList = new LoadOption[options.Length];
+        optionsList = new(options.Length);
         this.options = new(StringComparer.Ordinal);
 
-        for (var i = 0; i < options.Length; i++)
+        foreach (var option in options)
         {
-            var option = options[i] ?? throw new InvalidLoadOptionException("Load options cannot be null");
+            _ = option ?? throw new InvalidLoadOptionException("Load options cannot be null");
 
             if (this.options.ContainsKey(option.Tag))
                 throw new InvalidLoadOptionException("Duplicate load options are not allowed.");
 
-            optionsList[i] = option;
+            optionsList.Add(option);
             this.options[option.Tag] = option;
         }
     }
 
-    public static LoadOptions All =>
-        new(
-            new(
-                "characters",
-                true,
-                new LoadOption("byID", false)),
-            new("message", true),
-            new("camera", true),
-            new("lights", true),
-            new(
-                "effects",
-                true,
-                new("bloom", true),
-                new("depthOfField", true),
-                new("vignette", true),
-                new("fog", true),
-                new("sepiaTone", true),
-                new("blur", true)),
-            new("background", true),
-            new("props", true));
+    public event EventHandler<LoadOptionsChangedEventArgs> AddedOption;
+
+    public event EventHandler<LoadOptionsChangedEventArgs> RemovedOption;
 
     public LoadOption this[string tag] =>
         string.IsNullOrEmpty(tag)
@@ -60,8 +43,43 @@ public class LoadOptions : IEnumerable<LoadOption>
             ? throw new ArgumentException($"'{nameof(tag)}' cannot be null or empty.", nameof(tag))
             : TryGetOption(tag, out var option) && option.Enabled;
 
+    public void AddLoadOption(LoadOption loadOption)
+    {
+        _ = loadOption ?? throw new ArgumentNullException(nameof(loadOption));
+
+        if (options.ContainsKey(loadOption.Tag))
+        {
+            Plugin.Logger.LogInfo($"A load option with the tag '{loadOption.Tag}' is already registered.");
+
+            return;
+        }
+
+        options.Add(loadOption.Tag, loadOption);
+        optionsList.Add(loadOption);
+
+        AddedOption?.Invoke(this, new(loadOption));
+    }
+
+    public void RemoveLoadOption(string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            throw new ArgumentException($"'{nameof(tag)}' cannot be null or empty.", nameof(tag));
+
+        if (!options.TryGetValue(tag, out var existingOption))
+        {
+            Plugin.Logger.LogInfo($"No load option with tag '{tag}' is registered.");
+
+            return;
+        }
+
+        options.Remove(tag);
+        optionsList.Remove(existingOption);
+
+        RemovedOption?.Invoke(this, new(existingOption));
+    }
+
     public IEnumerator<LoadOption> GetEnumerator() =>
-        ((IEnumerable<LoadOption>)optionsList).GetEnumerator();
+        optionsList.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();

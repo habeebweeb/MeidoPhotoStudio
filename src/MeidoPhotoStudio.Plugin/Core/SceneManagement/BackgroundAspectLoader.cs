@@ -12,7 +12,7 @@ public class BackgroundAspectLoader(BackgroundService backgroundService, Backgro
     private readonly BackgroundService backgroundService = backgroundService
         ?? throw new ArgumentNullException(nameof(backgroundService));
 
-    public void Load(BackgroundSchema backgroundSchema, LoadOptions loadOptions)
+    public void Load(BackgroundSchema backgroundSchema, ILoadOptions loadOptions)
     {
         if (!loadOptions["background"].Enabled)
             return;

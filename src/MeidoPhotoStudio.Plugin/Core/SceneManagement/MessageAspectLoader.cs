@@ -8,7 +8,7 @@ public class MessageAspectLoader(MessageWindowManager messageWindowManager) : IS
     private readonly MessageWindowManager messageWindowManager = messageWindowManager
         ?? throw new ArgumentNullException(nameof(messageWindowManager));
 
-    public void Load(MessageWindowSchema messageWindowSchema, LoadOptions loadOptions)
+    public void Load(MessageWindowSchema messageWindowSchema, ILoadOptions loadOptions)
     {
         if (!loadOptions["message"].Enabled)
             return;

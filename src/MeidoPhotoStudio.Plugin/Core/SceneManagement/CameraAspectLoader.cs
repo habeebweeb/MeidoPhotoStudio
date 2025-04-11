@@ -8,7 +8,7 @@ public class CameraAspectLoader(CameraSaveSlotController cameraSaveSlotControlle
     private readonly CameraSaveSlotController cameraSaveSlotController = cameraSaveSlotController
         ?? throw new ArgumentNullException(nameof(cameraSaveSlotController));
 
-    public void Load(CameraSchema cameraSchema, LoadOptions loadOptions)
+    public void Load(CameraSchema cameraSchema, ILoadOptions loadOptions)
     {
         if (!loadOptions["camera"].Enabled)
             return;

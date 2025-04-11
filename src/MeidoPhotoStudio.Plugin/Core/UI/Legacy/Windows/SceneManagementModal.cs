@@ -24,7 +24,8 @@ public class SceneManagementModal : BaseWindow
         ScreenshotService screenshotService,
         SceneSchemaBuilder sceneSchemaBuilder,
         ISceneSerializer sceneSerializer,
-        SceneLoader sceneLoader)
+        SceneLoader sceneLoader,
+        LoadOptionsService loadOptionsService)
     {
         _ = translation ?? throw new ArgumentNullException(nameof(translation));
         _ = sceneRepository ?? throw new ArgumentNullException(nameof(sceneRepository));
@@ -32,9 +33,19 @@ public class SceneManagementModal : BaseWindow
         _ = sceneSchemaBuilder ?? throw new ArgumentNullException(nameof(sceneSchemaBuilder));
         _ = sceneSerializer ?? throw new ArgumentNullException(nameof(sceneSerializer));
         _ = sceneLoader ?? throw new ArgumentNullException(nameof(sceneLoader));
+        _ = loadOptionsService ?? throw new ArgumentNullException(nameof(loadOptionsService));
 
         noneMode = new(this);
-        manageSceneMode = new(this, translation, sceneSerializer, sceneSchemaBuilder, screenshotService, sceneLoader, sceneRepository);
+        manageSceneMode = new(
+            this,
+            translation,
+            sceneSerializer,
+            sceneSchemaBuilder,
+            screenshotService,
+            sceneLoader,
+            sceneRepository,
+            loadOptionsService);
+
         deleteCategoryMode = new(this, translation, sceneRepository);
 
         CurrentMode = noneMode;
@@ -139,9 +150,9 @@ public class SceneManagementModal : BaseWindow
         private readonly SceneRepository sceneRepository;
         private readonly DeleteSceneMode deleteSceneMode;
         private readonly ErrorMode errorMode;
+        private readonly LoadOptionsPane loadOptionsPane;
         private readonly WindowSize manageSceneWindowSize = (540, 415);
         private readonly WindowSize loadOptionsWindowSize = (800, 415);
-        private readonly LoadOptions loadOptions;
 
         private readonly LazyStyle infoLabelStyle = new(
             StyleSheet.TextSize,
@@ -150,14 +161,6 @@ public class SceneManagementModal : BaseWindow
                 alignment = TextAnchor.MiddleCenter,
                 normal = { background = InfoHighlight },
             });
-
-        private readonly LazyStyle paddedToggleStyle = new(
-            StyleSheet.TextSize,
-            static () => new(GUI.skin.toggle)
-            {
-                margin = { left = UIUtility.Scaled(15) },
-            },
-            static style => style.margin.left = UIUtility.Scaled(15));
 
         private readonly LazyStyle thumbnailStyle = new(
             0,
@@ -175,11 +178,9 @@ public class SceneManagementModal : BaseWindow
         private readonly Button deleteButton;
         private readonly Button overwriteButton;
         private readonly Label sceneFilenameLabel;
-        private readonly KeyedTree<Toggle> loadOptionsToggles;
         private readonly Toggle loadOptionsToggle;
         private readonly GUIContent characterCountContent = new();
 
-        private Vector2 loadOptionsScrollPosition;
         private SceneSchema managingSceneSchema;
         private SceneModel managingScene;
 
@@ -190,7 +191,8 @@ public class SceneManagementModal : BaseWindow
             SceneSchemaBuilder sceneSchemaBuilder,
             ScreenshotService screenshotService,
             SceneLoader sceneLoader,
-            SceneRepository sceneRepository)
+            SceneRepository sceneRepository,
+            LoadOptionsService loadOptionsService)
             : base(sceneManagementModal)
         {
             this.translation = translation ?? throw new ArgumentNullException(nameof(translation));
@@ -201,8 +203,9 @@ public class SceneManagementModal : BaseWindow
 
             this.sceneLoader = sceneLoader ?? throw new ArgumentNullException(nameof(sceneLoader));
             this.sceneRepository = sceneRepository ?? throw new ArgumentNullException(nameof(sceneRepository));
+            _ = loadOptionsService ?? throw new ArgumentNullException(nameof(loadOptionsService));
 
-            loadOptions = LoadOptions.All;
+            loadOptionsPane = new(translation, loadOptionsService);
 
             sceneFilenameLabel = new(string.Empty);
 
@@ -221,75 +224,8 @@ public class SceneManagementModal : BaseWindow
             loadOptionsToggle = new(new LocalizableGUIContent(translation, "sceneManagerModal", "loadOptionsToggle"));
             loadOptionsToggle.ControlEvent += OnLoadOptionsToggleChanged;
 
-            loadOptionsToggles = new(
-                CreateLoadOptionToggle(
-                    "characters",
-                    new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadCharactersToggle"),
-                    null,
-                    CreateLoadOptionToggle(
-                        "byID",
-                        new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadCharactersByIDToggle"),
-                        loadOptions["characters"])),
-                CreateLoadOptionToggle(
-                    "message",
-                    new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadMessageToggle")),
-                CreateLoadOptionToggle(
-                    "camera",
-                    new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadCameraToggle")),
-                CreateLoadOptionToggle(
-                    "lights",
-                    new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadLightsToggle")),
-                CreateLoadOptionToggle(
-                    "effects",
-                    new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadEffectsToggle"),
-                    null,
-                    CreateLoadOptionToggle(
-                        "bloom",
-                        new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadBloomToggle"),
-                        loadOptions["effects"]),
-                    CreateLoadOptionToggle(
-                        "depthOfField",
-                        new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadDepthOfFieldToggle"),
-                        loadOptions["effects"]),
-                    CreateLoadOptionToggle(
-                        "vignette",
-                        new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadVignetteToggle"),
-                        loadOptions["effects"]),
-                    CreateLoadOptionToggle(
-                        "fog",
-                        new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadFogToggle"),
-                        loadOptions["effects"]),
-                    CreateLoadOptionToggle(
-                        "sepiaTone",
-                        new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadSepiaToneToggle"),
-                        loadOptions["effects"]),
-                    CreateLoadOptionToggle(
-                        "blur",
-                        new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadBlurToggle"),
-                        loadOptions["effects"])),
-                CreateLoadOptionToggle(
-                    "background",
-                    new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadBackgroundToggle")),
-                CreateLoadOptionToggle(
-                    "props",
-                    new LocalizableGUIContent(translation, "sceneManagerModalLoadOptions", "loadPropsToggle")));
-
             deleteSceneMode = new(sceneManagementModal, this, translation, sceneRepository);
             errorMode = new(sceneManagementModal, translation);
-
-            KeyedTree<Toggle>.Node CreateLoadOptionToggle(
-                string key,
-                GUIContent content,
-                LoadOption option = null,
-                params KeyedTree<Toggle>.Node[] children)
-            {
-                var toggle = new Toggle(content, option is null ? loadOptions[key].Enabled : option[key].Enabled);
-
-                toggle.ControlEvent += (_, _) =>
-                    (option is null ? loadOptions[key] : option[key]).Enabled = toggle.Value;
-
-                return new(key, toggle, children ?? []);
-            }
         }
 
         public override void Draw()
@@ -299,7 +235,7 @@ public class SceneManagementModal : BaseWindow
             DrawManageScene();
 
             if (loadOptionsToggle.Value)
-                DrawLoadOptions();
+                loadOptionsPane.Draw();
 
             GUILayout.EndHorizontal();
 
@@ -351,73 +287,6 @@ public class SceneManagementModal : BaseWindow
                     GUILayout.EndHorizontal();
                 }
             }
-
-            void DrawLoadOptions()
-            {
-                GUILayout.BeginVertical();
-
-                loadOptionsScrollPosition = GUILayout.BeginScrollView(loadOptionsScrollPosition);
-
-                GUI.enabled = managingSceneSchema.Character is not null;
-
-                loadOptionsToggles["characters"].Value.Draw();
-
-                if (loadOptions["characters"].Enabled)
-                {
-                    GUI.enabled = managingSceneSchema.Character?.Version >= 2;
-
-                    loadOptionsToggles["characters"]["byID"].Value.Draw(paddedToggleStyle);
-                }
-
-                UIUtility.DrawBlackLine();
-
-                GUI.enabled = managingSceneSchema.MessageWindow is not null;
-
-                loadOptionsToggles["message"].Value.Draw();
-                UIUtility.DrawBlackLine();
-
-                GUI.enabled = managingSceneSchema.Camera is not null;
-
-                loadOptionsToggles["camera"].Value.Draw();
-                UIUtility.DrawBlackLine();
-
-                GUI.enabled = managingSceneSchema.Lights is not null;
-
-                loadOptionsToggles["lights"].Value.Draw();
-                UIUtility.DrawBlackLine();
-
-                GUI.enabled = managingSceneSchema.Effects is not null;
-
-                loadOptionsToggles["effects"].Value.Draw();
-
-                if (loadOptions["effects"].Enabled)
-                {
-                    loadOptionsToggles["effects"]["bloom"].Value.Draw(paddedToggleStyle);
-                    loadOptionsToggles["effects"]["depthOfField"].Value.Draw(paddedToggleStyle);
-                    loadOptionsToggles["effects"]["vignette"].Value.Draw(paddedToggleStyle);
-                    loadOptionsToggles["effects"]["fog"].Value.Draw(paddedToggleStyle);
-                    loadOptionsToggles["effects"]["sepiaTone"].Value.Draw(paddedToggleStyle);
-                    loadOptionsToggles["effects"]["blur"].Value.Draw(paddedToggleStyle);
-                }
-
-                UIUtility.DrawBlackLine();
-
-                GUI.enabled = managingSceneSchema.Background is not null;
-
-                loadOptionsToggles["background"].Value.Draw();
-                UIUtility.DrawBlackLine();
-
-                GUI.enabled = managingSceneSchema.Props is not null;
-
-                loadOptionsToggles["props"].Value.Draw();
-                UIUtility.DrawBlackLine();
-
-                GUI.enabled = true;
-
-                GUILayout.EndScrollView();
-
-                GUILayout.EndVertical();
-            }
         }
 
         public override void OnScreenDimensionsChanged()
@@ -460,6 +329,8 @@ public class SceneManagementModal : BaseWindow
 
             managingScene = scene;
             managingSceneSchema = schema;
+
+            loadOptionsPane.SetScene(managingSceneSchema);
 
             sceneFilenameLabel.Text = scene.Name;
 
@@ -563,7 +434,7 @@ public class SceneManagementModal : BaseWindow
 
         private void OnLoadButtonPushed(object sender, EventArgs e)
         {
-            sceneLoader.LoadScene(managingSceneSchema, loadOptions);
+            sceneLoader.LoadScene(managingSceneSchema, loadOptionsPane.LoadOptions);
 
             CloseModal();
         }
@@ -757,23 +628,253 @@ public class SceneManagementModal : BaseWindow
                 CloseModal();
         }
 
-        private class KeyedTree<T>(params KeyedTree<T>.Node[] children)
+        private class LoadOptionsPane
         {
-            private readonly Dictionary<string, Node> nodes = children.ToDictionary(static node => node.Key, static node => node);
+            private readonly KeyedTree<bool> loadOptionValidityTree;
+            private readonly KeyedTree<Toggle> loadOptionsToggles;
+            private readonly Dictionary<int, LazyStyle> loadOptionToggleStyles = [];
 
-            public Node this[string key] =>
-                nodes[key];
+            private Vector2 loadOptionsScrollPosition;
 
-            public class Node(string key, T value, params Node[] children)
+            public LoadOptionsPane(Translation translation, LoadOptionsService loadOptionsService)
+            {
+                LoadOptions = loadOptionsService.CreateLoadOptions();
+                LoadOptions.AddedOption += OnLoadOptionAdded;
+                LoadOptions.RemovedOption += OnLoadOptionRemoved;
+
+                loadOptionValidityTree = new(
+                    new(
+                        "characters",
+                        true,
+                        new KeyedTree<bool>.Node("byID", true)),
+                    new("message", true),
+                    new("camera", true),
+                    new("lights", true),
+                    new(
+                        "effects",
+                        true,
+                        new("bloom", true),
+                        new("depthOfField", true),
+                        new("vignette", true),
+                        new("fog", true),
+                        new("sepiaTone", true),
+                        new("blur", true)),
+                    new("background", true),
+                    new("props", true));
+
+                var translationTree = new KeyedTree<string>(
+                    new(
+                        "characters",
+                        "loadCharactersToggle",
+                        new KeyedTree<string>.Node("byID", "loadCharactersByIDToggle")),
+                    new("message", "loadMessageToggle"),
+                    new("camera", "loadCameraToggle"),
+                    new("lights", "loadLightsToggle"),
+                    new(
+                        "effects",
+                        "loadEffectsToggle",
+                        new("bloom", "loadBloomToggle"),
+                        new("depthOfField", "loadDepthOfFieldToggle"),
+                        new("vignette", "loadVignetteToggle"),
+                        new("fog", "loadFogToggle"),
+                        new("sepiaTone", "loadSepiaToneToggle"),
+                        new("blur", "loadBlurToggle")),
+                    new("background", "loadBackgroundToggle"),
+                    new("props", "loadPropsToggle"));
+
+                loadOptionsToggles = new();
+
+                const string LoadOptionTableKey = "sceneManagerModalLoadOptions";
+
+                foreach (var loadOption in LoadOptions)
+                {
+                    var content = translationTree.TryGetNode(loadOption.Tag, out var translationNode)
+                        ? new LocalizableGUIContent(translation, LoadOptionTableKey, translationNode.Value)
+                        : new GUIContent(loadOption.Tag);
+
+                    loadOptionsToggles[loadOption.Tag] = CreateLoadOptionToggle(loadOption, content);
+
+                    AddLoadOptionToggle(loadOption, loadOptionsToggles[loadOption.Tag], translationNode);
+                }
+
+                void AddLoadOptionToggle(LoadOption loadOption, KeyedTree<Toggle>.Node parent, KeyedTree<string>.Node translationParent)
+                {
+                    foreach (var subOption in loadOption)
+                    {
+                        KeyedTree<string>.Node translationNode = null;
+
+                        var content = translationParent?.TryGetNode(subOption.Tag, out translationNode) ?? false
+                            ? new LocalizableGUIContent(translation, LoadOptionTableKey, translationNode.Value)
+                            : new GUIContent(subOption.Tag);
+
+                        parent[subOption.Tag] = CreateLoadOptionToggle(subOption, content);
+
+                        AddLoadOptionToggle(subOption, parent[subOption.Tag], translationNode);
+                    }
+                }
+            }
+
+            public ILoadOptions LoadOptions { get; }
+
+            // TODO: Add a Valid property in LoadOption?
+            public void SetScene(SceneSchema scene)
+            {
+                loadOptionValidityTree["characters"].Value = scene.Character is not null;
+                loadOptionValidityTree["characters"]["byID"].Value = scene.Character?.Version >= 2;
+                loadOptionValidityTree["message"].Value = scene.MessageWindow is not null;
+                loadOptionValidityTree["camera"].Value = scene.Camera is not null;
+                loadOptionValidityTree["lights"].Value = scene.Lights is not null;
+                loadOptionValidityTree["effects"].Value = scene.Effects is not null;
+                loadOptionValidityTree["effects"]["bloom"].Value = true;
+                loadOptionValidityTree["effects"]["depthOfField"].Value = true;
+                loadOptionValidityTree["effects"]["vignette"].Value = true;
+                loadOptionValidityTree["effects"]["fog"].Value = true;
+                loadOptionValidityTree["effects"]["sepiaTone"].Value = true;
+                loadOptionValidityTree["effects"]["blur"].Value = true;
+                loadOptionValidityTree["background"].Value = scene.Background is not null;
+                loadOptionValidityTree["props"].Value = scene.Props is not null;
+            }
+
+            public void Draw()
+            {
+                GUILayout.BeginVertical();
+
+                loadOptionsScrollPosition = GUILayout.BeginScrollView(loadOptionsScrollPosition);
+
+                foreach (var loadOption in LoadOptions)
+                {
+                    loadOptionValidityTree.TryGetNode(loadOption.Tag, out var validityNode);
+                    loadOptionsToggles.TryGetNode(loadOption.Tag, out var loadOptionToggle);
+                    DrawLoadOption(loadOption, loadOptionToggle, validityNode);
+
+                    UIUtility.DrawBlackLine();
+                }
+
+                GUI.enabled = true;
+
+                GUILayout.EndScrollView();
+
+                GUILayout.EndVertical();
+
+                void DrawLoadOption(LoadOption loadOption, KeyedTree<Toggle>.Node toggleNode, KeyedTree<bool>.Node validityNode, int depth = 0)
+                {
+                    GUI.enabled = validityNode?.Value ?? true;
+
+                    if (depth is 0)
+                    {
+                        toggleNode.Value.Draw();
+                    }
+                    else
+                    {
+                        if (!loadOptionToggleStyles.TryGetValue(depth, out var style))
+                            loadOptionToggleStyles[depth] = style = new(
+                                StyleSheet.TextSize,
+                                () => new(GUI.skin.toggle)
+                                {
+                                    margin = { left = UIUtility.Scaled(15 * depth) },
+                                },
+                                style => style.margin.left = UIUtility.Scaled(15 * depth));
+
+                        toggleNode.Value.Draw(style);
+                    }
+
+                    if (!loadOption.Enabled)
+                        return;
+
+                    foreach (var child in loadOption)
+                    {
+                        KeyedTree<bool>.Node loadOptionValidity = null;
+                        validityNode?.TryGetNode(child.Tag, out loadOptionValidity);
+                        toggleNode.TryGetNode(child.Tag, out var loadOptionToggle);
+
+                        DrawLoadOption(child, loadOptionToggle, loadOptionValidity, depth + 1);
+                    }
+                }
+            }
+
+            private void OnLoadOptionAdded(object sender, LoadOptionsChangedEventArgs e)
+            {
+                var loadOption = e.LoadOption;
+
+                loadOptionsToggles[loadOption.Tag] = CreateLoadOptionToggle(loadOption, new(loadOption.Tag));
+
+                AddLoadOptionToggle(loadOption, loadOptionsToggles[loadOption.Tag]);
+
+                void AddLoadOptionToggle(LoadOption loadOption, KeyedTree<Toggle>.Node parent)
+                {
+                    foreach (var subOption in loadOption)
+                    {
+                        parent[subOption.Tag] = CreateLoadOptionToggle(subOption);
+
+                        AddLoadOptionToggle(subOption, parent[subOption.Tag]);
+                    }
+                }
+            }
+
+            private void OnLoadOptionRemoved(object sender, LoadOptionsChangedEventArgs e) =>
+                loadOptionsToggles.RemoveNode(e.LoadOption.Tag);
+
+            private KeyedTree<Toggle>.Node CreateLoadOptionToggle(LoadOption option, GUIContent content = null)
+            {
+                var toggle = new Toggle(content ?? new(option.Tag), option.Enabled);
+
+                toggle.ControlEvent += (_, _) =>
+                    option.Enabled = toggle.Value;
+
+                return new(option.Tag, toggle);
+            }
+
+            private class KeyedTree<T>(params KeyedTree<T>.Node[] children) : IEnumerable<KeyedTree<T>.Node>
             {
                 private readonly Dictionary<string, Node> nodes = children.ToDictionary(static node => node.Key, static node => node);
 
-                public string Key { get; } = key;
+                public Node this[string key]
+                {
+                    get => nodes[key];
+                    set => nodes[key] = value;
+                }
 
-                public T Value { get; } = value;
+                public bool ContainsKey(string key) =>
+                    nodes.ContainsKey(key);
 
-                public Node this[string key] =>
-                    nodes[key];
+                public bool RemoveNode(string key) =>
+                    nodes.Remove(key);
+
+                public bool TryGetNode(string key, out Node node) =>
+                    nodes.TryGetValue(key, out node);
+
+                public IEnumerator<Node> GetEnumerator() =>
+                    nodes.Values.GetEnumerator();
+
+                IEnumerator IEnumerable.GetEnumerator() =>
+                    GetEnumerator();
+
+                public class Node(string key, T value, params Node[] children) : IEnumerable<Node>
+                {
+                    private readonly Dictionary<string, Node> nodes = children.ToDictionary(static node => node.Key, static node => node);
+
+                    public string Key { get; } = key;
+
+                    public T Value { get; set; } = value;
+
+                    public Node this[string key]
+                    {
+                        get => nodes[key];
+                        set => nodes[key] = value;
+                    }
+
+                    public bool ContainsKey(string key) =>
+                        nodes.ContainsKey(key);
+
+                    public bool TryGetNode(string key, out Node node) =>
+                        nodes.TryGetValue(key, out node);
+
+                    public IEnumerator<Node> GetEnumerator() =>
+                        nodes.Values.GetEnumerator();
+
+                    IEnumerator IEnumerable.GetEnumerator() =>
+                        GetEnumerator();
+                }
             }
         }
     }
@@ -782,7 +883,6 @@ public class SceneManagementModal : BaseWindow
     {
         private readonly WindowSize windowSize = (450, 200);
         private readonly SceneRepository sceneRepository;
-        private readonly Translation translation;
         private readonly LocalizableGUIContent messageContent;
         private readonly Label messageLabel;
         private readonly Button deleteButton;
@@ -795,7 +895,7 @@ public class SceneManagementModal : BaseWindow
             : base(sceneManagementModal)
         {
             this.sceneRepository = sceneRepository ?? throw new ArgumentNullException(nameof(sceneRepository));
-            this.translation = translation ?? throw new ArgumentNullException(nameof(translation));
+            _ = translation ?? throw new ArgumentNullException(nameof(translation));
 
             messageContent = new LocalizableGUIContent(
                 translation,

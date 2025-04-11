@@ -49,7 +49,7 @@ public class SceneLoader(
     private readonly ISceneAspectLoader<ExtensionSchema> extensionAspectLoader = extensionAspectLoader
         ?? throw new ArgumentNullException(nameof(extensionAspectLoader));
 
-    public void LoadScene(SceneSchema sceneSchema, LoadOptions loadOptions)
+    public void LoadScene(SceneSchema sceneSchema, ILoadOptions loadOptions)
     {
         if (sceneSchema is null)
             throw new ArgumentNullException(nameof(sceneSchema));

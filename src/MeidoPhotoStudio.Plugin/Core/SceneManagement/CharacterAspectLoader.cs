@@ -79,7 +79,7 @@ public class CharacterAspectLoader(
     private readonly BodyShapeKeyConfiguration bodyShapeKeyConfiguration = bodyShapeKeyConfiguration
         ?? throw new ArgumentNullException(nameof(bodyShapeKeyConfiguration));
 
-    public void Load(CharactersSchema charactersSchema, LoadOptions loadOptions)
+    public void Load(CharactersSchema charactersSchema, ILoadOptions loadOptions)
     {
         if (!loadOptions.TryGetOption("characters", out var option) || !option.Enabled)
             return;

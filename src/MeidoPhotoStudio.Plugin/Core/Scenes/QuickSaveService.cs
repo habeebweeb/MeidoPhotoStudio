@@ -9,13 +9,12 @@ public class QuickSaveService(
     CharacterService characterService,
     SceneSchemaBuilder sceneSchemaBuilder,
     ISceneSerializer sceneSerializer,
-    SceneLoader sceneLoader)
+    SceneLoader sceneLoader,
+    LoadOptionsService loadOptionsService)
 {
     private readonly string quickSaveDirectory = string.IsNullOrEmpty(quickSaveDirectory)
         ? throw new ArgumentException($"'{nameof(quickSaveDirectory)}' cannot be null", nameof(quickSaveDirectory))
         : quickSaveDirectory;
-
-    private readonly LoadOptions loadOptions = LoadOptions.All;
 
     private readonly CharacterService characterService = characterService
         ?? throw new ArgumentNullException(nameof(characterService));
@@ -28,6 +27,27 @@ public class QuickSaveService(
 
     private readonly SceneLoader sceneLoader = sceneLoader
         ?? throw new ArgumentNullException(nameof(sceneLoader));
+
+    private readonly LoadOptionsService loadOptionsService = loadOptionsService
+        ?? throw new ArgumentNullException(nameof(loadOptionsService));
+
+    private ILoadOptions loadOptions;
+
+    private ILoadOptions LoadOptions
+    {
+        get
+        {
+            if (loadOptions is not null)
+                return loadOptions;
+
+            loadOptions = loadOptionsService.CreateLoadOptions();
+
+            loadOptions.AddedOption += static (_, e) =>
+                e.LoadOption.Enabled = true;
+
+            return loadOptions;
+        }
+    }
 
     private string QuickSavePath =>
         Path.Combine(quickSaveDirectory, "mpsquicksave");
@@ -58,7 +78,7 @@ public class QuickSaveService(
             if (scene is null)
                 return;
 
-            sceneLoader.LoadScene(scene, loadOptions);
+            sceneLoader.LoadScene(scene, LoadOptions);
         }
         catch (IOException e)
         {

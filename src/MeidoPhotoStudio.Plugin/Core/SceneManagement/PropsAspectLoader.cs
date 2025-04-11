@@ -29,7 +29,7 @@ public class PropsAspectLoader(
     private readonly PropSchemaToPropModelMapper propSchemaMapper = propSchemaMapper
         ?? throw new ArgumentNullException(nameof(propSchemaMapper));
 
-    public void Load(PropsSchema propsSchema, LoadOptions loadOptions)
+    public void Load(PropsSchema propsSchema, ILoadOptions loadOptions)
     {
         if (!loadOptions["props"].Enabled)
             return;

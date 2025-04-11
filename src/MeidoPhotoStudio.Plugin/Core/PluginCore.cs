@@ -438,9 +438,11 @@ public partial class PluginCore : MonoBehaviour
                 propSchemaMapper),
             extensionAspectLoader);
 
+        var loadOptionsService = new LoadOptionsService();
         var extensionDataConverter = new ExtensionDataConverter();
         var sceneSerializer = new WrappedSerializer(new([extensionDataConverter]), new());
-        var quickSaveService = new QuickSaveService(configRoot, characterService, sceneSchemaBuilder, sceneSerializer, sceneLoader);
+        var quickSaveService = new QuickSaveService(
+            configRoot, characterService, sceneSchemaBuilder, sceneSerializer, sceneLoader, loadOptionsService);
 
         AddPluginActiveInputHandler(new QuickSaveInputHandler(
             quickSaveService,
@@ -459,7 +461,14 @@ public partial class PluginCore : MonoBehaviour
         var sceneBrowser = new SceneBrowserWindow(
             translation,
             sceneRepository,
-            new(translation, sceneRepository, screenshotService, sceneSchemaBuilder, sceneSerializer, sceneLoader),
+            new(
+                translation,
+                sceneRepository,
+                screenshotService,
+                sceneSchemaBuilder,
+                sceneSerializer,
+                sceneLoader,
+                loadOptionsService),
             sceneSchemaBuilder,
             screenshotService,
             new(configuration),

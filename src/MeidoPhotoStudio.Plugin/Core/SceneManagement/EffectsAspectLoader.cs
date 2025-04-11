@@ -30,7 +30,7 @@ public class EffectsAspectLoader(
     private readonly SepiaToneController sepiaToneController = sepiaToneController
         ?? throw new ArgumentException(nameof(sepiaToneController));
 
-    public void Load(EffectsSchema effectsSchema, LoadOptions loadOptions)
+    public void Load(EffectsSchema effectsSchema, ILoadOptions loadOptions)
     {
         if (!loadOptions.TryGetOption("effects", out var option) || !option.Enabled)
             return;

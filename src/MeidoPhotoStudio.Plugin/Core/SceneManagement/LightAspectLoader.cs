@@ -13,7 +13,7 @@ public class LightAspectLoader(LightService lightService, BackgroundService back
     private readonly BackgroundService backgroundService = backgroundService
         ?? throw new ArgumentNullException(nameof(backgroundService));
 
-    public void Load(LightsSchema lightsSchema, LoadOptions loadOptions)
+    public void Load(LightsSchema lightsSchema, ILoadOptions loadOptions)
     {
         if (!loadOptions["lights"].Enabled)
             return;

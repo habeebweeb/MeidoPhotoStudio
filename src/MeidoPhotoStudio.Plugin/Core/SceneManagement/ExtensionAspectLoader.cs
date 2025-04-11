@@ -30,7 +30,7 @@ public class ExtensionAspectLoader : ISceneAspectLoader<ExtensionSchema>
             ? throw new ArgumentException($"'{nameof(extensionID)}' cannot be null or empty.", nameof(extensionID))
             : aspectLoaders.Remove(extensionID);
 
-    public void Load(ExtensionSchema sceneAspectSchema, LoadOptions loadOptions)
+    public void Load(ExtensionSchema sceneAspectSchema, ILoadOptions loadOptions)
     {
         foreach (var data in sceneAspectSchema?.ExtensionData ?? [])
         {
