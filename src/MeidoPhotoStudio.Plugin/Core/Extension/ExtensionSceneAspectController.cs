@@ -6,6 +6,8 @@ public abstract class ExtensionSceneAspectController : IExtensionSceneAspectCont
 {
     public abstract Type DataType { get; }
 
+    public virtual IEnumerable<LoadOptionSpec> SubLoadOptions { get; } = [];
+
     public abstract IExtensionData Build();
 
     public abstract void Load(IExtensionData extensionData, ILoadOptions loadOptions);

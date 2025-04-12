@@ -9,7 +9,8 @@ namespace MeidoPhotoStudio.Plugin.Api.Extension;
 public class ExtensionApi(
     ExtensionSchemaBuilder extensionSchemaBuilder,
     ExtensionAspectLoader extensionAspectLoader,
-    ExtensionDataConverter extensionDataConverter)
+    ExtensionDataConverter extensionDataConverter,
+    LoadOptionsService loadOptionsService)
 {
     private static readonly Regex AllowedGuidRegex = new(@"^[a-zA-Z0-9\._\-]+$");
 
@@ -24,6 +25,9 @@ public class ExtensionApi(
 
     private readonly ExtensionDataConverter extensionDataConverter = extensionDataConverter
         ?? throw new ArgumentNullException(nameof(extensionDataConverter));
+
+    private readonly LoadOptionsService loadOptionsService = loadOptionsService
+        ?? throw new ArgumentNullException(nameof(loadOptionsService));
 
     public void RegisterExtension(Core.Extension.Extension extension)
     {
@@ -99,6 +103,8 @@ public class ExtensionApi(
         extensionDataConverter.RegisterExtensionType(extensionID, sceneAspectController.DataType);
         extensionSchemaBuilder.RegisterSchemaBuilder(extensionID, sceneAspectController);
         extensionAspectLoader.RegisterAspectLoader(extensionID, sceneAspectController);
+        loadOptionsService.RegisterExtensionLoadOption(
+            new(extensionID, true, [.. sceneAspectController.SubLoadOptions]));
 
         sceneAspectExtensionControllers[extensionID] = sceneAspectController;
     }
@@ -118,6 +124,8 @@ public class ExtensionApi(
         extensionDataConverter.DeregisterExtensionType(extensionID);
         extensionSchemaBuilder.DeregisterSchemaBuilder(extensionID);
         extensionAspectLoader.DeregisterAspectLoader(extensionID);
+        loadOptionsService.DeregisterExtensionLoadOption(extensionID);
+
         sceneAspectExtensionControllers.Remove(extensionID);
     }
 }

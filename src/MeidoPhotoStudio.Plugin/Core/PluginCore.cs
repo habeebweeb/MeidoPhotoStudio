@@ -809,7 +809,7 @@ public partial class PluginCore : MonoBehaviour
                 propSelectionController),
             new(this, lightService, lightSelectionController),
             new(this, windowManager),
-            new(extensionSchemaBuilder, extensionAspectLoader, extensionDataConverter));
+            new(extensionSchemaBuilder, extensionAspectLoader, extensionDataConverter, loadOptionsService));
 
         void AddPluginActiveInputHandler<T>(T inputHandler)
             where T : IInputHandler =>

@@ -6,4 +6,6 @@ namespace MeidoPhotoStudio.Plugin.Core.Extension;
 public interface IExtensionSceneAspectController : IExtensionDataBuilder, IExtensionSceneAspectLoader
 {
     Type DataType { get; }
+
+    IEnumerable<LoadOptionSpec> SubLoadOptions { get; }
 }
