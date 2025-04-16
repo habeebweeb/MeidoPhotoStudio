@@ -35,6 +35,9 @@ public class EffectsAspectLoader(
         if (!loadOptions.TryGetOption("effects", out var option) || !option.Enabled)
             return;
 
+        if (effectsSchema is null)
+            return;
+
         if (option["bloom"].Enabled)
             ApplyBloom(effectsSchema.Bloom);
 
@@ -56,6 +59,9 @@ public class EffectsAspectLoader(
 
     private void ApplyBlur(BlurSchema blurSchema)
     {
+        if (blurSchema is null)
+            return;
+
         var (blurSize, blurIterations, downsample) =
             (blurSchema.BlurSize, blurSchema.BlurIterations, blurSchema.Downsample);
 
@@ -74,11 +80,19 @@ public class EffectsAspectLoader(
         blurController.Downsample = downsample;
     }
 
-    private void ApplySepiaTone(SepiaToneSchema sepiaToneSchema) =>
+    private void ApplySepiaTone(SepiaToneSchema sepiaToneSchema)
+    {
+        if (sepiaToneSchema is null)
+            return;
+
         sepiaToneController.Active = sepiaToneSchema.Active;
+    }
 
     private void ApplyVignette(VignetteSchema vignetteSchema)
     {
+        if (vignetteSchema is null)
+            return;
+
         vignetteController.Active = vignetteSchema.Active;
         vignetteController.Intensity = vignetteSchema.Intensity;
         vignetteController.Blur = vignetteSchema.Blur;
@@ -88,6 +102,9 @@ public class EffectsAspectLoader(
 
     private void ApplyFog(FogSchema fogSchema)
     {
+        if (fogSchema is null)
+            return;
+
         fogController.Active = fogSchema.Active;
         fogController.Distance = fogSchema.Distance;
         fogController.Density = fogSchema.Density;
@@ -98,6 +115,9 @@ public class EffectsAspectLoader(
 
     private void ApplyDepthOfField(DepthOfFieldSchema depthOfFieldSchema)
     {
+        if (depthOfFieldSchema is null)
+            return;
+
         depthOfFieldController.Active = depthOfFieldSchema.Active;
         depthOfFieldController.FocalLength = depthOfFieldSchema.FocalLength;
         depthOfFieldController.FocalSize = depthOfFieldSchema.FocalSize;
@@ -108,6 +128,9 @@ public class EffectsAspectLoader(
 
     private void ApplyBloom(BloomSchema bloomSchema)
     {
+        if (bloomSchema is null)
+            return;
+
         bloomController.Active = bloomSchema.Active;
         bloomController.BloomValue = (int)bloomSchema.BloomValue;
         bloomController.BlurIterations = bloomSchema.BlurIterations;

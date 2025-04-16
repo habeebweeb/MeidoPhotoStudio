@@ -34,6 +34,9 @@ public class PropsAspectLoader(
         if (!loadOptions["props"].Enabled)
             return;
 
+        if (propsSchema is null)
+            return;
+
         propService.Clear();
 
         var currentPropIndex = 0;

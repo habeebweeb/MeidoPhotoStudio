@@ -17,6 +17,9 @@ public class BackgroundAspectLoader(BackgroundService backgroundService, Backgro
         if (!loadOptions["background"].Enabled)
             return;
 
+        if (backgroundSchema is null)
+            return;
+
         BackgroundModel backgroundModel = null;
 
         if (backgroundSchema.Version is 1)

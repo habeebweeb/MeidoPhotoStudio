@@ -18,6 +18,9 @@ public class LightAspectLoader(LightService lightService, BackgroundService back
         if (!loadOptions["lights"].Enabled)
             return;
 
+        if (lightsSchema is null)
+            return;
+
         lightService.RemoveAllLights();
 
         lightService.AddedLight += OnLightAdded;
