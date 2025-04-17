@@ -3,6 +3,7 @@ using MeidoPhotoStudio.Plugin.Core.Localization;
 using MeidoPhotoStudio.Plugin.Core.SceneManagement;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
+using MeidoPhotoStudio.Plugin.Framework.Collections;
 using MeidoPhotoStudio.Plugin.Framework.Service;
 using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
@@ -630,8 +631,8 @@ public class SceneManagementModal : BaseWindow
 
         private class LoadOptionsPane
         {
-            private readonly KeyedTree<bool> loadOptionValidityTree;
-            private readonly KeyedTree<Toggle> loadOptionsToggles;
+            private readonly KeyedTree<string, bool> loadOptionValidityTree;
+            private readonly KeyedTree<string, Toggle> loadOptionsToggles;
             private readonly Dictionary<int, LazyStyle> loadOptionToggleStyles = [];
 
             private Vector2 loadOptionsScrollPosition;
@@ -646,7 +647,7 @@ public class SceneManagementModal : BaseWindow
                     new(
                         "characters",
                         true,
-                        new KeyedTree<bool>.Node("byID", true)),
+                        new KeyedTree<string, bool>.Node("byID", true)),
                     new("message", true),
                     new("camera", true),
                     new("lights", true),
@@ -662,11 +663,11 @@ public class SceneManagementModal : BaseWindow
                     new("background", true),
                     new("props", true));
 
-                var translationTree = new KeyedTree<string>(
+                var translationTree = new KeyedTree<string, string>(
                     new(
                         "characters",
                         "loadCharactersToggle",
-                        new KeyedTree<string>.Node("byID", "loadCharactersByIDToggle")),
+                        new KeyedTree<string, string>.Node("byID", "loadCharactersByIDToggle")),
                     new("message", "loadMessageToggle"),
                     new("camera", "loadCameraToggle"),
                     new("lights", "loadLightsToggle"),
@@ -697,11 +698,11 @@ public class SceneManagementModal : BaseWindow
                     AddLoadOptionToggle(loadOption, loadOptionsToggles[loadOption.Tag], translationNode);
                 }
 
-                void AddLoadOptionToggle(LoadOption loadOption, KeyedTree<Toggle>.Node parent, KeyedTree<string>.Node translationParent)
+                void AddLoadOptionToggle(LoadOption loadOption, KeyedTree<string, Toggle>.Node parent, KeyedTree<string, string>.Node translationParent)
                 {
                     foreach (var subOption in loadOption)
                     {
-                        KeyedTree<string>.Node translationNode = null;
+                        KeyedTree<string, string>.Node translationNode = null;
 
                         var content = translationParent?.TryGetNode(subOption.Tag, out translationNode) ?? false
                             ? new LocalizableGUIContent(translation, LoadOptionTableKey, translationNode.Value)
@@ -756,7 +757,7 @@ public class SceneManagementModal : BaseWindow
 
                 GUILayout.EndVertical();
 
-                void DrawLoadOption(LoadOption loadOption, KeyedTree<Toggle>.Node toggleNode, KeyedTree<bool>.Node validityNode, int depth = 0)
+                void DrawLoadOption(LoadOption loadOption, KeyedTree<string, Toggle>.Node toggleNode, KeyedTree<string, bool>.Node validityNode, int depth = 0)
                 {
                     GUI.enabled = validityNode?.Value ?? true;
 
@@ -783,7 +784,7 @@ public class SceneManagementModal : BaseWindow
 
                     foreach (var child in loadOption)
                     {
-                        KeyedTree<bool>.Node loadOptionValidity = null;
+                        KeyedTree<string, bool>.Node loadOptionValidity = null;
                         validityNode?.TryGetNode(child.Tag, out loadOptionValidity);
                         toggleNode.TryGetNode(child.Tag, out var loadOptionToggle);
 
@@ -800,7 +801,7 @@ public class SceneManagementModal : BaseWindow
 
                 AddLoadOptionToggle(loadOption, loadOptionsToggles[loadOption.Tag]);
 
-                void AddLoadOptionToggle(LoadOption loadOption, KeyedTree<Toggle>.Node parent)
+                void AddLoadOptionToggle(LoadOption loadOption, KeyedTree<string, Toggle>.Node parent)
                 {
                     foreach (var subOption in loadOption)
                     {
@@ -814,7 +815,7 @@ public class SceneManagementModal : BaseWindow
             private void OnLoadOptionRemoved(object sender, LoadOptionsChangedEventArgs e) =>
                 loadOptionsToggles.RemoveNode(e.LoadOption.Tag);
 
-            private KeyedTree<Toggle>.Node CreateLoadOptionToggle(LoadOption option, GUIContent content = null)
+            private KeyedTree<string, Toggle>.Node CreateLoadOptionToggle(LoadOption option, GUIContent content = null)
             {
                 var toggle = new Toggle(content ?? new(option.Tag), option.Enabled);
 
@@ -822,59 +823,6 @@ public class SceneManagementModal : BaseWindow
                     option.Enabled = toggle.Value;
 
                 return new(option.Tag, toggle);
-            }
-
-            private class KeyedTree<T>(params KeyedTree<T>.Node[] children) : IEnumerable<KeyedTree<T>.Node>
-            {
-                private readonly Dictionary<string, Node> nodes = children.ToDictionary(static node => node.Key, static node => node);
-
-                public Node this[string key]
-                {
-                    get => nodes[key];
-                    set => nodes[key] = value;
-                }
-
-                public bool ContainsKey(string key) =>
-                    nodes.ContainsKey(key);
-
-                public bool RemoveNode(string key) =>
-                    nodes.Remove(key);
-
-                public bool TryGetNode(string key, out Node node) =>
-                    nodes.TryGetValue(key, out node);
-
-                public IEnumerator<Node> GetEnumerator() =>
-                    nodes.Values.GetEnumerator();
-
-                IEnumerator IEnumerable.GetEnumerator() =>
-                    GetEnumerator();
-
-                public class Node(string key, T value, params Node[] children) : IEnumerable<Node>
-                {
-                    private readonly Dictionary<string, Node> nodes = children.ToDictionary(static node => node.Key, static node => node);
-
-                    public string Key { get; } = key;
-
-                    public T Value { get; set; } = value;
-
-                    public Node this[string key]
-                    {
-                        get => nodes[key];
-                        set => nodes[key] = value;
-                    }
-
-                    public bool ContainsKey(string key) =>
-                        nodes.ContainsKey(key);
-
-                    public bool TryGetNode(string key, out Node node) =>
-                        nodes.TryGetValue(key, out node);
-
-                    public IEnumerator<Node> GetEnumerator() =>
-                        nodes.Values.GetEnumerator();
-
-                    IEnumerator IEnumerable.GetEnumerator() =>
-                        GetEnumerator();
-                }
             }
         }
     }
