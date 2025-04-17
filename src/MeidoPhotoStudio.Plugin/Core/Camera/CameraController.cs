@@ -1,12 +1,10 @@
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
-using MeidoPhotoStudio.Plugin.Framework.Service;
 
 namespace MeidoPhotoStudio.Plugin.Core.Camera;
 
-public class CameraController(CustomMaidSceneService customMaidSceneService) : IActivateable
+public class CameraController : IActivateable
 {
-    private readonly CustomMaidSceneService customMaidSceneService = customMaidSceneService
-        ?? throw new ArgumentNullException(nameof(customMaidSceneService));
+    private CameraInfo startingCameraSettings;
 
     public event EventHandler CameraChange;
 
@@ -34,10 +32,9 @@ public class CameraController(CustomMaidSceneService customMaidSceneService) : I
         if (MainCamera.m_UOCamera)
             MainCamera.m_UOCamera.enabled = true;
 
-        if (customMaidSceneService.OfficeScene)
-            ResetCamera();
-
         MainCamera.ForceCalcNearClip();
+
+        startingCameraSettings = MainCamera.GetCameraInfo();
     }
 
     void IActivateable.Deactivate()
@@ -46,17 +43,6 @@ public class CameraController(CustomMaidSceneService customMaidSceneService) : I
 
         MainCamera.ResetCalcNearClip();
 
-        if (!customMaidSceneService.OfficeScene)
-            return;
-
-        ResetCameraForOfficeMode();
-
-        static void ResetCameraForOfficeMode()
-        {
-            MainCamera.Reset(CameraMain.CameraType.Target, true);
-            MainCamera.SetTargetPos(new(0.5609447f, 1.380762f, -1.382336f));
-            MainCamera.SetDistance(1.6f);
-            MainCamera.SetAroundAngle(new(245.5691f, 6.273283f));
-        }
+        MainCamera.ApplyCameraInfo(startingCameraSettings);
     }
 }

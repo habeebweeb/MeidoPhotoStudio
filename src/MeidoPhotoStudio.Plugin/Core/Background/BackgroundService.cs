@@ -9,9 +9,13 @@ namespace MeidoPhotoStudio.Plugin.Core.Background;
 public class BackgroundService : INotifyPropertyChanged, IActivateable
 {
     private static bool internalBackgroundChange;
+    private static string previousBackgroundName;
+
     private readonly BackgroundRepository backgroundRepository;
 
     private BackgroundModel currentBackground;
+    private BackgroundModel startingBackground;
+    private bool startedVisible;
 
     public BackgroundService(BackgroundRepository backgroundRepository)
     {
@@ -110,11 +114,42 @@ public class BackgroundService : INotifyPropertyChanged, IActivateable
         internalBackgroundChange = false;
     }
 
-    void IActivateable.Activate() =>
-        ChangeBackground(DefaultBackgroundModel);
+    void IActivateable.Activate()
+    {
+        var backgroundAsset = BackgroundManager.GetBGName();
+
+        startedVisible = true;
+
+        if (string.IsNullOrEmpty(backgroundAsset))
+        {
+            startedVisible = false;
+            backgroundAsset = previousBackgroundName;
+        }
+
+        if (string.IsNullOrEmpty(backgroundAsset))
+        {
+            ChangeBackground(DefaultBackgroundModel);
+        }
+        else
+        {
+            if (backgroundAsset.StartsWith("マイルーム:"))
+                backgroundAsset = backgroundAsset.Replace("マイルーム:", string.Empty);
+
+            var model = backgroundRepository.GetByID(backgroundAsset);
+
+            ChangeBackground(model ?? DefaultBackgroundModel);
+        }
+
+        startingBackground = CurrentBackground;
+        BackgroundVisible = startedVisible;
+    }
 
     void IActivateable.Deactivate()
     {
+        if (startedVisible)
+            ChangeBackground(startingBackground);
+        else
+            BackgroundManager.DeleteBg();
     }
 
     [HarmonyPrefix]
@@ -141,6 +176,21 @@ public class BackgroundService : INotifyPropertyChanged, IActivateable
         ChangedBackgroundExternal?.Invoke(null, new(__0));
     }
 
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(BgMgr), nameof(BgMgr.DeleteBg))]
+    [SuppressMessage("StyleCop.Analyzers.NamingRules", "SA1313", Justification = "Harmony parameter")]
+    private static void BgMgrDeleteBackground(BgMgr __instance)
+    {
+        Plugin.Logger.LogDebug($"Background has been deleted");
+
+        var backgroundName = __instance.GetBGName();
+
+        if (string.IsNullOrEmpty(backgroundName))
+            return;
+
+        previousBackgroundName = backgroundName;
+    }
+
     private bool TryChangeBackground(BackgroundModel backgroundInfo)
     {
         if (backgroundInfo.Category is BackgroundCategory.COM3D2 or BackgroundCategory.CM3D2)
@@ -153,11 +203,14 @@ public class BackgroundService : INotifyPropertyChanged, IActivateable
 
     private void OnChangingBackgroundExternal(object sender, ExternalBackgroundChangeEventArgs args)
     {
+        if (string.IsNullOrEmpty(args.AssetName))
+            return;
+
         var model = backgroundRepository.GetByID(args.AssetName);
 
         if (model is null)
         {
-            Plugin.Logger.LogDebug($"Could not find background with id {args.AssetName}");
+            Plugin.Logger.LogDebug($"Could not find background with id '{args.AssetName}'");
 
             return;
         }
@@ -167,11 +220,14 @@ public class BackgroundService : INotifyPropertyChanged, IActivateable
 
     private void OnChangedBackgroundExternal(object sender, ExternalBackgroundChangeEventArgs args)
     {
+        if (string.IsNullOrEmpty(args.AssetName))
+            return;
+
         var model = backgroundRepository.GetByID(args.AssetName);
 
         if (model is null)
         {
-            Plugin.Logger.LogDebug($"Could not find background with id {args.AssetName}");
+            Plugin.Logger.LogDebug($"Could not find background with id '{args.AssetName}'");
 
             return;
         }

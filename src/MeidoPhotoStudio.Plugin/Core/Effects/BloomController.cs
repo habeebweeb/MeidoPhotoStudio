@@ -6,7 +6,7 @@ public class BloomController(UnityEngine.Camera camera) : EffectControllerBase
 
     private BloomBackup initialBloomSettings;
     private Bloom bloom;
-    private bool active;
+    private bool active = true;
     private int initialGameBloomValue;
     private int bloomValue;
 

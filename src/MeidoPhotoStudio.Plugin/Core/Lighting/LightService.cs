@@ -52,23 +52,6 @@ public class LightService(TransformWatcher transformWatcher) : IEnumerable<Light
         AddLight(light);
     }
 
-    public void AddLight(Light light)
-    {
-        var lightController = new LightController(light, transformWatcher);
-
-        light.transform.position = LightController.DefaultPosition;
-
-        if (IsMainLight(lightController))
-        {
-            BackupMainLight(lightController);
-            ResetMainLight();
-        }
-
-        lightControllers.Add(lightController);
-
-        AddedLight?.Invoke(this, new(lightController, lightControllers.Count - 1));
-    }
-
     public int IndexOf(LightController lightController) =>
         lightController is null
             ? throw new ArgumentNullException(nameof(lightController))
@@ -129,13 +112,18 @@ public class LightService(TransformWatcher transformWatcher) : IEnumerable<Light
     private static bool IsMainLight(LightController lightController) =>
         lightController.Light == GameMain.Instance.MainLight.GetComponent<Light>();
 
-    private static void ResetMainLight()
+    private void AddLight(Light light)
     {
-        var light = GameMain.Instance.MainLight.GetComponent<Light>();
+        var lightController = new LightController(light, transformWatcher);
 
-        light.enabled = true;
-        light.type = LightType.Directional;
         light.transform.position = LightController.DefaultPosition;
+
+        if (IsMainLight(lightController))
+            BackupMainLight(lightController);
+
+        lightControllers.Add(lightController);
+
+        AddedLight?.Invoke(this, new(lightController, lightControllers.Count - 1));
     }
 
     private void RemoveAllLights(bool keepMain)
@@ -152,10 +140,7 @@ public class LightService(TransformWatcher transformWatcher) : IEnumerable<Light
         var lightController = lightControllers[index];
 
         if (IsMainLight(lightController))
-        {
             RestoreMainLight(lightController);
-            ResetMainLight();
-        }
 
         RemovingLight?.Invoke(this, new(lightController, index));
 

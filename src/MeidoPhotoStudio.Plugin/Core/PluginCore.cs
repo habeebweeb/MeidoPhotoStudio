@@ -1,5 +1,4 @@
 using BepInEx.Configuration;
-using com.workman.cm3d2.scene.dailyEtc;
 using MeidoPhotoStudio.Plugin.Core.Background;
 using MeidoPhotoStudio.Plugin.Core.Camera;
 using MeidoPhotoStudio.Plugin.Core.Character;
@@ -18,6 +17,7 @@ using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Core.SceneManagement;
 using MeidoPhotoStudio.Plugin.Core.Scenes;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
+using MeidoPhotoStudio.Plugin.Core.StartupPreset;
 using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
 using MeidoPhotoStudio.Plugin.Core.UndoRedo;
@@ -263,7 +263,7 @@ public partial class PluginCore : MonoBehaviour
         var messageWindowManager = new MessageWindowManager();
 
         // Camera
-        var cameraController = new CameraController(customMaidSceneService);
+        var cameraController = new CameraController();
 
         var cameraSaveSlotController = new CameraSaveSlotController(cameraController);
         var cameraSpeedController = new CameraSpeedController();
@@ -455,6 +455,13 @@ public partial class PluginCore : MonoBehaviour
             Enabled = autoSaveConfiguration.Enabled.Value,
             AutoSaveInterval = autoSaveConfiguration.Frequency.Value,
             Slots = autoSaveConfiguration.Slots.Value,
+        };
+
+        var startupPresetService = new StartupPresetService(
+            configRoot, characterService, screenshotService, sceneSchemaBuilder, sceneSerializer, sceneLoader, loadOptionsService)
+        {
+            Enabled = true,
+            UseCustomPreset = false,
         };
 
         // Windows
@@ -791,6 +798,7 @@ public partial class PluginCore : MonoBehaviour
         AddActivateable(favouritePropRepository);
 
         AddActivateable(autoSaveService);
+        AddActivateable(startupPresetService);
 
         AddActivateable(windowManager);
 
@@ -883,20 +891,12 @@ public partial class PluginCore : MonoBehaviour
             // TODO: Should this deactivation stuff be somewhere else?
             if (customMaidSceneService.EditScene)
             {
-                SceneEditWindow.BgIconData.GetItemData(SceneEdit.Instance.bgIconWindow.selectedIconId).Exec();
                 SceneEditWindow.PoseIconData.GetItemData(SceneEdit.Instance.pauseIconWindow.selectedIconId).ExecScript();
 
                 if (SceneEdit.Instance.viewReset.GetVisibleEyeToCam())
                     SceneEdit.Instance.maid.EyeToCamera(Maid.EyeMoveType.目と顔を向ける, 0.8f);
                 else
                     SceneEdit.Instance.maid.EyeToCamera(Maid.EyeMoveType.無視する, 0.8f);
-            }
-            else
-            {
-                if (GameMain.Instance.CharacterMgr.status.isDaytime)
-                    GameMain.Instance.BgMgr.ChangeBg(DailyAPI.dayBg);
-                else
-                    GameMain.Instance.BgMgr.ChangeBg(DailyAPI.nightBg);
             }
 
             configuration.Save();

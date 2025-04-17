@@ -4,6 +4,7 @@ namespace MeidoPhotoStudio.Plugin.Core.Effects;
 
 public abstract class EffectControllerBase : INotifyPropertyChanged, IActivateable
 {
+    private bool startingState;
     private bool active;
 
     public event PropertyChangedEventHandler PropertyChanged;
@@ -28,10 +29,10 @@ public abstract class EffectControllerBase : INotifyPropertyChanged, IActivateab
         Deactivate();
 
     protected virtual void Activate() =>
-        Active = false;
+        startingState = Active;
 
     protected virtual void Deactivate() =>
-        Active = false;
+        Active = startingState;
 
     protected void RaisePropertyChanged(string name)
     {
