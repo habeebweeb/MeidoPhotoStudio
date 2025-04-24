@@ -4,25 +4,15 @@ using MeidoPhotoStudio.Plugin.Framework.Service;
 
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
-public class EditModeMaidService : IActivateable
+public class EditModeMaidService(
+    CustomMaidSceneService customMaidSceneService, CharacterRepository characterRepository)
+    : IActivateable
 {
-    private readonly CustomMaidSceneService customMaidSceneService;
-    private readonly CharacterRepository characterRepository;
+    private readonly CustomMaidSceneService customMaidSceneService = customMaidSceneService
+        ?? throw new ArgumentNullException(nameof(customMaidSceneService));
 
-    public EditModeMaidService(
-        CustomMaidSceneService customMaidSceneService, CharacterRepository characterRepository)
-    {
-        this.customMaidSceneService = customMaidSceneService
-            ?? throw new ArgumentNullException(nameof(customMaidSceneService));
-
-        this.characterRepository = characterRepository ?? throw new ArgumentNullException(nameof(characterRepository));
-
-        if (!customMaidSceneService.EditScene)
-            return;
-
-        UpdateOriginalEditingMaid();
-        IntegrateWithOkButton();
-    }
+    private readonly CharacterRepository characterRepository = characterRepository
+        ?? throw new ArgumentNullException(nameof(characterRepository));
 
     public event EventHandler<EditModeMaidServiceEventArgs> ChangingEditMaid;
 
@@ -213,11 +203,8 @@ public class EditModeMaidService : IActivateable
         if (!GetEditOkCancelButton(out var button))
             return;
 
-        EditOkCancel.OnClick newDelegate = RestoreOriginalEditingMaid;
-
-        newDelegate += button.m_dgOnClickOk;
-
-        button.m_dgOnClickOk = newDelegate;
+        button.m_dgOnClickOk -= RestoreOriginalEditingMaid;
+        button.m_dgOnClickOk = RestoreOriginalEditingMaid + button.m_dgOnClickOk;
     }
 
     private void RemoveOkButtonIntegration()
@@ -225,7 +212,7 @@ public class EditModeMaidService : IActivateable
         if (!GetEditOkCancelButton(out var button))
             return;
 
-        Delegate.Remove(button.m_dgOnClickOk, RestoreOriginalEditingMaid);
+        button.m_dgOnClickOk -= RestoreOriginalEditingMaid;
     }
 
     private void UpdateOriginalEditingMaid()
