@@ -102,6 +102,7 @@ public partial class PluginCore : MonoBehaviour
         var autoSaveConfiguration = new AutoSaveConfiguration(configuration);
         var uiConfiguration = new UIConfiguration(configuration);
         var characterConfiguration = new CharacterConfiguration(configuration);
+        var startupPresetConfiguration = new StartupPresetConfiguration(configuration);
 
         // Translation
         translation = new Translation(
@@ -460,8 +461,8 @@ public partial class PluginCore : MonoBehaviour
         var startupPresetService = new StartupPresetService(
             configRoot, characterService, screenshotService, sceneSchemaBuilder, sceneSerializer, sceneLoader, loadOptionsService)
         {
-            Enabled = true,
-            UseCustomPreset = false,
+            Enabled = startupPresetConfiguration.Enabled.Value,
+            UseCustomPreset = startupPresetConfiguration.UseCustomPreset.Value,
         };
 
         // Windows
@@ -510,6 +511,8 @@ public partial class PluginCore : MonoBehaviour
             [SettingsWindow.SettingType.Translation] = new TranslationSettingsPane(translationConfiguration, translation),
             [SettingsWindow.SettingType.Character] = new CharacterSettingsPane(
                 translation, characterConfiguration, automaticCharacterPlacementController),
+            [SettingsWindow.SettingType.StartupPreset] = new StartupPresetSettingsPane(
+                translation, startupPresetConfiguration, startupPresetService),
         };
 
         TransformClipboard transformClipboard = new();
@@ -837,6 +840,8 @@ public partial class PluginCore : MonoBehaviour
         if (!GameMain.Instance.SysDlg.IsDecided)
             return;
 
+        Active = true;
+
         Api.RaiseActivating();
 
         dragHandleClickHandler.enabled = true;
@@ -848,8 +853,6 @@ public partial class PluginCore : MonoBehaviour
             activateable.Activate();
 
         SetDailyPanelActive(false);
-
-        Active = true;
 
         Api.RaiseActivated();
     }

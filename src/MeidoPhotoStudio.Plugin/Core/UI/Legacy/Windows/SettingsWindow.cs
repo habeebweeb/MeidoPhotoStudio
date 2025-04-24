@@ -67,6 +67,7 @@ public class SettingsWindow : BaseWindow
         Translation,
         UI,
         Character,
+        StartupPreset,
     }
 
     public override bool Enabled =>

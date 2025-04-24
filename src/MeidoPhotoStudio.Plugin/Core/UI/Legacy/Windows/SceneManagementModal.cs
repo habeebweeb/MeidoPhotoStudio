@@ -631,6 +631,7 @@ public class SceneManagementModal : BaseWindow
 
         private class LoadOptionsPane
         {
+            private readonly Translation translation;
             private readonly KeyedTree<string, bool> loadOptionValidityTree;
             private readonly KeyedTree<string, Toggle> loadOptionsToggles;
             private readonly Dictionary<int, LazyStyle> loadOptionToggleStyles = [];
@@ -639,6 +640,8 @@ public class SceneManagementModal : BaseWindow
 
             public LoadOptionsPane(Translation translation, LoadOptionsService loadOptionsService)
             {
+                this.translation = translation ?? throw new ArgumentNullException(nameof(translation));
+
                 LoadOptions = loadOptionsService.CreateLoadOptions();
                 LoadOptions.AddedOption += OnLoadOptionAdded;
                 LoadOptions.RemovedOption += OnLoadOptionRemoved;
@@ -663,56 +666,7 @@ public class SceneManagementModal : BaseWindow
                     new("background", true),
                     new("props", true));
 
-                var translationTree = new KeyedTree<string, string>(
-                    new(
-                        "characters",
-                        "loadCharactersToggle",
-                        new KeyedTree<string, string>.Node("byID", "loadCharactersByIDToggle")),
-                    new("message", "loadMessageToggle"),
-                    new("camera", "loadCameraToggle"),
-                    new("lights", "loadLightsToggle"),
-                    new(
-                        "effects",
-                        "loadEffectsToggle",
-                        new("bloom", "loadBloomToggle"),
-                        new("depthOfField", "loadDepthOfFieldToggle"),
-                        new("vignette", "loadVignetteToggle"),
-                        new("fog", "loadFogToggle"),
-                        new("sepiaTone", "loadSepiaToneToggle"),
-                        new("blur", "loadBlurToggle")),
-                    new("background", "loadBackgroundToggle"),
-                    new("props", "loadPropsToggle"));
-
-                loadOptionsToggles = new();
-
-                const string LoadOptionTableKey = "sceneManagerModalLoadOptions";
-
-                foreach (var loadOption in LoadOptions)
-                {
-                    var content = translationTree.TryGetNode(loadOption.Tag, out var translationNode)
-                        ? new LocalizableGUIContent(translation, LoadOptionTableKey, translationNode.Value)
-                        : new GUIContent(loadOption.Tag);
-
-                    loadOptionsToggles[loadOption.Tag] = CreateLoadOptionToggle(loadOption, content);
-
-                    AddLoadOptionToggle(loadOption, loadOptionsToggles[loadOption.Tag], translationNode);
-                }
-
-                void AddLoadOptionToggle(LoadOption loadOption, KeyedTree<string, Toggle>.Node parent, KeyedTree<string, string>.Node translationParent)
-                {
-                    foreach (var subOption in loadOption)
-                    {
-                        KeyedTree<string, string>.Node translationNode = null;
-
-                        var content = translationParent?.TryGetNode(subOption.Tag, out translationNode) ?? false
-                            ? new LocalizableGUIContent(translation, LoadOptionTableKey, translationNode.Value)
-                            : new GUIContent(subOption.Tag);
-
-                        parent[subOption.Tag] = CreateLoadOptionToggle(subOption, content);
-
-                        AddLoadOptionToggle(subOption, parent[subOption.Tag], translationNode);
-                    }
-                }
+                loadOptionsToggles = new([.. LoadOptions.Select(CreateLoadOptionToggles)]);
             }
 
             public ILoadOptions LoadOptions { get; }
@@ -797,32 +751,26 @@ public class SceneManagementModal : BaseWindow
             {
                 var loadOption = e.LoadOption;
 
-                loadOptionsToggles[loadOption.Tag] = CreateLoadOptionToggle(loadOption, new(loadOption.Tag));
-
-                AddLoadOptionToggle(loadOption, loadOptionsToggles[loadOption.Tag]);
-
-                void AddLoadOptionToggle(LoadOption loadOption, KeyedTree<string, Toggle>.Node parent)
-                {
-                    foreach (var subOption in loadOption)
-                    {
-                        parent[subOption.Tag] = CreateLoadOptionToggle(subOption);
-
-                        AddLoadOptionToggle(subOption, parent[subOption.Tag]);
-                    }
-                }
+                loadOptionsToggles[loadOption.Tag] = CreateLoadOptionToggles(loadOption);
             }
 
             private void OnLoadOptionRemoved(object sender, LoadOptionsChangedEventArgs e) =>
                 loadOptionsToggles.RemoveNode(e.LoadOption.Tag);
 
-            private KeyedTree<string, Toggle>.Node CreateLoadOptionToggle(LoadOption option, GUIContent content = null)
+            private KeyedTree<string, Toggle>.Node CreateLoadOptionToggles(LoadOption option)
             {
-                var toggle = new Toggle(content ?? new(option.Tag), option.Enabled);
+                const string LoadOptionTableKey = "baseLoadOptions";
+
+                var content = translation.ContainsTranslation(LoadOptionTableKey, option.Path)
+                    ? new LocalizableGUIContent(translation, LoadOptionTableKey, option.Path)
+                    : new GUIContent(option.Tag);
+
+                var toggle = new Toggle(content, option.Enabled);
 
                 toggle.ControlEvent += (_, _) =>
                     option.Enabled = toggle.Value;
 
-                return new(option.Tag, toggle);
+                return new(option.Tag, toggle, [.. option.Select(CreateLoadOptionToggles)]);
             }
         }
     }

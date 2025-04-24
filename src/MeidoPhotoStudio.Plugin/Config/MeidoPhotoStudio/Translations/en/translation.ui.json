@@ -657,6 +657,22 @@
     "cancelButton": "Cancel",
     "hexLabel": "#"
   },
+  "baseLoadOptions": {
+    "characters": "Characters",
+    "characters.byID": "Load by ID",
+    "message": "Message",
+    "camera": "Camera",
+    "lights": "Lights",
+    "effects": "Effects",
+    "effects.bloom": "Bloom",
+    "effects.depthOfField": "Depth of Field",
+    "effects.vignette": "Vignette",
+    "effects.fog": "Fog",
+    "effects.sepiaTone": "Sepia Tone",
+    "effects.blur": "Blur",
+    "background": "Background",
+    "props": "Props"
+  },
   "settingTypes": {
     "controls": "Controls",
     "dragHandle": "Drag Handles",
@@ -664,7 +680,8 @@
     "translation": "Translation",
     "ui": "User Interface",
     "shapeKeys": "Shape Keys",
-    "character": "Character"
+    "character": "Character",
+    "startupPreset": "Startup Preset"
   },
   "translationSettingsPane": {
     "reloadTranslationButton": "Reload Translation",
@@ -740,5 +757,14 @@
     "freeLookToggle": "Free-look enabled",
     "blinkToggle": "Blink enabled",
     "posingEnabledToggle": "Posing enabled"
+  },
+  "startupPresetSettingsPane": {
+    "enabledToggle": "Apply preset on startup",
+    "loadOptionsHeader": "Load Options",
+    "loadOptionsExplanationLabel": "Options to use for the startup preset",
+    "customPresetHeader": "Custom Startup Preset",
+    "useCustomPresetToggle": "Enabled",
+    "updateStartupPresetButton": "Update Preset",
+    "refreshStartupPresetButton": "Refresh Preset",
   }
 }

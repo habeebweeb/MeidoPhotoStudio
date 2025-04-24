@@ -2,8 +2,12 @@ namespace MeidoPhotoStudio.Plugin.Core.SceneManagement;
 
 public class LoadOption : IEnumerable<LoadOption>
 {
+    private static StringBuilder stringBuilder;
+
     private readonly List<LoadOption> subOptionsList;
     private readonly Dictionary<string, LoadOption> subOptions;
+
+    private string path;
 
     public LoadOption(string tag, bool enabled, params LoadOption[] subOptions)
     {
@@ -25,14 +29,44 @@ public class LoadOption : IEnumerable<LoadOption>
             if (this.subOptions.ContainsKey(subOption.Tag))
                 throw new InvalidLoadOptionException("Duplicate sub load options are not allowed.");
 
+            subOption.Parent = this;
+
             subOptionsList.Add(subOption);
             this.subOptions[subOption.Tag] = subOption;
         }
     }
 
+    public LoadOption Parent { get; private set; }
+
     public string Tag { get; }
 
     public bool Enabled { get; set; }
+
+    public string Path
+    {
+        get
+        {
+            if (path is not null)
+                return path;
+
+            stringBuilder ??= new();
+            stringBuilder.Length = 0;
+
+            stringBuilder.Append(Tag);
+
+            var current = Parent;
+
+            while (current is not null)
+            {
+                stringBuilder.Insert(0, '.');
+                stringBuilder.Insert(0, current.Tag);
+
+                current = current.Parent;
+            }
+
+            return path = stringBuilder.ToString();
+        }
+    }
 
     public LoadOption this[string tag] =>
         string.IsNullOrEmpty(tag)

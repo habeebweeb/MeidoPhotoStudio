@@ -154,9 +154,11 @@ public class StartupPresetService : IActivateable
         _ = loadOptionsService ?? throw new ArgumentNullException(nameof(loadOptionsService));
 
         LoadOptions = loadOptionsService.CreateLoadOptions();
-        LoadOptions.AddedOption += static (_, e) =>
-            e.LoadOption.Enabled = false;
     }
+
+    public event EventHandler UpdatedCustomStartupPreset;
+
+    public event EventHandler RefreshedCustomStartupPreset;
 
     public bool Enabled { get; set; }
 
@@ -164,7 +166,7 @@ public class StartupPresetService : IActivateable
 
     public ILoadOptions LoadOptions { get; }
 
-    private string StartupPresetPath =>
+    public string StartupPresetPath =>
         Path.Combine(startupPresetDirectory, "startup_preset.png");
 
     public void RefreshStartupPreset()
@@ -177,6 +179,8 @@ public class StartupPresetService : IActivateable
                 fileStream.Position = 0L;
 
             customPresetSchema = sceneSerializer.DeserializeScene(fileStream);
+
+            RefreshedCustomStartupPreset?.Invoke(this, EventArgs.Empty);
         }
         catch (FileNotFoundException)
         {
@@ -257,6 +261,8 @@ public class StartupPresetService : IActivateable
                 Object.DestroyImmediate(screenshot);
             }
 
+            UpdatedCustomStartupPreset?.Invoke(this, EventArgs.Empty);
+
             static void ResizeToFit(Texture2D texture, int maxWidth, int maxHeight)
             {
                 var width = texture.width;
@@ -279,8 +285,11 @@ public class StartupPresetService : IActivateable
         if (!Enabled)
             return;
 
-        if (LoadOptions.TryGetOption("characters", out var option))
-            option.Enabled = false;
+        if (LoadOptions.TryGetOption("characters", out var characterOption))
+            characterOption.Enabled = false;
+
+        if (LoadOptions.TryGetOption("message", out var messageOption))
+            messageOption.Enabled = false;
 
         var preset = DefaultSchema;
 
@@ -289,7 +298,7 @@ public class StartupPresetService : IActivateable
             if (customPresetSchema is null)
                 RefreshStartupPreset();
 
-            preset = customPresetSchema;
+            preset = customPresetSchema ?? DefaultSchema;
         }
 
         if (preset is null)
