@@ -367,7 +367,10 @@ public class AnimationSelectorPane : BasePane
         if (animationDropdown.SelectedItem is not null)
             ChangeAnimation(animationDropdown.SelectedItem);
 
+        var query = searchBar.Query;
+
         searchBar.ClearQuery();
+        searchBar.SetQueryWithoutShowingResults(query);
     }
 
     private void OnAnimationCategoryChanged(object sender, DropdownEventArgs<string> e)

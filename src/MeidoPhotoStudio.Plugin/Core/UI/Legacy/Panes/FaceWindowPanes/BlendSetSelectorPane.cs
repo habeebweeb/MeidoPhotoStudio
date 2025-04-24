@@ -327,7 +327,10 @@ public class BlendSetSelectorPane : BasePane
         if (blendSetDropdown.SelectedItem is not null)
             CurrentFace?.ApplyBlendSet(blendSetDropdown.SelectedItem);
 
+        var query = searchBar.Query;
+
         searchBar.ClearQuery();
+        searchBar.SetQueryWithoutShowingResults(query);
     }
 
     private void OnBlendSetCategoryChanged(object sender, DropdownEventArgs<string> e)
