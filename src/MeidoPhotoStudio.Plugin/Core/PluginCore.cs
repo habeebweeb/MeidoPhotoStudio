@@ -167,9 +167,10 @@ public partial class PluginCore : MonoBehaviour
         var customAnimationRepositorySorter = new CustomAnimationRepositorySorter(customAnimationRepository.RootCategoryName);
 
         var characterRepository = new CharacterRepository();
-        var editModeMaidService = new EditModeMaidService(customMaidSceneService, characterRepository);
 
-        characterService = new CharacterService(customMaidSceneService, editModeMaidService, transformWatcher, undoRedoService);
+        characterService = new CharacterService(customMaidSceneService, transformWatcher, undoRedoService);
+
+        var editModeMaidService = new EditModeMaidService(customMaidSceneService, characterRepository, characterService);
 
         windowManager.CharacterService = characterService;
 
@@ -775,8 +776,8 @@ public partial class PluginCore : MonoBehaviour
         AddActivateable(cameraController);
 
         AddActivateable(characterRepository);
-        AddActivateable(editModeMaidService);
         AddActivateable(characterService);
+        AddActivateable(editModeMaidService);
         AddActivateable(characterCallController);
         AddActivateable(automaticCharacterPlacementController);
 

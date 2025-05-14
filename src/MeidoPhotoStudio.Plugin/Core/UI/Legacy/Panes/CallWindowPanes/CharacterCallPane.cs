@@ -119,8 +119,6 @@ public class CharacterCallPane : BasePane, IVirtualListHandler
 
         GUI.enabled = Parent.Enabled;
 
-        GUILayout.FlexibleSpace();
-
         clearSelectedButton.Draw(GUILayout.ExpandWidth(false));
 
         GUILayout.EndHorizontal();

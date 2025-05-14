@@ -7,10 +7,7 @@ using MeidoPhotoStudio.Plugin.Framework.Service;
 namespace MeidoPhotoStudio.Plugin.Core.Character;
 
 public class CharacterService(
-    CustomMaidSceneService customMaidSceneService,
-    EditModeMaidService editModeMaidService,
-    TransformWatcher transformWatcher,
-    UndoRedoService undoRedoService)
+    CustomMaidSceneService customMaidSceneService, TransformWatcher transformWatcher, UndoRedoService undoRedoService)
     : IEnumerable<CharacterController>, IIndexableCollection<CharacterController>, IActivateable
 {
     private const int MaidCount = 12;
@@ -22,9 +19,6 @@ public class CharacterService(
     private readonly CustomMaidSceneService customMaidSceneService = customMaidSceneService
         ?? throw new ArgumentNullException(nameof(customMaidSceneService));
 
-    private readonly EditModeMaidService editModeMaidService = editModeMaidService
-        ?? throw new ArgumentNullException(nameof(editModeMaidService));
-
     private readonly TransformWatcher transformWatcher = transformWatcher
         ? transformWatcher : throw new ArgumentNullException(nameof(transformWatcher));
 
@@ -32,6 +26,7 @@ public class CharacterService(
         ?? throw new ArgumentNullException(nameof(undoRedoService));
 
     private bool calling;
+    private Maid originalEditMaid;
 
     public event EventHandler<CharacterServiceEventArgs> CallingCharacters;
 
@@ -245,7 +240,7 @@ public class CharacterService(
     void IActivateable.Activate()
     {
         if (customMaidSceneService.EditScene)
-            Call(new CharacterModel[] { editModeMaidService.OriginalEditingCharacter });
+            originalEditMaid = SceneEdit.Instance.m_maid;
         else if (customMaidSceneService.OfficeScene)
             GameMain.Instance.CharacterMgr.DeactivateMaid(0);
     }
@@ -261,7 +256,7 @@ public class CharacterService(
 
         foreach (var loadedCharacter in characterControllerCache.Values)
         {
-            var keepLoaded = customMaidSceneService.EditScene && loadedCharacter.CharacterModel == editModeMaidService.OriginalEditingCharacter;
+            var keepLoaded = customMaidSceneService.EditScene && loadedCharacter.Maid.ValueEquals(originalEditMaid);
 
             loadedCharacter.Deactivate(keepLoaded);
         }

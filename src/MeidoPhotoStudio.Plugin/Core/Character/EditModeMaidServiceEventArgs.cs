@@ -4,7 +4,7 @@ namespace MeidoPhotoStudio.Plugin.Core.Character;
 
 public class EditModeMaidServiceEventArgs(Maid maid, CharacterModel characterModel) : EventArgs
 {
-    public Maid Maid { get; } = maid ? maid : throw new ArgumentNullException(nameof(maid));
+    public Maid Maid { get; } = maid;
 
-    public CharacterModel Character { get; } = characterModel ?? throw new ArgumentNullException(nameof(characterModel));
+    public CharacterModel Character { get; } = characterModel;
 }

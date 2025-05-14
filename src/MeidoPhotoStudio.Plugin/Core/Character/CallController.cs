@@ -158,9 +158,6 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
 
         if (selectedCharactersSet.Contains(character))
         {
-            if (customMaidSceneService.EditScene && character == editModeMaidService.OriginalEditingCharacter)
-                return;
-
             selectedCharacters.Remove(character);
             selectedCharactersSet.Remove(character);
         }
@@ -175,32 +172,10 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
     {
         selectedCharacters.Clear();
         selectedCharactersSet.Clear();
-
-        if (!customMaidSceneService.EditScene)
-            return;
-
-        selectedCharacters.Add(editModeMaidService.OriginalEditingCharacter);
-        selectedCharactersSet.Add(editModeMaidService.OriginalEditingCharacter);
     }
 
-    public void Call()
-    {
-        if (customMaidSceneService.EditScene)
-        {
-            if (!selectedCharacters.Contains(editModeMaidService.EditingCharacter))
-                editModeMaidService.SetEditingCharacter(editModeMaidService.OriginalEditingCharacter);
-
-            if (!selectedCharacters.Contains(editModeMaidService.OriginalEditingCharacter))
-            {
-                Plugin.Logger.LogDebug($"Original editing character was not in the set of characters to call");
-
-                selectedCharacters.Insert(0, editModeMaidService.OriginalEditingCharacter);
-                selectedCharactersSet.Add(editModeMaidService.OriginalEditingCharacter);
-            }
-        }
-
+    public void Call() =>
         characterService.Call(selectedCharacters);
-    }
 
     public void Search(string query)
     {

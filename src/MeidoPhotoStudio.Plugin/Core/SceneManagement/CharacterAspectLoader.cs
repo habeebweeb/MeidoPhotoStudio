@@ -101,15 +101,6 @@ public class CharacterAspectLoader(
                 .Where(model => model is not null)
                 .ToList();
 
-            if (customMaidSceneService.EditScene)
-            {
-                if (!charactersToLoad.Contains(editModeMaidService.EditingCharacter))
-                    editModeMaidService.SetEditingCharacter(editModeMaidService.OriginalEditingCharacter);
-
-                if (!charactersToLoad.Contains(editModeMaidService.OriginalEditingCharacter))
-                    charactersToLoad.Insert(0, editModeMaidService.OriginalEditingCharacter);
-            }
-
             characterCallController.ClearSelected();
 
             foreach (var character in charactersToLoad)
