@@ -183,6 +183,11 @@ public partial class PluginCore : MonoBehaviour
             editModeMaidService);
 
         var facialExpressionBuilder = new FacialExpressionBuilder(faceShapeKeyConfiguration);
+        var autoEditMaidService = new AutoEditMaidService(
+            customMaidSceneService, editModeMaidService, characterSelectionController)
+        {
+            Enabled = true,
+        };
 
         AddPluginActiveInputHandler(new CharacterDressingCycler(characterService, inputConfiguration));
 
@@ -540,7 +545,8 @@ public partial class PluginCore : MonoBehaviour
                     characterService,
                     characterSelectionController,
                     customMaidSceneService,
-                    editModeMaidService),
+                    editModeMaidService,
+                    autoEditMaidService),
                 new CharacterPane(translation, tabSelectionController, characterSelectionController)
                 {
                     [CharacterPane.CharacterWindowTab.Pose] =

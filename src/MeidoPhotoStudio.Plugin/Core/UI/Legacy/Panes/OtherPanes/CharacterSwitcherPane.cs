@@ -13,6 +13,7 @@ public class CharacterSwitcherPane : BasePane
     private readonly SelectionController<CharacterController> characterSelectionController;
     private readonly CustomMaidSceneService customMaidSceneService;
     private readonly EditModeMaidService editModeMaidService;
+    private readonly AutoEditMaidService autoEditMaidService;
 
     private readonly LazyStyle slotStyle = new(
         StyleSheet.TextSize,
@@ -33,13 +34,15 @@ public class CharacterSwitcherPane : BasePane
         CharacterService characterService,
         SelectionController<CharacterController> characterSelectionController,
         CustomMaidSceneService customMaidSceneService,
-        EditModeMaidService editModeMaidService)
+        EditModeMaidService editModeMaidService,
+        AutoEditMaidService autoEditMaidService)
     {
         _ = translation ?? throw new ArgumentNullException(nameof(translation));
         this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
         this.characterSelectionController = characterSelectionController ?? throw new ArgumentNullException(nameof(characterSelectionController));
         this.customMaidSceneService = customMaidSceneService ?? throw new ArgumentNullException(nameof(customMaidSceneService));
         this.editModeMaidService = editModeMaidService ?? throw new ArgumentNullException(nameof(editModeMaidService));
+        this.autoEditMaidService = autoEditMaidService ?? throw new ArgumentNullException(nameof(autoEditMaidService));
 
         this.characterService.CalledCharacters += OnCharactersCalled;
         this.characterSelectionController.Selected += OnCharacterSelectionChanged;
@@ -70,7 +73,7 @@ public class CharacterSwitcherPane : BasePane
         var guiEnabled = Parent.Enabled && characterService.Count > 0;
 
         GUILayout.BeginHorizontal();
-        if (customMaidSceneService.EditScene)
+        if (customMaidSceneService.EditScene && !autoEditMaidService.Enabled)
         {
             var originalColour = GUI.color;
 
@@ -82,8 +85,6 @@ public class CharacterSwitcherPane : BasePane
             editToggle.Draw();
 
             GUI.color = originalColour;
-
-            GUI.enabled = guiEnabled;
         }
 
         GUI.enabled = guiEnabled;
