@@ -133,7 +133,7 @@ public class PropsAspectLoader(
 
             void ApplyShapeKeys(PropController propController, PropShapeKeySchema shapeKeySchema)
             {
-                if (propController.ShapeKeyController is null || shapeKeySchema is null)
+                if (propController.ShapeKeyController is not ShapeKeyController shapeKeyController || shapeKeySchema is null)
                     return;
 
                 foreach (var (hashKey, blendValue) in shapeKeySchema.BlendValues)

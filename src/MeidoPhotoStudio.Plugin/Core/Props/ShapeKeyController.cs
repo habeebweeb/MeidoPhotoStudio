@@ -28,24 +28,52 @@ public class ShapeKeyController(Mesh mesh, TBodySkin.OriVert oriVert, BlendData[
 
     public float this[string hashKey]
     {
-        get => blendValues[hashKeyToBlendValueIndex[hashKey]];
-        set
+        get
         {
-            if (blendValues[hashKeyToBlendValueIndex[hashKey]] == value)
-                return;
+            if (string.IsNullOrEmpty(hashKey))
+                throw new ArgumentException($"'{nameof(hashKey)}' cannot be null or empty.", nameof(hashKey));
 
-            blendValues[hashKeyToBlendValueIndex[hashKey]] = value;
+            if (!ContainsShapeKey(hashKey))
+                return 0f;
 
-            FixBlendValues();
-            OnShapeKeyChanged(hashKey);
+            var index = hashKeyToBlendValueIndex[hashKey];
+
+            return blendValues[index];
         }
+
+        set =>
+            SetBlendValue(hashKey, value);
     }
+
+    public bool ContainsShapeKey(string shapeKey) =>
+        string.IsNullOrEmpty(shapeKey)
+            ? throw new ArgumentException($"'{nameof(shapeKey)}' cannot be null or empty.", nameof(shapeKey))
+            : hashKeyToBlendValueIndex.ContainsKey(shapeKey);
 
     public IEnumerator<(string HashKey, float BlendValue)> GetEnumerator() =>
         blendDatas.Select(static blendData => blendData.name).Zip(blendValues).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() =>
         GetEnumerator();
+
+    private void SetBlendValue(string hashKey, float value)
+    {
+        if (string.IsNullOrEmpty(hashKey))
+            throw new ArgumentException($"'{nameof(hashKey)}' cannot be null or empty.", nameof(hashKey));
+
+        if (!ContainsShapeKey(hashKey))
+            return;
+
+        var index = hashKeyToBlendValueIndex[hashKey];
+
+        if (blendValues[index] == value)
+            return;
+
+        blendValues[index] = value;
+
+        FixBlendValues();
+        OnShapeKeyChanged(hashKey);
+    }
 
     private void FixBlendValues()
     {

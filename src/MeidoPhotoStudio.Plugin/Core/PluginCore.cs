@@ -403,7 +403,10 @@ public partial class PluginCore : MonoBehaviour
                 propService,
                 propDragHandleService,
                 propAttachmentService,
-                new PropControllerSchemaBuilder(propModelSchemaBuilder, transformSchemaBuilder),
+                new PropControllerSchemaBuilder(
+                    propModelSchemaBuilder,
+                    transformSchemaBuilder,
+                    new PropShapeKeySchemaBuilder()),
                 new PropDragHandleSchemaBuilder(),
                 new AttachPointSchemaBuilder()),
             extensionSchemaBuilder);

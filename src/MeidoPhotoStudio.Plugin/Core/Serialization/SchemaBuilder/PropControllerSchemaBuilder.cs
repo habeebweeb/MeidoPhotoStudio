@@ -7,7 +7,8 @@ namespace MeidoPhotoStudio.Plugin.Core.Serialization;
 
 public class PropControllerSchemaBuilder(
     ISchemaBuilder<IPropModelSchema, IPropModel> propModelSchemaBuilder,
-    ISchemaBuilder<TransformSchema, Transform> transformSchemaBuilder)
+    ISchemaBuilder<TransformSchema, Transform> transformSchemaBuilder,
+    ISchemaBuilder<PropShapeKeySchema, ShapeKeyController> propShapeKeySchemaBuilder)
     : ISchemaBuilder<PropControllerSchema, PropController>
 {
     private readonly ISchemaBuilder<IPropModelSchema, IPropModel> propModelSchemaBuilder = propModelSchemaBuilder
@@ -16,6 +17,9 @@ public class PropControllerSchemaBuilder(
     private readonly ISchemaBuilder<TransformSchema, Transform> transformSchemaBuilder = transformSchemaBuilder
         ?? throw new ArgumentNullException(nameof(transformSchemaBuilder));
 
+    private readonly ISchemaBuilder<PropShapeKeySchema, ShapeKeyController> propShapeKeySchemaBuilder = propShapeKeySchemaBuilder
+        ?? throw new ArgumentNullException(nameof(propShapeKeySchemaBuilder));
+
     public PropControllerSchema Build(PropController value) =>
         new()
         {
@@ -23,5 +27,6 @@ public class PropControllerSchemaBuilder(
             PropModel = propModelSchemaBuilder.Build(value.PropModel),
             ShadowCasting = value.ShadowCasting,
             Visible = value.Visible,
+            ShapeKeys = propShapeKeySchemaBuilder.Build(value.ShapeKeyController),
         };
 }
