@@ -152,6 +152,8 @@ public class DragHandleSettingsPane : BasePane
         autoSelectToggle.Draw();
         autoSelectTabToggle.Draw();
 
+        UIUtility.DrawBlackLine();
+
         dragHandleColourHeader.Draw();
 
         upperLimbColourConfiguration.Draw();

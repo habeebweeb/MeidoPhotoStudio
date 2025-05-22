@@ -105,8 +105,6 @@ public class CharacterSettingsPane : BasePane
 
     public override void Draw()
     {
-        UIUtility.DrawBlackLine();
-
         automaticPlacementSettingHeader.Draw();
 
         placementSettingExplanationLabel.Draw();
@@ -122,6 +120,8 @@ public class CharacterSettingsPane : BasePane
         GUI.enabled = Parent.Enabled;
 
         GUILayout.EndHorizontal();
+
+        UIUtility.DrawBlackLine();
 
         initialSettingHeader.Draw();
         settingExplanationLabel.Draw();
