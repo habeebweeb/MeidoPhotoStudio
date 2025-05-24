@@ -68,23 +68,38 @@ public class DigitBaseDragHandleController : CharacterIKDragHandleController, IC
     public DragHandleMode Drag5 =>
         digitIndex is 0 && !isFoot ? Drag : None;
 
-    public DragHandleMode Rotate =>
-        rotate ??= new RotateMode(this, Bone.parent);
-
-    public DragHandleMode Rotate1 =>
+    public DragHandleMode Gizmo1 =>
         digitIndex == (isFoot ? 0 : 4) ? GizmoRotate : None;
 
-    public DragHandleMode Rotate2 =>
+    public DragHandleMode Gizmo2 =>
         digitIndex == (isFoot ? 1 : 3) ? GizmoRotate : None;
 
-    public DragHandleMode Rotate3 =>
+    public DragHandleMode Gizmo3 =>
         digitIndex is 2 ? GizmoRotate : None;
 
-    public DragHandleMode Rotate4 =>
+    public DragHandleMode Gizmo4 =>
         digitIndex is 1 && !isFoot ? GizmoRotate : None;
 
-    public DragHandleMode Rotate5 =>
+    public DragHandleMode Gizmo5 =>
         digitIndex is 0 && !isFoot ? GizmoRotate : None;
+
+    public DragHandleMode Twist =>
+        rotate ??= new RotateMode(this, Bone.parent);
+
+    public DragHandleMode Twist1 =>
+        digitIndex == (isFoot ? 0 : 4) ? Twist : None;
+
+    public DragHandleMode Twist2 =>
+        digitIndex == (isFoot ? 1 : 3) ? Twist : None;
+
+    public DragHandleMode Twist3 =>
+        digitIndex is 2 ? Twist : None;
+
+    public DragHandleMode Twist4 =>
+        digitIndex is 1 && !isFoot ? Twist : None;
+
+    public DragHandleMode Twist5 =>
+        digitIndex is 0 && !isFoot ? Twist : None;
 
     protected override Transform[] Chain { get; }
 
