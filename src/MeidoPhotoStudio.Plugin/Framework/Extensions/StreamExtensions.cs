@@ -1,4 +1,4 @@
-using Ionic.Zlib;
+using System.IO.Compression;
 
 namespace MeidoPhotoStudio.Plugin.Framework.Extensions;
 

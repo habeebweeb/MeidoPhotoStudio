@@ -1,4 +1,5 @@
-using Ionic.Zlib;
+using System.IO.Compression;
+
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Schema.Background;

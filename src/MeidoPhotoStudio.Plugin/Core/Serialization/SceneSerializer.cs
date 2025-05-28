@@ -1,4 +1,5 @@
-using Ionic.Zlib;
+using System.IO.Compression;
+
 using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Framework.Serialization.Json;
 using Newtonsoft.Json;
