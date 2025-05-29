@@ -406,14 +406,16 @@ public class CharacterAspectLoader(
             {
                 var accessory = menuPropRepository.GetByID(schema.AttachedLowerAccessory.ID);
 
-                clothing.AttachAccessory(accessory);
+                if (accessory is not null)
+                    clothing.AttachAccessory(accessory);
             }
 
             if (schema.AttachedUpperAccessory is not null)
             {
                 var accessory = menuPropRepository.GetByID(schema.AttachedUpperAccessory.ID);
 
-                clothing.AttachAccessory(accessory);
+                if (accessory is not null)
+                    clothing.AttachAccessory(accessory);
             }
 
             clothing.HairGravityController.Enabled = schema.HairGravityEnabled;
