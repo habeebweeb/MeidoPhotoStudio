@@ -121,7 +121,7 @@ public class BodyController : IShapeKeyController
             .Where(static data => data is not null)
             .Select(static data => data.name)
             .Except(new[] { "arml", "hara", "munel", "munes", "munetare", "regfat", "regmeet" })
-            .ToDictionary(static key => key, key => morph.BlendValuesBackup[(int)morph.hash[key]]);
+            .ToDictionary(static key => key, key => morph.GetBlendValues((int)morph.hash[key]));
     }
 
     private void OnBlendValueChanged(string key)
