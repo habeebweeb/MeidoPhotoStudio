@@ -8,14 +8,15 @@ namespace MeidoPhotoStudio.Plugin.Core.Background;
 
 public class BackgroundService : INotifyPropertyChanged, IActivateable
 {
+    private const string MyRoomPrefix = "マイルーム:";
+
     private static bool internalBackgroundChange;
     private static string previousBackgroundName;
 
     private readonly BackgroundRepository backgroundRepository;
 
     private BackgroundModel currentBackground;
-    private BackgroundModel startingBackground;
-    private bool startedVisible;
+    private string startingBackgroundAsset;
 
     public BackgroundService(BackgroundRepository backgroundRepository)
     {
@@ -116,40 +117,35 @@ public class BackgroundService : INotifyPropertyChanged, IActivateable
 
     void IActivateable.Activate()
     {
-        var backgroundAsset = BackgroundManager.GetBGName();
+        var backgroundAsset = startingBackgroundAsset = BackgroundManager.GetBGName();
 
-        startedVisible = true;
-
-        if (string.IsNullOrEmpty(backgroundAsset))
-        {
-            startedVisible = false;
+        if (string.IsNullOrEmpty(startingBackgroundAsset))
             backgroundAsset = previousBackgroundName;
-        }
 
-        if (string.IsNullOrEmpty(backgroundAsset))
+        if (!string.IsNullOrEmpty(backgroundAsset))
         {
-            ChangeBackground(DefaultBackgroundModel);
-        }
-        else
-        {
-            if (backgroundAsset.StartsWith("マイルーム:"))
-                backgroundAsset = backgroundAsset.Replace("マイルーム:", string.Empty);
+            var model = backgroundRepository.GetByID(backgroundAsset.Replace(MyRoomPrefix, string.Empty));
 
-            var model = backgroundRepository.GetByID(backgroundAsset);
-
-            ChangeBackground(model ?? DefaultBackgroundModel);
+            if (model is not null)
+                ChangeBackground(model);
         }
 
-        startingBackground = CurrentBackground;
-        BackgroundVisible = startedVisible;
+        BackgroundVisible = !string.IsNullOrEmpty(startingBackgroundAsset);
     }
 
     void IActivateable.Deactivate()
     {
-        if (startedVisible)
-            ChangeBackground(startingBackground);
+        if (!string.IsNullOrEmpty(startingBackgroundAsset))
+        {
+            if (startingBackgroundAsset.StartsWith(MyRoomPrefix))
+                BackgroundManager.ChangeBgMyRoom(startingBackgroundAsset.Replace(MyRoomPrefix, string.Empty));
+            else
+                BackgroundManager.ChangeBg(startingBackgroundAsset);
+        }
         else
+        {
             BackgroundManager.DeleteBg();
+        }
     }
 
     [HarmonyPrefix]
