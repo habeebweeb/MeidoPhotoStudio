@@ -94,6 +94,8 @@ public class SpineDragHandleController(
         {
             base.OnClicked();
 
+            controller.AnimationController.Playing = false;
+
             if (controller.isHead)
                 controller.HeadController.HeadToCamera = false;
         }
