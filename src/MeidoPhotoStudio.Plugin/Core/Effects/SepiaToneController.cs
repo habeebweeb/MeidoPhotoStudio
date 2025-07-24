@@ -1,9 +1,7 @@
 namespace MeidoPhotoStudio.Plugin.Core.Effects;
 
-public class SepiaToneController(UnityEngine.Camera camera) : EffectControllerBase
+public class SepiaToneController(UnityEngine.Camera camera) : EffectControllerBase(camera)
 {
-    private readonly UnityEngine.Camera camera = camera ? camera : throw new ArgumentNullException(nameof(camera));
-
     private SepiaToneEffect sepiaTone;
 
     public override bool Active
@@ -27,7 +25,7 @@ public class SepiaToneController(UnityEngine.Camera camera) : EffectControllerBa
             if (sepiaTone)
                 return sepiaTone;
 
-            sepiaTone = camera.GetOrAddComponent<SepiaToneEffect>();
+            sepiaTone = GetOrAddEffect<SepiaToneEffect>();
 
             if (!sepiaTone.shader)
                 sepiaTone.shader = Shader.Find("Hidden/Sepiatone Effect");

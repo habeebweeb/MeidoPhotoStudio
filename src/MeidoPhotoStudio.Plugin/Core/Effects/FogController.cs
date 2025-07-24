@@ -1,9 +1,7 @@
 namespace MeidoPhotoStudio.Plugin.Core.Effects;
 
-public class FogController(UnityEngine.Camera camera) : EffectControllerBase
+public class FogController(UnityEngine.Camera camera) : EffectControllerBase(camera)
 {
-    private readonly UnityEngine.Camera camera = camera ? camera : throw new ArgumentNullException(nameof(camera));
-
     private FogBackup initialFogSettings;
     private GlobalFog fog;
 
@@ -83,7 +81,7 @@ public class FogController(UnityEngine.Camera camera) : EffectControllerBase
             if (fog)
                 return fog;
 
-            fog = camera.GetOrAddComponent<GlobalFog>();
+            fog = GetOrAddEffect<GlobalFog>();
 
             if (!fog.fogShader)
                 fog.fogShader = Shader.Find("Hidden/GlobalFog");

@@ -1,9 +1,7 @@
 namespace MeidoPhotoStudio.Plugin.Core.Effects;
 
-public class VignetteController(UnityEngine.Camera camera) : EffectControllerBase
+public class VignetteController(UnityEngine.Camera camera) : EffectControllerBase(camera)
 {
-    private readonly UnityEngine.Camera camera = camera ? camera : throw new ArgumentNullException(nameof(camera));
-
     private VignetteBackup initialVignetteSettings;
     private Vignetting vignette;
 
@@ -72,7 +70,7 @@ public class VignetteController(UnityEngine.Camera camera) : EffectControllerBas
             if (vignette)
                 return vignette;
 
-            vignette = camera.GetOrAddComponent<Vignetting>();
+            vignette = GetOrAddEffect<Vignetting>();
             vignette.mode = Vignetting.AberrationMode.Simple;
 
             initialVignetteSettings = VignetteBackup.Create(vignette);

@@ -1,9 +1,7 @@
 namespace MeidoPhotoStudio.Plugin.Core.Effects;
 
-public class BlurController(UnityEngine.Camera camera) : EffectControllerBase
+public class BlurController(UnityEngine.Camera camera) : EffectControllerBase(camera)
 {
-    private readonly UnityEngine.Camera camera = camera ? camera : throw new ArgumentNullException(nameof(camera));
-
     private BlurBackup initialBlurSettings;
     private Blur blur;
 
@@ -61,7 +59,7 @@ public class BlurController(UnityEngine.Camera camera) : EffectControllerBase
             if (blur)
                 return blur;
 
-            blur = camera.GetOrAddComponent<Blur>();
+            blur = GetOrAddEffect<Blur>();
 
             initialBlurSettings = BlurBackup.Create(blur);
 

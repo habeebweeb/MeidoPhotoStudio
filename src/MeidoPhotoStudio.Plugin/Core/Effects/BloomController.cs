@@ -1,9 +1,7 @@
 namespace MeidoPhotoStudio.Plugin.Core.Effects;
 
-public class BloomController(UnityEngine.Camera camera) : EffectControllerBase
+public class BloomController(UnityEngine.Camera camera) : EffectControllerBase(camera)
 {
-    private readonly UnityEngine.Camera camera = camera ? camera : throw new ArgumentNullException(nameof(camera));
-
     private BloomBackup initialBloomSettings;
     private Bloom bloom;
     private bool active = true;
@@ -82,7 +80,7 @@ public class BloomController(UnityEngine.Camera camera) : EffectControllerBase
             if (bloom)
                 return bloom;
 
-            bloom = camera.GetOrAddComponent<Bloom>();
+            bloom = GetOrAddEffect<Bloom>();
             initialBloomSettings = BloomBackup.Create(bloom);
 
             return bloom;

@@ -1,9 +1,7 @@
 namespace MeidoPhotoStudio.Plugin.Core.Effects;
 
-public class DepthOfFieldController(UnityEngine.Camera camera) : EffectControllerBase
+public class DepthOfFieldController(UnityEngine.Camera camera) : EffectControllerBase(camera)
 {
-    private readonly UnityEngine.Camera camera = camera ? camera : throw new ArgumentNullException(nameof(camera));
-
     private DepthOfFieldBackup initialDepthOfFieldSettings;
     private DepthOfFieldScatter depthOfField;
 
@@ -83,7 +81,7 @@ public class DepthOfFieldController(UnityEngine.Camera camera) : EffectControlle
             if (depthOfField)
                 return depthOfField;
 
-            depthOfField = camera.GetOrAddComponent<DepthOfFieldScatter>();
+            depthOfField = GetOrAddEffect<DepthOfFieldScatter>();
 
             if (!depthOfField.dofHdrShader)
                 depthOfField.dofHdrShader = Shader.Find("Hidden/Dof/DepthOfFieldHdr");
