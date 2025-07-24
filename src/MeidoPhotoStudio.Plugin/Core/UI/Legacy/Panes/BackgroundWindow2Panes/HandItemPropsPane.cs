@@ -10,7 +10,7 @@ namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
 public class HandItemPropsPane : BasePane
 {
-    private static readonly MPN HandItem = SafeMpn.GetValue(nameof(MPN.handitem));
+    private static readonly MPN HandItem = SafeMpn.handitem;
 
     private readonly PropService propService;
     private readonly Dropdown<MenuFilePropModel> propDropdown;
@@ -77,8 +77,8 @@ public class HandItemPropsPane : BasePane
 
         void Initialize()
         {
-            var handItems = menuPropRepository.ContainsCategory(HandItem)
-                ? (IEnumerable<MenuFilePropModel>)menuPropRepository[HandItem].OrderBy(static model => model.Filename)
+            var handItems = menuPropRepository.ContainsCategory(SafeMpn.handitem)
+                ? (IEnumerable<MenuFilePropModel>)menuPropRepository[SafeMpn.handitem].OrderBy(static model => model.Filename)
                 : [];
 
             propDropdown.SetItems(handItems);
@@ -87,9 +87,9 @@ public class HandItemPropsPane : BasePane
         }
 
         IEnumerable<MenuFilePropModel> SearchSelector(string query) =>
-            menuPropRepository.Busy || !menuPropRepository.ContainsCategory(HandItem)
+            menuPropRepository.Busy || !menuPropRepository.ContainsCategory(SafeMpn.handitem)
                 ? []
-                : menuPropRepository[HandItem].Where(model =>
+                : menuPropRepository[SafeMpn.handitem].Where(model =>
                     model.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                     Path.GetFileNameWithoutExtension(model.Filename).Contains(query, StringComparison.OrdinalIgnoreCase));
 

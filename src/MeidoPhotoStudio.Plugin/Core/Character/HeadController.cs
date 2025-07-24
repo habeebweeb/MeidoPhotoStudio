@@ -175,7 +175,7 @@ public class HeadController : INotifyPropertyChanged
 
     private void OnCharacterPropsProcessed(object sender, CharacterProcessingEventArgs e)
     {
-        if (!e.ChangingSlots.Any(static slot => slot == SafeMpn.GetValue(nameof(MPN.head)) || slot == SafeMpn.GetValue(nameof(MPN.body))))
+        if (!e.ChangingSlots.Any(static slot => slot == SafeMpn.head || slot == SafeMpn.body))
             return;
 
         initialLeftEyeRotation = character.Maid.body0.quaDefEyeL;

@@ -20,12 +20,21 @@
   </ItemGroup>
 
   <ItemGroup>
+
     <ProjectReference
       Include="../MeidoPhotoStudio.Plugin.Analyzer/MeidoPhotoStudio.Plugin.Analyzer.csproj"
       ReferenceOutputAssembly="false"
       OutputItemType="Analyzer"
       SetTargetFramework="TargetFramework=netstandard2.0"
       />
+
+    <ProjectReference
+      Include="../COM3D2X.SafeEnum/COM3D2X.SafeEnum.csproj"
+      ReferenceOutputAssembly="false"
+      OutputItemType="Analyzer"
+      SetTargetFramework="TargetFramework=netstandard2.0"
+      />
+
   </ItemGroup>
 
   <ItemGroup>

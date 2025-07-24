@@ -10,7 +10,7 @@ namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
 public class FavouritePropsPane : BasePane, IVirtualListHandler
 {
-    private static readonly MPN[] IgnoredMpn = [.. SafeMpn.GetValues(nameof(MPN.handitem), nameof(MPN.kousoku_lower), nameof(MPN.kousoku_upper))];
+    private static readonly MPN[] IgnoredMpn = [SafeMpn.handitem, SafeMpn.kousoku_lower, SafeMpn.kousoku_upper];
 
     private readonly PropService propService;
     private readonly FavouritePropRepository favouritePropRepository;

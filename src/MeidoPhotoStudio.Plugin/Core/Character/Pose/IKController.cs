@@ -484,7 +484,7 @@ public class IKController : INotifyPropertyChanged
     {
         chestBackup = (ChestBackup.Create(GetBone("Mune_L_sub")), ChestBackup.Create(GetBone("Mune_R_sub")));
 
-        if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
+        if (!e.ChangingSlots.Contains(SafeMpn.body))
             return;
 
         foreach (var rotationLimit in rotationLimitCache.Values)
@@ -500,7 +500,7 @@ public class IKController : INotifyPropertyChanged
 
     private void OnCharacterPropsProcessed(object sender, CharacterProcessingEventArgs e)
     {
-        if (e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
+        if (e.ChangingSlots.Contains(SafeMpn.body))
         {
             InitialMuneLPosition = new(GetBone("Mune_L").localPosition, GetBone("Mune_L_sub").localPosition);
             InitialMuneRPosition = new(GetBone("Mune_R").localPosition, GetBone("Mune_R_sub").localPosition);

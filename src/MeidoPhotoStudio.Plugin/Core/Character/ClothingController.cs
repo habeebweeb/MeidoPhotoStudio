@@ -16,9 +16,7 @@ public class ClothingController : INotifyPropertyChanged
     private static readonly Dictionary<SlotID, KeyedPropertyChangeEventArgs<SlotID>> ClothingChangeEventArgsCache =
         new(EnumEqualityComparer<SlotID>.Instance);
 
-    private static readonly MPN KousokuUpper = SafeMpn.GetValue(nameof(MPN.kousoku_upper));
-    private static readonly MPN KousokuLower = SafeMpn.GetValue(nameof(MPN.kousoku_lower));
-    private static readonly MPN[] AttachedAccessoryMpn = [KousokuUpper, KousokuLower];
+    private static readonly MPN[] AttachedAccessoryMpn = [SafeMpn.kousoku_upper, SafeMpn.kousoku_lower];
 
     private readonly CharacterController characterController;
     private readonly TransformWatcher transformWatcher;
@@ -198,22 +196,22 @@ public class ClothingController : INotifyPropertyChanged
         Maid.SetProp(accessoryModel.CategoryMpn, accessoryModel.Filename, 0, true);
         Maid.AllProcProp();
 
-        if (accessoryModel.CategoryMpn == KousokuLower)
+        if (accessoryModel.CategoryMpn == SafeMpn.kousoku_lower)
             AttachedLowerAccessory = accessoryModel;
         else
             AttachedUpperAccessory = accessoryModel;
     }
 
     public void DetachLowerAccessory() =>
-        DetachAccessory(KousokuLower);
+        DetachAccessory(SafeMpn.kousoku_lower);
 
     public void DetachUpperAccessory() =>
-        DetachAccessory(KousokuUpper);
+        DetachAccessory(SafeMpn.kousoku_upper);
 
     public void DetachAllAccessories()
     {
-        Maid.ResetProp(KousokuLower, false);
-        Maid.ResetProp(KousokuUpper, false);
+        Maid.ResetProp(SafeMpn.kousoku_lower, false);
+        Maid.ResetProp(SafeMpn.kousoku_upper, false);
 
         Maid.AllProcProp();
 
@@ -260,7 +258,7 @@ public class ClothingController : INotifyPropertyChanged
         Maid.ResetProp(category, false);
         Maid.AllProcProp();
 
-        if (category == KousokuLower)
+        if (category == SafeMpn.kousoku_lower)
             AttachedLowerAccessory = null;
         else
             AttachedUpperAccessory = null;

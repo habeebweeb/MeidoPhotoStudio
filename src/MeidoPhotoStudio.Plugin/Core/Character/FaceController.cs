@@ -156,7 +156,7 @@ public class FaceController : INotifyPropertyChanged, IShapeKeyController
 
     private void OnCharacterPropsProcessed(object sender, CharacterProcessingEventArgs e)
     {
-        if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.head))))
+        if (!e.ChangingSlots.Contains(SafeMpn.head))
             return;
 
         BackupBlendSet();

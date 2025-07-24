@@ -167,7 +167,7 @@ public class PropAttachmentService
 
     private void OnCharacterPropsProcessing(object sender, CharacterProcessingEventArgs e)
     {
-        if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
+        if (!e.ChangingSlots.Contains(SafeMpn.body))
             return;
 
         var character = (CharacterController)sender;

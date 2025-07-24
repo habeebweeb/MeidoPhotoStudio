@@ -140,40 +140,38 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
             IMenuPropsConfiguration menuPropsConfiguration,
             IMenuFileCacheSerializer menuFileCacheSerializer)
         {
-            var validMpn = new HashSet<MPN>(
-                SafeMpn.GetValues(
-                    nameof(MPN.acchat),
-                    nameof(MPN.headset),
-                    nameof(MPN.wear),
-                    nameof(MPN.skirt),
-                    nameof(MPN.onepiece),
-                    nameof(MPN.mizugi),
-                    nameof(MPN.bra),
-                    nameof(MPN.panz),
-                    nameof(MPN.stkg),
-                    nameof(MPN.shoes),
-                    nameof(MPN.acckami),
-                    nameof(MPN.megane),
-                    nameof(MPN.acchead),
-                    nameof(MPN.acchana),
-                    nameof(MPN.accmimi),
-                    nameof(MPN.glove),
-                    nameof(MPN.acckubi),
-                    nameof(MPN.acckubiwa),
-                    nameof(MPN.acckamisub),
-                    nameof(MPN.accnip),
-                    nameof(MPN.accude),
-                    nameof(MPN.accheso),
-                    nameof(MPN.accashi),
-                    nameof(MPN.accsenaka),
-                    nameof(MPN.accshippo),
-                    nameof(MPN.accxxx),
-                    nameof(MPN.handitem),
-                    nameof(MPN.kousoku_lower),
-                    nameof(MPN.kousoku_upper)));
+            var validMpn = new HashSet<MPN>([
+                SafeMpn.acchat,
+                SafeMpn.headset,
+                SafeMpn.wear,
+                SafeMpn.skirt,
+                SafeMpn.onepiece,
+                SafeMpn.mizugi,
+                SafeMpn.bra,
+                SafeMpn.panz,
+                SafeMpn.stkg,
+                SafeMpn.shoes,
+                SafeMpn.acckami,
+                SafeMpn.megane,
+                SafeMpn.acchead,
+                SafeMpn.acchana,
+                SafeMpn.accmimi,
+                SafeMpn.glove,
+                SafeMpn.acckubi,
+                SafeMpn.acckubiwa,
+                SafeMpn.acckamisub,
+                SafeMpn.accnip,
+                SafeMpn.accude,
+                SafeMpn.accheso,
+                SafeMpn.accashi,
+                SafeMpn.accsenaka,
+                SafeMpn.accshippo,
+                SafeMpn.accxxx,
+                SafeMpn.handitem,
+                SafeMpn.kousoku_lower,
+                SafeMpn.kousoku_upper]);
 
-            var alwaysValidMpn = new HashSet<MPN>(
-                SafeMpn.GetValues(nameof(MPN.handitem), nameof(MPN.kousoku_lower), nameof(MPN.kousoku_upper)));
+            var alwaysValidMpn = new HashSet<MPN>([SafeMpn.handitem, SafeMpn.kousoku_lower, SafeMpn.kousoku_upper]);
 
             var menuFileCache = new ConcurrentDictionary<string, MenuFilePropModel>(menuFileCacheSerializer.Deserialize());
             var menuFileParser = new MenuFileParser();
@@ -232,7 +230,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                     if (!validMpn.Contains(model.CategoryMpn))
                         return;
 
-                    if (model.CategoryMpn == SafeMpn.GetValue(nameof(MPN.handitem)))
+                    if (model.CategoryMpn == SafeMpn.handitem)
                         model.Name = translation["propNames", model.Filename];
 
                     lock (lockObject)
@@ -267,7 +265,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 
         void ApplyTranslation()
         {
-            foreach (var prop in this[SafeMpn.GetValue(nameof(MPN.handitem))])
+            foreach (var prop in this[SafeMpn.handitem])
                 prop.Name = translation["propNames", prop.Filename];
         }
     }
@@ -316,36 +314,36 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 
             List<MenuFilePropModel> AddProps(IEnumerable<string> menuFiles)
             {
-                var validMpn = new HashSet<MPN>(SafeMpn.GetValues(
-                    nameof(MPN.acchat),
-                    nameof(MPN.headset),
-                    nameof(MPN.wear),
-                    nameof(MPN.skirt),
-                    nameof(MPN.onepiece),
-                    nameof(MPN.mizugi),
-                    nameof(MPN.bra),
-                    nameof(MPN.panz),
-                    nameof(MPN.stkg),
-                    nameof(MPN.shoes),
-                    nameof(MPN.acckami),
-                    nameof(MPN.megane),
-                    nameof(MPN.acchead),
-                    nameof(MPN.acchana),
-                    nameof(MPN.accmimi),
-                    nameof(MPN.glove),
-                    nameof(MPN.acckubi),
-                    nameof(MPN.acckubiwa),
-                    nameof(MPN.acckamisub),
-                    nameof(MPN.accnip),
-                    nameof(MPN.accude),
-                    nameof(MPN.accheso),
-                    nameof(MPN.accashi),
-                    nameof(MPN.accsenaka),
-                    nameof(MPN.accshippo),
-                    nameof(MPN.accxxx),
-                    nameof(MPN.handitem),
-                    nameof(MPN.kousoku_lower),
-                    nameof(MPN.kousoku_upper)));
+                var validMpn = new HashSet<MPN>([
+                    SafeMpn.acchat,
+                    SafeMpn.headset,
+                    SafeMpn.wear,
+                    SafeMpn.skirt,
+                    SafeMpn.onepiece,
+                    SafeMpn.mizugi,
+                    SafeMpn.bra,
+                    SafeMpn.panz,
+                    SafeMpn.stkg,
+                    SafeMpn.shoes,
+                    SafeMpn.acckami,
+                    SafeMpn.megane,
+                    SafeMpn.acchead,
+                    SafeMpn.acchana,
+                    SafeMpn.accmimi,
+                    SafeMpn.glove,
+                    SafeMpn.acckubi,
+                    SafeMpn.acckubiwa,
+                    SafeMpn.acckamisub,
+                    SafeMpn.accnip,
+                    SafeMpn.accude,
+                    SafeMpn.accheso,
+                    SafeMpn.accashi,
+                    SafeMpn.accsenaka,
+                    SafeMpn.accshippo,
+                    SafeMpn.accxxx,
+                    SafeMpn.handitem,
+                    SafeMpn.kousoku_lower,
+                    SafeMpn.kousoku_upper]);
 
                 var parser = new MenuFileParser();
                 var addedProps = new List<MenuFilePropModel>();

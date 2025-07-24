@@ -178,7 +178,7 @@ public class AnimationController : INotifyPropertyChanged
 
     private void OnCharacterProcessed(object sender, CharacterProcessingEventArgs e)
     {
-        if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
+        if (!e.ChangingSlots.Contains(SafeMpn.body))
             return;
 
         Apply(Animation);

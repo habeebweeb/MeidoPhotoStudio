@@ -73,7 +73,7 @@ public class BodyController : IShapeKeyController
 
     private void OnCharacterPropsProcessing(object sender, CharacterProcessingEventArgs e)
     {
-        if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
+        if (!e.ChangingSlots.Contains(SafeMpn.body))
             return;
 
         ResetAllShapeKeys();
@@ -81,7 +81,7 @@ public class BodyController : IShapeKeyController
 
     private void OnCharacterPropsProcessed(object sender, CharacterProcessingEventArgs e)
     {
-        if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
+        if (!e.ChangingSlots.Contains(SafeMpn.body))
             return;
 
         BackupShapeKeys();

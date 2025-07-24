@@ -73,7 +73,7 @@ public class PropSchemaToPropModelMapper(
                 if (menuFile is null)
                     return null;
 
-                if (menuFile.CategoryMpn == SafeMpn.GetValue(nameof(MPN.handitem)))
+                if (menuFile.CategoryMpn == SafeMpn.handitem)
                     menuFile.Name = translation["propNames", menuFile.Filename];
 
                 return menuFile;

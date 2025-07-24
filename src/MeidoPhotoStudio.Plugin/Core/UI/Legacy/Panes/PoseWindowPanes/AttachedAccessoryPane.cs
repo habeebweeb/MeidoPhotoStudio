@@ -14,9 +14,6 @@ public class AttachedAccessoryPane : BasePane
 {
     private const int NoAccessoryIndex = 0;
 
-    private static readonly MPN KousokuUpper = SafeMpn.GetValue(nameof(MPN.kousoku_upper));
-    private static readonly MPN KousokuLower = SafeMpn.GetValue(nameof(MPN.kousoku_lower));
-
     private readonly MenuPropRepository menuPropRepository;
     private readonly SelectionController<CharacterController> characterSelectionController;
     private readonly Dropdown<MenuFilePropModel> accessoryDropdown;
@@ -45,11 +42,11 @@ public class AttachedAccessoryPane : BasePane
         var upperToggle = new Toggle(
             new LocalizableGUIContent(translation, "attachMpnPropPane", "upperAccessoryTab"), true);
 
-        upperToggle.ControlEvent += OnAccessoryTypeToggleChanged(KousokuUpper);
+        upperToggle.ControlEvent += OnAccessoryTypeToggleChanged(SafeMpn.kousoku_upper);
 
         var lowerToggle = new Toggle(new LocalizableGUIContent(translation, "attachMpnPropPane", "lowerAccessoryTab"));
 
-        lowerToggle.ControlEvent += OnAccessoryTypeToggleChanged(KousokuLower);
+        lowerToggle.ControlEvent += OnAccessoryTypeToggleChanged(SafeMpn.kousoku_lower);
 
         accessoryTypeGroup = [upperToggle, lowerToggle];
 
@@ -108,7 +105,7 @@ public class AttachedAccessoryPane : BasePane
     private ClothingController CurrentClothing =>
         characterSelectionController.Current?.Clothing;
 
-    private MPN CurrentCategory { get; set; } = KousokuUpper;
+    private MPN CurrentCategory { get; set; } = SafeMpn.kousoku_upper;
 
     public override void Draw()
     {
@@ -162,7 +159,7 @@ public class AttachedAccessoryPane : BasePane
 
         if (accessoryDropdown.SelectedItemIndex is NoAccessoryIndex)
         {
-            if (CurrentCategory == KousokuLower)
+            if (CurrentCategory == SafeMpn.kousoku_lower)
                 CurrentClothing.DetachLowerAccessory();
             else
                 CurrentClothing.DetachUpperAccessory();
@@ -207,8 +204,8 @@ public class AttachedAccessoryPane : BasePane
 
         (var changedCategory, var changedAccessory) = e.PropertyName switch
         {
-            nameof(ClothingController.AttachedLowerAccessory) => (KousokuLower, controller.AttachedLowerAccessory),
-            nameof(ClothingController.AttachedUpperAccessory) => (KousokuUpper, controller.AttachedUpperAccessory),
+            nameof(ClothingController.AttachedLowerAccessory) => (SafeMpn.kousoku_lower, controller.AttachedLowerAccessory),
+            nameof(ClothingController.AttachedUpperAccessory) => (SafeMpn.kousoku_upper, controller.AttachedUpperAccessory),
             _ => (MPN.null_mpn, null),
         };
 
@@ -235,7 +232,7 @@ public class AttachedAccessoryPane : BasePane
         if (CurrentClothing is null)
             return;
 
-        var currentAccessory = CurrentCategory == KousokuLower
+        var currentAccessory = CurrentCategory == SafeMpn.kousoku_lower
             ? CurrentClothing.AttachedLowerAccessory
             : CurrentClothing.AttachedUpperAccessory;
 

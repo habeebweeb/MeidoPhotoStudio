@@ -274,7 +274,7 @@ public class IKDragHandleService : INotifyPropertyChanged
             return;
         }
 
-        if (!e.ChangingSlots.Contains(SafeMpn.GetValue(nameof(MPN.body))))
+        if (!e.ChangingSlots.Contains(SafeMpn.body))
             return;
 
         DestroyController(controllers[character]);
