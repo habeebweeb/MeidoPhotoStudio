@@ -111,12 +111,6 @@ public class SceneManagementModal : BaseWindow
 
         public abstract void OnScreenDimensionsChanged();
 
-        protected static Rect MiddlePosition(float width, float height) =>
-            new(Screen.width / 2f - width / 2f, Screen.height / 2f - height / 2f, width, height);
-
-        protected static int ScaledMinimum(float value) =>
-            Mathf.Min(UIUtility.Scaled(Mathf.RoundToInt(value)), (int)value);
-
         protected virtual void OnModeEnter()
         {
         }
@@ -244,7 +238,7 @@ public class SceneManagementModal : BaseWindow
             {
                 if (loadOptionsToggle.Value)
                 {
-                    var maxWidth = ScaledMinimum(manageSceneWindowSize.Width);
+                    var maxWidth = UIUtility.ScaledMinimum(manageSceneWindowSize.Width);
 
                     GUILayout.BeginVertical(GUILayout.MaxWidth(maxWidth - 20));
                 }
@@ -347,7 +341,7 @@ public class SceneManagementModal : BaseWindow
 
             var (width, height) = loadOptionsToggle.Value ? loadOptionsWindowSize : manageSceneWindowSize;
 
-            WindowRect = MiddlePosition(ScaledMinimum(width), ScaledMinimum(height));
+            WindowRect = UIUtility.MiddlePosition(UIUtility.ScaledMinimum(width), UIUtility.ScaledMinimum(height));
 
             static bool SeekToEndOfPNG(Stream stream)
             {
@@ -403,8 +397,8 @@ public class SceneManagementModal : BaseWindow
 
             var (windowWidth, windowHeight) = manageSceneWindowSize;
 
-            var scaleWidth = (ScaledMinimum(windowWidth) - PaddingSize * 2) / thumbnail.width;
-            var scaleHeight = ScaledMinimum(windowHeight) / thumbnail.height;
+            var scaleWidth = (UIUtility.ScaledMinimum(windowWidth) - PaddingSize * 2) / thumbnail.width;
+            var scaleHeight = UIUtility.ScaledMinimum(windowHeight) / thumbnail.height;
 
             var scale = Mathf.Min(scaleWidth, scaleHeight);
 
@@ -474,8 +468,8 @@ public class SceneManagementModal : BaseWindow
 
             WindowRect = WindowRect with
             {
-                width = ScaledMinimum(width),
-                height = ScaledMinimum(height),
+                width = UIUtility.ScaledMinimum(width),
+                height = UIUtility.ScaledMinimum(height),
             };
         }
 
@@ -535,8 +529,8 @@ public class SceneManagementModal : BaseWindow
 
                 WindowRect = WindowRect with
                 {
-                    width = ScaledMinimum(width),
-                    height = ScaledMinimum(height),
+                    width = UIUtility.ScaledMinimum(width),
+                    height = UIUtility.ScaledMinimum(height),
                 };
             }
 
@@ -554,8 +548,8 @@ public class SceneManagementModal : BaseWindow
 
                 WindowRect = WindowRect with
                 {
-                    width = ScaledMinimum(width),
-                    height = ScaledMinimum(height),
+                    width = UIUtility.ScaledMinimum(width),
+                    height = UIUtility.ScaledMinimum(height),
                 };
             }
 
@@ -611,8 +605,8 @@ public class SceneManagementModal : BaseWindow
             public override void OnScreenDimensionsChanged() =>
                 WindowRect = WindowRect with
                 {
-                    width = ScaledMinimum(windowSize.Width),
-                    height = ScaledMinimum(windowSize.Height),
+                    width = UIUtility.ScaledMinimum(windowSize.Width),
+                    height = UIUtility.ScaledMinimum(windowSize.Height),
                 };
 
             public void ShowError(string message)
@@ -623,7 +617,7 @@ public class SceneManagementModal : BaseWindow
             }
 
             protected override void OnModeEnter() =>
-                WindowRect = MiddlePosition(ScaledMinimum(windowSize.Width), ScaledMinimum(windowSize.Height));
+                WindowRect = UIUtility.MiddlePosition(UIUtility.ScaledMinimum(windowSize.Width), UIUtility.ScaledMinimum(windowSize.Height));
 
             private void OnOKButtonPushed(object sender, EventArgs e) =>
                 CloseModal();
@@ -826,8 +820,8 @@ public class SceneManagementModal : BaseWindow
         public override void OnScreenDimensionsChanged() =>
             WindowRect = WindowRect with
             {
-                width = ScaledMinimum(windowSize.Width),
-                height = ScaledMinimum(windowSize.Height),
+                width = UIUtility.ScaledMinimum(windowSize.Width),
+                height = UIUtility.ScaledMinimum(windowSize.Height),
             };
 
         public void DeleteCategory(string category)
@@ -846,7 +840,7 @@ public class SceneManagementModal : BaseWindow
         }
 
         protected override void OnModeEnter() =>
-            WindowRect = MiddlePosition(ScaledMinimum(windowSize.Width), ScaledMinimum(windowSize.Height));
+            WindowRect = UIUtility.MiddlePosition(UIUtility.ScaledMinimum(windowSize.Width), UIUtility.ScaledMinimum(windowSize.Height));
 
         private void OnCancelButtonPushed(object sender, EventArgs e) =>
             CloseModal();

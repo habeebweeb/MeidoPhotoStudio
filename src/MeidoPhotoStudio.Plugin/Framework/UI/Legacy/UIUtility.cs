@@ -35,6 +35,12 @@ public static class UIUtility
         return Mathf.RoundToInt(scale * value);
     }
 
+    public static Rect MiddlePosition(float width, float height) =>
+        new(Screen.width / 2f - width / 2f, Screen.height / 2f - height / 2f, width, height);
+
+    public static int ScaledMinimum(float minimum) =>
+        Mathf.Min(Scaled(minimum), (int)minimum);
+
     public static Texture2D CreateTexture(int width, int height, Color color)
     {
         var colors = new Color32[width * height];

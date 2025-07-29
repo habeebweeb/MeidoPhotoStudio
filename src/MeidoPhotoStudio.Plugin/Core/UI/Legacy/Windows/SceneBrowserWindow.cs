@@ -177,11 +177,7 @@ public class SceneBrowserWindow : BaseWindow, IVirtualListHandler
             currentCategoryScenes = GetScenes(currentCategory);
             currentCategories = GetCategories();
 
-            WindowRect = new Rect(
-                Screen.width * 0.5f - Screen.width * 0.65f / 2f,
-                Screen.height * 0.5f - Screen.height * 0.75f / 2f,
-                Screen.width * 0.65f,
-                Screen.height * 0.75f);
+            WindowRect = UIUtility.MiddlePosition(Screen.width * 0.65f, Screen.height * 0.75f);
 
             hasCategories = this.sceneRepository.Categories.Any();
             hasScenes = currentCategoryScenes.Any();

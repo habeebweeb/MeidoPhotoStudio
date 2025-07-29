@@ -48,14 +48,7 @@ public class SettingsWindow : BaseWindow
 
         pluginInformationLabel = new(Plugin.BuildVersion);
 
-        var minimumWidth = MinimumWidth;
-        var minimumHeight = MinimumHeight;
-
-        WindowRect = new(
-            Screen.width * 0.5f - minimumWidth / 2f,
-            Screen.height * 0.5f - Screen.height * 0.7f / 2f,
-            minimumWidth,
-            Screen.height * 0.7f);
+        WindowRect = UIUtility.MiddlePosition(MinimumWidth, Screen.height * 0.7f);
     }
 
     public enum SettingType

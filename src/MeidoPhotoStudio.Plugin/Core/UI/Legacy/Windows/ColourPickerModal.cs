@@ -89,14 +89,7 @@ public class ColourPickerModal : BaseWindow
         cancelButton = new(new LocalizableGUIContent(this.translation, "colourPickerModal", "cancelButton"));
         cancelButton.ControlEvent += OnCancelButtonPushed;
 
-        var width = ScaledMinimum(WindowDimensions.Width);
-        var height = ScaledMinimum(WindowDimensions.Height);
-
-        WindowRect = new(
-            Screen.width / 2f - width / 2f,
-            Screen.height / 2f - height / 2f,
-            width,
-            height);
+        WindowRect = UIUtility.MiddlePosition(UIUtility.ScaledMinimum(WindowDimensions.Width), UIUtility.ScaledMinimum(WindowDimensions.Height));
     }
 
     public Color Colour
@@ -111,8 +104,8 @@ public class ColourPickerModal : BaseWindow
 
         WindowRect = WindowRect with
         {
-            width = ScaledMinimum(WindowDimensions.Width),
-            height = ScaledMinimum(WindowDimensions.Height),
+            width = UIUtility.ScaledMinimum(WindowDimensions.Width),
+            height = UIUtility.ScaledMinimum(WindowDimensions.Height),
         };
     }
 
@@ -180,9 +173,6 @@ public class ColourPickerModal : BaseWindow
 
         GUILayout.EndArea();
     }
-
-    private static int ScaledMinimum(float value) =>
-        Mathf.Min(UIUtility.Scaled(Mathf.RoundToInt(value)), (int)value);
 
     private void OnRGBASliderChanged(object sender, EventArgs e)
     {

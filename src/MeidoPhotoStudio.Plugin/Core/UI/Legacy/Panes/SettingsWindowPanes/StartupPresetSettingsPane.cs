@@ -140,8 +140,8 @@ public class StartupPresetSettingsPane : BasePane
             var windowWidth = windowRect.width - UIUtility.Scaled(200) - 35;
             var windowHeight = windowRect.height;
 
-            var scaledWidth = (ScaledMinimum(windowWidth) - 35) / (float)thumbnail.width;
-            var scaledHeight = ScaledMinimum(windowHeight) / (float)thumbnail.height;
+            var scaledWidth = (UIUtility.ScaledMinimum(windowWidth) - 35) / (float)thumbnail.width;
+            var scaledHeight = UIUtility.ScaledMinimum(windowHeight) / (float)thumbnail.height;
 
             var scale = Mathf.Min(scaledWidth, scaledHeight);
 
@@ -164,9 +164,6 @@ public class StartupPresetSettingsPane : BasePane
         }
 
         GUI.enabled = Parent.Enabled;
-
-        static int ScaledMinimum(float value) =>
-            Mathf.Min(UIUtility.Scaled(Mathf.RoundToInt(value)), (int)value);
 
         void DrawLoadOption(Tree<Toggle>.Node toggleNode, int depth = 0)
         {

@@ -386,19 +386,9 @@ public class FavouritePropsPane : BasePane, IVirtualListHandler
 
             renamingTextField.Value = renamingModel.Name;
 
-            var width = ScaledMinimum(450);
-            var height = ScaledMinimum(150);
-
-            WindowRect = new(
-                Screen.width / 2f - width / 2f,
-                Screen.height / 2f - height / 2f,
-                width,
-                height);
+            WindowRect = UIUtility.MiddlePosition(UIUtility.ScaledMinimum(450), UIUtility.ScaledMinimum(150));
 
             Modal.Show(this);
-
-            static int ScaledMinimum(float value) =>
-                Mathf.Min(UIUtility.Scaled(Mathf.RoundToInt(value)), (int)value);
         }
 
         public override void Draw()
