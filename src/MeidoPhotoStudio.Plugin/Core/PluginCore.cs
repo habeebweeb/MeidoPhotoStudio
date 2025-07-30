@@ -478,16 +478,11 @@ public partial class PluginCore : MonoBehaviour
         var sceneBrowser = new SceneBrowserWindow(
             translation,
             sceneRepository,
-            new(
-                translation,
-                sceneRepository,
-                screenshotService,
-                sceneSchemaBuilder,
-                sceneSerializer,
-                sceneLoader,
-                loadOptionsService),
             sceneSchemaBuilder,
             screenshotService,
+            sceneSerializer,
+            sceneLoader,
+            loadOptionsService,
             new(configuration),
             inputRemapper);
 

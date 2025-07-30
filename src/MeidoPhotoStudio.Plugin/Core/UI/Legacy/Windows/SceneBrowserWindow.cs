@@ -1,6 +1,8 @@
 using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Database.Scenes;
 using MeidoPhotoStudio.Plugin.Core.Localization;
+using MeidoPhotoStudio.Plugin.Core.SceneManagement;
+using MeidoPhotoStudio.Plugin.Core.Schema;
 using MeidoPhotoStudio.Plugin.Core.Serialization;
 using MeidoPhotoStudio.Plugin.Framework;
 using MeidoPhotoStudio.Plugin.Framework.Extensions;
@@ -9,7 +11,8 @@ using MeidoPhotoStudio.Plugin.Framework.UI.Legacy;
 
 namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
-public class SceneBrowserWindow : BaseWindow, IVirtualListHandler
+/// <summary>Main scene browser window.</summary>
+public partial class SceneBrowserWindow : BaseWindow, IVirtualListHandler
 {
     private const float ThumbnailScale = 0.4f;
     private const float ResizeHandleSize = 15f;
@@ -18,12 +21,16 @@ public class SceneBrowserWindow : BaseWindow, IVirtualListHandler
     private static readonly Texture2D CategorySelectedTexture = UIUtility.CreateTexture(2, 2, new(0.5f, 0.5f, 0.5f, 0.4f));
     private static readonly Vector2 ThumbnailDimensions = new(600f, 337.5f);
 
+    private readonly Translation translation;
     private readonly SceneRepository sceneRepository;
     private readonly SceneManagementModal sceneManagementModal;
+    private readonly CategoryManagementModal categoryManagementModal;
+    private readonly ErrorModal errorModal;
     private readonly SceneSchemaBuilder sceneSchemaBuilder;
     private readonly SceneBrowserConfiguration configuration;
     private readonly InputRemapper inputRemapper;
     private readonly ScreenshotService screenshotService;
+    private readonly ISceneSerializer sceneSerializer;
     private readonly LazyStyle labelStyle = new(
         StyleSheet.TextSize,
         static () => new(GUI.skin.label)
@@ -95,20 +102,25 @@ public class SceneBrowserWindow : BaseWindow, IVirtualListHandler
     public SceneBrowserWindow(
         Translation translation,
         SceneRepository sceneRepository,
-        SceneManagementModal sceneManagementModal,
         SceneSchemaBuilder sceneSchemaBuilder,
         ScreenshotService screenshotService,
+        ISceneSerializer sceneSerializer,
+        SceneLoader sceneLoader,
+        LoadOptionsService loadOptionsService,
         SceneBrowserConfiguration configuration,
         InputRemapper inputRemapper)
     {
-        _ = translation ?? throw new ArgumentNullException(nameof(translation));
+        this.translation = translation ?? throw new ArgumentNullException(nameof(translation));
         this.sceneRepository = sceneRepository ?? throw new ArgumentNullException(nameof(sceneRepository));
-        this.sceneManagementModal = sceneManagementModal ?? throw new ArgumentNullException(nameof(sceneManagementModal));
         this.sceneSchemaBuilder = sceneSchemaBuilder ?? throw new ArgumentNullException(nameof(sceneSchemaBuilder));
         this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         this.screenshotService = screenshotService
             ? screenshotService
             : throw new ArgumentNullException(nameof(screenshotService));
+
+        this.sceneSerializer = sceneSerializer ?? throw new ArgumentNullException(nameof(sceneSerializer));
+        _ = sceneLoader ?? throw new ArgumentNullException(nameof(sceneLoader));
+        _ = loadOptionsService ?? throw new ArgumentNullException(nameof(loadOptionsService));
 
         this.inputRemapper = inputRemapper ? inputRemapper : throw new ArgumentNullException(nameof(inputRemapper));
 
@@ -118,6 +130,18 @@ public class SceneBrowserWindow : BaseWindow, IVirtualListHandler
         this.sceneRepository.RemovedCategory += OnCategoriesChanged;
         this.sceneRepository.Refreshing += OnRefreshing;
         this.sceneRepository.Refreshed += OnRefreshed;
+
+        sceneManagementModal = new(
+            translation,
+            sceneRepository,
+            screenshotService,
+            sceneSchemaBuilder,
+            sceneLoader,
+            loadOptionsService);
+
+        categoryManagementModal = new(translation, sceneRepository);
+
+        errorModal = new(translation);
 
         categoryNameTextfield = new();
         categoryNameTextfield.ControlEvent += OnAddCategoryButtonPushed;
@@ -317,7 +341,7 @@ public class SceneBrowserWindow : BaseWindow, IVirtualListHandler
                     thumbnailDimensions.y);
 
                 if (GUI.Button(buttonRect, scene.Thumbnail, thumbnailStyle))
-                    sceneManagementModal.ManageScene(scene);
+                    ManageScene(scene);
             }
 
             GUI.EndScrollView();
@@ -346,8 +370,6 @@ public class SceneBrowserWindow : BaseWindow, IVirtualListHandler
     public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
     {
         base.OnScreenDimensionsChanged(newScreenDimensions);
-
-        sceneManagementModal.OnScreenDimensionsChanged(newScreenDimensions);
 
         var minimumWidth = UIUtility.Scaled(CategoryListWidth + ThumbnailDimensions.x * ThumbnailScale + 38);
         var minimumHeight = UIUtility.Scaled(ThumbnailDimensions.y * ThumbnailScale + 40);
@@ -475,6 +497,74 @@ public class SceneBrowserWindow : BaseWindow, IVirtualListHandler
         currentCategoryScenes = [.. SortScenes(currentCategoryScenes, sortingModesDropdown.SelectedItem, Descending)];
     }
 
+    private void ManageScene(SceneModel scene)
+    {
+        if (scene is null)
+            return;
+
+        SceneSchema sceneSchema;
+
+        try
+        {
+            using var fileStream = File.OpenRead(scene.Filename);
+
+            SeekToEndOfPNG(fileStream);
+
+            sceneSchema = sceneSerializer.DeserializeScene(fileStream);
+
+            if (sceneSchema is null)
+            {
+                errorModal.ShowError(
+                    string.Format(translation["sceneManagerModal", "sceneLoadErrorMessage"], scene.Name));
+
+                return;
+            }
+        }
+        catch (Exception e)
+        {
+            errorModal.ShowError(
+                string.Format(translation["sceneManagerModal", "sceneLoadErrorMessage"], scene.Name));
+
+            Plugin.Logger.LogError($"Could not open scene because {e}");
+
+            return;
+        }
+
+        sceneManagementModal.ManageScene(scene, sceneSchema);
+
+        static bool SeekToEndOfPNG(Stream stream)
+        {
+            var buffer = new byte[8];
+
+            var pngHeader = new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 };
+
+            stream.Read(buffer, 0, 8);
+
+            if (!buffer.SequenceEqual(pngHeader))
+                return false;
+
+            var pngEnd = Encoding.ASCII.GetBytes("IEND");
+
+            buffer = new byte[4];
+
+            do
+            {
+                stream.Read(buffer, 0, 4);
+
+                if (BitConverter.IsLittleEndian)
+                    Array.Reverse(buffer);
+
+                var length = BitConverter.ToUInt32(buffer, 0);
+
+                stream.Read(buffer, 0, 4);
+                stream.Seek(length + 4L, SeekOrigin.Current);
+            }
+            while (!buffer.SequenceEqual(pngEnd));
+
+            return true;
+        }
+    }
+
     private void ChangeCategory(string category)
     {
         if (string.Equals(category, currentCategory, StringComparison.Ordinal))
@@ -514,7 +604,7 @@ public class SceneBrowserWindow : BaseWindow, IVirtualListHandler
     }
 
     private void DeleteCategory(string category) =>
-        sceneManagementModal.DeleteCategory(category);
+        categoryManagementModal.DeleteCategory(category);
 
     private SceneModel[] GetScenes(string category) =>
         string.IsNullOrEmpty(category) || !sceneRepository.ContainsCategory(category)
