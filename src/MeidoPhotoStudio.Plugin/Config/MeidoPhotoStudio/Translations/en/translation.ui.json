@@ -561,6 +561,7 @@
   "sceneManager": {
     "createDirectoryButton": "Add Folder",
     "saveSceneButton": "Save Scene",
+    "sceneFilenamePlaceholder": "Scene filename",
     "refreshButton": "Refresh",
     "sortName": "Name",
     "sortCreated": "Date Created",

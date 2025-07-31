@@ -146,7 +146,11 @@ public partial class SceneBrowserWindow : BaseWindow, IVirtualListHandler
         categoryNameTextfield = new();
         categoryNameTextfield.ControlEvent += OnAddCategoryButtonPushed;
 
-        sceneNameTextfield = new();
+        sceneNameTextfield = new()
+        {
+            PlaceholderContent = new LocalizableGUIContent(translation, "sceneManager", "sceneFilenamePlaceholder"),
+        };
+
         sceneNameTextfield.ControlEvent += OnSaveSceneButtonPushed;
 
         refreshScenesButton = new(new LocalizableGUIContent(translation, "sceneManager", "refreshButton"));
