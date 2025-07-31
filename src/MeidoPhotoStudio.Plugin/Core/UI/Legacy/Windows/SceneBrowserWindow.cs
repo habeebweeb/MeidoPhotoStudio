@@ -75,7 +75,6 @@ public partial class SceneBrowserWindow : BaseWindow, IVirtualListHandler
             padding = new RectOffset(0, 0, 0, 0),
         });
 
-    private readonly TextField categoryNameTextfield;
     private readonly TextField sceneNameTextfield;
     private readonly Button refreshScenesButton;
     private readonly Button addCategoryButton;
@@ -142,9 +141,6 @@ public partial class SceneBrowserWindow : BaseWindow, IVirtualListHandler
         categoryManagementModal = new(translation, sceneRepository);
 
         errorModal = new(translation);
-
-        categoryNameTextfield = new();
-        categoryNameTextfield.ControlEvent += OnAddCategoryButtonPushed;
 
         sceneNameTextfield = new()
         {
@@ -355,13 +351,7 @@ public partial class SceneBrowserWindow : BaseWindow, IVirtualListHandler
         {
             GUILayout.BeginHorizontal();
 
-            GUILayout.BeginHorizontal(categoryWidth);
-
-            categoryNameTextfield.Draw();
-
-            addCategoryButton.Draw(GUILayout.ExpandWidth(false));
-
-            GUILayout.EndHorizontal();
+            addCategoryButton.Draw(categoryWidth);
 
             sceneNameTextfield.Draw();
 
@@ -464,15 +454,8 @@ public partial class SceneBrowserWindow : BaseWindow, IVirtualListHandler
             ChangeCategory(sceneRepository.RootCategoryName);
     }
 
-    private void OnAddCategoryButtonPushed(object sender, EventArgs e)
-    {
-        var name = categoryNameTextfield.Value;
-        var categoryName = string.IsNullOrEmpty(name) ? "scenes" : name;
-
-        categoryNameTextfield.Value = string.Empty;
-
-        sceneRepository.AddCategory(categoryName);
-    }
+    private void OnAddCategoryButtonPushed(object sender, EventArgs e) =>
+        categoryManagementModal.AddCategory();
 
     private void OnSaveSceneButtonPushed(object sender, EventArgs e)
     {

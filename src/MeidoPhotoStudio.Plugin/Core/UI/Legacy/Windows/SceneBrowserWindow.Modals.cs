@@ -505,6 +505,9 @@ public partial class SceneBrowserWindow
         private readonly Label messageLabel;
         private readonly Button deleteButton;
         private readonly Button cancelButton;
+        private readonly Button createCategoryButton;
+        private readonly Header categoryNameHeader;
+        private readonly TextField categoryNameTextfield;
 
         private readonly LazyStyle messageStyle = new(
             StyleSheet.TextSize,
@@ -513,6 +516,7 @@ public partial class SceneBrowserWindow
                 alignment = TextAnchor.MiddleCenter,
             });
 
+        private bool addingCategory;
         private string managingCategory = string.Empty;
 
         public CategoryManagementModal(Translation translation, SceneRepository sceneRepository)
@@ -527,6 +531,16 @@ public partial class SceneBrowserWindow
 
             deleteButton = new(new LocalizableGUIContent(translation, "sceneManagerModal", "deleteButton"));
             deleteButton.ControlEvent += OnDeleteButtonPushed;
+
+            categoryNameHeader = new(new LocalizableGUIContent(translation, "sceneManagerModal", "addDirectoryHeader"));
+
+            categoryNameTextfield = new()
+            {
+                PlaceholderContent = new LocalizableGUIContent(translation, "sceneManagerModal", "newDirectoryNamePlaceholder"),
+            };
+
+            createCategoryButton = new(new LocalizableGUIContent(translation, "sceneManagerModal", "addDirectoryButton"));
+            createCategoryButton.ControlEvent += OnCreateCategoryButtonPushed;
         }
 
         public override void Draw()
@@ -535,19 +549,49 @@ public partial class SceneBrowserWindow
 
             GUILayout.BeginArea(new(PaddingSize, PaddingSize, WindowRect.width - PaddingSize * 2, WindowRect.height - PaddingSize * 2));
 
-            messageLabel.Draw(messageStyle, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-
-            GUILayout.BeginHorizontal();
-
-            GUILayout.FlexibleSpace();
-
-            deleteButton.Draw(GUILayout.ExpandWidth(false));
-
-            cancelButton.Draw(GUILayout.MinWidth(UIUtility.Scaled(110)));
-
-            GUILayout.EndHorizontal();
+            if (addingCategory)
+                DrawAddCategory();
+            else
+                DrawDeleteCategory();
 
             GUILayout.EndArea();
+
+            void DrawDeleteCategory()
+            {
+                messageLabel.Draw(messageStyle, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+
+                GUILayout.BeginHorizontal();
+
+                GUILayout.FlexibleSpace();
+
+                deleteButton.Draw(GUILayout.ExpandWidth(false));
+
+                cancelButton.Draw(GUILayout.MinWidth(UIUtility.Scaled(110)));
+
+                GUILayout.EndHorizontal();
+            }
+
+            void DrawAddCategory()
+            {
+                GUILayout.FlexibleSpace();
+
+                categoryNameHeader.Draw();
+
+                GUILayout.Space(UIUtility.Scaled(5));
+
+                categoryNameTextfield.Draw(GUILayout.Height(UIUtility.Scaled(StyleSheet.TextSize) + 12));
+
+                GUILayout.FlexibleSpace();
+
+                GUILayout.BeginHorizontal();
+
+                GUILayout.FlexibleSpace();
+
+                createCategoryButton.Draw(GUILayout.ExpandWidth(false));
+                cancelButton.Draw(GUILayout.MinWidth(UIUtility.Scaled(110)));
+
+                GUILayout.EndHorizontal();
+            }
         }
 
         public void DeleteCategory(string category)
@@ -555,10 +599,22 @@ public partial class SceneBrowserWindow
             if (string.IsNullOrEmpty(category))
                 throw new ArgumentException($"'{nameof(category)}' cannot be null or empty.", nameof(category));
 
+            addingCategory = false;
             managingCategory = category;
 
             messageLabel.Text =
                 string.Format(translation["sceneManagerModal", "deleteDirectoryConfirm"], managingCategory);
+
+            WindowRect = UIUtility.MiddlePosition(UIUtility.ScaledMinimum(WindowSize.Width), UIUtility.ScaledMinimum(WindowSize.Height));
+
+            Modal.Show(this);
+        }
+
+        public void AddCategory()
+        {
+            addingCategory = true;
+
+            categoryNameTextfield.Value = GetUniqueCategoryName();
 
             WindowRect = UIUtility.MiddlePosition(UIUtility.ScaledMinimum(WindowSize.Width), UIUtility.ScaledMinimum(WindowSize.Height));
 
@@ -577,7 +633,7 @@ public partial class SceneBrowserWindow
         }
 
         private void OnCancelButtonPushed(object sender, EventArgs e) =>
-            Modal.Close();
+            CloseModal();
 
         private void OnDeleteButtonPushed(object sender, EventArgs e)
         {
@@ -586,7 +642,37 @@ public partial class SceneBrowserWindow
 
             sceneRepository.DeleteCategory(managingCategory);
 
+            CloseModal();
+        }
+
+        private void OnCreateCategoryButtonPushed(object sender, EventArgs e)
+        {
+            sceneRepository.AddCategory(GetUniqueCategoryName(categoryNameTextfield.Value));
+
+            CloseModal();
+        }
+
+        private void CloseModal()
+        {
+            addingCategory = false;
             Modal.Close();
+        }
+
+        private string GetUniqueCategoryName(string startingName = "")
+        {
+            const string defaultName = "Scenes";
+
+            if (string.IsNullOrEmpty(startingName))
+                startingName = defaultName;
+
+            var newCategoryName = startingName;
+            var categorySet = new HashSet<string>(sceneRepository.Categories);
+            var index = 1;
+
+            while (categorySet.Contains(newCategoryName))
+                newCategoryName = $"{startingName} ({index++})";
+
+            return newCategoryName;
         }
     }
 
