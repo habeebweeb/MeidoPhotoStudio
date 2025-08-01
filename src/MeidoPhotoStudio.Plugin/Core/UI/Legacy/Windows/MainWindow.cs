@@ -244,7 +244,8 @@ public partial class MainWindow : BaseWindow
 
         SetTab(newTab);
 
-        Visible = true;
+        if (!Visible && e.ForceVisible)
+            Visible = true;
     }
 
     private void OnSettingsButtonPushed(object sender, EventArgs e) =>

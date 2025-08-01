@@ -147,7 +147,7 @@ public class LightDragHandleController : GeneralDragHandleController
 
             Controller.lightScaleBackup = LightScaleValueBackup.Create(Controller.LightController);
             Controller.lightSelectionController.Select(Controller.LightController);
-            Controller.tabSelectionController.SelectTab(MainWindow.Tab.Environment);
+            Controller.tabSelectionController.SelectTab(MainWindow.Tab.Environment, true);
         }
 
         public override void OnCancelled()

@@ -156,7 +156,7 @@ public class PropDragHandleController : GeneralDragHandleController
             base.OnClicked();
 
             Controller.propSelectionController.Select(Controller.propController);
-            Controller.tabSelectionController.SelectTab(MainWindow.Tab.Props);
+            Controller.tabSelectionController.SelectTab(MainWindow.Tab.Props, true);
         }
 
         public override void OnDoubleClicked() =>

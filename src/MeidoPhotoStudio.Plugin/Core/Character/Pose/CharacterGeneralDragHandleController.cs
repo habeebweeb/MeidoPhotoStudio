@@ -207,7 +207,7 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
             base.OnClicked();
 
             Controller.selectionController.Select(Controller.character);
-            Controller.tabSelectionController.SelectTab(MainWindow.Tab.CharacterPose);
+            Controller.tabSelectionController.SelectTab(MainWindow.Tab.CharacterPose, true);
         }
 
         public override void OnDoubleClicked() =>

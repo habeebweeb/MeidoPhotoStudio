@@ -91,7 +91,7 @@ public class HeadDragHandleController(
             base.OnClicked();
 
             controller.BackupEyeRotations();
-            controller.TabSelectionController.SelectTab(MainWindow.Tab.CharacterFace);
+            controller.TabSelectionController.SelectTab(MainWindow.Tab.CharacterFace, true);
         }
 
         public override void OnDoubleClicked() =>
