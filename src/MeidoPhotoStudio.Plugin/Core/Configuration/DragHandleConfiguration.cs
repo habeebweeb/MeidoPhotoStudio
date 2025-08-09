@@ -27,6 +27,7 @@ public class DragHandleConfiguration
         TipDigitJointColour = this.configFile.Bind(ColourSection, "Tip Digit Joint Drag Handle Colour", new Color(0.19f, 0.05f, 0.96f, 0.3f));
         ClothingDragHandleColour = this.configFile.Bind(ColourSection, "Clothing Gravity Drag Handle Colour", new Color(0.86f, 0.75f, 0.3f, 0.7f));
         HairDragHandleColour = this.configFile.Bind(ColourSection, "Hair Gravity Drag Handle Colour", new Color(0f, 0.47f, 0.19f, 0.7f));
+        FloorHeightDragHandleColour = this.configFile.Bind(ColourSection, "Floor Height Drag Handle Colour", new Color(0.1f, 0.1f, 0.1f, 0.5f));
     }
 
     public ConfigEntry<bool> AutomaticSelection { get; }
@@ -56,4 +57,6 @@ public class DragHandleConfiguration
     public ConfigEntry<Color> ClothingDragHandleColour { get; }
 
     public ConfigEntry<Color> HairDragHandleColour { get; }
+
+    public ConfigEntry<Color> FloorHeightDragHandleColour { get; }
 }

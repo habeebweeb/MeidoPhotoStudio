@@ -130,7 +130,6 @@
     "boneToggle": "Precise Mode",
     "limitJointsToggle": "Limit Joints",
     "limitDigitsToggle": "Limit Fingers/Toes",
-    "customFloorHeightEnabledToggle": "Enabled",
     "flipPoseToggle": "Flip Pose",
     "preciseTransformToggle": "Precise Transform"
   },
@@ -207,6 +206,10 @@
     "globalToggle": "Global",
     "hairDragHandleToggle": "Drag Handle",
     "clothingDragHandleToggle": "Drag Handle"
+  },
+  "customFloorHeightPane": {
+    "enabledToggle": "Enabled",
+    "dragHandleEnabledToggle": "Drag Handle"
   },
   "copyPosePane": {
     "copyHandHeader": "Copy Hands",
@@ -724,7 +727,8 @@
     "middleDigitJointColourLabel": "Middle digit joint colour",
     "tipDigitJointColourLabel": "Tip digit joint colour",
     "clothingGravityColourLabel": "Clothing gravity colour",
-    "hairGravityColourLabel": "Hair gravity colour"
+    "hairGravityColourLabel": "Hair gravity colour",
+    "floorHeightColourLabel": "Floor height colour"
   },
   "autoSaveSettingsPane": {
     "enabledToggle": "Automatically save scenes",

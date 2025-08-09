@@ -75,6 +75,7 @@ public partial class PluginCore : MonoBehaviour
         IKController.DestroyParent();
         WfCameraMoveSupportUtility.Destroy();
         Framework.UI.Legacy.UIUtility.Destroy();
+        FloorHeightDragHandleService.DestroyParent();
 
         menuPropRepository?.Destroy();
     }
@@ -255,6 +256,20 @@ public partial class PluginCore : MonoBehaviour
                 characterService, characterUndoRedoService, gameAnimationRepository, customAnimationRepository, customAnimationRepositorySorter),
             inputConfiguration));
 
+        var floorHeightDragHandleInputHandler = new FloorHeightDragHandleInputHandler(inputConfiguration);
+
+        AddPluginActiveInputHandler(floorHeightDragHandleInputHandler);
+
+        var floorHeightDragHandleService = new FloorHeightDragHandleService(
+            floorHeightDragHandleInputHandler,
+            characterService,
+            characterSelectionController,
+            tabSelectionController)
+        {
+            AutoSelect = dragHandleConfiguration.AutomaticSelection.Value,
+            AutoSelectTab = dragHandleConfiguration.AutomaticTabSelection.Value,
+            DragHandleColour = dragHandleConfiguration.FloorHeightDragHandleColour.Value,
+        };
         _ = new CharacterConfigurationController(characterService, ikDragHandleService, characterConfiguration);
 
         var characterPlacementService = new PlacementService(characterService);
@@ -503,7 +518,8 @@ public partial class PluginCore : MonoBehaviour
                 propDragHandleService,
                 gravityDragHandleService,
                 lightDragHandleRepository,
-                backgroundDragHandleService),
+                backgroundDragHandleService,
+                floorHeightDragHandleService),
             [SettingsWindow.SettingType.ShapeKeys] = new ShapeKeysSettingsPane(
                 translation,
                 faceShapeKeyConfiguration,
@@ -623,7 +639,10 @@ public partial class PluginCore : MonoBehaviour
                             new SubPaneGroup(
                                 new LocalizableGUIContent(translation, "gravitySubPaneGroup", "floorHeight"))
                             {
-                                new CustomFloorHeightPane(translation, characterSelectionController),
+                                new CustomFloorHeightPane(
+                                    translation,
+                                    floorHeightDragHandleService,
+                                    characterSelectionController),
                             },
                         }
                     ],

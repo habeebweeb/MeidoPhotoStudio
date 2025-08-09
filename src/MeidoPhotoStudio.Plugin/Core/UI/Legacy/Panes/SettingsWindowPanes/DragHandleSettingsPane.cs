@@ -19,6 +19,7 @@ public class DragHandleSettingsPane : BasePane
     private readonly GravityDragHandleService gravityDragHandleService;
     private readonly LightDragHandleService lightDragHandleRepository;
     private readonly BackgroundDragHandleService backgroundDragHandleService;
+    private readonly FloorHeightDragHandleService floorHeightDragHandleService;
     private readonly Toggle smallDragHandleToggle;
     private readonly Toggle characterTransformDragHandleToggle;
     private readonly Toggle autoSelectToggle;
@@ -34,6 +35,7 @@ public class DragHandleSettingsPane : BasePane
     private readonly ColourConfigurationSet tipDigitJointColourConfiguration;
     private readonly ColourConfigurationSet clothingColourConfiguration;
     private readonly ColourConfigurationSet hairColourConfiguration;
+    private readonly ColourConfigurationSet floorHeightColourConfiguration;
 
     public DragHandleSettingsPane(
         Translation translation,
@@ -42,7 +44,8 @@ public class DragHandleSettingsPane : BasePane
         PropDragHandleService propDragHandleService,
         GravityDragHandleService gravityDragHandleService,
         LightDragHandleService lightDragHandleRepository,
-        BackgroundDragHandleService backgroundDragHandleService)
+        BackgroundDragHandleService backgroundDragHandleService,
+        FloorHeightDragHandleService floorHeightDragHandleService)
     {
         _ = translation ?? throw new ArgumentNullException(nameof(translation));
         this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -51,10 +54,12 @@ public class DragHandleSettingsPane : BasePane
         this.gravityDragHandleService = gravityDragHandleService ?? throw new ArgumentNullException(nameof(gravityDragHandleService));
         this.lightDragHandleRepository = lightDragHandleRepository ?? throw new ArgumentNullException(nameof(lightDragHandleRepository));
         this.backgroundDragHandleService = backgroundDragHandleService ?? throw new ArgumentNullException(nameof(backgroundDragHandleService));
+        this.floorHeightDragHandleService = floorHeightDragHandleService ?? throw new ArgumentNullException(nameof(floorHeightDragHandleService));
 
         this.configuration.SmallTransformCube.SettingChanged += OnSettingsChanged;
         this.configuration.CharacterTransformCube.SettingChanged += OnSettingsChanged;
         this.configuration.AutomaticSelection.SettingChanged += OnSettingsChanged;
+        this.configuration.AutomaticTabSelection.SettingChanged += OnSettingsChanged;
 
         smallDragHandleToggle = new(
             new LocalizableGUIContent(translation, "dragHandleSettingsPane", "smallDragHandleToggle"),
@@ -143,6 +148,12 @@ public class DragHandleSettingsPane : BasePane
             newColour => this.gravityDragHandleService.HairDragHandleColour = newColour,
             new LocalizableGUIContent(translation, "dragHandleSettingsPane", "hairGravityColourLabel"),
             resetButtonLabel);
+
+        floorHeightColourConfiguration = new(
+            this.configuration.FloorHeightDragHandleColour,
+            newColour => this.floorHeightDragHandleService.DragHandleColour = newColour,
+            new LocalizableGUIContent(translation, "dragHandleSettingsPane", "floorHeightColourLabel"),
+            resetButtonLabel);
     }
 
     public override void Draw()
@@ -168,6 +179,8 @@ public class DragHandleSettingsPane : BasePane
 
         clothingColourConfiguration.Draw();
         hairColourConfiguration.Draw();
+
+        floorHeightColourConfiguration.Draw();
     }
 
     private void OnSmallDragHandleToggleChanged(object sender, EventArgs e)
@@ -196,6 +209,7 @@ public class DragHandleSettingsPane : BasePane
         ikDragHandleService.AutoSelect = configuration.AutomaticSelection.Value;
         gravityDragHandleService.AutoSelect = configuration.AutomaticSelection.Value;
         lightDragHandleRepository.AutoSelect = configuration.AutomaticSelection.Value;
+        floorHeightDragHandleService.AutoSelect = configuration.AutomaticSelection.Value;
     }
 
     private void OnAutoSelectTabToggleChanged(object sender, EventArgs e)
@@ -206,6 +220,7 @@ public class DragHandleSettingsPane : BasePane
         ikDragHandleService.AutoSelectTab = configuration.AutomaticTabSelection.Value;
         gravityDragHandleService.AutoSelectTab = configuration.AutomaticTabSelection.Value;
         lightDragHandleRepository.AutoSelectTab = configuration.AutomaticTabSelection.Value;
+        floorHeightDragHandleService.AutoSelectTab = configuration.AutomaticTabSelection.Value;
     }
 
     private void OnSettingsChanged(object sender, EventArgs e)
@@ -213,6 +228,7 @@ public class DragHandleSettingsPane : BasePane
         smallDragHandleToggle.SetEnabledWithoutNotify(configuration.SmallTransformCube.Value);
         characterTransformDragHandleToggle.SetEnabledWithoutNotify(configuration.CharacterTransformCube.Value);
         autoSelectToggle.SetEnabledWithoutNotify(configuration.AutomaticSelection.Value);
+        autoSelectTabToggle.SetEnabledWithoutNotify(configuration.AutomaticTabSelection.Value);
     }
 
     private class ColourConfigurationSet
