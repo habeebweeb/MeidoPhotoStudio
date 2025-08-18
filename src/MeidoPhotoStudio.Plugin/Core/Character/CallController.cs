@@ -77,7 +77,7 @@ public class CallController : IEnumerable<CharacterModel>, INotifyPropertyChange
         get => activeOnly;
         set
         {
-            if (characterService.Count is 0)
+            if (activeOnly == value)
                 return;
 
             activeOnly = value;
