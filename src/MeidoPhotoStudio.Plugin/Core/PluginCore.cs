@@ -334,6 +334,11 @@ public partial class PluginCore : MonoBehaviour
             ? new MaidLoaderModRefreshHandler()
             : new EmptyModRefreshHandler();
 
+        IRevealModInFileManagerHandler revealModHandler = BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue("ShiftClickExplorer", out var shiftClickExplorer)
+            && shiftClickExplorer.Metadata.Version >= new Version(1, 4)
+                ? new ShiftClickExplorerModHandler()
+                : new EmptyRevealModHandler();
+
         menuPropRepository = new MenuPropRepository(
             translation,
             menuPropsConfiguration,
@@ -754,7 +759,8 @@ public partial class PluginCore : MonoBehaviour
                             propService,
                             menuPropRepository,
                             menuPropsConfiguration,
-                            iconCache),
+                            iconCache,
+                            revealModHandler),
                         [PropsPane.PropCategory.MyRoom] = new MyRoomPropsPane(
                             translation, propService, myRoomPropRepository, iconCache),
                         [PropsPane.PropCategory.Favourite] = new FavouritePropsPane(

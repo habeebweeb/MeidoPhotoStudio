@@ -9,6 +9,7 @@ namespace MeidoPhotoStudio.Plugin;
 [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
 [BepInDependency("org.bepinex.plugins.unityinjectorloader", BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency("COM3D2.MaidLoader", BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency("ShiftClickExplorer", BepInDependency.DependencyFlags.SoftDependency)]
 public class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "com.habeebweeb.com3d2.meidophotostudio";

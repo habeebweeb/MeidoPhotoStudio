@@ -26,6 +26,7 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
     private readonly MenuPropRepository menuPropRepository;
     private readonly MenuPropsConfiguration menuPropsConfiguration;
     private readonly IconCache iconCache;
+    private readonly IRevealModInFileManagerHandler revealModHandler;
     private readonly Dropdown<MPN> propCategoryDropdown;
     private readonly Toggle modFilterToggle;
     private readonly Toggle baseFilterToggle;
@@ -45,13 +46,15 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
         PropService propService,
         MenuPropRepository menuPropRepository,
         MenuPropsConfiguration menuPropsConfiguration,
-        IconCache iconCache)
+        IconCache iconCache,
+        IRevealModInFileManagerHandler revealModHandler)
     {
         _ = translation ?? throw new ArgumentNullException(nameof(translation));
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
         this.menuPropRepository = menuPropRepository ?? throw new ArgumentNullException(nameof(menuPropRepository));
         this.menuPropsConfiguration = menuPropsConfiguration;
         this.iconCache = iconCache ?? throw new ArgumentNullException(nameof(iconCache));
+        this.revealModHandler = revealModHandler ?? throw new ArgumentNullException(nameof(revealModHandler));
 
         this.menuPropRepository.ChangedProps += OnMenuPropRepositoryChanged;
         translation.Initialized += OnTranslationInitialized;
@@ -195,7 +198,12 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
                     : GUI.Button(buttonRect, prop.Name, propButtonStyle);
 
                 if (clicked)
-                    propService.Add(prop);
+                {
+                    if (Event.current.button is 1)
+                        revealModHandler.Reveal(prop);
+                    else
+                        propService.Add(prop);
+                }
             }
 
             GUI.EndScrollView();
