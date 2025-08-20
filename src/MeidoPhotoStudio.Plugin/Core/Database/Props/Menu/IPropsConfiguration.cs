@@ -1,6 +1,6 @@
 namespace MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 
-public interface IMenuPropsConfiguration
+public interface IPropsConfiguration
 {
     bool ModMenuPropsOnly { get; }
 }

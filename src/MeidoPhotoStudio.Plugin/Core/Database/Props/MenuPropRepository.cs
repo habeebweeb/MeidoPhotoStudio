@@ -11,7 +11,7 @@ namespace MeidoPhotoStudio.Plugin.Core.Database.Props;
 public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 {
     private readonly Translation translation;
-    private readonly IMenuPropsConfiguration menuPropsConfiguration;
+    private readonly IPropsConfiguration propsConfiguration;
     private readonly IMenuFileCacheSerializer menuFileCacheSerializer;
     private readonly IModRefreshHandler modRefreshHandler;
     private readonly HashSet<string> newMenuFiles = new(StringComparer.OrdinalIgnoreCase);
@@ -22,19 +22,19 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 
     public MenuPropRepository(
         Translation translation,
-        IMenuPropsConfiguration menuPropsConfiguration,
+        IPropsConfiguration propsConfiguration,
         IMenuFileCacheSerializer menuFileCacheSerializer,
         IModRefreshHandler modRefreshHandler)
     {
         this.translation = translation ?? throw new ArgumentNullException(nameof(translation));
-        this.menuPropsConfiguration = menuPropsConfiguration ?? throw new ArgumentNullException(nameof(menuPropsConfiguration));
+        this.propsConfiguration = propsConfiguration ?? throw new ArgumentNullException(nameof(propsConfiguration));
         this.menuFileCacheSerializer = menuFileCacheSerializer ?? throw new ArgumentNullException(nameof(menuFileCacheSerializer));
         this.modRefreshHandler = modRefreshHandler ?? throw new ArgumentNullException(nameof(modRefreshHandler));
 
         this.translation.Initialized += OnReloadedTranslation;
         this.modRefreshHandler.RefreshedMods += OnModsRefreshed;
 
-        InitializeMenuFiles(menuPropsConfiguration);
+        InitializeMenuFiles(propsConfiguration);
     }
 
     public event EventHandler InitializingProps;
@@ -47,7 +47,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
         Props.Keys;
 
     public bool Busy =>
-        menuPropsConfiguration.ModMenuPropsOnly
+        propsConfiguration.ModMenuPropsOnly
             ? ProcessingProps
             : !GameMain.Instance.MenuDataBase.JobFinished() || ProcessingProps;
 
@@ -102,7 +102,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
     internal void Destroy() =>
         modRefreshHandler.RefreshedMods -= OnModsRefreshed;
 
-    private void InitializeMenuFiles(IMenuPropsConfiguration menuPropsConfiguration)
+    private void InitializeMenuFiles(IPropsConfiguration propsConfiguration)
     {
         ProcessingProps = true;
 
@@ -121,7 +121,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                 yield return wait;
 
             var task = Task<Dictionary<MPN, List<MenuFilePropModel>>>.Factory
-                .StartNew(() => ProcessMenuFiles(menuPropsConfiguration, menuFileCacheSerializer));
+                .StartNew(() => ProcessMenuFiles(propsConfiguration, menuFileCacheSerializer));
 
             while (!task.IsCompleted)
                 yield return wait;
@@ -137,7 +137,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
         }
 
         Dictionary<MPN, List<MenuFilePropModel>> ProcessMenuFiles(
-            IMenuPropsConfiguration menuPropsConfiguration,
+            IPropsConfiguration propsConfiguration,
             IMenuFileCacheSerializer menuFileCacheSerializer)
         {
             var validMpn = new HashSet<MPN>([
@@ -192,7 +192,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                 if (menuFilename.Contains("_crc") || menuFilename.Contains("crc_") || menuFilename.Contains("_del"))
                     continue;
 
-                if (menuPropsConfiguration.ModMenuPropsOnly && !alwaysValidMpn.Contains(menuDatabase.GetMpn()))
+                if (propsConfiguration.ModMenuPropsOnly && !alwaysValidMpn.Contains(menuDatabase.GetMpn()))
                     continue;
 
                 menuFilesToProcess.Add((menuFilename, true));

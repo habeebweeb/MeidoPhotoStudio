@@ -99,7 +99,7 @@ public partial class PluginCore : MonoBehaviour
         var bodyShapeKeyConfiguration = new BodyShapeKeyConfiguration(configuration);
         var bodyShapeKeyRangeConfiguration = new ShapeKeyRangeConfiguration(new ShapeKeyRangeSerializer(Path.Combine(databasePath, "body_shapekey_range.json")));
         var dragHandleConfiguration = new DragHandleConfiguration(configuration);
-        var menuPropsConfiguration = new MenuPropsConfiguration(configuration);
+        var propsConfiguration = new PropsConfiguration(configuration);
         var autoSaveConfiguration = new AutoSaveConfiguration(configuration);
         var uiConfiguration = new UIConfiguration(configuration);
         var characterConfiguration = new CharacterConfiguration(configuration);
@@ -341,7 +341,7 @@ public partial class PluginCore : MonoBehaviour
 
         menuPropRepository = new MenuPropRepository(
             translation,
-            menuPropsConfiguration,
+            propsConfiguration,
             new MenuFileCacheSerializer(Path.Combine(BepInEx.Paths.ConfigPath, Plugin.PluginName)),
             modRefreshHandler);
 
@@ -758,7 +758,7 @@ public partial class PluginCore : MonoBehaviour
                             translation,
                             propService,
                             menuPropRepository,
-                            menuPropsConfiguration,
+                            propsConfiguration,
                             iconCache,
                             revealModHandler),
                         [PropsPane.PropCategory.MyRoom] = new MyRoomPropsPane(

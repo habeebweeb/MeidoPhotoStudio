@@ -24,7 +24,7 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
 
     private readonly PropService propService;
     private readonly MenuPropRepository menuPropRepository;
-    private readonly MenuPropsConfiguration menuPropsConfiguration;
+    private readonly PropsConfiguration propsConfiguration;
     private readonly IconCache iconCache;
     private readonly IRevealModInFileManagerHandler revealModHandler;
     private readonly Dropdown<MPN> propCategoryDropdown;
@@ -45,14 +45,14 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
         Translation translation,
         PropService propService,
         MenuPropRepository menuPropRepository,
-        MenuPropsConfiguration menuPropsConfiguration,
+        PropsConfiguration propsConfiguration,
         IconCache iconCache,
         IRevealModInFileManagerHandler revealModHandler)
     {
         _ = translation ?? throw new ArgumentNullException(nameof(translation));
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
         this.menuPropRepository = menuPropRepository ?? throw new ArgumentNullException(nameof(menuPropRepository));
-        this.menuPropsConfiguration = menuPropsConfiguration;
+        this.propsConfiguration = propsConfiguration;
         this.iconCache = iconCache ?? throw new ArgumentNullException(nameof(iconCache));
         this.revealModHandler = revealModHandler ?? throw new ArgumentNullException(nameof(revealModHandler));
 
@@ -164,7 +164,7 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
 
         DrawTextFieldWithScrollBarOffset(searchBar);
 
-        if (!menuPropsConfiguration.ModMenuPropsOnly)
+        if (!propsConfiguration.ModMenuPropsOnly)
             DrawFilterToggles();
 
         UIUtility.DrawBlackLine();
@@ -281,7 +281,7 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
 
         IEnumerable<MenuFilePropModel> propList = menuPropRepository[currentCategory];
 
-        if (!menuPropsConfiguration.ModMenuPropsOnly)
+        if (!propsConfiguration.ModMenuPropsOnly)
         {
             if (modFilterToggle.Value)
                 propList = propList.Where(static prop => !prop.GameMenu);

@@ -3,12 +3,12 @@ using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 
 namespace MeidoPhotoStudio.Plugin.Core.Configuration;
 
-public class MenuPropsConfiguration : IMenuPropsConfiguration
+public class PropsConfiguration : IPropsConfiguration
 {
     private readonly ConfigFile configFile;
     private readonly ConfigEntry<bool> menuPropsConfigEntry;
 
-    public MenuPropsConfiguration(ConfigFile configFile)
+    public PropsConfiguration(ConfigFile configFile)
     {
         this.configFile = configFile ?? throw new ArgumentNullException(nameof(configFile));
 
