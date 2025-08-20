@@ -784,7 +784,12 @@ public partial class PluginCore : MonoBehaviour
                     },
                     new SubPaneGroup(new LocalizableGUIContent(translation, "managePropSubPaneGroup", "attachment"))
                     {
-                        new AttachPropPane(translation, characterService, propAttachmentService, propSelectionController),
+                        new AttachPropPane(
+                            translation,
+                            propsConfiguration,
+                            characterService,
+                            propAttachmentService,
+                            propSelectionController),
                     },
                 },
             },

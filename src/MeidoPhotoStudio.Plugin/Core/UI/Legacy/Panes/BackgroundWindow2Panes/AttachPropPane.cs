@@ -1,4 +1,5 @@
 using MeidoPhotoStudio.Plugin.Core.Character;
+using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Localization;
 using MeidoPhotoStudio.Plugin.Core.Props;
 using MeidoPhotoStudio.Plugin.Framework;
@@ -46,6 +47,7 @@ public class AttachPropPane : BasePane
         [AttachPoint.FootR, AttachPoint.FootL]
     ];
 
+    private readonly PropsConfiguration propsConfiguration;
     private readonly CharacterService characterService;
     private readonly PropAttachmentService propAttachmentService;
     private readonly SelectionController<PropController> propSelectionController;
@@ -62,11 +64,13 @@ public class AttachPropPane : BasePane
 
     public AttachPropPane(
         Translation translation,
+        PropsConfiguration propsConfiguration,
         CharacterService characterService,
         PropAttachmentService propAttachmentService,
         SelectionController<PropController> propSelectionController)
     {
         _ = translation ?? throw new ArgumentNullException(nameof(translation));
+        this.propsConfiguration = propsConfiguration ?? throw new ArgumentNullException(nameof(propsConfiguration));
         this.characterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
         this.propAttachmentService = propAttachmentService ?? throw new ArgumentNullException(nameof(propAttachmentService));
         this.propSelectionController = propSelectionController ?? throw new ArgumentNullException(nameof(propSelectionController));
@@ -79,7 +83,9 @@ public class AttachPropPane : BasePane
         characterDropdown = new(formatter: CharacterFormatter);
         characterDropdown.SelectionChanged += OnCharacterOrPropSelected;
 
-        keepWorldPositionToggle = new(new LocalizableGUIContent(translation, "attachPropPane", "keepWorldPosition"));
+        keepWorldPositionToggle = new(
+            new LocalizableGUIContent(translation, "attachPropPane", "keepWorldPosition"),
+            this.propsConfiguration.InitialKeepPositionOnAttachState.Value);
 
         foreach (var attachPoint in Enum.GetValues(typeof(AttachPoint))
             .Cast<AttachPoint>()
