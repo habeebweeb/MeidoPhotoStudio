@@ -164,7 +164,7 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
 
         DrawTextFieldWithScrollBarOffset(searchBar);
 
-        if (!propsConfiguration.ModMenuPropsOnly)
+        if (!propsConfiguration.IgnoreGameMenuFiles)
             DrawFilterToggles();
 
         UIUtility.DrawBlackLine();
@@ -281,7 +281,7 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
 
         IEnumerable<MenuFilePropModel> propList = menuPropRepository[currentCategory];
 
-        if (!propsConfiguration.ModMenuPropsOnly)
+        if (!propsConfiguration.IgnoreGameMenuFiles)
         {
             if (modFilterToggle.Value)
                 propList = propList.Where(static prop => !prop.GameMenu);

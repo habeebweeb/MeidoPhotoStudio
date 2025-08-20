@@ -5,15 +5,19 @@ namespace MeidoPhotoStudio.Plugin.Core.Configuration;
 public class PropsConfiguration
 {
     private readonly ConfigFile configFile;
-    private readonly ConfigEntry<bool> menuPropsConfigEntry;
+    private readonly ConfigEntry<bool> ignoreGameMenuFiles;
 
     public PropsConfiguration(ConfigFile configFile)
     {
         this.configFile = configFile ?? throw new ArgumentNullException(nameof(configFile));
 
-        menuPropsConfigEntry = this.configFile.Bind("Prop", "ModItemsOnly", false);
+        ignoreGameMenuFiles = this.configFile.Bind(
+            "Props",
+            "Ignore Game Menu Files",
+            false,
+            "Only show menu files within the 'Mod' folder and ignore the base game menu files.");
     }
 
-    public bool ModMenuPropsOnly =>
-        menuPropsConfigEntry.Value;
+    public bool IgnoreGameMenuFiles =>
+        ignoreGameMenuFiles.Value;
 }
