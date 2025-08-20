@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 
+using MeidoPhotoStudio.Plugin.Core.Configuration;
 using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 using MeidoPhotoStudio.Plugin.Core.Localization;
 using MeidoPhotoStudio.Plugin.Framework;
@@ -11,7 +12,7 @@ namespace MeidoPhotoStudio.Plugin.Core.Database.Props;
 public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 {
     private readonly Translation translation;
-    private readonly IPropsConfiguration propsConfiguration;
+    private readonly PropsConfiguration propsConfiguration;
     private readonly IMenuFileCacheSerializer menuFileCacheSerializer;
     private readonly IModRefreshHandler modRefreshHandler;
     private readonly HashSet<string> newMenuFiles = new(StringComparer.OrdinalIgnoreCase);
@@ -22,7 +23,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 
     public MenuPropRepository(
         Translation translation,
-        IPropsConfiguration propsConfiguration,
+        PropsConfiguration propsConfiguration,
         IMenuFileCacheSerializer menuFileCacheSerializer,
         IModRefreshHandler modRefreshHandler)
     {
@@ -102,7 +103,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
     internal void Destroy() =>
         modRefreshHandler.RefreshedMods -= OnModsRefreshed;
 
-    private void InitializeMenuFiles(IPropsConfiguration propsConfiguration)
+    private void InitializeMenuFiles(PropsConfiguration propsConfiguration)
     {
         ProcessingProps = true;
 
@@ -137,7 +138,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
         }
 
         Dictionary<MPN, List<MenuFilePropModel>> ProcessMenuFiles(
-            IPropsConfiguration propsConfiguration,
+            PropsConfiguration propsConfiguration,
             IMenuFileCacheSerializer menuFileCacheSerializer)
         {
             var validMpn = new HashSet<MPN>([

@@ -1,9 +1,8 @@
 using BepInEx.Configuration;
-using MeidoPhotoStudio.Plugin.Core.Database.Props.Menu;
 
 namespace MeidoPhotoStudio.Plugin.Core.Configuration;
 
-public class PropsConfiguration : IPropsConfiguration
+public class PropsConfiguration
 {
     private readonly ConfigFile configFile;
     private readonly ConfigEntry<bool> menuPropsConfigEntry;
