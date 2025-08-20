@@ -48,7 +48,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
         Props.Keys;
 
     public bool Busy =>
-        propsConfiguration.IgnoreGameMenuFiles
+        propsConfiguration.IgnoreGameMenuFiles.Value
             ? ProcessingProps
             : !GameMain.Instance.MenuDataBase.JobFinished() || ProcessingProps;
 
@@ -193,7 +193,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
                 if (menuFilename.Contains("_crc") || menuFilename.Contains("crc_") || menuFilename.Contains("_del"))
                     continue;
 
-                if (propsConfiguration.IgnoreGameMenuFiles && !alwaysValidMpn.Contains(menuDatabase.GetMpn()))
+                if (propsConfiguration.IgnoreGameMenuFiles.Value && !alwaysValidMpn.Contains(menuDatabase.GetMpn()))
                     continue;
 
                 menuFilesToProcess.Add((menuFilename, true));
