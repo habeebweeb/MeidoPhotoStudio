@@ -693,7 +693,8 @@
     "ui": "User Interface",
     "shapeKeys": "Shape Keys",
     "character": "Character",
-    "startupPreset": "Startup Preset"
+    "startupPreset": "Startup Preset",
+    "props": "Props"
   },
   "translationSettingsPane": {
     "reloadTranslationButton": "Reload Translation",
@@ -779,5 +780,12 @@
     "useCustomPresetToggle": "Enabled",
     "updateStartupPresetButton": "Update Preset",
     "refreshStartupPresetButton": "Refresh Preset",
+  },
+  "propsSettingsPane": {
+    "ignoreGameMenuFilesToggle": "Only show mod menu file props",
+    "menuFileRepositoryBusyLabel": "Menu file repository is busy...",
+    "initialKeepWorldPositionLabel": "Keep prop position on attach initial state:",
+    "onToggle": "Enabled",
+    "offToggle": "Disabled"
   }
 }

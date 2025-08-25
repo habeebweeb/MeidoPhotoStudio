@@ -538,6 +538,7 @@ public partial class PluginCore : MonoBehaviour
                 translation, characterConfiguration, automaticCharacterPlacementController),
             [SettingsWindow.SettingType.StartupPreset] = new StartupPresetSettingsPane(
                 translation, startupPresetConfiguration, startupPresetService),
+            [SettingsWindow.SettingType.Props] = new PropsSettingsPane(translation, propsConfiguration, menuPropRepository),
         };
 
         TransformClipboard transformClipboard = new();

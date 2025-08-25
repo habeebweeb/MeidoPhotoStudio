@@ -61,6 +61,7 @@ public class SettingsWindow : BaseWindow
         UI,
         Character,
         StartupPreset,
+        Props,
     }
 
     public override bool Enabled =>
