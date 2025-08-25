@@ -85,8 +85,13 @@ public class AttachedAccessoryPane : BasePane
             menuPropRepository.InitializedProps -= OnMenuDatabaseReady;
         }
 
-        void Initialize() =>
+        void Initialize()
+        {
+            menuPropRepository.InitializingProps += (_, _) => menuDatabaseBusy = true;
+            menuPropRepository.InitializedProps += (_, _) => menuDatabaseBusy = false;
+
             accessoryDropdown.SetItems(AccessoryList());
+        }
 
         EventHandler OnAccessoryTypeToggleChanged(MPN mpn) =>
             (sender, _) =>

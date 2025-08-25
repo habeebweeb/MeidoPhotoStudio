@@ -52,7 +52,7 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
         _ = translation ?? throw new ArgumentNullException(nameof(translation));
         this.propService = propService ?? throw new ArgumentNullException(nameof(propService));
         this.menuPropRepository = menuPropRepository ?? throw new ArgumentNullException(nameof(menuPropRepository));
-        this.propsConfiguration = propsConfiguration;
+        this.propsConfiguration = propsConfiguration ?? throw new ArgumentNullException(nameof(propsConfiguration));
         this.iconCache = iconCache ?? throw new ArgumentNullException(nameof(iconCache));
         this.revealModHandler = revealModHandler ?? throw new ArgumentNullException(nameof(revealModHandler));
 
@@ -120,6 +120,9 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
 
         void Initialize()
         {
+            this.menuPropRepository.InitializingProps += OnMenuPropRepositoryInitializing;
+            this.menuPropRepository.InitializedProps += OnMenuPropRepositoryInitialized;
+
             categories =
             [
                 MPN.null_mpn, .. menuPropRepository.CategoryMpn
@@ -233,6 +236,15 @@ public class MenuPropsPane : BasePane, IVirtualListHandler
 
     private void OnSearchSelected(object sender, SearchBarSelectionEventArgs<MenuFilePropModel> e) =>
         propService.Add(e.Item);
+
+    private void OnMenuPropRepositoryInitializing(object sender, EventArgs e) =>
+        menuDatabaseBusy = true;
+
+    private void OnMenuPropRepositoryInitialized(object sender, EventArgs e)
+    {
+        menuDatabaseBusy = false;
+        UpdateCurrentPropList(false);
+    }
 
     private void OnMenuPropRepositoryChanged(object sender, MenuPropRepositoryChangedEventArgs e)
     {

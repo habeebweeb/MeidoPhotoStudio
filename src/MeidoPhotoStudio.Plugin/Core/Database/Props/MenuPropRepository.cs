@@ -62,7 +62,7 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
     public IList<MenuFilePropModel> this[MPN category] =>
         readOnlyProps.TryGetValue(category, out var readOnlyPropList)
             ? readOnlyPropList
-            : (IList<MenuFilePropModel>)(readOnlyProps[category] = Props[category].AsReadOnly());
+            : readOnlyProps[category] = Props[category].AsReadOnly();
 
     public bool TryGetPropList(MPN category, out IList<MenuFilePropModel> propList)
     {
@@ -99,6 +99,16 @@ public class MenuPropRepository : IEnumerable<MenuFilePropModel>
 
     public MenuFilePropModel GetByID(string id) =>
         this.FirstOrDefault(model => string.Equals(model.ID, id, StringComparison.OrdinalIgnoreCase));
+
+    public void Refresh()
+    {
+        if (Busy)
+            return;
+
+        props = [];
+        readOnlyProps.Clear();
+        InitializeMenuFiles(propsConfiguration);
+    }
 
     internal void Destroy() =>
         modRefreshHandler.RefreshedMods -= OnModsRefreshed;

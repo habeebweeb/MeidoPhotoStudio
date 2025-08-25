@@ -10,8 +10,6 @@ namespace MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 
 public class HandItemPropsPane : BasePane
 {
-    private static readonly MPN HandItem = SafeMpn.handitem;
-
     private readonly PropService propService;
     private readonly Dropdown<MenuFilePropModel> propDropdown;
     private readonly Button addPropButton;
@@ -77,6 +75,9 @@ public class HandItemPropsPane : BasePane
 
         void Initialize()
         {
+            menuPropRepository.InitializingProps += (_, _) => menuDatabaseBusy = true;
+            menuPropRepository.InitializedProps += (_, _) => menuDatabaseBusy = false;
+
             var handItems = menuPropRepository.ContainsCategory(SafeMpn.handitem)
                 ? (IEnumerable<MenuFilePropModel>)menuPropRepository[SafeMpn.handitem].OrderBy(static model => model.Filename)
                 : [];
