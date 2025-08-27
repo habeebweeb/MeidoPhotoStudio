@@ -6,10 +6,10 @@ namespace MeidoPhotoStudio.Plugin.Framework.Service;
 
 public class TransformWatcher : MonoBehaviour
 {
-    private readonly Dictionary<Transform, Action<TransformType>> subscribedTransforms = [];
+    private readonly Dictionary<Transform, Action<TransformChangeEventArgs>> subscribedTransforms = [];
     private readonly Dictionary<Transform, TransformBackup> transformBackups = [];
 
-    public void Subscribe(Transform transform, Action<TransformType> callback)
+    public void Subscribe(Transform transform, Action<TransformChangeEventArgs> callback)
     {
         _ = transform ? transform : throw new ArgumentNullException(nameof(transform));
         _ = callback ?? throw new ArgumentNullException(nameof(callback));
@@ -65,7 +65,7 @@ public class TransformWatcher : MonoBehaviour
             if (oldScale != newScale)
                 changeType |= TransformType.Scale;
 
-            callback(changeType);
+            callback(new(changeType));
 
             transformBackups[transform] = newBackup;
 

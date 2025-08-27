@@ -251,14 +251,16 @@ public class LightController : INotifyPropertyChanged, IObservableTransform
     private static bool ValidLightType(LightType lightType) =>
         lightType is LightType.Directional or LightType.Spot or LightType.Point;
 
-    private void RaiseTransformChanged(TransformChangeEventArgs.TransformType type)
+    private void RaiseTransformChanged(TransformChangeEventArgs args)
     {
+        var type = args.Type;
+
         if (type.HasFlag(TransformChangeEventArgs.TransformType.Rotation))
             RaisePropertyChanged(nameof(Rotation));
         else if (type.HasFlag(TransformChangeEventArgs.TransformType.Position))
             RaisePropertyChanged(nameof(Position));
 
-        ChangedTransform?.Invoke(this, new(type));
+        ChangedTransform?.Invoke(this, args);
     }
 
     private void RaisePropertyChanged(string name)

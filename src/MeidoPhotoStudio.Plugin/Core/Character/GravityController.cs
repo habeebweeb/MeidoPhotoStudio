@@ -162,9 +162,9 @@ public abstract class GravityController : INotifyPropertyChanged
         return control;
     }
 
-    private void RaiseTransformChanged(TransformChangeEventArgs.TransformType type)
+    private void RaiseTransformChanged(TransformChangeEventArgs args)
     {
-        if (type is not TransformChangeEventArgs.TransformType.Position)
+        if (args.Type is not TransformChangeEventArgs.TransformType.Position)
             return;
 
         OnControlMoved();

@@ -118,6 +118,6 @@ public class PropController : INotifyPropertyChanged, IObservableTransform
         PropertyChanged?.Invoke(this, new(name));
     }
 
-    private void RaiseTransformChanged(TransformChangeEventArgs.TransformType type) =>
-        ChangedTransform?.Invoke(this, new(type));
+    private void RaiseTransformChanged(TransformChangeEventArgs args) =>
+        ChangedTransform?.Invoke(this, args);
 }

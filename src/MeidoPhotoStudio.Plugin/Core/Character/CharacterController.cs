@@ -252,8 +252,8 @@ public class CharacterController(CharacterModel characterModel, TransformWatcher
         Maid.Uninit();
     }
 
-    private void RaiseTransformChanged(TransformChangeEventArgs.TransformType type) =>
-        ChangedTransform?.Invoke(this, new(type));
+    private void RaiseTransformChanged(TransformChangeEventArgs args) =>
+        ChangedTransform?.Invoke(this, args);
 
     private void OnSequenceStarting(object sender, ProcStartEventArgs e)
     {
