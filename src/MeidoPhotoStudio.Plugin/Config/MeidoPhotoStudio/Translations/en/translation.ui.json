@@ -529,7 +529,8 @@
     "spine1a": "Spine 1",
     "spine1": "Spine 2",
     "spine0a": "Spine 3",
-    "spine0": "Spine 4"
+    "spine0": "Spine 4",
+    "transform": "Root"
   },
   "sceneManagerModal": {
     "deleteDirectoryConfirm": "Are you sure you want to permanently delete '{0}' and all of its files?",

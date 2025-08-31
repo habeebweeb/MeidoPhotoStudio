@@ -24,4 +24,5 @@ public enum AttachPoint
     Spine1,
     Spine0a,
     Spine0,
+    Transform,
 }

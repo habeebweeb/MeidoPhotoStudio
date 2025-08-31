@@ -33,6 +33,7 @@ public class AttachPropPane : BasePane
             [AttachPoint.Spine1] = "spine1",
             [AttachPoint.Spine0a] = "spine0a",
             [AttachPoint.Spine0] = "spine0",
+            [AttachPoint.Transform] = "transform",
         };
 
     private static readonly AttachPoint[][] AttachPointGroups =
@@ -44,7 +45,8 @@ public class AttachPropPane : BasePane
         [AttachPoint.HandR, AttachPoint.Spine0, AttachPoint.HandL],
         [AttachPoint.ThighR, AttachPoint.Pelvis, AttachPoint.ThighL],
         [AttachPoint.CalfR, AttachPoint.CalfL],
-        [AttachPoint.FootR, AttachPoint.FootL]
+        [AttachPoint.FootR, AttachPoint.FootL],
+        [AttachPoint.Transform]
     ];
 
     private readonly PropsConfiguration propsConfiguration;

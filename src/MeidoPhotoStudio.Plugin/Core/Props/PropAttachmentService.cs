@@ -106,7 +106,12 @@ public class PropAttachmentService
 
     private void AttachProp(PropController prop, CharacterController character, AttachPoint attachPoint, bool keepPosition)
     {
-        var attachTransform = character.IK.GetBone(AttachPointToBoneName[attachPoint]);
+        var attachTransform = attachPoint switch
+        {
+            AttachPoint.Transform => character.Transform,
+            _ => character.IK.GetBone(AttachPointToBoneName[attachPoint]),
+        };
+
         var propTransform = prop.GameObject.transform;
 
         var rotation = propTransform.rotation;
