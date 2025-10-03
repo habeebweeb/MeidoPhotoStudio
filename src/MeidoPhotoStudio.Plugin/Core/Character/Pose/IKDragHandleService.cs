@@ -380,7 +380,7 @@ public class IKDragHandleService : INotifyPropertyChanged
             if (!positionNode)
                 positionNode = bone;
 
-            var ikTarget = character.IK.CreateIKSolverTarget();
+            var ikTarget = character.IK.GetIKSolverTarget(bone.name);
 
             var dragHandle = new DragHandle.Builder()
             {
@@ -727,7 +727,7 @@ public class IKDragHandleService : INotifyPropertyChanged
             var bone = character.IK.GetBone(boneName);
             var subBone = character.IK.GetBone($"{boneName}_sub");
 
-            var ikTarget = character.IK.CreateIKSolverTarget();
+            var ikTarget = character.IK.GetIKSolverTarget(bone.name);
 
             var dragHandle = new DragHandle.Builder()
             {
@@ -853,7 +853,7 @@ public class IKDragHandleService : INotifyPropertyChanged
                 if (!childPositionNode)
                     childPositionNode = ikBone;
 
-                var ikTarget = character.IK.CreateIKSolverTarget();
+                var ikTarget = character.IK.GetIKSolverTarget(targetBone.name);
                 var distance = Vector3.Distance(positionNode.position, childPositionNode.position);
 
                 var dragHandle = new DragHandle.Builder()
@@ -900,7 +900,7 @@ public class IKDragHandleService : INotifyPropertyChanged
                 if (!ikNode)
                     ikNode = ikBone;
 
-                var ikTarget = character.IK.CreateIKSolverTarget();
+                var ikTarget = character.IK.GetIKSolverTarget(ikBone.name);
                 var distance = Vector3.Distance(ikNode.position, targetNode.position);
 
                 var dragHandle = new DragHandle.Builder()

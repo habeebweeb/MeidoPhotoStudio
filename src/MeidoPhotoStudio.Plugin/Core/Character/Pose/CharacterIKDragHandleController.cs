@@ -65,7 +65,7 @@ public abstract class CharacterIKDragHandleController : CharacterDragHandleContr
     protected override void OnDestroying()
     {
         if (IKTarget)
-            Object.Destroy(IKTarget.gameObject);
+            IKTarget.gameObject.SetActive(false);
     }
 
     protected void LimitRotation()

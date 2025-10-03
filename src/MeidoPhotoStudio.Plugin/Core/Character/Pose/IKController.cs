@@ -15,6 +15,7 @@ public class IKController : INotifyPropertyChanged
     private static GameObject ikTargetParent;
 
     private readonly CharacterController character;
+    private readonly Dictionary<string, Transform> ikTargetCache = [];
 
     private Dictionary<string, Transform> boneCache = [];
     private ToggleableRotationLimitHinge[] limbRotationLimits = [];
@@ -178,16 +179,27 @@ public class IKController : INotifyPropertyChanged
         }
     }
 
-    public Transform CreateIKSolverTarget()
+    public Transform GetIKSolverTarget(string boneName)
     {
-        var ikTargetGameObject = new GameObject
+        if (ikTargetCache.TryGetValue(boneName, out var ikTarget))
         {
-            name = $"[IK Target {character}]",
-        };
+            ikTarget.gameObject.SetActive(true);
 
-        ikTargetGameObject.transform.SetParent(IKSolverTargetParent.transform, false);
+            return ikTarget;
+        }
 
-        return ikTargetGameObject.transform;
+        if (!GetBone(boneName))
+        {
+            Plugin.Logger.LogWarning($"bone '{boneName}' does not exist");
+
+            return null;
+        }
+
+        ikTarget = CreateIKSolverTarget(boneName);
+
+        ikTargetCache[boneName] = ikTarget;
+
+        return ikTarget;
     }
 
     public RotationLimit GetRotationLimit(string boneName)
@@ -470,6 +482,14 @@ public class IKController : INotifyPropertyChanged
     internal void RunOnLateUpdateEnd(Action action) =>
         character.Maid.body0.OnLateUpdateEnd += action;
 
+    internal void Dispose()
+    {
+        foreach (var ikTarget in ikTargetCache.Values.Where(ikTarget => ikTarget))
+            Object.Destroy(ikTarget.gameObject);
+
+        ikTargetCache.Clear();
+    }
+
     private static HandController GetControllerByType(IKController ikController, HandOrFootType type) =>
         type switch
         {
@@ -651,6 +671,18 @@ public class IKController : INotifyPropertyChanged
 
     private void StopAnimation() =>
         character.Animation.Playing = false;
+
+    private Transform CreateIKSolverTarget(string targetName = "")
+    {
+        var ikTargetGameObject = new GameObject
+        {
+            name = $"[IK Target {targetName} ({character})]",
+        };
+
+        ikTargetGameObject.transform.SetParent(IKSolverTargetParent.transform, false);
+
+        return ikTargetGameObject.transform;
+    }
 
     private void RaisePropertyChanged(string name)
     {
