@@ -16,6 +16,8 @@ public class IKController : INotifyPropertyChanged
 
     private readonly CharacterController character;
     private readonly Dictionary<string, Transform> ikTargetCache = [];
+    private readonly List<Action> lateUpdateEndActions = [];
+    private readonly List<Action> lateUpdateActions = [];
 
     private Dictionary<string, Transform> boneCache = [];
     private ToggleableRotationLimitHinge[] limbRotationLimits = [];
@@ -44,6 +46,36 @@ public class IKController : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
+
+    public event Action OnLateUpdate
+    {
+        add
+        {
+            character.Maid.body0.OnLateUpdate += value;
+            lateUpdateActions.Add(value);
+        }
+
+        remove
+        {
+            character.Maid.body0.OnLateUpdate -= value;
+            lateUpdateActions.Remove(value);
+        }
+    }
+
+    public event Action OnLateUpdateEnd
+    {
+        add
+        {
+            character.Maid.body0.OnLateUpdateEnd += value;
+            lateUpdateEndActions.Add(value);
+        }
+
+        remove
+        {
+            character.Maid.body0.OnLateUpdateEnd -= value;
+            lateUpdateEndActions.Remove(value);
+        }
+    }
 
     public bool Dirty
     {
@@ -479,15 +511,21 @@ public class IKController : INotifyPropertyChanged
         Object.Destroy(ikTargetParent);
     }
 
-    internal void RunOnLateUpdateEnd(Action action) =>
-        character.Maid.body0.OnLateUpdateEnd += action;
-
     internal void Dispose()
     {
         foreach (var ikTarget in ikTargetCache.Values.Where(ikTarget => ikTarget))
             Object.Destroy(ikTarget.gameObject);
 
         ikTargetCache.Clear();
+
+        foreach (var action in lateUpdateEndActions)
+            character.Maid.body0.OnLateUpdateEnd -= action;
+
+        foreach (var action in lateUpdateActions)
+            character.Maid.body0.OnLateUpdate -= action;
+
+        lateUpdateActions.Clear();
+        lateUpdateEndActions.Clear();
     }
 
     private static HandController GetControllerByType(IKController ikController, HandOrFootType type) =>

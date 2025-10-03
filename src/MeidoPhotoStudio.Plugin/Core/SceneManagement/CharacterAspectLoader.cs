@@ -218,7 +218,7 @@ public class CharacterAspectLoader(
                 }
                 else if (schema.Version >= 4)
                 {
-                    ik.RunOnLateUpdateEnd(() =>
+                    ik.OnLateUpdateEnd += () =>
                     {
                         if (ik.MuneLEnabled)
                         {
@@ -243,7 +243,7 @@ public class CharacterAspectLoader(
                             ik.MuneRPosition = ik.InitialMuneRPosition + new ChestPositions(data.MunePositionDelta, data.MuneSubPositionDelta);
                             ik.GetBone("Mune_R_sub").localRotation = schema.RightChest.MuneSubRotation;
                         }
-                    });
+                    };
                 }
             }
 
