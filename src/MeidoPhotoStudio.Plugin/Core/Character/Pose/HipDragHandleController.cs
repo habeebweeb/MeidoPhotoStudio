@@ -18,11 +18,12 @@ public class HipDragHandleController(
       IColourableDragHandle
 {
     private readonly Transform spineSegment = spineSegment ? spineSegment : throw new ArgumentNullException(nameof(spineSegment));
+    private readonly float initialGizmoSize = gizmo.offsetScale;
 
     private Vector3 hipPositionBackup;
     private NoneMode none;
     private RotateMode rotate;
-    private MoveYMode moveY;
+    private MoveMode move;
 
     public DragHandleMode None =>
         none ??= new NoneMode(this);
@@ -30,8 +31,8 @@ public class HipDragHandleController(
     public DragHandleMode Rotate =>
         rotate ??= new RotateMode(this);
 
-    public DragHandleMode MoveY =>
-        moveY ??= new MoveYMode(this);
+    public DragHandleMode Move =>
+        move ??= new MoveMode(this);
 
     public Color DragHandleColour
     {
@@ -89,15 +90,17 @@ public class HipDragHandleController(
         }
     }
 
-    private class MoveYMode(HipDragHandleController controller)
+    private class MoveMode(HipDragHandleController controller)
         : PoseableMode(controller)
     {
         public override void OnModeEnter()
         {
-            controller.DragHandleActive = controller.BoneMode;
-            controller.DragHandle.Visible = true;
-            controller.DragHandle.MovementType = DragHandle.MoveType.Y;
-            controller.GizmoActive = false;
+            controller.DragHandleActive = false;
+
+            controller.GizmoActive = controller.BoneMode;
+            controller.Gizmo.Mode = CustomGizmo.GizmoMode.Local;
+            controller.Gizmo.CurrentGizmoType = CustomGizmo.GizmoType.Move;
+            controller.Gizmo.offsetScale = controller.initialGizmoSize;
         }
 
         public override void OnClicked()
@@ -115,6 +118,21 @@ public class HipDragHandleController(
 
             controller.ApplyBackupHipPosition();
         }
+
+        public override void OnGizmoClicked()
+        {
+            base.OnGizmoClicked();
+
+            controller.BackupHipPosition();
+            controller.AnimationController.Playing = false;
+        }
+
+        public override void OnGizmoCancelled()
+        {
+            base.OnGizmoCancelled();
+
+            controller.ApplyBackupHipPosition();
+        }
     }
 
     private class RotateMode(HipDragHandleController controller)
@@ -125,6 +143,9 @@ public class HipDragHandleController(
             controller.DragHandleActive = false;
             controller.DragHandle.Visible = false;
             controller.GizmoActive = controller.BoneMode;
+            controller.Gizmo.Mode = CustomGizmo.GizmoMode.Local;
+            controller.Gizmo.CurrentGizmoType = CustomGizmo.GizmoType.Rotate;
+            controller.Gizmo.offsetScale = controller.initialGizmoSize - controller.initialGizmoSize * 0.4f;
         }
 
         public override void OnGizmoClicked()

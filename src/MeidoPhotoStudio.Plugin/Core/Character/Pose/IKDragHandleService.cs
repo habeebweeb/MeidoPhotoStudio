@@ -394,7 +394,7 @@ public class IKDragHandleService : INotifyPropertyChanged
             var gizmo = new CustomGizmo.Builder()
             {
                 Name = GizmoName(character, bone),
-                Size = 0.25f,
+                Size = 0.2f,
                 Target = bone,
                 Mode = CustomGizmo.GizmoMode.Local,
                 PositionTarget = positionNode,
@@ -645,7 +645,7 @@ public class IKDragHandleService : INotifyPropertyChanged
 
             var gizmo = new CustomGizmo.Builder()
             {
-                Size = 0.25f,
+                Size = 0.15f,
                 Mode = CustomGizmo.GizmoMode.Local,
                 Target = bone,
                 Name = GizmoName(character, bone),
@@ -680,7 +680,7 @@ public class IKDragHandleService : INotifyPropertyChanged
             {
                 Name = GizmoName(character, bone),
                 Target = bone,
-                Size = 0.25f,
+                Size = 0.35f,
                 Mode = CustomGizmo.GizmoMode.Local,
             }.Build();
 
@@ -709,7 +709,7 @@ public class IKDragHandleService : INotifyPropertyChanged
             {
                 Name = GizmoName(character, bone),
                 Target = bone,
-                Size = 0.25f,
+                Size = 0.2f,
                 Mode = CustomGizmo.GizmoMode.Local,
                 PositionTarget = positionBone,
             }.Build();

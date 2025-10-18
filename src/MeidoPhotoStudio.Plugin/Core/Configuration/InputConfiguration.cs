@@ -91,8 +91,8 @@ public class InputConfiguration
         BindHotkey(Hotkey.DragUpperBone, "Drag Upper Bone", new KeyboardHotkey(KeyCode.LeftAlt, KeyCode.LeftShift));
         BindHotkey(Hotkey.SpineBoneRotation, "Spine Bone Rotation", new KeyboardHotkey(KeyCode.LeftShift));
         BindHotkey(Hotkey.SpineBoneGizmoRotation, "Spine Bone Gizmo Rotation", new KeyboardHotkey(KeyCode.LeftControl));
-        BindHotkey(Hotkey.HipBoneRotation, "Hip Bone Rotation", new KeyboardHotkey(KeyCode.LeftShift));
-        BindHotkey(Hotkey.MoveLocalY, "Move Local Y", new KeyboardHotkey(KeyCode.LeftControl));
+        BindHotkey(Hotkey.RotateRoot, "Root Bone Rotation", new KeyboardHotkey(KeyCode.LeftShift));
+        BindHotkey(Hotkey.MoveRoot, "Move Root Bone", new KeyboardHotkey(KeyCode.LeftControl));
 
         // Gravity drag handles
         BindHotkey(Hotkey.MoveGravityWorldY, "Move Gravity World Y", new KeyboardHotkey(KeyCode.LeftControl));

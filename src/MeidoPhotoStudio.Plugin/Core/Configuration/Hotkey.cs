@@ -40,7 +40,7 @@ public enum Hotkey
     DragUpperBone,
     SpineBoneRotation,
     SpineBoneGizmoRotation,
-    HipBoneRotation,
-    MoveLocalY,
+    RotateRoot,
+    MoveRoot,
     MoveGravityWorldY,
 }

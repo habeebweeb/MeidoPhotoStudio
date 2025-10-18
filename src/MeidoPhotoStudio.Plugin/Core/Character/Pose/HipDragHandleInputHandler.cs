@@ -13,7 +13,7 @@ public class HipDragHandleInputHandler(InputConfiguration inputConfiguration)
     {
         None,
         Rotate,
-        MoveY,
+        Move,
         Ignore,
     }
 
@@ -27,10 +27,10 @@ public class HipDragHandleInputHandler(InputConfiguration inputConfiguration)
     {
         var newMode = HipMode.None;
 
-        if (inputConfiguration[Hotkey.HipBoneRotation].IsPressed())
+        if (inputConfiguration[Hotkey.RotateRoot].IsPressed())
             newMode = HipMode.Rotate;
-        else if (inputConfiguration[Hotkey.MoveLocalY].IsPressed())
-            newMode = HipMode.MoveY;
+        else if (inputConfiguration[Hotkey.MoveRoot].IsPressed())
+            newMode = HipMode.Move;
         else if (OtherKeyPressed())
             newMode = HipMode.Ignore;
 
@@ -59,7 +59,7 @@ public class HipDragHandleInputHandler(InputConfiguration inputConfiguration)
         {
             HipMode.None => controller.None,
             HipMode.Rotate => controller.Rotate,
-            HipMode.MoveY => controller.MoveY,
+            HipMode.Move => controller.Move,
             HipMode.Ignore => controller.Ignore,
             _ => controller.None,
         };
