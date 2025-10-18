@@ -16,7 +16,6 @@ public class ChestDragHandleController : CharacterIKDragHandleController
     private DragMode drag;
     private GizmoRotateMode rotateGizmo;
     private MoveMode move;
-    private Vector3 backupPosition;
 
     public ChestDragHandleController(
         DragHandle dragHandle,
@@ -56,19 +55,8 @@ public class ChestDragHandleController : CharacterIKDragHandleController
 
     protected override Transform[] Chain { get; }
 
-    protected override void BackupBoneRotations()
-    {
-        base.BackupBoneRotations();
-
-        backupPosition = Bone.parent.localPosition;
-    }
-
-    protected override void ApplyBackupBoneRotations()
-    {
-        base.ApplyBackupBoneRotations();
-
-        Bone.parent.localPosition = backupPosition;
-    }
+    protected override IEnumerable<BoneBackup> CreateBackup() =>
+        base.CreateBackup().Concat([BoneBackup.CreateWithPosition(Bone.parent)]);
 
     private void SetMuneEnabled(bool enabled)
     {

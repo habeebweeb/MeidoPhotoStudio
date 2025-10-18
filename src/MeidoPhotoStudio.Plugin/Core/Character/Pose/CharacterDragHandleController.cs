@@ -1,6 +1,5 @@
 using MeidoPhotoStudio.Plugin.Core.UI.Legacy;
 using MeidoPhotoStudio.Plugin.Core.UIGizmo;
-using MeidoPhotoStudio.Plugin.Framework.Extensions;
 using MeidoPhotoStudio.Plugin.Framework.Service;
 using MeidoPhotoStudio.Plugin.Framework.UIGizmo;
 
@@ -9,8 +8,8 @@ namespace MeidoPhotoStudio.Plugin.Core.Character.Pose;
 public abstract class CharacterDragHandleController : DragHandleControllerBase, ICharacterDragHandleController
 {
     private readonly CharacterController characterController;
+    private readonly List<BoneBackup> boneBackups = [];
 
-    private Quaternion[] boneBackup;
     private bool boneMode;
     private DragHandleMode ignore;
     private bool iKEnabled = true;
@@ -125,19 +124,20 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
     protected override void OnDestroying() =>
         characterController.ChangedTransform -= ResizeDragHandle;
 
-    protected virtual void BackupBoneRotations()
+    protected void BackupBoneRotations()
     {
-        boneBackup ??= new Quaternion[Transforms.Length];
-
-        for (var i = 0; i < Transforms.Length; i++)
-            boneBackup[i] = Transforms[i].localRotation;
+        boneBackups.Clear();
+        boneBackups.AddRange(CreateBackup());
     }
 
-    protected virtual void ApplyBackupBoneRotations()
+    protected void ApplyBackupBoneRotations()
     {
-        foreach (var (bone, backup) in Transforms.Zip(boneBackup))
-            bone.localRotation = backup;
+        foreach (var backup in boneBackups)
+            backup.Apply();
     }
+
+    protected virtual IEnumerable<BoneBackup> CreateBackup() =>
+        Transforms.Select(BoneBackup.Create);
 
     private void ResizeDragHandle(object sender, TransformChangeEventArgs e)
     {

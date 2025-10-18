@@ -23,7 +23,6 @@ public class ChestSubGizmoController(
     private NoneMode none;
     private RotateMode rotate;
     private MoveMode move;
-    private Vector3 backupPosition;
 
     public DragHandleMode None =>
         none ??= new NoneMode(this);
@@ -38,19 +37,8 @@ public class ChestSubGizmoController(
 
     private Transform Bone { get; } = bone;
 
-    protected override void BackupBoneRotations()
-    {
-        base.BackupBoneRotations();
-
-        backupPosition = Bone.localPosition;
-    }
-
-    protected override void ApplyBackupBoneRotations()
-    {
-        base.ApplyBackupBoneRotations();
-
-        Bone.localPosition = backupPosition;
-    }
+    protected override IEnumerable<BoneBackup> CreateBackup() =>
+        base.CreateBackup().Concat([BoneBackup.CreateWithPosition(Bone)]);
 
     private void SetMuneEnabled(bool enabled)
     {
