@@ -277,15 +277,19 @@ public class IKDragHandleService : INotifyPropertyChanged
         if (!e.ChangingSlots.Contains(SafeMpn.body))
             return;
 
+        var boneMode = controllers[character].BoneMode;
+
         DestroyController(controllers[character]);
 
         character.ProcessedCharacterProps += OnCharacterProcessed;
 
         void OnCharacterProcessed(object sender, CharacterProcessingEventArgs e)
         {
+            character.ProcessedCharacterProps -= OnCharacterProcessed;
+
             controllers[character] = InitializeDragHandles(character);
 
-            character.ProcessedCharacterProps -= OnCharacterProcessed;
+            controllers[character].BoneMode = boneMode;
         }
     }
 
