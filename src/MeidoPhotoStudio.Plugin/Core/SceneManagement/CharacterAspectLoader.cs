@@ -199,6 +199,11 @@ public class CharacterAspectLoader(
             ik.LimitLimbRotations = schema.LimbsLimited;
             ik.LimitDigitRotations = schema.DigitsLimited;
 
+            ik.LeftHandLock.SetAllLocksEnabled(false);
+            ik.RightHandLock.SetAllLocksEnabled(false);
+            ik.LeftFootLock.SetAllLocksEnabled(false);
+            ik.RightFootLock.SetAllLocksEnabled(false);
+
             if (!animation.Playing)
             {
                 var muneSetting = (Left: false, Right: false);

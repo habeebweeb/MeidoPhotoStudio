@@ -133,6 +133,15 @@
     "flipPoseToggle": "Flip Pose",
     "preciseTransformToggle": "Precise Transform"
   },
+  "ikLockPane": {
+    "leftHandHeader": "Left Hand",
+    "rightHandHeader": "Right Hand",
+    "leftFootHeader": "Left Foot",
+    "rightFootHeader": "Right Foot",
+    "lockLabel": "Lock:",
+    "positionLabel": "Position",
+    "rotationLabel": "Rotation"
+  },
   "freeLookPane": {
     "freeLookToggle": "Enabled",
     "headToCamToggle": "Head",

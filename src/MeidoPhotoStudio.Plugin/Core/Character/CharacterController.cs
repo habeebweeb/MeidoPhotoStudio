@@ -170,6 +170,11 @@ public class CharacterController(CharacterModel characterModel, TransformWatcher
 
             Clothing.CustomFloorHeight = false;
 
+            IK.LeftHandLock.SetAllLocksEnabled(false);
+            IK.RightHandLock.SetAllLocksEnabled(false);
+            IK.RightFootLock.SetAllLocksEnabled(false);
+            IK.LeftFootLock.SetAllLocksEnabled(false);
+
             transformWatcher.Subscribe(GameObject.transform, RaiseTransformChanged);
 
             if (initializeAnimation)

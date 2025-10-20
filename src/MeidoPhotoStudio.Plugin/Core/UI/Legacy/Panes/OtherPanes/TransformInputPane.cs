@@ -22,13 +22,28 @@ public class TransformInputPane : BasePane
 
         positionControl = new(translation, transformClipboard, TransformType.Position);
         positionControl.ControlEvent += OnPositionChanged;
+        positionControl.Transforming += OnTransforming;
+        positionControl.Transformed += OnTransformed;
+        positionControl.CancelledTransformation += OnCancelledTransformation;
 
         rotationControl = new(translation, transformClipboard, TransformType.Rotation);
         rotationControl.ControlEvent += OnRotationChanged;
+        rotationControl.Transforming += OnTransforming;
+        rotationControl.Transformed += OnTransformed;
+        rotationControl.CancelledTransformation += OnCancelledTransformation;
 
         scaleControl = new(translation, transformClipboard, TransformType.Scale);
         scaleControl.ControlEvent += OnScaleChanged;
+        scaleControl.Transforming += OnTransforming;
+        scaleControl.Transformed += OnTransformed;
+        scaleControl.CancelledTransformation += OnCancelledTransformation;
     }
+
+    public event EventHandler Transforming;
+
+    public event EventHandler Transformed;
+
+    public event EventHandler CancelledTransformation;
 
     public Space Space { get; set; } = Space.World;
 
@@ -156,6 +171,15 @@ public class TransformInputPane : BasePane
         Transform.localScale = scaleControl.Value;
     }
 
+    private void OnTransforming(object sender, EventArgs e) =>
+        Transforming?.Invoke(this, EventArgs.Empty);
+
+    private void OnTransformed(object sender, EventArgs e) =>
+        Transformed?.Invoke(this, EventArgs.Empty);
+
+    private void OnCancelledTransformation(object sender, EventArgs e) =>
+        CancelledTransformation?.Invoke(this, EventArgs.Empty);
+
     private class TransformControl : BaseControl
     {
         private static readonly LazyStyle HeaderStyle = new(
@@ -229,6 +253,12 @@ public class TransformInputPane : BasePane
                 _ => 1f,
             };
         }
+
+        public event EventHandler Transforming;
+
+        public event EventHandler Transformed;
+
+        public event EventHandler CancelledTransformation;
 
         public Vector3 DefaultValue { get; set; }
 
@@ -318,6 +348,7 @@ public class TransformInputPane : BasePane
                         clickTime = Time.time;
                         initialValue = Value;
                         e.Use();
+                        Transforming?.Invoke(this, EventArgs.Empty);
                     }
                 }
             }
@@ -327,11 +358,13 @@ public class TransformInputPane : BasePane
                 {
                     Value = initialValue;
                     StopDrag();
+                    CancelledTransformation?.Invoke(this, EventArgs.Empty);
                     e.Use();
                 }
                 else if (UnityEngine.Input.GetMouseButtonDown(1) && Event.current.type is EventType.Repaint)
                 {
                     Value = initialValue;
+                    CancelledTransformation?.Invoke(this, EventArgs.Empty);
                     StopDrag();
                 }
                 else if (!UnityEngine.Input.GetMouseButton(0))
@@ -355,6 +388,7 @@ public class TransformInputPane : BasePane
 
                 void StopDrag()
                 {
+                    Transformed?.Invoke(this, EventArgs.Empty);
                     mouseDown = false;
                     xFocus = false;
                     yFocus = false;

@@ -53,6 +53,16 @@ public class LowerLimbDragHandleController(
 
     protected override Transform[] Chain { get; } = [bone.parent.parent, bone.parent, bone];
 
+    private IKLockController IKLockController =>
+        Bone.name switch
+        {
+            "Bip01 L Hand" => IKController.LeftHandLock,
+            "Bip01 R Hand" => IKController.RightHandLock,
+            "Bip01 L Foot" => IKController.LeftFootLock,
+            "Bip01 R Foot" => IKController.RightFootLock,
+            _ => throw new NotSupportedException($"IK lock for '{Bone.name}' is not supported."),
+        };
+
     private new class DragMode(LowerLimbDragHandleController controller, Transform[] chain)
         : CharacterIKDragHandleController.DragMode(controller, chain)
     {
@@ -94,6 +104,8 @@ public class LowerLimbDragHandleController(
 
             controller.Bone.Rotate(Vector3.forward, invert * deltaY * 7f);
             controller.Bone.Rotate(Vector3.up, invert * deltaX * 7f);
+
+            controller.IKLockController.UpdateLockedRotation();
         }
     }
 
@@ -114,6 +126,12 @@ public class LowerLimbDragHandleController(
             base.OnGizmoClicked();
 
             controller.AnimationController.Playing = false;
+        }
+
+        public override void OnGizmoDragging()
+        {
+            base.OnGizmoDragging();
+            controller.IKLockController.UpdateLockedRotation();
         }
     }
 
@@ -143,6 +161,7 @@ public class LowerLimbDragHandleController(
             var (deltaX, _) = MouseDelta;
 
             controller.Bone.Rotate(Vector3.right, -deltaX * 7f);
+            controller.IKLockController.UpdateLockedRotation();
         }
     }
 }

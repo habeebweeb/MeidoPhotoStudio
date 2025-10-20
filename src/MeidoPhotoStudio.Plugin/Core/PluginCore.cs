@@ -608,6 +608,10 @@ public partial class PluginCore : MonoBehaviour
                                 characterUndoRedoService,
                                 characterSelectionController,
                                 transformClipboard),
+                            new SubPaneGroup("IK Lock")
+                            {
+                                new IKLockingPane(translation, characterSelectionController),
+                            },
                             new SubPaneGroup(new LocalizableGUIContent(translation, "posingSubPaneGroup", "freeLook"))
                             {
                                 new FreeLookPane(translation, characterSelectionController),

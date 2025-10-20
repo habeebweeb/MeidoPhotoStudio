@@ -28,6 +28,10 @@ public class IKController : INotifyPropertyChanged
     private HandController rightHand;
     private HandController leftFoot;
     private HandController rightFoot;
+    private IKLockController leftHandLock;
+    private IKLockController rightHandLock;
+    private IKLockController leftFootLock;
+    private IKLockController rightFootLock;
     private Dictionary<Transform, Vector3> initialChainBonePositions = [];
     private bool limitLimbRotations = true;
     private bool limitDigitRotations = true;
@@ -46,6 +50,8 @@ public class IKController : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
+
+    public event EventHandler ChangedLimbLimiting;
 
     public event Action OnLateUpdate
     {
@@ -162,6 +168,18 @@ public class IKController : INotifyPropertyChanged
         get => new(GetBone("Mune_R").localPosition, GetBone("Mune_R_sub").localPosition);
         set => (GetBone("Mune_R").localPosition, GetBone("Mune_R_sub").localPosition) = value;
     }
+
+    public IKLockController LeftHandLock =>
+        leftHandLock ??= new(character, "Bip01 L Hand");
+
+    public IKLockController RightHandLock =>
+        rightHandLock ??= new(character, "Bip01 R Hand");
+
+    public IKLockController LeftFootLock =>
+        leftFootLock ??= new(character, "Bip01 L Foot");
+
+    public IKLockController RightFootLock =>
+        rightFootLock ??= new(character, "Bip01 R Foot");
 
     private static GameObject IKSolverTargetParent =>
         ikTargetParent ? ikTargetParent : ikTargetParent = new("[IK Solver Target Parent]");
@@ -530,6 +548,11 @@ public class IKController : INotifyPropertyChanged
 
         ikTargetCache.Clear();
 
+        leftHandLock?.Dispose();
+        rightHandLock?.Dispose();
+        leftFootLock?.Dispose();
+        rightFootLock?.Dispose();
+
         foreach (var action in lateUpdateEndActions)
             character.Maid.body0.OnLateUpdateEnd -= action;
 
@@ -713,6 +736,9 @@ public class IKController : INotifyPropertyChanged
 
         if (change && !character.Animation.Playing)
             Dirty = true;
+
+        if (!digits)
+            ChangedLimbLimiting?.Invoke(this, EventArgs.Empty);
 
         RaisePropertyChanged(digits ? nameof(LimitDigitRotations) : nameof(LimitLimbRotations));
 

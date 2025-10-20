@@ -20,6 +20,8 @@ public class AnimationController : INotifyPropertyChanged
 
     public event EventHandler ChangedAnimation;
 
+    public event EventHandler ChangedPlayState;
+
     public event PropertyChangedEventHandler PropertyChanged;
 
     public IAnimationModel Animation
@@ -83,6 +85,7 @@ public class AnimationController : INotifyPropertyChanged
 
             AnimationState.enabled = value;
 
+            ChangedPlayState?.Invoke(this, EventArgs.Empty);
             RaisePropertyChanged(nameof(Playing));
 
             if (value)

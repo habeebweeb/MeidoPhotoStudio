@@ -20,6 +20,7 @@ public class IKPane : BasePane
     private readonly Button flipButton;
     private readonly SubPaneHeader transformInputToggle;
     private readonly TransformInputPane transformInputPane;
+    private readonly List<BoneBackup> boneBackup = [];
 
     public IKPane(
         Translation translation,
@@ -58,6 +59,9 @@ public class IKPane : BasePane
         {
             LinkScale = true,
         };
+
+        transformInputPane.Transforming += OnTransforming;
+        transformInputPane.CancelledTransformation += OnCancelledTransformation;
 
         Add(transformInputPane);
     }
@@ -149,6 +153,35 @@ public class IKPane : BasePane
         boneModeEnabledToggle.SetEnabledWithoutNotify(dragHandleController.BoneMode);
         limitLimbRotationsToggle.SetEnabledWithoutNotify(ik.LimitLimbRotations);
         limitDigitRotationsToggle.SetEnabledWithoutNotify(ik.LimitDigitRotations);
+    }
+
+    private void OnTransforming(object sender, EventArgs e)
+    {
+        if (CurrentCharacter is not CharacterController character)
+            return;
+
+        boneBackup.Clear();
+
+        if (character.IK.LeftHandLock is { LockPosition: true } leftHand)
+            boneBackup.AddRange(leftHand.Chain.Select(BoneBackup.Create));
+
+        if (character.IK.RightHandLock is { LockPosition: true } rightHand)
+            boneBackup.AddRange(rightHand.Chain.Select(BoneBackup.Create));
+
+        if (character.IK.LeftFootLock is { LockPosition: true } leftFoot)
+            boneBackup.AddRange(leftFoot.Chain.Select(BoneBackup.Create));
+
+        if (character.IK.RightFootLock is { LockPosition: true } rightFoot)
+            boneBackup.AddRange(rightFoot.Chain.Select(BoneBackup.Create));
+    }
+
+    private void OnCancelledTransformation(object sender, EventArgs e)
+    {
+        if (CurrentCharacter is null)
+            return;
+
+        foreach (var backup in boneBackup)
+            backup.Apply();
     }
 
     private void OnIKDragHandleControllerPropertyChanged(object sender, PropertyChangedEventArgs e)

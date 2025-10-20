@@ -10,6 +10,7 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
     private readonly CharacterController character;
     private readonly SelectionController<CharacterController> selectionController;
     private readonly TabSelectionController tabSelectionController;
+    private readonly List<BoneBackup> boneBackup = [];
 
     private bool ikEnabled = true;
     private CharacterSelectMode select;
@@ -150,6 +151,29 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
     protected override void OnDestroying() =>
         character.ChangedTransform -= OnTransformChanged;
 
+    private void BackupBones()
+    {
+        boneBackup.Clear();
+
+        if (character.IK.LeftHandLock is { LockPosition: true } leftHand)
+            boneBackup.AddRange(leftHand.Chain.Select(BoneBackup.Create));
+
+        if (character.IK.RightHandLock is { LockPosition: true } rightHand)
+            boneBackup.AddRange(rightHand.Chain.Select(BoneBackup.Create));
+
+        if (character.IK.LeftFootLock is { LockPosition: true } leftFoot)
+            boneBackup.AddRange(leftFoot.Chain.Select(BoneBackup.Create));
+
+        if (character.IK.RightFootLock is { LockPosition: true } rightFoot)
+            boneBackup.AddRange(rightFoot.Chain.Select(BoneBackup.Create));
+    }
+
+    private void ApplyBackup()
+    {
+        foreach (var backup in boneBackup)
+            backup.Apply();
+    }
+
     private void OnTransformChanged(object sender, TransformChangeEventArgs e)
     {
         if (!ScalesWithCharacter)
@@ -169,6 +193,20 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
 
             Controller.GizmoActive = false;
         }
+
+        public override void OnClicked()
+        {
+            base.OnClicked();
+
+            Controller.BackupBones();
+        }
+
+        public override void OnCancelled()
+        {
+            base.OnCancelled();
+
+            Controller.ApplyBackup();
+        }
     }
 
     private class TransformMode(
@@ -185,6 +223,15 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
 
             if (controller.AutoSelectTab)
                 controller.tabSelectionController.SelectTab(MainWindow.Tab.Character);
+
+            controller.BackupBones();
+        }
+
+        public override void OnCancelled()
+        {
+            base.OnCancelled();
+
+            controller.ApplyBackup();
         }
 
         public override void OnGizmoClicked()
@@ -196,6 +243,15 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
 
             if (controller.AutoSelectTab)
                 controller.tabSelectionController.SelectTab(MainWindow.Tab.Character);
+
+            controller.BackupBones();
+        }
+
+        public override void OnGizmoCancelled()
+        {
+            base.OnGizmoCancelled();
+
+            controller.ApplyBackup();
         }
     }
 
@@ -208,6 +264,8 @@ public class CharacterGeneralDragHandleController : GeneralDragHandleController,
 
             Controller.selectionController.Select(Controller.character);
             Controller.tabSelectionController.SelectTab(MainWindow.Tab.CharacterPose, true);
+
+            Controller.BackupBones();
         }
 
         public override void OnDoubleClicked() =>

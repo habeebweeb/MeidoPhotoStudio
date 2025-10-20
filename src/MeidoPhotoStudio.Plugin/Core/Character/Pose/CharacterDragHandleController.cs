@@ -136,8 +136,24 @@ public abstract class CharacterDragHandleController : DragHandleControllerBase, 
             backup.Apply();
     }
 
-    protected virtual IEnumerable<BoneBackup> CreateBackup() =>
-        Transforms.Select(BoneBackup.Create);
+    protected virtual IEnumerable<BoneBackup> CreateBackup()
+    {
+        var backup = Transforms.Select(BoneBackup.Create);
+
+        if (IKController.LeftHandLock is { LockPosition: true } leftHand)
+            backup = backup.Concat(leftHand.Chain.Select(BoneBackup.Create));
+
+        if (IKController.RightHandLock is { LockPosition: true } rightHand)
+            backup = backup.Concat(rightHand.Chain.Select(BoneBackup.Create));
+
+        if (IKController.LeftFootLock is { LockPosition: true } leftFoot)
+            backup = backup.Concat(leftFoot.Chain.Select(BoneBackup.Create));
+
+        if (IKController.RightFootLock is { LockPosition: true } rightFoot)
+            backup = backup.Concat(rightFoot.Chain.Select(BoneBackup.Create));
+
+        return backup;
+    }
 
     private void ResizeDragHandle(object sender, TransformChangeEventArgs e)
     {
