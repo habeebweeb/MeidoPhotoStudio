@@ -91,13 +91,25 @@ public class IKController : INotifyPropertyChanged
 
     public bool LimitLimbRotations
     {
-        get => limitLimbRotations;
+        get
+        {
+            InitializeRotationLimits();
+
+            return limitLimbRotations;
+        }
+
         set => SetLimits(value, digits: false);
     }
 
     public bool LimitDigitRotations
     {
-        get => limitDigitRotations;
+        get
+        {
+            InitializeRotationLimits();
+
+            return limitDigitRotations;
+        }
+
         set => SetLimits(value, digits: true);
     }
 
@@ -641,7 +653,7 @@ public class IKController : INotifyPropertyChanged
                 var jointIsDigit = bone.name.Contains("Finger") || bone.name.Contains("Toe");
                 var rotationLimit = bone.GetOrAddComponent<ToggleableRotationLimitHinge>();
 
-                rotationLimit.Limited = jointIsDigit ? LimitDigitRotations : LimitLimbRotations;
+                rotationLimit.Limited = jointIsDigit ? limitDigitRotations : limitLimbRotations;
                 rotationLimit.Animation = character.Animation;
 
                 rotationLimit.axis = jointIsDigit ? Vector3.back : Vector3.forward;
@@ -657,7 +669,7 @@ public class IKController : INotifyPropertyChanged
 
     private bool ApplyLimits()
     {
-        if (!LimitDigitRotations || !LimitDigitRotations)
+        if (!limitDigitRotations || !limitDigitRotations)
             return false;
 
         InitializeRotationLimits();
