@@ -268,8 +268,6 @@ public partial class SceneBrowserWindow
 
         public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
         {
-            base.OnScreenDimensionsChanged(newScreenDimensions);
-
             var (width, height) = deletingScene || !loadOptionsToggle.Value
                 ? ManageSceneWindowSize
                 : LoadOptionsWindowSize;
@@ -623,8 +621,6 @@ public partial class SceneBrowserWindow
 
         public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
         {
-            base.OnScreenDimensionsChanged(newScreenDimensions);
-
             WindowRect = WindowRect with
             {
                 width = UIUtility.ScaledMinimum(WindowSize.Width),
@@ -724,6 +720,15 @@ public partial class SceneBrowserWindow
             GUILayout.EndHorizontal();
 
             GUILayout.EndArea();
+        }
+
+        public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
+        {
+            WindowRect = WindowRect with
+            {
+                width = UIUtility.ScaledMinimum(WindowSize.Width),
+                height = UIUtility.ScaledMinimum(WindowSize.Height),
+            };
         }
 
         public void ShowError(string message)

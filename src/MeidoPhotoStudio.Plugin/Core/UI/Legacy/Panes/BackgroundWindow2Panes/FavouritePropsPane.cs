@@ -438,6 +438,15 @@ public class FavouritePropsPane : BasePane, IVirtualListHandler
             GUILayout.EndArea();
         }
 
+        public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
+        {
+            WindowRect = WindowRect with
+            {
+                width = UIUtility.ScaledMinimum(450),
+                height = UIUtility.ScaledMinimum(150),
+            };
+        }
+
         private void OnCancelButtonClicked(object sender, EventArgs e)
         {
             Modal.Close();

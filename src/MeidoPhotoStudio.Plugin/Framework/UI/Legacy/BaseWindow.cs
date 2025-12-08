@@ -47,15 +47,13 @@ public abstract class BaseWindow
 
     public abstract void Draw();
 
+    public abstract void OnScreenDimensionsChanged(Vector2 newScreenDimensions);
+
     public virtual void Activate()
     {
     }
 
     public virtual void Deactivate()
-    {
-    }
-
-    public virtual void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
     {
     }
 }

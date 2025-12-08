@@ -186,8 +186,6 @@ public class SettingsWindow : BaseWindow
 
     public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
     {
-        base.OnScreenDimensionsChanged(newScreenDimensions);
-
         var minimumWidth = MinimumWidth;
         var minimumHeight = MinimumHeight;
 

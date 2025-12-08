@@ -127,8 +127,6 @@ public partial class MessageWindow : BaseWindow
 
     public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
     {
-        base.OnScreenDimensionsChanged(newScreenDimensions);
-
         var newRect = WindowRect with
         {
             width = Mathf.Max(Screen.width * 0.5f, 440f),

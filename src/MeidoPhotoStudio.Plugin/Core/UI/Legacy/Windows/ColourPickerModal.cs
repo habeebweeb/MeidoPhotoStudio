@@ -100,8 +100,6 @@ public class ColourPickerModal : BaseWindow
 
     public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
     {
-        base.OnScreenDimensionsChanged(newScreenDimensions);
-
         WindowRect = WindowRect with
         {
             width = UIUtility.ScaledMinimum(WindowDimensions.Width),

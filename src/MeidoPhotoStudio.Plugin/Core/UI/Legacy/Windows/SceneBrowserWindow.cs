@@ -363,8 +363,6 @@ public partial class SceneBrowserWindow : BaseWindow, IVirtualListHandler
 
     public override void OnScreenDimensionsChanged(Vector2 newScreenDimensions)
     {
-        base.OnScreenDimensionsChanged(newScreenDimensions);
-
         var minimumWidth = UIUtility.Scaled(CategoryListWidth + ThumbnailDimensions.x * ThumbnailScale + 38);
         var minimumHeight = UIUtility.Scaled(ThumbnailDimensions.y * ThumbnailScale + 40);
 
