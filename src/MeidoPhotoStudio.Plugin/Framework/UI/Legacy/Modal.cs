@@ -48,4 +48,7 @@ public static class Modal
 
     internal static bool MouseOverModal(Vector3 mousePosition) =>
         Visible && currentModal.WindowRect.Contains(mousePosition);
+
+    internal static void OnScreenDimensionsChanged(Vector2 newScreenDimensions) =>
+        currentModal?.OnScreenDimensionsChanged(newScreenDimensions);
 }

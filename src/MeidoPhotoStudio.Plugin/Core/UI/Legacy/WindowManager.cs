@@ -287,6 +287,8 @@ public class WindowManager : MonoBehaviour, IActivateable
     {
         foreach (var window in windows.Values)
             window.OnScreenDimensionsChanged(new(Screen.width, Screen.height));
+
+        Modal.OnScreenDimensionsChanged(new(Screen.width, Screen.height));
     }
 
     private class RaycastTarget : Graphic
