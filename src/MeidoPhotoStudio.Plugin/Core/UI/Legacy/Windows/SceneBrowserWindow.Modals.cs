@@ -208,21 +208,20 @@ public partial class SceneBrowserWindow
 
                 var thumbnail = managingScene.Thumbnail;
 
-                var (windowWidth, windowHeight) = ManageSceneWindowSize;
+                var (width, height) = ManageSceneWindowSize;
+                var windowWidth = width - PaddingSize * 2;
+                var windowHeight = height - 125 - PaddingSize * 2;
 
-                var scaleWidth = (UIUtility.ScaledMinimum(windowWidth) - PaddingSize * 2) / thumbnail.width;
-                var scaleHeight = UIUtility.ScaledMinimum(windowHeight) / thumbnail.height;
+                var scale = Mathf.Min(windowWidth / thumbnail.width, windowHeight / thumbnail.height);
 
-                var scale = Mathf.Min(scaleWidth, scaleHeight);
-
-                var thumbnailWidth = Mathf.Min(thumbnail.width, thumbnail.width * scale);
-                var thumbnailHeight = Mathf.Min(thumbnail.height, thumbnail.height * scale);
+                var thumbnailWidth = Mathf.Min(thumbnail.width, thumbnail.width * scale, windowWidth);
+                var thumbnailHeight = Mathf.Min(thumbnail.height, thumbnail.height * scale, windowHeight);
 
                 GUILayout.Box(
                     thumbnail,
                     thumbnailStyle,
-                    GUILayout.MaxWidth(thumbnailWidth),
-                    GUILayout.MaxHeight(thumbnailHeight));
+                    GUILayout.Width(UIUtility.ScaledMinimum(thumbnailWidth)),
+                    GUILayout.Height(UIUtility.ScaledMinimum(thumbnailHeight)));
 
                 var thumbnailRect = GUILayoutUtility.GetLastRect();
                 var labelSize = sceneInfoLabelStyle.Style.CalcSize(characterCountContent);
