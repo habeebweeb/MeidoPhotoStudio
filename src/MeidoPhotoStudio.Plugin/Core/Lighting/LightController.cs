@@ -19,7 +19,7 @@ public class LightController : INotifyPropertyChanged, IObservableTransform
     {
         Light = light ? light : throw new ArgumentNullException(nameof(light));
         this.transformWatcher = transformWatcher ? transformWatcher : throw new ArgumentNullException(nameof(transformWatcher));
-        this.transformWatcher.Subscribe(Light.transform, RaiseTransformChanged);
+        this.transformWatcher.Subscribe(Light.transform, OnTransformChanged);
 
         lightProperties[LightPropertiesIndex(LightType.Directional)] = LightProperties.FromLight(Light);
 
@@ -251,14 +251,21 @@ public class LightController : INotifyPropertyChanged, IObservableTransform
     private static bool ValidLightType(LightType lightType) =>
         lightType is LightType.Directional or LightType.Spot or LightType.Point;
 
-    private void RaiseTransformChanged(TransformChangeEventArgs args)
+    // TODO: Should rotation be a per-light type property or be standalone like position?
+    private void OnTransformChanged(TransformChangeEventArgs args)
     {
         var type = args.Type;
 
         if (type.HasFlag(TransformChangeEventArgs.TransformType.Rotation))
+        {
+            CurrentLightProperties = CurrentLightProperties with { Rotation = Rotation };
+
             RaisePropertyChanged(nameof(Rotation));
+        }
         else if (type.HasFlag(TransformChangeEventArgs.TransformType.Position))
+        {
             RaisePropertyChanged(nameof(Position));
+        }
 
         ChangedTransform?.Invoke(this, args);
     }
