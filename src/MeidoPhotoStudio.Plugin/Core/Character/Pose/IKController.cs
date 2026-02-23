@@ -692,7 +692,7 @@ public class IKController : INotifyPropertyChanged
 
     private bool ApplyLimits()
     {
-        if (!limitDigitRotations || !limitDigitRotations)
+        if (!limitDigitRotations || !limitLimbRotations)
             return false;
 
         InitializeRotationLimits();
